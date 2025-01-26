@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Dependency directories
+venv/
+env/
+.venv/
+.env/
+
+# IDEs and editors
+.vscode/
+
+# Build directories
+dist/
+build/
