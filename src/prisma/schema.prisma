@@ -15,7 +15,7 @@ model User {
     nickname            String
     email               String   @unique
     phone               String   @unique
-    role                String   @default("member") // member, admin
+    role                String   @default("user") // user, admin
     status              String   @default("pending") // pending, valid, expired
     memberSince         DateTime @default(now())
     membershipRenewedAt DateTime

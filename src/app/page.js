@@ -5,6 +5,5 @@ export default function Home() {
     <Stack>
       <Typography variant="h1"> Task Master</Typography>
     </Stack>
-
   );
 }

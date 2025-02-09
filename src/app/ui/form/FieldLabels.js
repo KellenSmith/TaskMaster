@@ -1,6 +1,7 @@
-import GlobalConstants from "../GlobalConstants";
+import GlobalConstants from "../../GlobalConstants";
 
 const FieldLabels = {
+  [GlobalConstants.USER]: "User",
   [GlobalConstants.FIRST_NAME]: "First Name",
   [GlobalConstants.SURNAME]: "Surname",
   [GlobalConstants.NICKNAME]: "Nickname",

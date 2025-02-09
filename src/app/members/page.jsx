@@ -1,9 +1,15 @@
-import UserForm from "./UserForm";
+import GlobalConstants from "../GlobalConstants";
+import { createUser } from "../lib/actions";
+import Form from "../ui/form/Form";
 
 const MembersPage = () => {
   return (
     <div>
-      <UserForm />
+      <Form
+        name={GlobalConstants.USER}
+        buttonLabel="create"
+        action={createUser}
+      />
     </div>
   );
 };
