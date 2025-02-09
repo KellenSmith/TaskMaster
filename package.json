@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma-migrate": "pnpm prisma migrate dev --schema=./src/prisma/schema.prisma",
+    "prisma-push": "pnpm prisma db push --schema=./src/prisma/schema.prisma"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

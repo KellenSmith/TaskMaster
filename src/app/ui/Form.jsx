@@ -6,7 +6,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import FieldLabels from "../FieldLabels";
+import FieldLabels from "./FieldLabels";
 
 const Form = ({ title, renderedFields, buttonLabel, action }) => {
   return (
