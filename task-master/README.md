@@ -75,5 +75,6 @@ There is a list of default event tasks in the database, configurable by admins. 
 There is a kanban-board, with columns "to do", "in progress" and "completed", containing tasks not tied to an event. All users can see these tasks but only admins can create, update, and delete tasks. All users can assign tasks to themselves and drag-and-drop a task from the "to do" column to the "in progress" column.
 
 ## Information bank
+Possibly an external link to a well-organized cloud drive.
 
 TBD
