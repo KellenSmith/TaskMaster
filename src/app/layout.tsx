@@ -1,3 +1,4 @@
+import React from "react";
 import ContextProviders from "./context";
 
 export const metadata = {
@@ -5,7 +6,11 @@ export const metadata = {
   description: "Your volunteer task management tool",
 };
 
-export default function RootLayout({ children }) {
+interface RootLayoutProps {
+  children: React.ReactNode
+}
+
+const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en">
       <body style={{ backgroundColor: "#121212" }}>
@@ -14,3 +19,5 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
+export default RootLayout;

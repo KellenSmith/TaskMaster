@@ -27,11 +27,9 @@ const MembersPage = async () => {
     }
 
     return (
-      <div>
-        <Stack>
+        <Stack sx={{height: '100%'}}>
             <Datagrid rows={getRows()} columns={getColumns()}/>
         </Stack>
-      </div>
     );
   };
   

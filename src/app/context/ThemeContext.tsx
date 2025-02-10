@@ -1,30 +1,39 @@
 "use client";
 
 import { createTheme, Theme } from "@mui/material";
-import { createContext, useMemo } from "react";
+import { createContext, useState, useEffect } from "react";
 
 interface ThemeContextProps {
-    theme: Theme;
-  }
-  
+  theme: Theme;
+}
+
 export const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 interface ThemeContextProviderProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const ThemeContextProvider: React.FC<ThemeContextProviderProps> = ({ children }) => {
-    const theme = useMemo(() => createTheme({
-        palette: {
-            mode: "dark"
-        },
-    }), []);
+  const [theme, setTheme] = useState<Theme | null>(null);
 
-    return (
-        <ThemeContext.Provider value={{ theme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
-}
+  useEffect(() => {
+    const newTheme = createTheme({
+      palette: {
+        mode: "dark",
+      },
+    });
+    setTheme(newTheme);
+  }, []);
 
-export default ThemeContextProvider
+  if (!theme) {
+    return null; // Render nothing until the theme is set
+  }
+
+  return (
+    <ThemeContext.Provider value={{ theme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export default ThemeContextProvider;

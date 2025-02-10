@@ -11,11 +11,9 @@ interface DatagridProps {
 
 const Datagrid: React.FC<DatagridProps> = ({ rows, columns }) => {  
     return (
-        <div>
-            <Stack>
+            <Stack sx={{height: '100%'}}>
                 <DataGrid autosizeOnMount autoPageSize rows={rows} columns={columns} />
             </Stack>
-        </div>
     );
 };
 

@@ -15,4 +15,4 @@ const ContextProviders: React.FC<ContextProvidersProps> = ({ children }) => {
     );
 }
 
-export default ContextProviders
+export default ContextProviders;
