@@ -8,7 +8,6 @@ const FieldLabels = {
   [GlobalConstants.EMAIL]: "Email",
   [GlobalConstants.PHONE]: "Phone",
   [GlobalConstants.ROLE]: "Role",
-  [GlobalConstants.STATUS]: "Status",
   [GlobalConstants.MEMBER_SINCE]: "Member Since",
   [GlobalConstants.MEMBERSHIP_RENEWED_AT]: "Membership Renewed At",
 };

@@ -12,7 +12,6 @@ const GlobalConstants = {
   PENDING: "pending",
   ACTIVE: "active",
   EXPIRED: "expired",
-  STATUS: "status",
   MEMBER_SINCE: "memberSince",
   MEMBERSHIP_RENEWED_AT: "membershipRenewedAt",
 };

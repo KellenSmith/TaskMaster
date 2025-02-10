@@ -1,9 +1,12 @@
 import { Stack, Typography } from "@mui/material";
+import React from "react";
 
-export default function Home() {
+const Home: React.FC = () => {
   return (
-    <Stack>
+    <Stack sx={{height: '100%'}}>
       <Typography variant="h1"> Task Master</Typography>
     </Stack>
   );
 }
+
+export default Home;

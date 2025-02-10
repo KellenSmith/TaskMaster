@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "pnpm prisma generate --schema=./src/prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
+    "prisma-generate": "pnpm prisma generate --schema=./src/prisma/schema.prisma",
     "prisma-migrate": "pnpm prisma migrate dev --schema=./src/prisma/schema.prisma",
     "prisma-push": "pnpm prisma db push --schema=./src/prisma/schema.prisma"
   },
@@ -14,14 +15,18 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^6.4.3",
+    "@mui/x-data-grid": "^7.26.0",
     "@prisma/client": "^6.3.1",
     "next": "15.1.6",
     "prisma": "^6.3.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/node": "22.13.1",
+    "@types/react": "^19.0.8",
     "eslint": "^9",
     "eslint-config-next": "15.1.6"
   }
