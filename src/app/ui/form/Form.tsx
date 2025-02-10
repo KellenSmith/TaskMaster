@@ -24,7 +24,7 @@ const defaultActionState: FormActionState = { status: 200, errorMsg: "", result:
 interface FormProps {
   name: string;
   buttonLabel: string;
-  action: () => FormActionState;
+  action: (currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>;
 }
 
 const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {

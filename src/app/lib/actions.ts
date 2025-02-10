@@ -17,10 +17,10 @@ const getStrippedFormData = (formName: string, formData: FormData): object => {
 };
 
 export const createUser = async (
-  currentState: FormActionState,
+  currentActionState: FormActionState,
   formData: FormData
 ): Promise<FormActionState> => {
-  const newActionState = { ...currentState };
+  const newActionState = { ...currentActionState };
   // Get props in formData which are part of the user schema
   const strippedFormData: Prisma.UserCreateInput = getStrippedFormData(
     GlobalConstants.USER,
