@@ -3,7 +3,7 @@ import React from "react";
 
 const Home: React.FC = () => {
   return (
-    <Stack>
+    <Stack sx={{height: '100%'}}>
       <Typography variant="h1"> Task Master</Typography>
     </Stack>
   );

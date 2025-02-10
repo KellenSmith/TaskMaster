@@ -4,13 +4,11 @@ import Form from "../../ui/form/Form";
 
 const CreateUserPage = () => {
   return (
-    <div>
       <Form
         name={GlobalConstants.USER}
         buttonLabel="create"
         action={createUser}
       />
-    </div>
   );
 };
 

@@ -13,7 +13,7 @@ interface RootLayoutProps {
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en">
-      <body style={{ backgroundColor: "#121212" }}>
+      <body style={{ height: '100vh', backgroundColor: "#121212" }}>
         <ContextProviders>{children}</ContextProviders>
       </body>
     </html>
