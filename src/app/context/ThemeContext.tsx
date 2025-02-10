@@ -1,17 +1,24 @@
 "use client";
 
-import { createTheme } from "@mui/material";
-import { createContext } from "react";
+import { createTheme, Theme } from "@mui/material";
+import { createContext, useMemo } from "react";
 
-export const ThemeContext = createContext();
+interface ThemeContextProps {
+    theme: Theme;
+  }
+  
+export const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-const theme = createTheme({
-    palette: {
-        mode: "dark"
-    },
-});
+interface ThemeContextProviderProps {
+    children: React.ReactNode;
+}
 
-export default function ThemeContextProvider({ children }) {
+const ThemeContextProvider: React.FC<ThemeContextProviderProps> = ({ children }) => {
+    const theme = useMemo(() => createTheme({
+        palette: {
+            mode: "dark"
+        },
+    }), []);
 
     return (
         <ThemeContext.Provider value={{ theme }}>
@@ -19,3 +26,5 @@ export default function ThemeContextProvider({ children }) {
         </ThemeContext.Provider>
     );
 }
+
+export default ThemeContextProvider

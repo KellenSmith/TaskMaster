@@ -2,13 +2,14 @@
 
 import { Stack } from "@mui/material";
 import {DataGrid, GridColDef, GridRowsProp} from '@mui/x-data-grid'
+import React from "react";
 
 interface DatagridProps {
     rows: GridRowsProp[];
     columns: GridColDef[];
 }
 
-const Datagrid = ({ rows, columns }: DatagridProps) => {  
+const Datagrid: React.FC<DatagridProps> = ({ rows, columns }) => {  
     return (
         <div>
             <Stack>
