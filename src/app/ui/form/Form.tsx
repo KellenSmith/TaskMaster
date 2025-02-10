@@ -16,12 +16,18 @@ import { RenderedFields, selectFieldOptions, RequiredFields } from "./FieldCfg";
 export interface FormActionState {
   status: number;
   errorMsg: string;
-  result: string | object;
+  result: string;
 }
 
 const defaultActionState: FormActionState = { status: 200, errorMsg: "", result: "" };
 
-const Form = ({ name, buttonLabel, action }) => {
+interface FormProps {
+  name: string;
+  buttonLabel: string;
+  action: () => FormActionState;
+}
+
+const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
   const [actionState, formAction] = useActionState(action, defaultActionState);
 
   const getStatusMsg = () => {
