@@ -8,6 +8,8 @@ export const RenderedFields = {
     GlobalConstants.EMAIL,
     GlobalConstants.PHONE,
     GlobalConstants.ROLE,
+    GlobalConstants.MEMBER_SINCE,
+    GlobalConstants.MEMBERSHIP_RENEWED_AT,
   ],
 };
 
@@ -25,3 +27,8 @@ export const RequiredFields = {
 export const selectFieldOptions = {
   [GlobalConstants.ROLE]: [GlobalConstants.USER, GlobalConstants.ADMIN],
 };
+
+export const datePickerFields = [
+  GlobalConstants.MEMBER_SINCE,
+  GlobalConstants.MEMBERSHIP_RENEWED_AT,
+];

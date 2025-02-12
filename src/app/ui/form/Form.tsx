@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Autocomplete,
   Button,
@@ -9,9 +10,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useActionState } from "react";
+import { useState } from "react";
 import FieldLabels from "./FieldLabels";
-import { RenderedFields, selectFieldOptions, RequiredFields } from "./FieldCfg";
+import { RenderedFields, selectFieldOptions, RequiredFields, datePickerFields } from "./FieldCfg";
+import { DatePicker } from "@mui/x-date-pickers";
+import dayjs, { Dayjs } from "dayjs";
 
 export interface FormActionState {
   status: number;
@@ -28,13 +31,29 @@ interface FormProps {
 }
 
 const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
-  const [actionState, formAction] = useActionState(action, defaultActionState);
+  const [actionState, setActionState] = useState(defaultActionState);
+  const [dateFieldValues, setDateFieldValues] = useState<{ [key: string]: Dayjs }>({});
 
   const getStatusMsg = () => {
     if (actionState.errorMsg)
       return <Typography color="error">{actionState.errorMsg}</Typography>;
     if (actionState.result)
       return <Typography color="success">{actionState.result}</Typography>;
+  };
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    // Append dateFieldValues to formData
+    Object.keys(dateFieldValues).forEach((fieldId) => {
+      if (dateFieldValues[fieldId]) {
+        formData.append(fieldId, dateFieldValues[fieldId].toISOString());
+      }
+    });
+
+    const newActionState = await action(actionState, formData);
+    setActionState(newActionState);
   };
 
   const getFieldComp = (fieldId: string) => {
@@ -53,6 +72,17 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
         ></Autocomplete>
       );
     }
+    if (datePickerFields.includes(fieldId)) {
+      return (
+          <DatePicker
+            key={fieldId}
+            label={FieldLabels[fieldId]}
+            defaultValue={dayjs()}
+            value={dateFieldValues[fieldId] || dayjs()}
+            onChange={(newValue) => setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))}
+          />
+      );
+    }
     return (
       <TextField
         key={fieldId}
@@ -64,7 +94,7 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
   };
 
   return (
-    <Card component="form" action={formAction} sx={{ height: "100%" }}>
+    <Card component="form" onSubmit={onSubmit} sx={{ height: "100%" }}>
       <CardHeader title={FieldLabels[name]} />
       <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
         <Stack spacing={2}>
