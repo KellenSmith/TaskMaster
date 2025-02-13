@@ -1,11 +1,17 @@
 "use server";
+
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { RenderedFields } from "../ui/form/FieldCfg";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../members/page";
-import { generateUserCredentials } from "./auth/auth";
+import {
+  compareUserCredentials,
+  createSession,
+  generateUserCredentials,
+} from "./auth/auth";
+import { redirect } from "next/navigation";
 
 const getStrippedFormData = (formName: string, formData: FormData): object => {
   const rawFormData = Object.fromEntries(
@@ -71,5 +77,15 @@ export const login = async (
   formData: FormData
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
-  return newActionState;
+  try {
+    await compareUserCredentials(formData);
+  } catch (error) {
+    newActionState.status = 403;
+    newActionState.errorMsg = error.message;
+    newActionState.result = "";
+    return newActionState;
+  }
+
+  await createSession(formData);
+  redirect("/");
 };
