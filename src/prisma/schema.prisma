@@ -15,9 +15,11 @@ model User {
     nickname            String
     email               String    @unique
     phone               String    @unique
-    role                String    @default("user") // user, admin
     memberSince         DateTime  @default(now())
     membershipRenewedAt DateTime?
+    role                String    @default("user") // user, admin
+    passwordSalt        String    @unique
+    hashedPassword      String    @unique
 
     @@map("users") // Map to table named "users"
 }

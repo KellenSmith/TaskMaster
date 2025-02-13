@@ -14,6 +14,9 @@ const GlobalConstants = {
   EXPIRED: "expired",
   MEMBER_SINCE: "memberSince",
   MEMBERSHIP_RENEWED_AT: "membershipRenewedAt",
+  // Login
+  LOGIN: "login",
+  PASSWORD: "password",
 };
 
 export default GlobalConstants;

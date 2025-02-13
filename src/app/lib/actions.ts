@@ -47,10 +47,19 @@ export const getAllUsers = async (
   const newActionState: DatagridActionState = { ...currentState };
   try {
     const users: Array<object> = await prisma.user.findMany();
+    newActionState.status = 200;
     newActionState.result = users;
   } catch (error) {
     newActionState.status = 500;
     newActionState.errorMsg = error.message;
   }
+  return newActionState;
+};
+
+export const login = async (
+  currentActionState: FormActionState,
+  formData: FormData
+): Promise<FormActionState> => {
+  const newActionState = { ...currentActionState };
   return newActionState;
 };

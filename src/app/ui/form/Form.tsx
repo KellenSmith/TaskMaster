@@ -10,11 +10,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
-import FieldLabels from "./FieldLabels";
-import { RenderedFields, selectFieldOptions, RequiredFields, datePickerFields } from "./FieldCfg";
+import { useActionState, useState } from "react";
+import { FieldLabels, RenderedFields, selectFieldOptions, RequiredFields, datePickerFields } from "./FieldCfg";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
+import GlobalConstants from "../../GlobalConstants";
 
 export interface FormActionState {
   status: number;
@@ -22,7 +22,7 @@ export interface FormActionState {
   result: string;
 }
 
-const defaultActionState: FormActionState = { status: 200, errorMsg: "", result: "" };
+export const defaultActionState: FormActionState = { status: 200, errorMsg: "", result: "" };
 
 interface FormProps {
   name: string;
@@ -31,29 +31,14 @@ interface FormProps {
 }
 
 const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
-  const [actionState, setActionState] = useState(defaultActionState);
-  const [dateFieldValues, setDateFieldValues] = useState<{ [key: string]: Dayjs }>({});
+  const [actionState, formAction, isPending] = useActionState(action, defaultActionState);
+  const [dateFieldValues, setDateFieldValues] = useState<{ [key: string]: Dayjs | null }>(Object.fromEntries(RenderedFields[name].map(fieldId=>[fieldId,dayjs()])));
 
   const getStatusMsg = () => {
     if (actionState.errorMsg)
       return <Typography color="error">{actionState.errorMsg}</Typography>;
     if (actionState.result)
       return <Typography color="success">{actionState.result}</Typography>;
-  };
-
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-
-    // Append dateFieldValues to formData
-    Object.keys(dateFieldValues).forEach((fieldId) => {
-      if (dateFieldValues[fieldId]) {
-        formData.append(fieldId, dateFieldValues[fieldId].toISOString());
-      }
-    });
-
-    const newActionState = await action(actionState, formData);
-    setActionState(newActionState);
   };
 
   const getFieldComp = (fieldId: string) => {
@@ -74,6 +59,7 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
     }
     if (datePickerFields.includes(fieldId)) {
       return (
+        <>
           <DatePicker
             key={fieldId}
             label={FieldLabels[fieldId]}
@@ -81,6 +67,13 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
             value={dateFieldValues[fieldId] || dayjs()}
             onChange={(newValue) => setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))}
           />
+          <input
+            key={`${fieldId}-hidden-input`}
+            type="hidden"
+            name={fieldId}
+            value={dateFieldValues[fieldId] ? dateFieldValues[fieldId]!.toISOString() : ""}
+          />
+        </>
       );
     }
     return (
@@ -89,19 +82,20 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
         label={FieldLabels[fieldId]}
         name={fieldId}
         required={RequiredFields[name].includes(fieldId)}
+        {...(fieldId === GlobalConstants.PASSWORD && { type: GlobalConstants.PASSWORD })}
       />
     );
   };
 
   return (
-    <Card component="form" onSubmit={onSubmit} sx={{ height: "100%" }}>
+    <Card component="form" action={formAction} sx={{ height: "100%" }}>
       <CardHeader title={FieldLabels[name]} />
       <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
         <Stack spacing={2}>
           {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
         </Stack>
         {getStatusMsg()}
-        <Button type="submit" variant="contained">
+        <Button type="submit" variant="contained" disabled={isPending}>
           {buttonLabel}
         </Button>
       </CardContent>
