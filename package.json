@@ -18,6 +18,7 @@
     "@mui/x-data-grid": "^7.26.0",
     "@mui/x-date-pickers": "^7.26.0",
     "@prisma/client": "^6.3.1",
+    "bcrypt": "^5.1.1",
     "dayjs": "^1.11.13",
     "next": "15.1.6",
     "prisma": "^6.3.1",

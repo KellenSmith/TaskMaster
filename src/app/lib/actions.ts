@@ -5,6 +5,7 @@ import { FormActionState } from "../ui/form/Form";
 import { RenderedFields } from "../ui/form/FieldCfg";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../members/page";
+import { generateUserCredentials } from "./auth/auth";
 
 const getStrippedFormData = (formName: string, formData: FormData): object => {
   const rawFormData = Object.fromEntries(
@@ -26,10 +27,18 @@ export const createUser = async (
     GlobalConstants.USER,
     formData
   ) as Prisma.UserCreateInput;
+  const generatedUserCredentials: Prisma.UserCredentialsCreateWithoutUserInput =
+    await generateUserCredentials();
   try {
     const createdUser = await prisma.user.create({
-      data: strippedFormData,
+      data: {
+        ...strippedFormData,
+        [GlobalConstants.USER_CREDENTIALS]: {
+          create: generatedUserCredentials,
+        },
+      },
     });
+    newActionState.errorMsg = "";
     newActionState.status = 201;
     newActionState.result = `User #${createdUser[GlobalConstants.ID]} ${
       createdUser[GlobalConstants.NICKNAME]
@@ -37,6 +46,7 @@ export const createUser = async (
   } catch (error) {
     newActionState.status = 500;
     newActionState.errorMsg = error.message;
+    newActionState.result = null;
   }
   return newActionState;
 };

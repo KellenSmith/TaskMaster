@@ -17,6 +17,10 @@ const GlobalConstants = {
   // Login
   LOGIN: "login",
   PASSWORD: "password",
+  // UserCredentials
+  USER_CREDENTIALS: "userCredentials",
+  SALT: "salt",
+  HASHED_PASSWORD: "hashedPassword",
 };
 
 export default GlobalConstants;
