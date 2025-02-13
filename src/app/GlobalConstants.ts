@@ -1,4 +1,8 @@
 const GlobalConstants = {
+  // Routes
+  MEMBERS: "members",
+  LOGIN: "login",
+  // DB
   ID: "id",
   // User
   ADMIN: "admin",
@@ -15,7 +19,6 @@ const GlobalConstants = {
   MEMBER_SINCE: "memberSince",
   MEMBERSHIP_RENEWED_AT: "membershipRenewedAt",
   // Login
-  LOGIN: "login",
   PASSWORD: "password",
   // UserCredentials
   USER_CREDENTIALS: "userCredentials",

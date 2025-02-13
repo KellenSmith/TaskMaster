@@ -1,7 +1,7 @@
 "use server";
 
-import bcrypt from "bcrypt";
-import { jwtVerify, JWTVerifyResult, SignJWT } from "jose";
+import bcrypt from "bcryptjs";
+import { JWTPayload, jwtVerify, JWTVerifyResult, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
 import GlobalConstants from "../../GlobalConstants";
@@ -74,25 +74,38 @@ const setUserDetails = async (
   });
 };
 
-export const createSession = async (formData: FormData) => {
-  const expiresAt = dayjs().add(10, "s").toDate();
-  // Find the logged in user
+export const getUserByUniqueKey = async (
+  key: string,
+  value: string
+): Promise<Prisma.UserWhereUniqueInput | null> => {
   const userFilterParams = {
-    [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
+    [key]: value,
   } as unknown;
   const loggedInUser = await prisma.user.findUnique({
     where: userFilterParams as Prisma.UserWhereUniqueInput,
   });
+  return loggedInUser;
+};
+
+export const createSession = async (formData: FormData) => {
+  const expiresAt = dayjs().add(60, "s").toDate();
+  const loggedInUser = await getUserByUniqueKey(
+    GlobalConstants.EMAIL,
+    formData.get(GlobalConstants.EMAIL) as string
+  );
 
   await encryptJWT(loggedInUser, expiresAt);
   await setUserDetails(loggedInUser, expiresAt);
 };
 
-const decryptJWT = async (jwt: string): Promise<JWTVerifyResult> => {
+export const decryptJWT = async (
+  jwt: string | undefined
+): Promise<JWTPayload> | undefined => {
   try {
-    const jwtPayload = await jwtVerify(jwt, getEncryptionKey(), {
+    const result = await jwtVerify(jwt, getEncryptionKey(), {
       algorithms: ["HS256"],
     });
+    const jwtPayload = result?.payload;
     return jwtPayload;
   } catch (error) {}
 };
