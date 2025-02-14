@@ -1,7 +1,13 @@
 const GlobalConstants = {
+  // Routes
+  PUBLIC: "public",
+  PRIVATE: "private",
+  ADMIN: "admin",
+  MEMBERS: "members",
+  LOGIN: "login",
+  // DB
   ID: "id",
   // User
-  ADMIN: "admin",
   USER: "user",
   FIRST_NAME: "firstName",
   SURNAME: "surName",
@@ -14,6 +20,12 @@ const GlobalConstants = {
   EXPIRED: "expired",
   MEMBER_SINCE: "memberSince",
   MEMBERSHIP_RENEWED_AT: "membershipRenewedAt",
+  // Login
+  PASSWORD: "password",
+  // UserCredentials
+  USER_CREDENTIALS: "userCredentials",
+  SALT: "salt",
+  HASHED_PASSWORD: "hashedPassword",
 };
 
 export default GlobalConstants;

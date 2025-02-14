@@ -9,15 +9,26 @@ datasource db {
 }
 
 model User {
-    id                  String    @id @default(uuid())
+    id                  String           @id @default(uuid())
     firstName           String
     surName             String
     nickname            String
-    email               String    @unique
-    phone               String    @unique
-    role                String    @default("user") // user, admin
-    memberSince         DateTime  @default(now())
+    email               String           @unique
+    phone               String           @unique
+    memberSince         DateTime         @default(now())
     membershipRenewedAt DateTime?
+    role                String           @default("user") // user, admin
+    userCredentials     UserCredentials?
 
     @@map("users") // Map to table named "users"
+}
+
+model UserCredentials {
+    id             String @id @default(uuid())
+    user           User   @relation(fields: [email], references: [email])
+    email          String @unique // relation scalar field (used in the `@relation` attribute above)
+    salt           String
+    hashedPassword String
+
+    @@map("user_credentials")
 }
