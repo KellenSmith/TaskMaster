@@ -1,11 +1,13 @@
 const GlobalConstants = {
   // Routes
+  PUBLIC: "public",
+  PRIVATE: "private",
+  ADMIN: "admin",
   MEMBERS: "members",
   LOGIN: "login",
   // DB
   ID: "id",
   // User
-  ADMIN: "admin",
   USER: "user",
   FIRST_NAME: "firstName",
   SURNAME: "surName",

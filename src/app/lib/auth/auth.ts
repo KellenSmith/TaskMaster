@@ -45,9 +45,7 @@ const encryptJWT = async (
   expiresAt: Date
 ) => {
   // Encode the user ID as jwt
-  const jwt = await new SignJWT({
-    [GlobalConstants.ID]: loggedInUser[GlobalConstants.ID],
-  })
+  const jwt = await new SignJWT(loggedInUser)
     .setProtectedHeader({
       alg: "HS256",
     })

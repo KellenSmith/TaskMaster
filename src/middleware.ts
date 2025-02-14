@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { decryptJWT, getUserByUniqueKey } from "./app/lib/auth/auth";
+import { decryptJWT } from "./app/lib/auth/auth";
 import { cookies } from "next/headers";
 import { NextURL } from "next/dist/server/web/next-url";
 
@@ -12,9 +12,19 @@ export const config = {
 };
 
 const routes = {
-  public: ["/favicon.ico", `/${GlobalConstants.LOGIN}`],
-  private: ["/"],
-  admin: [`/${GlobalConstants.MEMBERS}`],
+  [GlobalConstants.PUBLIC]: ["/favicon.ico", `/${GlobalConstants.LOGIN}`],
+  [GlobalConstants.PRIVATE]: ["/"],
+  [GlobalConstants.ADMIN]: [`/${GlobalConstants.MEMBERS}`],
+};
+
+const routeHasPrivacyStatus = (
+  reqPath: string,
+  privacyStatus: string
+): boolean => {
+  for (let route of routes[privacyStatus]) {
+    if (reqPath.startsWith(route)) return true;
+  }
+  return false;
 };
 
 export default async function middleware(req: NextRequest) {
@@ -22,24 +32,22 @@ export default async function middleware(req: NextRequest) {
   const redirectUrl = new NextURL(req.nextUrl);
   const cookieStore = await cookies();
   const cookie = cookieStore.get(GlobalConstants.USER_CREDENTIALS)?.value;
-  const jwtPayload = await decryptJWT(cookie);
+  const loggedInUser = await decryptJWT(cookie);
+
+  console.log(req.nextUrl);
 
   redirectUrl.pathname = `/${GlobalConstants.LOGIN}`;
   // Redirect to login from non-public pages if the user is not logged in
-  if (!routes.public.includes(reqPath) && !jwtPayload)
+  if (!routeHasPrivacyStatus(reqPath, GlobalConstants.PUBLIC) && !loggedInUser)
     return NextResponse.redirect(redirectUrl);
 
   redirectUrl.pathname = "/";
   // Redirect logged in users from login to home
-  if (jwtPayload && reqPath === `/${GlobalConstants.LOGIN}`)
+  if (loggedInUser && reqPath === `/${GlobalConstants.LOGIN}`)
     return NextResponse.redirect(redirectUrl);
 
   // Redirect non-admins to home from admin pages or login
-  if (routes.admin.includes(reqPath)) {
-    const loggedInUser = await getUserByUniqueKey(
-      GlobalConstants.ID,
-      jwtPayload[GlobalConstants.ID] as string
-    );
+  if (routeHasPrivacyStatus(reqPath, GlobalConstants.ADMIN)) {
     const userIsAdmin =
       loggedInUser[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
     if (!userIsAdmin) return NextResponse.redirect(redirectUrl);
