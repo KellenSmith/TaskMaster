@@ -1,7 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { JWTPayload, jwtVerify, JWTVerifyResult, SignJWT } from "jose";
+import { JWTPayload, jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
 import GlobalConstants from "../../GlobalConstants";

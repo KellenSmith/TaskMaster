@@ -16,13 +16,15 @@ model User {
     email               String           @unique
     phone               String           @unique
     memberSince         DateTime         @default(now())
-    membershipRenewedAt DateTime?
+    membershipRenewedAt DateTime? // Membership is invalid if missing or expired
     role                String           @default("user") // user, admin
     userCredentials     UserCredentials?
 
     @@map("users") // Map to table named "users"
 }
 
+// No users can log in without credentials.
+// Admins can validate membership to create credentials for user.
 model UserCredentials {
     id             String @id @default(uuid())
     user           User   @relation(fields: [email], references: [email])
