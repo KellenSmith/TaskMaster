@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material";
 import { getAllUsers } from "../lib/actions";
-import Datagrid from "../ui/datagrid/Datagrid";
+import Datagrid from "../ui/Datagrid";
 
 const MembersPage = () => {
 

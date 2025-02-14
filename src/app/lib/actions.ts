@@ -5,7 +5,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { RenderedFields } from "../ui/form/FieldCfg";
 import GlobalConstants from "../GlobalConstants";
-import { DatagridActionState } from "../ui/datagrid/Datagrid";
+import { DatagridActionState } from "../ui/Datagrid";
 import {
   compareUserCredentials,
   createSession,
