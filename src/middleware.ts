@@ -34,8 +34,6 @@ export default async function middleware(req: NextRequest) {
   const cookie = cookieStore.get(GlobalConstants.USER_CREDENTIALS)?.value;
   const loggedInUser = await decryptJWT(cookie);
 
-  console.log(req.nextUrl);
-
   redirectUrl.pathname = `/${GlobalConstants.LOGIN}`;
   // Redirect to login from non-public pages if the user is not logged in
   if (!routeHasPrivacyStatus(reqPath, GlobalConstants.PUBLIC) && !loggedInUser)
