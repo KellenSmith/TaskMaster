@@ -27,7 +27,9 @@ const Datagrid: React.FC<DatagridProps> = ({ fetchData }) => {
       const newActionState = await fetchData(actionState)
       setActionState(newActionState);
     });
-  }, []);
+    // Disable lint to only fetch data on first render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
 
   const getRows = () => {
     if (actionState.status !== 200) return [];
