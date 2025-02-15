@@ -3,18 +3,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
 import { decryptJWT } from "./app/lib/auth/auth";
-import { cookies } from "next/headers";
 import { NextURL } from "next/dist/server/web/next-url";
+import { routes } from "./app/lib/definitions";
 
 export const config = {
   // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
-};
-
-const routes = {
-  [GlobalConstants.PUBLIC]: ["/favicon.ico", `/${GlobalConstants.LOGIN}`],
-  [GlobalConstants.PRIVATE]: ["/"],
-  [GlobalConstants.ADMIN]: [`/${GlobalConstants.MEMBERS}`],
 };
 
 const routeHasPrivacyStatus = (

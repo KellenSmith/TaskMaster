@@ -3,8 +3,10 @@ const GlobalConstants = {
   PUBLIC: "public",
   PRIVATE: "private",
   ADMIN: "admin",
-  MEMBERS: "members",
+  HOME: "home",
   LOGIN: "login",
+  PROFILE: "profile",
+  MEMBERS: "members",
   // DB
   ID: "id",
   // User

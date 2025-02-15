@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, Button } from '@mui/material';
+import { AppBar, Toolbar, Typography, Drawer, List, ListItem, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import GlobalConstants from '../GlobalConstants';
@@ -13,18 +14,11 @@ import { isUserAuthorized } from '../lib/utils';
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const {user, setUser} = useUserContext();
+    const {user, logOut} = useUserContext();
 
-    const handleDrawerToggle = () => {
-        setDrawerOpen(!drawerOpen);
+    const toggleDrawerOpen = () => {
+        setDrawerOpen(prev => !prev);
     };
-
-    const handleLogout = async () => {
-        setUser(null);
-        redirect(`${GlobalConstants.LOGIN}`)
-    };
-
-    console.log(user)
 
     const getLinkGroup = (privacyStatus: string) => {
         return (
@@ -40,22 +34,27 @@ const NavPanel = () => {
         )
     }
 
+    console.log(user)
+
     return (
         <>
             <AppBar position="static">
                 <Toolbar>
-                    {user && <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleDrawerToggle}><MenuIcon /></IconButton>}
+                    {user && <Button  onClick={toggleDrawerOpen}><MenuIcon /></Button>}
                     <Typography variant="h6" style={{ flexGrow: 1, textAlign: 'center' }}>
                         LOGO
                     </Typography>
-                    {user && (
-                        <Button color="inherit" onClick={handleLogout}>
+                    {user ? 
+                        <Button onClick={logOut}>
                             <LogoutIcon />
                         </Button>
-                    )}
+                        : <Button onClick={()=>redirect(`/${GlobalConstants.LOGIN}`)}>
+                            <LoginIcon/>
+                        </Button>
+                    }
                 </Toolbar>
             </AppBar>
-            <Drawer anchor="left" open={drawerOpen} onClose={handleDrawerToggle}>
+            <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
                 {getLinkGroup(GlobalConstants.PUBLIC)}
                 {getLinkGroup(GlobalConstants.PRIVATE)}
                 {getLinkGroup(GlobalConstants.ADMIN)}
