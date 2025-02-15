@@ -17,23 +17,23 @@ import {
 
 const getStrippedFormData = (formName: string, formData: FormData): object => {
   const rawFormData = Object.fromEntries(
-    RenderedFields[formName].map((key) => [key, formData.get(key)])
+    RenderedFields[formName].map((key) => [key, formData.get(key)]),
   );
   const strippedFormData = Object.fromEntries(
-    Object.entries(rawFormData).filter(([_, value]) => !!value)
+    Object.entries(rawFormData).filter(([_, value]) => !!value),
   );
   return strippedFormData;
 };
 
 export const createUser = async (
   currentActionState: FormActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   // Get props in formData which are part of the user schema
   const strippedFormData: Prisma.UserCreateInput = getStrippedFormData(
     GlobalConstants.USER,
-    formData
+    formData,
   ) as Prisma.UserCreateInput;
   const generatedPassword = await bcrypt.genSalt();
   const generatedUserCredentials: Prisma.UserCredentialsCreateWithoutUserInput =
@@ -61,7 +61,7 @@ export const createUser = async (
 };
 
 export const getAllUsers = async (
-  currentState: DatagridActionState
+  currentState: DatagridActionState,
 ): Promise<DatagridActionState> => {
   const newActionState: DatagridActionState = { ...currentState };
   try {
@@ -76,14 +76,14 @@ export const getAllUsers = async (
 };
 
 export const getLoggedInUser = async (
-  currentActionState: FormActionState
+  currentActionState: FormActionState,
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   const jwtPayload = await decryptJWT();
   if (jwtPayload) {
     const loggedInUser = await getUserByUniqueKey(
       GlobalConstants.ID,
-      jwtPayload[GlobalConstants.ID] as string
+      jwtPayload[GlobalConstants.ID] as string,
     );
     newActionState.status = 200;
     newActionState.errorMsg = "";
@@ -98,7 +98,7 @@ export const getLoggedInUser = async (
 
 export const login = async (
   currentActionState: FormActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   try {
@@ -120,13 +120,13 @@ export const login = async (
 export const updateUser = async (
   userId: string,
   currentActionState: FormActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   // Get props in formData which are part of the user schema
   const strippedFormData: Prisma.UserUpdateInput = getStrippedFormData(
     GlobalConstants.USER,
-    formData
+    formData,
   ) as Prisma.UserUpdateInput;
   try {
     await prisma.user.update({
@@ -148,11 +148,11 @@ export const updateUser = async (
 
 export const updateUserCredentials = async (
   currentActionState: FormActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   const newCredentials = await generateUserCredentials(
-    formData.get(GlobalConstants.PASSWORD) as string
+    formData.get(GlobalConstants.PASSWORD) as string,
   );
   try {
     await prisma.userCredentials.update({
@@ -174,7 +174,7 @@ export const updateUserCredentials = async (
 
 export const deleteUser = async (
   userEmail: string,
-  currentActionState: DatagridActionState
+  currentActionState: DatagridActionState,
 ): Promise<DatagridActionState> => {
   const newActionState = { ...currentActionState };
   try {

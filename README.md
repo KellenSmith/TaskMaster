@@ -5,6 +5,7 @@ TaskMaster is a web application tool for volunteer organizations to automate eve
 The web application should be comfortably viewable on both desktop and mobile screens and has a dark theme.
 
 ## Member registry
+
 A member registry should be securely stored and easily managed.
 
 - People can click a button in the UI to apply for membership. An account is automatically created in a database with the membership status "pending".
@@ -21,6 +22,7 @@ The list of all registered members can be accessed on a protected page only acce
 The membership page contains an overview of the members including a graph of membership count with one curve each for pending, valid, and expired members.
 
 The full member list is accessible in a sub-section of the page where:
+
 - Admins can create new users.
 - Admins can update existing users.
 - Admins can delete existing users.
@@ -28,6 +30,7 @@ The full member list is accessible in a sub-section of the page where:
 The member list is shown as a table where all properties of the user are visible. The list is sortable and filterable by all properties of the users.
 
 ### User profile
+
 All users have access to their own user profile where they can add their screen name, nickname, and contact information, including phone number and email address, membership status, registration date, and renewal date. If the user is an admin, their membership role "admin" is visible in their user profile.
 
 - Name and contact info can be edited by the user.
@@ -75,6 +78,7 @@ There is a list of default event tasks in the database, configurable by admins. 
 There is a kanban-board, with columns "to do", "in progress" and "completed", containing tasks not tied to an event. All users can see these tasks but only admins can create, update, and delete tasks. All users can assign tasks to themselves and drag-and-drop a task from the "to do" column to the "in progress" column.
 
 ## Information bank
+
 Possibly an external link to a well-organized cloud drive.
 
 TBD

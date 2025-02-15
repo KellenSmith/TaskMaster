@@ -8,20 +8,20 @@ export const metadata = {
 };
 
 interface RootLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en">
-      <body style={{ height: '100vh', backgroundColor: "#121212" }}>
+      <body style={{ height: "100vh", backgroundColor: "#121212" }}>
         <ContextProviders>
-          <NavPanel/>
+          <NavPanel />
           {children}
         </ContextProviders>
       </body>
     </html>
   );
-}
+};
 
 export default RootLayout;

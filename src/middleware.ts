@@ -13,7 +13,7 @@ export const config = {
 
 const routeHasPrivacyStatus = (
   reqPath: string,
-  privacyStatus: string
+  privacyStatus: string,
 ): boolean => {
   for (let route of routes[privacyStatus]) {
     if (reqPath.startsWith(`/${route}`)) return true;

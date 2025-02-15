@@ -4,7 +4,7 @@ import { JWTPayload } from "jose";
 
 export const pathHasPrivacyStatus = (
   reqPath: string,
-  privacyStatus: string
+  privacyStatus: string,
 ): boolean => {
   for (let route of routes[privacyStatus]) {
     if (reqPath.startsWith(route)) return true;
@@ -14,7 +14,7 @@ export const pathHasPrivacyStatus = (
 
 export const isUserAuthorized = (
   path: string,
-  user: JWTPayload | null
+  user: JWTPayload | null,
 ): boolean => {
   // Only allow non-logged in users access to public routes
   if (!user) return routes[GlobalConstants.PUBLIC].includes(path);

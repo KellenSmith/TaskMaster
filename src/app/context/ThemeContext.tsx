@@ -7,13 +7,17 @@ interface ThemeContextProps {
   theme: Theme;
 }
 
-export const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
+export const ThemeContext = createContext<ThemeContextProps | undefined>(
+  undefined,
+);
 
 interface ThemeContextProviderProps {
   children: React.ReactNode;
 }
 
-const ThemeContextProvider: React.FC<ThemeContextProviderProps> = ({ children }) => {
+const ThemeContextProvider: React.FC<ThemeContextProviderProps> = ({
+  children,
+}) => {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
@@ -30,9 +34,7 @@ const ThemeContextProvider: React.FC<ThemeContextProviderProps> = ({ children })
   }
 
   return (
-    <ThemeContext.Provider value={{ theme }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme }}>{children}</ThemeContext.Provider>
   );
 };
 
