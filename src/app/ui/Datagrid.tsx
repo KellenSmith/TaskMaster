@@ -15,7 +15,7 @@ export interface DatagridActionState {
   result: object[];
 }
 
-const defaultActionState: DatagridActionState = { status: 200, errorMsg: "", result: [] };
+export const defaultActionState: DatagridActionState = { status: 200, errorMsg: "", result: [] };
 
 interface DatagridProps {
   name: string,

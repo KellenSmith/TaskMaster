@@ -185,7 +185,7 @@ export const deleteUser = async (
     });
     const deleteUser = prisma.user.delete({
       where: {
-        [GlobalConstants.ID]: userEmail,
+        [GlobalConstants.EMAIL]: userEmail,
       } as unknown as Prisma.UserWhereUniqueInput,
     });
 

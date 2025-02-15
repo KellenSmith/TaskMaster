@@ -3,10 +3,14 @@
 import GlobalConstants from "../GlobalConstants"
 import Form, { FormActionState } from "../ui/form/Form"
 import { useUserContext } from "../context/UserContext"
-import { login, updateUser, updateUserCredentials } from "../lib/actions"
+import { deleteUser, login, updateUser, updateUserCredentials } from "../lib/actions"
+import { useState } from "react"
+import { defaultActionState } from "../ui/Datagrid"
+import { Button, Stack, Typography } from "@mui/material"
 
 const ProfilePage = () => {
-    const {user, updateLoggedInUser} = useUserContext()
+    const {user, updateLoggedInUser, logOut} = useUserContext()
+    const [errorMsg, setErrorMsg] = useState("")
 
     const updateUserProfile = async (currentActionState: FormActionState, formData: FormData) => {
         const updateUserState = await updateUser(user[GlobalConstants.ID], currentActionState, formData)
@@ -39,10 +43,20 @@ const ProfilePage = () => {
         return updateCredentialsState
     }
 
-    return <>
+    const deleteMyAccount = async () => {
+        const deleteState = await deleteUser(user[GlobalConstants.EMAIL], defaultActionState)
+        if (deleteState.status !== 200) return setErrorMsg(deleteState.errorMsg)
+        await logOut()
+    }
+
+    return <Stack>
         <Form name={GlobalConstants.PROFILE} buttonLabel="save" action={updateUserProfile} defaultValues={user}></Form>
         <Form name={GlobalConstants.USER_CREDENTIALS} buttonLabel="save" action={validateAndUpdateCredentials}></Form>
-    </>
+        {
+            errorMsg && <Typography color="error">{errorMsg}</Typography>
+        }
+        <Button color="error" onClick={deleteMyAccount}>Delete My Account</Button>
+    </Stack>
 }
 
 export default ProfilePage
