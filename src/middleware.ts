@@ -30,9 +30,7 @@ const routeHasPrivacyStatus = (
 export default async function middleware(req: NextRequest) {
   const reqPath = req.nextUrl.pathname;
   const redirectUrl = new NextURL(req.nextUrl);
-  const cookieStore = await cookies();
-  const cookie = cookieStore.get(GlobalConstants.USER_CREDENTIALS)?.value;
-  const loggedInUser = await decryptJWT(cookie);
+  const loggedInUser = await decryptJWT();
 
   redirectUrl.pathname = `/${GlobalConstants.LOGIN}`;
   // Redirect to login from non-public pages if the user is not logged in
