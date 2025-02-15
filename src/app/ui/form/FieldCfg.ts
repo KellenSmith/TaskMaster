@@ -1,6 +1,7 @@
 import GlobalConstants from "../../GlobalConstants";
 
 export const FieldLabels = {
+  [GlobalConstants.ID]: "ID",
   // Profile
   [GlobalConstants.PROFILE]: "Profile",
   // User
@@ -10,6 +11,9 @@ export const FieldLabels = {
   [GlobalConstants.NICKNAME]: "Nickname",
   [GlobalConstants.EMAIL]: "Email",
   [GlobalConstants.PHONE]: "Phone",
+  [GlobalConstants.ROLE]: "Role",
+  [GlobalConstants.MEMBER_SINCE]: "Member Since",
+  [GlobalConstants.MEMBERSHIP_RENEWED_AT]: "Membership Renewed At",
   // Login
   [GlobalConstants.LOGIN]: "Login",
   [GlobalConstants.PASSWORD]: "Password",

@@ -7,6 +7,7 @@ const GlobalConstants = {
   LOGIN: "login",
   PROFILE: "profile",
   MEMBERS: "members",
+  CREATE: "create",
   // DB
   ID: "id",
   // User

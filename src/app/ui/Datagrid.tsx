@@ -1,9 +1,12 @@
 'use client'
 
-import { Stack } from "@mui/material";
-import { DataGrid, GridColDef, GridRowsProp, useGridApiRef } from '@mui/x-data-grid';
+import { Button, Dialog, Stack } from "@mui/material";
+import { DataGrid, GridColDef, GridRowParams, GridRowsProp, useGridApiRef } from '@mui/x-data-grid';
 import React, { useEffect, useMemo, useState, startTransition } from "react";
 import { datePickerFields, FieldLabels } from "./form/FieldCfg";
+import { redirect, usePathname } from "next/navigation";
+import GlobalConstants from "../GlobalConstants";
+import Form, { FormActionState } from "./form/Form";
 
 export interface DatagridActionState {
   status: number;
@@ -14,18 +17,26 @@ export interface DatagridActionState {
 const defaultActionState: DatagridActionState = { status: 200, errorMsg: "", result: [] };
 
 interface DatagridProps {
+  name: string,
   fetchData: (currentActionState: DatagridActionState) => Promise<DatagridActionState>;
+  updateAction: (userId: string, currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>;
 }
 
-const Datagrid: React.FC<DatagridProps> = ({ fetchData }) => {
+const Datagrid: React.FC<DatagridProps> = ({ name, fetchData, updateAction }) => {
   const apiRef = useGridApiRef()
+  const pathname = usePathname()
+  const [clickedRow, setClickedRow] = useState(null)
   const [actionState, setActionState] = useState<DatagridActionState>(defaultActionState);
+
+  const updateDatagridData = async () => {
+    const newActionState = await fetchData(actionState)
+      setActionState(newActionState);
+  }
 
   // Fetch data on first render
   useEffect(() => {
     startTransition(async () => {
-      const newActionState = await fetchData(actionState)
-      setActionState(newActionState);
+      updateDatagridData()
     });
     // Disable lint to only fetch data on first render
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,9 +68,22 @@ const Datagrid: React.FC<DatagridProps> = ({ fetchData }) => {
     })
   }, [apiRef,columns])
 
+  const onRowClicked = (params: GridRowParams) => setClickedRow(params.row)
+
+  const updateRow = async (currentActionState: FormActionState, formData: FormData) =>{
+    const updateState = await updateAction(clickedRow[GlobalConstants.ID], currentActionState, formData)
+    updateDatagridData()
+    return updateState
+  }
+    
+
   return (
-    <Stack sx={{ height: '100%' }}>
-      <DataGrid apiRef={apiRef} rows={rows} columns={columns} autoPageSize />
+    <Stack sx={{height: '100%'}}>
+      <DataGrid apiRef={apiRef} rows={rows} onRowClick={onRowClicked} columns={columns} autoPageSize />
+      <Button onClick={() => redirect(`${pathname}/${GlobalConstants.CREATE}`)}>Add New</Button>
+      <Dialog open={!!clickedRow} onClose={()=>setClickedRow(null)}>
+        <Form name={name} buttonLabel="save" action={updateRow} defaultValues={clickedRow}/>
+      </Dialog>
     </Stack>
   );
 };

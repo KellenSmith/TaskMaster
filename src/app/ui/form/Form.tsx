@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useActionState, useState } from "react";
+import { useActionState, useState, Fragment } from "react";
 import { FieldLabels, RenderedFields, selectFieldOptions, RequiredFields, datePickerFields } from "./FieldCfg";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
@@ -60,7 +60,7 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action, defaultValues })
     }
     if (datePickerFields.includes(fieldId)) {
       return (
-        <>
+        <Fragment key={fieldId}>
           <DatePicker
             key={fieldId}
             label={FieldLabels[fieldId]}
@@ -74,7 +74,7 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action, defaultValues })
             name={fieldId}
             value={dateFieldValues[fieldId] ? dateFieldValues[fieldId]!.toISOString() : ""}
           />
-        </>
+        </Fragment>
       );
     }
     return (
