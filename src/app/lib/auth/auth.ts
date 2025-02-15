@@ -22,7 +22,7 @@ export const generateUserCredentials =
     return newUserCredentials;
   };
 
-export const compareUserCredentials = async (formData: FormData) => {
+export const authenticateUser = async (formData: FormData) => {
   const filterParams = {
     [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
   } as unknown;
@@ -35,6 +35,12 @@ export const compareUserCredentials = async (formData: FormData) => {
     userCredentials[GlobalConstants.HASHED_PASSWORD]
   );
   if (!passwordsMatch) throw new Error("Invalid credentials");
+
+  const loggedInUser = getUserByUniqueKey(
+    GlobalConstants.EMAIL,
+    userCredentials[GlobalConstants.EMAIL]
+  );
+  return loggedInUser;
 };
 
 const getEncryptionKey = () =>
@@ -93,4 +99,9 @@ export const decryptJWT = async (): Promise<JWTPayload> | undefined => {
     const jwtPayload = result?.payload;
     return jwtPayload;
   } catch (error) {}
+};
+
+export const deleteUserCookie = async () => {
+  const cookieStore = await cookies();
+  cookieStore.delete(GlobalConstants.USER_CREDENTIALS);
 };

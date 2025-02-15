@@ -3,7 +3,7 @@
 import { Stack } from "@mui/material";
 import { DataGrid, GridColDef, GridRowsProp, useGridApiRef } from '@mui/x-data-grid';
 import React, { useEffect, useMemo, useState, startTransition } from "react";
-import { datePickerFields, FieldLabels } from "../form/FieldCfg";
+import { datePickerFields, FieldLabels } from "./form/FieldCfg";
 
 export interface DatagridActionState {
   status: number;
