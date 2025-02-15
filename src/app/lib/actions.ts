@@ -9,7 +9,9 @@ import { DatagridActionState } from "../ui/datagrid/Datagrid";
 import {
   compareUserCredentials,
   createSession,
+  decryptJWT,
   generateUserCredentials,
+  getUserByUniqueKey,
 } from "./auth/auth";
 import { redirect } from "next/navigation";
 
@@ -88,4 +90,25 @@ export const login = async (
 
   await createSession(formData);
   redirect("/");
+};
+
+export const getLoggedInUser = async (
+  currentActionState: FormActionState
+): Promise<FormActionState> => {
+  const newActionState = { ...currentActionState };
+  const jwtPayload = await decryptJWT();
+  if (jwtPayload) {
+    const loggedInUser = await getUserByUniqueKey(
+      GlobalConstants.ID,
+      jwtPayload[GlobalConstants.ID] as string
+    );
+    newActionState.status = 200;
+    newActionState.errorMsg = "";
+    newActionState.result = JSON.stringify(loggedInUser);
+  } else {
+    newActionState.status = 404;
+    newActionState.errorMsg = "";
+    newActionState.result = "";
+  }
+  return newActionState;
 };

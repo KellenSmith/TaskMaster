@@ -3,6 +3,7 @@
 import { ThemeProvider } from "@mui/material";
 import React, { useContext } from "react";
 import { ThemeContext } from "./ThemeContext";
+import UserContextProvider from "./UserContext";
 
 interface ComponentWrapperProps {
   children: React.ReactNode;
@@ -17,7 +18,11 @@ const ComponentWrapper: React.FC<ComponentWrapperProps> = ({ children }) => {
 
   const { theme } = themeContext;
 
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+  return <ThemeProvider theme={theme}>
+    <UserContextProvider>
+      {children}
+    </UserContextProvider>
+  </ThemeProvider>;
 };
 
 export default ComponentWrapper;
