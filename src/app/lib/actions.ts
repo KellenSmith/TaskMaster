@@ -1,5 +1,6 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
@@ -13,7 +14,6 @@ import {
   generateUserCredentials,
   getUserByUniqueKey,
 } from "./auth/auth";
-import { redirect } from "next/navigation";
 
 const getStrippedFormData = (formName: string, formData: FormData): object => {
   const rawFormData = Object.fromEntries(
@@ -35,8 +35,9 @@ export const createUser = async (
     GlobalConstants.USER,
     formData
   ) as Prisma.UserCreateInput;
+  const generatedPassword = await bcrypt.genSalt();
   const generatedUserCredentials: Prisma.UserCredentialsCreateWithoutUserInput =
-    await generateUserCredentials();
+    await generateUserCredentials(generatedPassword);
   try {
     const createdUser = await prisma.user.create({
       data: {
@@ -74,6 +75,27 @@ export const getAllUsers = async (
   return newActionState;
 };
 
+export const getLoggedInUser = async (
+  currentActionState: FormActionState
+): Promise<FormActionState> => {
+  const newActionState = { ...currentActionState };
+  const jwtPayload = await decryptJWT();
+  if (jwtPayload) {
+    const loggedInUser = await getUserByUniqueKey(
+      GlobalConstants.ID,
+      jwtPayload[GlobalConstants.ID] as string
+    );
+    newActionState.status = 200;
+    newActionState.errorMsg = "";
+    newActionState.result = JSON.stringify(loggedInUser);
+  } else {
+    newActionState.status = 404;
+    newActionState.errorMsg = "";
+    newActionState.result = "";
+  }
+  return newActionState;
+};
+
 export const login = async (
   currentActionState: FormActionState,
   formData: FormData
@@ -95,22 +117,56 @@ export const login = async (
   return newActionState;
 };
 
-export const getLoggedInUser = async (
-  currentActionState: FormActionState
+export const updateUser = async (
+  userId: string,
+  currentActionState: FormActionState,
+  formData: FormData
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
-  const jwtPayload = await decryptJWT();
-  if (jwtPayload) {
-    const loggedInUser = await getUserByUniqueKey(
-      GlobalConstants.ID,
-      jwtPayload[GlobalConstants.ID] as string
-    );
+  // Get props in formData which are part of the user schema
+  const strippedFormData: Prisma.UserUpdateInput = getStrippedFormData(
+    GlobalConstants.USER,
+    formData
+  ) as Prisma.UserUpdateInput;
+  try {
+    await prisma.user.update({
+      where: {
+        [GlobalConstants.ID]: userId,
+      } as unknown as Prisma.UserWhereUniqueInput,
+      data: strippedFormData,
+    });
+    newActionState.errorMsg = "";
     newActionState.status = 200;
+    newActionState.result = `Updated successfully`;
+  } catch (error) {
+    newActionState.status = 500;
+    newActionState.errorMsg = error.message;
+    newActionState.result = null;
+  }
+  return newActionState;
+};
+
+export const updateUserCredentials = async (
+  currentActionState: FormActionState,
+  formData: FormData
+): Promise<FormActionState> => {
+  const newActionState = { ...currentActionState };
+  const newCredentials = await generateUserCredentials(
+    formData.get(GlobalConstants.PASSWORD) as string
+  );
+  try {
+    await prisma.userCredentials.update({
+      where: {
+        [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
+      } as unknown as Prisma.UserCredentialsWhereUniqueInput,
+      data: newCredentials,
+    });
     newActionState.errorMsg = "";
-    newActionState.result = JSON.stringify(loggedInUser);
-  } else {
-    newActionState.status = 404;
-    newActionState.errorMsg = "";
+    newActionState.status = 200;
+    newActionState.result = "Updated successfully";
+  } catch (error) {
+    newActionState.status = 500;
+    newActionState.errorMsg = error.message;
     newActionState.result = "";
   }
   return newActionState;
