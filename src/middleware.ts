@@ -8,7 +8,7 @@ import { routes } from "./app/lib/definitions";
 
 export const config = {
   // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
-  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$|.*\\.ico$).*)"],
 };
 
 const routeHasPrivacyStatus = (
@@ -16,7 +16,7 @@ const routeHasPrivacyStatus = (
   privacyStatus: string
 ): boolean => {
   for (let route of routes[privacyStatus]) {
-    if (reqPath.startsWith(route)) return true;
+    if (reqPath.startsWith(`/${route}`)) return true;
   }
   return false;
 };

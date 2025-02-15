@@ -26,7 +26,7 @@ const NavPanel = () => {
                 {routes[privacyStatus].map((route) => (
                     isUserAuthorized(route, user) && (
                         <ListItem key={route}>
-                            <Button LinkComponent={Link} href={route}>{route}</Button>
+                            <Button LinkComponent={Link} href={`/${route}`}>{route}</Button>
                         </ListItem>
                     )
                 ))}
