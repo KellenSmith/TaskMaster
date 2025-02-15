@@ -7,21 +7,13 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import GlobalConstants from '../GlobalConstants';
-
-const routes = [
-    { path: '/members', name: 'Members' },
-    { path: '/profile', name: 'Profile' },
-    // Add more routes as needed
-];
-
-const isUserAuthorized = (user, route) => {
-    // Implement your authorization logic here
-    return true;
-};
+import { useUserContext } from '../context/UserContext';
+import { routes } from '../lib/definitions';
+import { isUserAuthorized } from '../lib/utils';
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [user, setUser] = useState();
+    const {user, setUser} = useUserContext();
 
     const handleDrawerToggle = () => {
         setDrawerOpen(!drawerOpen);
@@ -32,13 +24,27 @@ const NavPanel = () => {
         redirect(`${GlobalConstants.LOGIN}`)
     };
 
+    console.log(user)
+
+    const getLinkGroup = (privacyStatus: string) => {
+        return (
+            <List>
+                {routes[privacyStatus].map((route) => (
+                    isUserAuthorized(route, user) && (
+                        <ListItem key={route}>
+                            <Button LinkComponent={Link} href={route}>{route}</Button>
+                        </ListItem>
+                    )
+                ))}
+            </List>
+        )
+    }
+
     return (
         <>
             <AppBar position="static">
                 <Toolbar>
-                    {user && <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleDrawerToggle}>
-                        <MenuIcon />
-                    </IconButton>}
+                    {user && <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleDrawerToggle}><MenuIcon /></IconButton>}
                     <Typography variant="h6" style={{ flexGrow: 1, textAlign: 'center' }}>
                         LOGO
                     </Typography>
@@ -50,15 +56,9 @@ const NavPanel = () => {
                 </Toolbar>
             </AppBar>
             <Drawer anchor="left" open={drawerOpen} onClose={handleDrawerToggle}>
-                <List>
-                    {routes.map((route) => (
-                        isUserAuthorized(user, route) && (
-                            <ListItem key={route.path}>
-                                <Button LinkComponent={Link} href={route.path}>{route.name}</Button>
-                            </ListItem>
-                        )
-                    ))}
-                </List>
+                {getLinkGroup(GlobalConstants.PUBLIC)}
+                {getLinkGroup(GlobalConstants.PRIVATE)}
+                {getLinkGroup(GlobalConstants.ADMIN)}
             </Drawer>
         </>
     );
