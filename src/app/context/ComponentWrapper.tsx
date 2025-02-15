@@ -13,16 +13,18 @@ const ComponentWrapper: React.FC<ComponentWrapperProps> = ({ children }) => {
   const themeContext = useContext(ThemeContext);
 
   if (!themeContext) {
-    throw new Error("ComponentWrapper must be used within a ThemeContextProvider");
+    throw new Error(
+      "ComponentWrapper must be used within a ThemeContextProvider",
+    );
   }
 
   const { theme } = themeContext;
 
-  return <ThemeProvider theme={theme}>
-    <UserContextProvider>
-      {children}
-    </UserContextProvider>
-  </ThemeProvider>;
+  return (
+    <ThemeProvider theme={theme}>
+      <UserContextProvider>{children}</UserContextProvider>
+    </ThemeProvider>
+  );
 };
 
 export default ComponentWrapper;

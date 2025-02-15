@@ -10,8 +10,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useActionState, useState } from "react";
-import { FieldLabels, RenderedFields, selectFieldOptions, RequiredFields, datePickerFields } from "./FieldCfg";
+import { useActionState, useState, Fragment } from "react";
+import {
+  FieldLabels,
+  RenderedFields,
+  selectFieldOptions,
+  RequiredFields,
+  datePickerFields,
+} from "./FieldCfg";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
@@ -22,18 +28,39 @@ export interface FormActionState {
   result: string;
 }
 
-export const defaultActionState: FormActionState = { status: 200, errorMsg: "", result: "" };
+export const defaultActionState: FormActionState = {
+  status: 200,
+  errorMsg: "",
+  result: "",
+};
 
 interface FormProps {
   name: string;
   buttonLabel: string;
-  action: (currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>;
-  defaultValues?: any
+  action: (
+    currentActionState: FormActionState,
+    formData: FormData,
+  ) => Promise<FormActionState>;
+  defaultValues?: any;
 }
 
-const Form: React.FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
-  const [actionState, formAction, isPending] = useActionState(action, defaultActionState);
-  const [dateFieldValues, setDateFieldValues] = useState<{ [key: string]: Dayjs | null }>(Object.fromEntries(RenderedFields[name].map(fieldId=>[fieldId,dayjs()])));
+const Form: React.FC<FormProps> = ({
+  name,
+  buttonLabel,
+  action,
+  defaultValues,
+}) => {
+  const [actionState, formAction, isPending] = useActionState(
+    action,
+    defaultActionState,
+  );
+  const [dateFieldValues, setDateFieldValues] = useState<{
+    [key: string]: Dayjs | null;
+  }>(
+    Object.fromEntries(
+      RenderedFields[name].map((fieldId) => [fieldId, dayjs()]),
+    ),
+  );
 
   const getStatusMsg = () => {
     if (actionState.errorMsg)
@@ -53,28 +80,42 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action, defaultValues })
           )}
           autoSelect={fieldId in RequiredFields[name]}
           options={options}
-          defaultValue={defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : options[0]}
+          defaultValue={
+            defaultValues && fieldId in defaultValues
+              ? defaultValues[fieldId]
+              : options[0]
+          }
           getOptionLabel={(option) => option[0].toUpperCase() + option.slice(1)}
         ></Autocomplete>
       );
     }
     if (datePickerFields.includes(fieldId)) {
       return (
-        <>
+        <Fragment key={fieldId}>
           <DatePicker
             key={fieldId}
             label={FieldLabels[fieldId]}
-            defaultValue={defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : dayjs()}
+            defaultValue={
+              defaultValues && fieldId in defaultValues
+                ? defaultValues[fieldId]
+                : dayjs()
+            }
             value={dateFieldValues[fieldId] || dayjs()}
-            onChange={(newValue) => setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))}
+            onChange={(newValue) =>
+              setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))
+            }
           />
           <input
             key={`${fieldId}-hidden-input`}
             type="hidden"
             name={fieldId}
-            value={dateFieldValues[fieldId] ? dateFieldValues[fieldId]!.toISOString() : ""}
+            value={
+              dateFieldValues[fieldId]
+                ? dateFieldValues[fieldId]!.toISOString()
+                : ""
+            }
           />
-        </>
+        </Fragment>
       );
     }
     return (
@@ -83,8 +124,14 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action, defaultValues })
         label={FieldLabels[fieldId]}
         name={fieldId}
         required={RequiredFields[name].includes(fieldId)}
-        defaultValue={defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : ""}
-        {...(fieldId.includes(GlobalConstants.PASSWORD) && { type: GlobalConstants.PASSWORD })}
+        defaultValue={
+          defaultValues && fieldId in defaultValues
+            ? defaultValues[fieldId]
+            : ""
+        }
+        {...(fieldId.includes(GlobalConstants.PASSWORD) && {
+          type: GlobalConstants.PASSWORD,
+        })}
       />
     );
   };
