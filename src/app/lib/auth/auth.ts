@@ -1,7 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { JWTPayload, jwtVerify, JWTVerifyResult, SignJWT } from "jose";
+import { JWTPayload, jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
 import GlobalConstants from "../../GlobalConstants";
@@ -60,18 +60,6 @@ const encryptJWT = async (
   });
 };
 
-const setUserDetails = async (
-  loggedInUser: Prisma.UserWhereUniqueInput,
-  expiresAt: Date
-) => {
-  const cookieStore = await cookies();
-  cookieStore.set(GlobalConstants.USER, JSON.stringify(loggedInUser), {
-    httpOnly: false,
-    secure: true,
-    expires: expiresAt,
-  });
-};
-
 export const getUserByUniqueKey = async (
   key: string,
   value: string
@@ -93,14 +81,13 @@ export const createSession = async (formData: FormData) => {
   );
 
   await encryptJWT(loggedInUser, expiresAt);
-  await setUserDetails(loggedInUser, expiresAt);
 };
 
-export const decryptJWT = async (
-  jwt: string | undefined
-): Promise<JWTPayload> | undefined => {
+export const decryptJWT = async (): Promise<JWTPayload> | undefined => {
   try {
-    const result = await jwtVerify(jwt, getEncryptionKey(), {
+    const cookieStore = await cookies();
+    const cookie = cookieStore.get(GlobalConstants.USER_CREDENTIALS)?.value;
+    const result = await jwtVerify(cookie, getEncryptionKey(), {
       algorithms: ["HS256"],
     });
     const jwtPayload = result?.payload;
