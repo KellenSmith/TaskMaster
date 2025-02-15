@@ -60,18 +60,6 @@ const encryptJWT = async (
   });
 };
 
-const setUserDetails = async (
-  loggedInUser: Prisma.UserWhereUniqueInput,
-  expiresAt: Date
-) => {
-  const cookieStore = await cookies();
-  cookieStore.set(GlobalConstants.USER, JSON.stringify(loggedInUser), {
-    httpOnly: false,
-    secure: true,
-    expires: expiresAt,
-  });
-};
-
 export const getUserByUniqueKey = async (
   key: string,
   value: string
@@ -93,7 +81,6 @@ export const createSession = async (formData: FormData) => {
   );
 
   await encryptJWT(loggedInUser, expiresAt);
-  await setUserDetails(loggedInUser, expiresAt);
 };
 
 export const decryptJWT = async (): Promise<JWTPayload> | undefined => {
