@@ -33,8 +33,6 @@ const NavPanel = () => {
         )
     }
 
-    console.log(user)
-
     return (
         <>
             <AppBar position="static">

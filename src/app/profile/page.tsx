@@ -25,16 +25,18 @@ const ProfilePage = () => {
         }
 
         // Check current password
-        const validateCurrentPassword = new FormData()
-        validateCurrentPassword.set(GlobalConstants.EMAIL, user[GlobalConstants.EMAIL])
-        validateCurrentPassword.set(GlobalConstants.PASSWORD, formData.get(GlobalConstants.PASSWORD))
-        const validateCurrentResult = await login(currentActionState, validateCurrentPassword)
-        console.log(validateCurrentResult)
+        const validatedCurrentPassword = new FormData()
+        validatedCurrentPassword.append(GlobalConstants.EMAIL, user[GlobalConstants.EMAIL])
+        validatedCurrentPassword.append(GlobalConstants.PASSWORD, formData.get(GlobalConstants.CURRENT_PASSWORD))
+        const validateCurrentResult = await login(currentActionState, validatedCurrentPassword)
         if (validateCurrentResult.status !== 200) return validateCurrentResult
 
-        const updateUserState = await updateUserCredentials(user[GlobalConstants.ID], currentActionState, formData)
-        await updateLoggedInUser()
-        return updateUserState
+        // Update credentials
+        const updatedPassWord = new FormData()
+        updatedPassWord.append(GlobalConstants.EMAIL, user[GlobalConstants.EMAIL])
+        updatedPassWord.append(GlobalConstants.PASSWORD, formData.get(GlobalConstants.NEW_PASSWORD))
+        const updateCredentialsState = await updateUserCredentials(currentActionState, updatedPassWord)
+        return updateCredentialsState
     }
 
     return <>

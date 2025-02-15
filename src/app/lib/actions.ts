@@ -147,7 +147,6 @@ export const updateUser = async (
 };
 
 export const updateUserCredentials = async (
-  userId: string,
   currentActionState: FormActionState,
   formData: FormData
 ): Promise<FormActionState> => {
@@ -158,7 +157,7 @@ export const updateUserCredentials = async (
   try {
     await prisma.userCredentials.update({
       where: {
-        [GlobalConstants.ID]: userId,
+        [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
       } as unknown as Prisma.UserCredentialsWhereUniqueInput,
       data: newCredentials,
     });
