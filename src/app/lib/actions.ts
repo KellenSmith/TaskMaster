@@ -171,3 +171,37 @@ export const updateUserCredentials = async (
   }
   return newActionState;
 };
+
+export const deleteUser = async (
+  userEmail: string,
+  currentActionState: DatagridActionState
+): Promise<DatagridActionState> => {
+  const newActionState = { ...currentActionState };
+  try {
+    const deleteCredentials = prisma.userCredentials.deleteMany({
+      where: {
+        [GlobalConstants.EMAIL]: userEmail,
+      },
+    });
+    const deleteUser = prisma.user.delete({
+      where: {
+        [GlobalConstants.ID]: userEmail,
+      } as unknown as Prisma.UserWhereUniqueInput,
+    });
+
+    /**
+     * Delete credentials and user in a transaction where all actions must
+     * succeed or no action is taken to preserve data integrity.
+     */
+    await prisma.$transaction([deleteCredentials, deleteUser]);
+
+    newActionState.errorMsg = "";
+    newActionState.status = 200;
+    newActionState.result = [];
+  } catch (error) {
+    newActionState.status = 500;
+    newActionState.errorMsg = error.message;
+    newActionState.result = null;
+  }
+  return newActionState;
+};
