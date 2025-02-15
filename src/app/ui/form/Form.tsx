@@ -28,9 +28,10 @@ interface FormProps {
   name: string;
   buttonLabel: string;
   action: (currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>;
+  defaultValues?: any
 }
 
-const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
+const Form: React.FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
   const [actionState, formAction, isPending] = useActionState(action, defaultActionState);
   const [dateFieldValues, setDateFieldValues] = useState<{ [key: string]: Dayjs | null }>(Object.fromEntries(RenderedFields[name].map(fieldId=>[fieldId,dayjs()])));
 
@@ -52,7 +53,7 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
           )}
           autoSelect={fieldId in RequiredFields[name]}
           options={options}
-          defaultValue={options[0]}
+          defaultValue={defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : options[0]}
           getOptionLabel={(option) => option[0].toUpperCase() + option.slice(1)}
         ></Autocomplete>
       );
@@ -63,7 +64,7 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
           <DatePicker
             key={fieldId}
             label={FieldLabels[fieldId]}
-            defaultValue={dayjs()}
+            defaultValue={defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : dayjs()}
             value={dateFieldValues[fieldId] || dayjs()}
             onChange={(newValue) => setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))}
           />
@@ -82,13 +83,14 @@ const Form: React.FC<FormProps> = ({ name, buttonLabel, action }) => {
         label={FieldLabels[fieldId]}
         name={fieldId}
         required={RequiredFields[name].includes(fieldId)}
-        {...(fieldId === GlobalConstants.PASSWORD && { type: GlobalConstants.PASSWORD })}
+        defaultValue={defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : ""}
+        {...(fieldId.includes(GlobalConstants.PASSWORD) && { type: GlobalConstants.PASSWORD })}
       />
     );
   };
 
   return (
-    <Card component="form" action={formAction} sx={{ height: "100%" }}>
+    <Card component="form" action={formAction}>
       <CardHeader title={FieldLabels[name]} />
       <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
         <Stack spacing={2}>

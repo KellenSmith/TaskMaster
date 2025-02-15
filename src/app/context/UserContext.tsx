@@ -39,7 +39,7 @@ const UserContextProvider: React.FC<UserContextProviderProps> = ({children}) => 
     }, [])
 
     return (
-        <UserContext.Provider value={{user, setUser, logOut}}>
+        <UserContext.Provider value={{user, setUser, logOut, updateLoggedInUser}}>
             {children}
         </UserContext.Provider>
     )

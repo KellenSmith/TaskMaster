@@ -24,6 +24,9 @@ const GlobalConstants = {
   MEMBERSHIP_RENEWED_AT: "membershipRenewedAt",
   // Login
   PASSWORD: "password",
+  CURRENT_PASSWORD: "current_password",
+  NEW_PASSWORD: "new_password",
+  REPEAT_PASSWORD: "repeat_password",
   // UserCredentials
   USER_CREDENTIALS: "userCredentials",
   SALT: "salt",
