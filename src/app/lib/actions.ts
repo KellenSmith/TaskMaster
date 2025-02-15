@@ -7,7 +7,7 @@ import { RenderedFields } from "../ui/form/FieldCfg";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
 import {
-  compareUserCredentials,
+  authenticateUser,
   createSession,
   decryptJWT,
   generateUserCredentials,
@@ -80,7 +80,10 @@ export const login = async (
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   try {
-    await compareUserCredentials(formData);
+    const loggedInUser = await authenticateUser(formData);
+    newActionState.status = 200;
+    newActionState.errorMsg = "";
+    newActionState.result = JSON.stringify(loggedInUser);
   } catch (error) {
     newActionState.status = 403;
     newActionState.errorMsg = error.message;
@@ -89,7 +92,7 @@ export const login = async (
   }
 
   await createSession(formData);
-  redirect("/");
+  return newActionState;
 };
 
 export const getLoggedInUser = async (
