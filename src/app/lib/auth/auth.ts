@@ -47,11 +47,13 @@ export const login = async (
     authState.status = 404;
     authState.errorMsg = "Please apply for membership";
     authState.result = "";
+    return authState;
   }
   if (!loggedInUser[GlobalConstants.MEMBERSHIP_RENEWED]) {
     authState.status = 403;
     authState.errorMsg = "Membership pending";
     authState.result = "";
+    return authState;
   }
 
   const userCredentials = await prisma.userCredentials.findUnique({
@@ -68,6 +70,7 @@ export const login = async (
     authState.status = 401;
     authState.errorMsg = "Invalid credentials";
     authState.result = "";
+    return authState;
   }
   authState.result = JSON.stringify(loggedInUser);
   await createSession(formData);

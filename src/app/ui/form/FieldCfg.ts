@@ -5,6 +5,7 @@ export const FieldLabels = {
   [GlobalConstants.UPDATE]: "Update",
   [GlobalConstants.DELETE]: "Delete",
   [GlobalConstants.VALIDATE_MEMBERSHIP]: "Validate Membership",
+  [GlobalConstants.APPLY]: "Apply For Membership",
   // Profile
   [GlobalConstants.PROFILE]: "Profile",
   // User

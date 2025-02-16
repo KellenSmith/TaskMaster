@@ -3,7 +3,7 @@ const GlobalConstants = {
   PUBLIC: "public",
   PRIVATE: "private",
   ADMIN: "admin",
-  HOME: "home",
+  HOME: "/",
   LOGIN: "login",
   PROFILE: "profile",
   MEMBERS: "members",
@@ -14,6 +14,7 @@ const GlobalConstants = {
   UPDATE: "update",
   DELETE: "delete",
   VALIDATE_MEMBERSHIP: "validate_membership",
+  APPLY: "apply",
   // User
   USER: "user",
   FIRST_NAME: "firstName",
