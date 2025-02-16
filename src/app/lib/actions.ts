@@ -35,9 +35,17 @@ export const createUser = async (
     GlobalConstants.USER,
     formData
   ) as Prisma.UserCreateInput;
-  const generatedPassword = await bcrypt.genSalt();
-  const generatedUserCredentials: Prisma.UserCredentialsCreateWithoutUserInput =
-    await generateUserCredentials(generatedPassword);
+
+  /**
+   * If a "membership renewed at" is supplied,
+   * automatically validate the membership by generating credentials.
+   */
+  let generatedUserCredentials: Prisma.UserCredentialsCreateWithoutUserInput;
+  if (!!strippedFormData[GlobalConstants.MEMBERSHIP_RENEWED_AT]) {
+    const generatedPassword = "123456";
+    generatedUserCredentials = await generateUserCredentials(generatedPassword);
+  }
+
   try {
     const createdUser = await prisma.user.create({
       data: {
@@ -55,7 +63,7 @@ export const createUser = async (
   } catch (error) {
     newActionState.status = 500;
     newActionState.errorMsg = error.message;
-    newActionState.result = null;
+    newActionState.result = "";
   }
   return newActionState;
 };

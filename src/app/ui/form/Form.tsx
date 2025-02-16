@@ -19,7 +19,7 @@ import {
   datePickerFields,
 } from "./FieldCfg";
 import { DatePicker } from "@mui/x-date-pickers";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 
 export interface FormActionState {
@@ -58,7 +58,7 @@ const Form: React.FC<FormProps> = ({
     [key: string]: Dayjs | null;
   }>(
     Object.fromEntries(
-      RenderedFields[name].map((fieldId) => [fieldId, dayjs()]),
+      RenderedFields[name].map((fieldId) => [fieldId, null]),
     ),
   );
 
@@ -98,9 +98,9 @@ const Form: React.FC<FormProps> = ({
             defaultValue={
               defaultValues && fieldId in defaultValues
                 ? defaultValues[fieldId]
-                : dayjs()
+                : null
             }
-            value={dateFieldValues[fieldId] || dayjs()}
+            value={dateFieldValues[fieldId] || null}
             onChange={(newValue) =>
               setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))
             }
