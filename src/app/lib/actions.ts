@@ -1,7 +1,6 @@
 "use server";
 
-import bcrypt from "bcryptjs";
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaPromise } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { RenderedFields } from "../ui/form/FieldCfg";
@@ -14,13 +13,11 @@ import {
   generateUserCredentials,
   getUserByUniqueKey,
 } from "./auth/auth";
+import dayjs from "dayjs";
 
-const getStrippedFormData = (formName: string, formData: FormData): any => {
-  const rawFormData = Object.fromEntries(
-    RenderedFields[formName].map((key) => [key, formData.get(key)])
-  );
+const getStrippedFormData = (formData: FormData): any => {
   const strippedFormData = Object.fromEntries(
-    Object.entries(rawFormData).filter(([_, value]) => !!value)
+    formData.entries().filter(([_, value]) => !!value)
   );
   return strippedFormData;
 };
@@ -32,27 +29,13 @@ export const createUser = async (
   const newActionState = { ...currentActionState };
   // Get props in formData which are part of the user schema
   const strippedFormData: Prisma.UserCreateInput = getStrippedFormData(
-    GlobalConstants.USER,
     formData
   ) as Prisma.UserCreateInput;
-
-  /**
-   * If a "membership renewed at" is supplied,
-   * automatically validate the membership by generating credentials.
-   */
-  let generatedUserCredentials: Prisma.UserCredentialsCreateWithoutUserInput;
-  if (!!strippedFormData[GlobalConstants.MEMBERSHIP_RENEWED]) {
-    const generatedPassword = "123456"; // await bcrypt.genSalt()
-    generatedUserCredentials = await generateUserCredentials(generatedPassword);
-  }
 
   try {
     const createdUser = await prisma.user.create({
       data: {
         ...strippedFormData,
-        [GlobalConstants.USER_CREDENTIALS]: {
-          create: generatedUserCredentials,
-        },
       },
     });
     newActionState.errorMsg = "";
@@ -125,24 +108,37 @@ export const login = async (
   return newActionState;
 };
 
+type UserIdentifier = {
+  id?: string;
+  email?: string;
+};
+
+const updateUserTransaction = (
+  formData: FormData,
+  userIdentifier: UserIdentifier
+): Prisma.PrismaPromise<any> => {
+  // Get props in formData which are part of the user schema
+  const strippedFormData: Prisma.UserUpdateInput = getStrippedFormData(
+    formData
+  ) as Prisma.UserUpdateInput;
+  console.log(strippedFormData);
+  return prisma.user.update({
+    where: userIdentifier as unknown as Prisma.UserWhereUniqueInput,
+    data: strippedFormData,
+  });
+};
+
 export const updateUser = async (
   userId: string,
   currentActionState: FormActionState,
   formData: FormData
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
-  // Get props in formData which are part of the user schema
-  const strippedFormData: Prisma.UserUpdateInput = getStrippedFormData(
-    GlobalConstants.USER,
-    formData
-  ) as Prisma.UserUpdateInput;
+  const userIdentifier: UserIdentifier = {
+    [GlobalConstants.ID]: userId,
+  };
   try {
-    await prisma.user.update({
-      where: {
-        [GlobalConstants.ID]: userId,
-      } as unknown as Prisma.UserWhereUniqueInput,
-      data: strippedFormData,
-    });
+    await updateUserTransaction(formData, userIdentifier);
     newActionState.errorMsg = "";
     newActionState.status = 200;
     newActionState.result = `Updated successfully`;
@@ -180,10 +176,83 @@ export const updateUserCredentials = async (
   return newActionState;
 };
 
+const createUserCredentialsTransaction = (
+  generatedUserCredentials: Prisma.UserCredentialsCreateInput
+): PrismaPromise<any> => {
+  const transaction = prisma.userCredentials.create({
+    data: generatedUserCredentials,
+  });
+  return transaction;
+};
+
+const getGeneratedUserCredentials = async (
+  userEmail: string
+): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
+  const generatedPassword = "123456"; // await bcrypt.genSalt()
+  const generatedUserCredentials = await generateUserCredentials(
+    generatedPassword
+  );
+  generatedUserCredentials[GlobalConstants.EMAIL] = userEmail;
+  return generatedUserCredentials;
+};
+
+export const createUserCredentials = async (
+  userEmail: string,
+  currentActionState: FormActionState
+): Promise<FormActionState> => {
+  const newActionState = { ...currentActionState };
+  const generatedUserCredentials = (await getGeneratedUserCredentials(
+    userEmail
+  )) as Prisma.UserCredentialsCreateInput;
+  try {
+    await createUserCredentialsTransaction(generatedUserCredentials);
+    newActionState.status = 201;
+    newActionState.errorMsg = "";
+    newActionState.result = "";
+  } catch (error) {
+    newActionState.status = 500;
+    newActionState.errorMsg = error.message;
+    newActionState.result = "";
+  }
+  return newActionState;
+};
+
+export const validateUserMembership = async (
+  userEmail: string,
+  currentActionState: FormActionState
+): Promise<FormActionState> => {
+  const newActionState = { ...currentActionState };
+  const newUserData = new FormData();
+  newUserData.append(GlobalConstants.MEMBERSHIP_RENEWED, dayjs().toISOString());
+  const userIdentifier: UserIdentifier = {
+    [GlobalConstants.EMAIL]: userEmail,
+  };
+  const generatedUserCredentials = (await getGeneratedUserCredentials(
+    userEmail
+  )) as Prisma.UserCredentialsCreateInput;
+  const credentialsTransaction = createUserCredentialsTransaction(
+    generatedUserCredentials
+  );
+  const userTransaction = updateUserTransaction(newUserData, userIdentifier);
+
+  try {
+    await prisma.$transaction([credentialsTransaction, userTransaction]);
+    // Email new credentials to user email
+    newActionState.status = 200;
+    newActionState.errorMsg = "";
+    newActionState.result = "Validated membership";
+  } catch (error) {
+    newActionState.status = 500;
+    newActionState.errorMsg = error.message;
+    newActionState.result = "";
+  }
+  return newActionState;
+};
+
 export const deleteUser = async (
   userEmail: string,
-  currentActionState: DatagridActionState
-): Promise<DatagridActionState> => {
+  currentActionState: FormActionState
+): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   try {
     const deleteCredentials = prisma.userCredentials.deleteMany({
@@ -205,11 +274,11 @@ export const deleteUser = async (
 
     newActionState.errorMsg = "";
     newActionState.status = 200;
-    newActionState.result = [];
+    newActionState.result = "";
   } catch (error) {
     newActionState.status = 500;
     newActionState.errorMsg = error.message;
-    newActionState.result = null;
+    newActionState.result = "";
   }
   return newActionState;
 };

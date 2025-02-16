@@ -12,7 +12,7 @@ import React, { useEffect, useMemo, useState, startTransition } from "react";
 import { datePickerFields, FieldLabels } from "./form/FieldCfg";
 import { redirect, usePathname } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
-import Form, { FormActionState } from "./form/Form";
+import Form, { FormActionState, defaultActionState as defaultFormActionState } from "./form/Form";
 import { useUserContext } from "../context/UserContext";
 
 export interface DatagridActionState {
@@ -39,8 +39,9 @@ interface DatagridProps {
   ) => Promise<FormActionState>;
   deleteAction: (
     userId: string,
-    currentActionState: DatagridActionState,
-  ) => Promise<DatagridActionState>;
+    currentActionState: FormActionState,
+  ) => Promise<FormActionState>;
+  validateAction?: (clickedRow: any, currentActionState: FormActionState) => Promise<FormActionState>
 }
 
 const Datagrid: React.FC<DatagridProps> = ({
@@ -48,20 +49,19 @@ const Datagrid: React.FC<DatagridProps> = ({
   fetchData,
   updateAction,
   deleteAction,
+  validateAction
 }) => {
   const apiRef = useGridApiRef();
   const pathname = usePathname();
   const [clickedRow, setClickedRow] = useState(null);
   const [fetchedDataState, setFetchedDataState] =
     useState<DatagridActionState>(defaultActionState);
-  const [dialogErrorMsg, setDialogErrorMsg] = useState("");
+  const [dialogActionState, setDialogActionState] = useState(defaultFormActionState)
   const { user } = useUserContext();
 
   const updateDatagridData = async () => {
     const newActionState = await fetchData(fetchedDataState);
     setFetchedDataState(newActionState);
-    if (newActionState.status !== 200)
-      setDialogErrorMsg(newActionState.errorMsg);
   };
 
   // Fetch data on first render
@@ -118,20 +118,31 @@ const Datagrid: React.FC<DatagridProps> = ({
   };
 
   const deleteRow = async () => {
-    if (clickedRow[GlobalConstants.ID] === user[GlobalConstants.ID])
-      return setDialogErrorMsg("You can't delete your own user");
+    if (clickedRow[GlobalConstants.ID] === user[GlobalConstants.ID]){
+      dialogActionState.status = 500
+      dialogActionState.result = ""
+      dialogActionState.errorMsg = "You can't delete your own user"
+      return setDialogActionState(dialogActionState);
+    }
+
     const deleteState = await deleteAction(
       clickedRow[GlobalConstants.EMAIL],
-      fetchedDataState,
+      defaultFormActionState,
     );
-    if (deleteState.status !== 200)
-      return setDialogErrorMsg(deleteState.errorMsg);
-    updateDatagridData();
+    setDialogActionState(deleteState);
+    if (deleteState.status === 200)
+      updateDatagridData();
   };
+
+  const validateRow = async () => {
+    const validateState = await validateAction(clickedRow, defaultFormActionState)
+    setDialogActionState(validateState);
+    if (validateState.status === 200) updateDatagridData();
+  }
 
   const closeDialog = () => {
     setClickedRow(null);
-    setDialogErrorMsg("");
+    setDialogActionState(defaultFormActionState);
   };
   return (
     <Stack sx={{ height: "100%" }}>
@@ -152,10 +163,14 @@ const Datagrid: React.FC<DatagridProps> = ({
           action={updateRow}
           defaultValues={clickedRow}
         />
-        {!!dialogErrorMsg && (
-          <Typography color="error">{dialogErrorMsg}</Typography>
-        )}
-        <Button color="error" onClick={deleteRow}>
+        {
+          dialogActionState.errorMsg && <Typography color="error">{dialogActionState.errorMsg}</Typography>
+        }
+        {
+          dialogActionState.result && <Typography color="success">{dialogActionState.result}</Typography>
+        }
+        {!!validateAction && <Button key="validate" onClick={validateRow}>Validate</Button>}
+        <Button key="delete" color="error" onClick={deleteRow}>
           Delete
         </Button>
       </Dialog>
