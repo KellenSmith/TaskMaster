@@ -13,12 +13,14 @@ const MembersPage = () => {
     {
       name: GlobalConstants.VALIDATE_MEMBERSHIP,
       serverAction: validateUserMembership,
-      available: (clickedRow) => !clickedRow[GlobalConstants.MEMBERSHIP_RENEWED]
+      available: (clickedRow) => !(clickedRow && clickedRow[GlobalConstants.MEMBERSHIP_RENEWED])
     },
     {
       name: GlobalConstants.DELETE,
       serverAction: deleteUser,
-      available: (clickedRow)=>clickedRow[GlobalConstants.ID] !== user[GlobalConstants.ID],
+      available: (clickedRow)=>
+         clickedRow && clickedRow[GlobalConstants.ID] !== user[GlobalConstants.ID]
+      ,
       buttonColor: "error",
     }
   ]

@@ -59,7 +59,6 @@ const Datagrid: React.FC<DatagridProps> = ({
   const [fetchedDataState, setFetchedDataState] =
     useState<DatagridActionState>(defaultActionState);
   const [dialogActionState, setDialogActionState] = useState(defaultFormActionState)
-  const { user } = useUserContext();
 
   const updateDatagridData = async () => {
     const newActionState = await fetchData(fetchedDataState);
@@ -125,8 +124,8 @@ const Datagrid: React.FC<DatagridProps> = ({
     if (rowActionState.status === 200) updateDatagridData()
   }
 
-  const getRowActionButton = (rowAction: RowActionProps) =>
-    rowAction.available && <Button key={rowAction.name} onClick={()=>handleRowAction(rowAction)} color={rowAction.buttonColor || "secondary"}>
+  const getRowActionButton = (clickedRow: any, rowAction: RowActionProps) => 
+    rowAction.available(clickedRow) && <Button key={rowAction.name} onClick={()=>handleRowAction(rowAction)} color={rowAction.buttonColor || "secondary"}>
           {FieldLabels[rowAction.name]}
         </Button>
   
@@ -160,7 +159,7 @@ const Datagrid: React.FC<DatagridProps> = ({
           dialogActionState.result && <Typography color="success">{dialogActionState.result}</Typography>
         }
         {
-          !!rowActions && rowActions.map(rowAction=> getRowActionButton(rowAction))
+          !!rowActions && rowActions.map(rowAction=> getRowActionButton(clickedRow,rowAction))
         }
       </Dialog>
     </Stack>
