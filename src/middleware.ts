@@ -18,6 +18,24 @@ export default async function middleware(req: NextRequest) {
   redirectUrl.pathname = `/${GlobalConstants.LOGIN}`;
   const loggedInUser = await decryptJWT();
 
+  for (let route of [
+    `/${GlobalConstants.HOME}`,
+    `/${GlobalConstants.LOGIN}`,
+    `/${GlobalConstants.PROFILE}`,
+    `/${GlobalConstants.MEMBERS}`,
+    `/${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`,
+  ])
+    console.log(
+      route,
+      ": ",
+      GlobalConstants.PUBLIC,
+      routeHasPrivacyStatus(route, GlobalConstants.PUBLIC),
+      GlobalConstants.PRIVATE,
+      routeHasPrivacyStatus(route, GlobalConstants.PRIVATE),
+      GlobalConstants.ADMIN,
+      routeHasPrivacyStatus(route, GlobalConstants.ADMIN)
+    );
+
   // User not logged in
   if (!loggedInUser) {
     if (routeHasPrivacyStatus(reqPath, GlobalConstants.PUBLIC))
