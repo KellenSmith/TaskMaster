@@ -17,7 +17,7 @@ const LoginForm: React.FC = () => {
         buttonLabel={GlobalConstants.LOGIN}
         action={login}
       />
-      <Button onClick={()=>redirect(`/${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`)}>{FieldLabels[GlobalConstants.APPLY]}</Button>
+      <Button onClick={()=>redirect(`/${GlobalConstants.APPLY}`)}>{FieldLabels[GlobalConstants.APPLY]}</Button>
     </Stack>
     
     

@@ -46,6 +46,8 @@ export const RenderedFields = {
     GlobalConstants.REPEAT_PASSWORD,
   ],
 };
+// Apply
+RenderedFields[GlobalConstants.APPLY] = RenderedFields[GlobalConstants.PROFILE];
 // User
 RenderedFields[GlobalConstants.USER] = [
   ...RenderedFields[GlobalConstants.PROFILE],
@@ -70,6 +72,8 @@ export const RequiredFields = {
     GlobalConstants.REPEAT_PASSWORD,
   ],
 };
+// Apply
+RequiredFields[GlobalConstants.APPLY] = RequiredFields[GlobalConstants.PROFILE];
 // User
 RequiredFields[GlobalConstants.USER] = [
   ...RenderedFields[GlobalConstants.PROFILE],
