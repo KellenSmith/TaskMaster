@@ -21,8 +21,8 @@ const GlobalConstants = {
   PENDING: "pending",
   ACTIVE: "active",
   EXPIRED: "expired",
-  MEMBER_SINCE: "memberSince",
-  MEMBERSHIP_RENEWED_AT: "membershipRenewedAt",
+  CREATED: "created",
+  MEMBERSHIP_RENEWED: "membershipRenewed",
   // Login
   PASSWORD: "password",
   CURRENT_PASSWORD: "current_password",

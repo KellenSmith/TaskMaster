@@ -41,8 +41,8 @@ export const createUser = async (
    * automatically validate the membership by generating credentials.
    */
   let generatedUserCredentials: Prisma.UserCredentialsCreateWithoutUserInput;
-  if (!!strippedFormData[GlobalConstants.MEMBERSHIP_RENEWED_AT]) {
-    const generatedPassword = "123456";
+  if (!!strippedFormData[GlobalConstants.MEMBERSHIP_RENEWED]) {
+    const generatedPassword = "123456"; // await bcrypt.genSalt()
     generatedUserCredentials = await generateUserCredentials(generatedPassword);
   }
 
