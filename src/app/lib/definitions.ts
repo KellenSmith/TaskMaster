@@ -6,6 +6,6 @@ export const routes = {
   [GlobalConstants.PUBLIC]: [
     `${GlobalConstants.HOME}`,
     `${GlobalConstants.LOGIN}`,
-    `${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`,
+    `${GlobalConstants.APPLY}`,
   ],
 };

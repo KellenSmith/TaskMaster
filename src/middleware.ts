@@ -5,7 +5,6 @@ import GlobalConstants from "./app/GlobalConstants";
 import { decryptJWT } from "./app/lib/auth/auth";
 import { NextURL } from "next/dist/server/web/next-url";
 import { routes } from "./app/lib/definitions";
-import { routeHasPrivacyStatus } from "./app/lib/utils";
 
 export const config = {
   // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
@@ -18,28 +17,12 @@ export default async function middleware(req: NextRequest) {
   redirectUrl.pathname = `/${GlobalConstants.LOGIN}`;
   const loggedInUser = await decryptJWT();
 
-  for (let route of [
-    `/${GlobalConstants.HOME}`,
-    `/${GlobalConstants.LOGIN}`,
-    `/${GlobalConstants.PROFILE}`,
-    `/${GlobalConstants.MEMBERS}`,
-    `/${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`,
-  ])
-    console.log(
-      route,
-      ": ",
-      GlobalConstants.PUBLIC,
-      routeHasPrivacyStatus(route, GlobalConstants.PUBLIC),
-      GlobalConstants.PRIVATE,
-      routeHasPrivacyStatus(route, GlobalConstants.PRIVATE),
-      GlobalConstants.ADMIN,
-      routeHasPrivacyStatus(route, GlobalConstants.ADMIN)
-    );
-
   // User not logged in
   if (!loggedInUser) {
-    if (routeHasPrivacyStatus(reqPath, GlobalConstants.PUBLIC))
-      return NextResponse.next();
+    const routeIsPublic = routes[GlobalConstants.PUBLIC]
+      .map((route) => `/${route}`)
+      .includes(reqPath);
+    if (routeIsPublic) return NextResponse.next();
     // Redirect to login from non-public pages if the user is not logged in
     return NextResponse.redirect(redirectUrl);
   }
@@ -49,7 +32,10 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl);
 
   // Redirect non-admins to home from admin pages or login
-  if (routeHasPrivacyStatus(reqPath, GlobalConstants.ADMIN)) {
+  const routeIsAdmin = routes[GlobalConstants.ADMIN]
+    .map((route) => `/${route}`)
+    .includes(reqPath);
+  if (routeIsAdmin) {
     const userIsAdmin =
       loggedInUser[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
     if (!userIsAdmin) return NextResponse.redirect(redirectUrl);

@@ -97,7 +97,6 @@ const updateUserTransaction = (
   const strippedFormData: Prisma.UserUpdateInput = getStrippedFormData(
     formData
   ) as Prisma.UserUpdateInput;
-  console.log(strippedFormData);
   return prisma.user.update({
     where: userIdentifier as unknown as Prisma.UserWhereUniqueInput,
     data: strippedFormData,

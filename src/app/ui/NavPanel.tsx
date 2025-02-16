@@ -19,7 +19,7 @@ import { redirect } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { routes } from "../lib/definitions";
-import { isUserAuthorized } from "../lib/utils";
+import { JWTPayload } from "jose";
 
 const NavPanel = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -27,6 +27,18 @@ const NavPanel = () => {
 
   const toggleDrawerOpen = () => {
     setDrawerOpen((prev) => !prev);
+  };
+
+  const isUserAuthorized = (
+    path: string,
+    user: JWTPayload | null
+  ): boolean => {
+    // Only allow non-logged in users access to public routes
+    if (!user) return routes[GlobalConstants.PUBLIC].includes(path);
+    // Allow admins access to all routes
+    if (user[GlobalConstants.ROLE] === GlobalConstants.ADMIN) return true;
+    // Allow other users access to everything except admin routes.
+    return !routes[GlobalConstants.ADMIN].includes(path);
   };
 
   const getLinkGroup = (privacyStatus: string) => {
