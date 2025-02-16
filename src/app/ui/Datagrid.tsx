@@ -18,7 +18,7 @@ import { useUserContext } from "../context/UserContext";
 export interface DatagridActionState {
   status: number;
   errorMsg: string;
-  result: object[];
+  result: any[];
 }
 
 export const defaultActionState: DatagridActionState = {
