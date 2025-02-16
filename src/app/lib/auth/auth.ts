@@ -10,7 +10,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
 
 export const generateUserCredentials = async (
-  password: string,
+  password: string
 ): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -22,23 +22,26 @@ export const generateUserCredentials = async (
 };
 
 export const authenticateUser = async (formData: FormData) => {
-  const filterParams = {
-    [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
-  } as unknown;
+  const loggedInUser = await getUserByUniqueKey(
+    GlobalConstants.EMAIL,
+    formData.get(GlobalConstants.EMAIL) as string
+  );
+  if (!loggedInUser) throw new Error("Please apply for membership");
+  if (!loggedInUser[GlobalConstants.MEMBERSHIP_RENEWED])
+    throw new Error("Membership pending");
+
   const userCredentials = await prisma.userCredentials.findUnique({
-    where: filterParams as Prisma.UserCredentialsWhereUniqueInput,
+    where: {
+      [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
+    } as any as Prisma.UserCredentialsWhereUniqueInput,
   });
-  if (!userCredentials) throw new Error("Please apply for membership");
+
   const passwordsMatch = await bcrypt.compare(
     formData.get(GlobalConstants.PASSWORD) as string,
-    userCredentials[GlobalConstants.HASHED_PASSWORD],
+    userCredentials[GlobalConstants.HASHED_PASSWORD]
   );
   if (!passwordsMatch) throw new Error("Invalid credentials");
 
-  const loggedInUser = getUserByUniqueKey(
-    GlobalConstants.EMAIL,
-    userCredentials[GlobalConstants.EMAIL],
-  );
   return loggedInUser;
 };
 
@@ -47,7 +50,7 @@ const getEncryptionKey = () =>
 
 const encryptJWT = async (
   loggedInUser: Prisma.UserWhereUniqueInput,
-  expiresAt: Date,
+  expiresAt: Date
 ) => {
   // Encode the user ID as jwt
   const jwt = await new SignJWT(loggedInUser)
@@ -67,7 +70,7 @@ const encryptJWT = async (
 
 export const getUserByUniqueKey = async (
   key: string,
-  value: string,
+  value: string
 ): Promise<Prisma.UserWhereUniqueInput | null> => {
   const userFilterParams = {
     [key]: value,
@@ -82,7 +85,7 @@ export const createSession = async (formData: FormData) => {
   const expiresAt = dayjs().add(60, "s").toDate();
   const loggedInUser = await getUserByUniqueKey(
     GlobalConstants.EMAIL,
-    formData.get(GlobalConstants.EMAIL) as string,
+    formData.get(GlobalConstants.EMAIL) as string
   );
 
   await encryptJWT(loggedInUser, expiresAt);
