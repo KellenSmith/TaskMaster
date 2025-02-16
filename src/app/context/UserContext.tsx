@@ -9,8 +9,8 @@ import {
   useState,
 } from "react";
 import { getLoggedInUser } from "../lib/actions";
-import { deleteUserCookie } from "../lib/auth/auth";
-import { defaultActionState } from "../ui/form/Form";
+import { deleteUserCookie, login } from "../lib/auth/auth";
+import { defaultActionState, FormActionState } from "../ui/form/Form";
 import { redirect } from "next/navigation";
 
 export const UserContext = createContext(null);
@@ -37,6 +37,18 @@ const UserContextProvider: React.FC<UserContextProviderProps> = ({
       setUser(JSON.parse(serverResponse.result));
   };
 
+  const loginAndUpdateUser = async (
+    currentActionState: FormActionState,
+    formData: FormData,
+  ) => {
+    const logInActionState = await login(currentActionState, formData);
+    if (logInActionState.status === 200) {
+      setUser(JSON.parse(logInActionState.result));
+      redirect("/");
+    }
+    return logInActionState;
+  };
+
   const logOut = async () => {
     setUser(null);
     startTransition(async () => {
@@ -50,7 +62,7 @@ const UserContextProvider: React.FC<UserContextProviderProps> = ({
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, logOut, updateLoggedInUser }}>
+    <UserContext.Provider value={{ user, setUser, logOut, login: loginAndUpdateUser, updateLoggedInUser }}>
       {children}
     </UserContext.Provider>
   );
