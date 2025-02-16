@@ -3,12 +3,9 @@
 import { Prisma, PrismaPromise } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
-import { RenderedFields } from "../ui/form/FieldCfg";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
 import {
-  authenticateUser,
-  createSession,
   decryptJWT,
   generateUserCredentials,
   getUserByUniqueKey,
@@ -84,27 +81,6 @@ export const getLoggedInUser = async (
     newActionState.errorMsg = "";
     newActionState.result = "";
   }
-  return newActionState;
-};
-
-export const login = async (
-  currentActionState: FormActionState,
-  formData: FormData
-): Promise<FormActionState> => {
-  const newActionState = { ...currentActionState };
-  try {
-    const loggedInUser = await authenticateUser(formData);
-    newActionState.status = 200;
-    newActionState.errorMsg = "";
-    newActionState.result = JSON.stringify(loggedInUser);
-  } catch (error) {
-    newActionState.status = 403;
-    newActionState.errorMsg = error.message;
-    newActionState.result = "";
-    return newActionState;
-  }
-
-  await createSession(formData);
   return newActionState;
 };
 

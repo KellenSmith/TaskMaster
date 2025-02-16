@@ -8,6 +8,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
+import { FormActionState } from "../../ui/form/Form";
 
 export const generateUserCredentials = async (
   password: string
@@ -21,14 +22,37 @@ export const generateUserCredentials = async (
   return newUserCredentials;
 };
 
-export const authenticateUser = async (formData: FormData) => {
+export const createSession = async (formData: FormData) => {
+  const expiresAt = dayjs().add(60, "s").toDate();
   const loggedInUser = await getUserByUniqueKey(
     GlobalConstants.EMAIL,
     formData.get(GlobalConstants.EMAIL) as string
   );
-  if (!loggedInUser) throw new Error("Please apply for membership");
-  if (!loggedInUser[GlobalConstants.MEMBERSHIP_RENEWED])
-    throw new Error("Membership pending");
+
+  await encryptJWT(loggedInUser, expiresAt);
+};
+
+export const login = async (
+  currentActionState: FormActionState,
+  formData: FormData
+): Promise<FormActionState> => {
+  const authState = { ...currentActionState };
+
+  const loggedInUser = await getUserByUniqueKey(
+    GlobalConstants.EMAIL,
+    formData.get(GlobalConstants.EMAIL) as string
+  );
+
+  if (!loggedInUser) {
+    authState.status = 404;
+    authState.errorMsg = "Please apply for membership";
+    authState.result = "";
+  }
+  if (!loggedInUser[GlobalConstants.MEMBERSHIP_RENEWED]) {
+    authState.status = 403;
+    authState.errorMsg = "Membership pending";
+    authState.result = "";
+  }
 
   const userCredentials = await prisma.userCredentials.findUnique({
     where: {
@@ -40,9 +64,14 @@ export const authenticateUser = async (formData: FormData) => {
     formData.get(GlobalConstants.PASSWORD) as string,
     userCredentials[GlobalConstants.HASHED_PASSWORD]
   );
-  if (!passwordsMatch) throw new Error("Invalid credentials");
-
-  return loggedInUser;
+  if (!passwordsMatch) {
+    authState.status = 401;
+    authState.errorMsg = "Invalid credentials";
+    authState.result = "";
+  }
+  authState.result = JSON.stringify(loggedInUser);
+  await createSession(formData);
+  return authState;
 };
 
 const getEncryptionKey = () =>
@@ -79,16 +108,6 @@ export const getUserByUniqueKey = async (
     where: userFilterParams as Prisma.UserWhereUniqueInput,
   });
   return loggedInUser;
-};
-
-export const createSession = async (formData: FormData) => {
-  const expiresAt = dayjs().add(60, "s").toDate();
-  const loggedInUser = await getUserByUniqueKey(
-    GlobalConstants.EMAIL,
-    formData.get(GlobalConstants.EMAIL) as string
-  );
-
-  await encryptJWT(loggedInUser, expiresAt);
 };
 
 export const decryptJWT = async (): Promise<JWTPayload> | undefined => {

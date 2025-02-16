@@ -5,12 +5,12 @@ import Form, { FormActionState } from "../ui/form/Form";
 import { useUserContext } from "../context/UserContext";
 import {
   deleteUser,
-  login,
   updateUser,
   updateUserCredentials,
 } from "../lib/actions";
+import {login} from '../lib/auth/auth'
 import { useState } from "react";
-import { defaultActionState } from "../ui/Datagrid";
+import { defaultActionState } from "../ui/form/Form";
 import { Button, Stack, Typography } from "@mui/material";
 
 const ProfilePage = () => {
@@ -78,7 +78,7 @@ const ProfilePage = () => {
 
   const deleteMyAccount = async () => {
     const deleteState = await deleteUser(
-      user[GlobalConstants.EMAIL],
+      user,
       defaultActionState,
     );
     if (deleteState.status !== 200) return setErrorMsg(deleteState.errorMsg);

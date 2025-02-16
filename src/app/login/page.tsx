@@ -2,7 +2,7 @@
 
 import GlobalConstants from "../GlobalConstants";
 import Form, { FormActionState } from "../ui/form/Form";
-import { login } from "../lib/actions";
+import { login } from "../lib/auth/auth";
 import { useUserContext } from "../context/UserContext";
 import { redirect } from "next/navigation";
 
