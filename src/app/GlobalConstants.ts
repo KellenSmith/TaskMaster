@@ -10,6 +10,10 @@ const GlobalConstants = {
   CREATE: "create",
   // DB
   ID: "id",
+  NAME: "name",
+  UPDATE: "update",
+  DELETE: "delete",
+  VALIDATE_MEMBERSHIP: "validate_membership",
   // User
   USER: "user",
   FIRST_NAME: "firstName",

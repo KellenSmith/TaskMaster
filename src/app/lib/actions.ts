@@ -218,17 +218,17 @@ export const createUserCredentials = async (
 };
 
 export const validateUserMembership = async (
-  userEmail: string,
+  user: any,
   currentActionState: FormActionState
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   const newUserData = new FormData();
   newUserData.append(GlobalConstants.MEMBERSHIP_RENEWED, dayjs().toISOString());
   const userIdentifier: UserIdentifier = {
-    [GlobalConstants.EMAIL]: userEmail,
+    [GlobalConstants.EMAIL]: user[GlobalConstants.EMAIL],
   };
   const generatedUserCredentials = (await getGeneratedUserCredentials(
-    userEmail
+    user[GlobalConstants.EMAIL]
   )) as Prisma.UserCredentialsCreateInput;
   const credentialsTransaction = createUserCredentialsTransaction(
     generatedUserCredentials
@@ -250,19 +250,19 @@ export const validateUserMembership = async (
 };
 
 export const deleteUser = async (
-  userEmail: string,
+  user: any,
   currentActionState: FormActionState
 ): Promise<FormActionState> => {
   const newActionState = { ...currentActionState };
   try {
     const deleteCredentials = prisma.userCredentials.deleteMany({
       where: {
-        [GlobalConstants.EMAIL]: userEmail,
+        [GlobalConstants.EMAIL]: user[GlobalConstants.EMAIL],
       },
     });
     const deleteUser = prisma.user.delete({
       where: {
-        [GlobalConstants.EMAIL]: userEmail,
+        [GlobalConstants.EMAIL]: user[GlobalConstants.EMAIL],
       } as unknown as Prisma.UserWhereUniqueInput,
     });
 
@@ -274,7 +274,7 @@ export const deleteUser = async (
 
     newActionState.errorMsg = "";
     newActionState.status = 200;
-    newActionState.result = "";
+    newActionState.result = "Deleted successfully";
   } catch (error) {
     newActionState.status = 500;
     newActionState.errorMsg = error.message;

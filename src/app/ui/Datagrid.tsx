@@ -27,6 +27,13 @@ export const defaultActionState: DatagridActionState = {
   result: [],
 };
 
+export interface RowActionProps {
+  name: string,
+  serverAction: (clickedRow: any, currentActionState: FormActionState) => Promise<FormActionState>,
+  available: (clickedRow: any) => boolean,
+  buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning"
+}
+
 interface DatagridProps {
   name: string;
   fetchData: (
@@ -36,20 +43,15 @@ interface DatagridProps {
     userId: string,
     currentActionState: FormActionState,
     formData: FormData,
-  ) => Promise<FormActionState>;
-  deleteAction: (
-    userId: string,
-    currentActionState: FormActionState,
-  ) => Promise<FormActionState>;
-  validateAction?: (clickedRow: any, currentActionState: FormActionState) => Promise<FormActionState>
+  ) => Promise<FormActionState>,
+  rowActions: RowActionProps[],
 }
 
 const Datagrid: React.FC<DatagridProps> = ({
   name,
   fetchData,
   updateAction,
-  deleteAction,
-  validateAction
+  rowActions
 }) => {
   const apiRef = useGridApiRef();
   const pathname = usePathname();
@@ -117,29 +119,17 @@ const Datagrid: React.FC<DatagridProps> = ({
     return updateState;
   };
 
-  const deleteRow = async () => {
-    if (clickedRow[GlobalConstants.ID] === user[GlobalConstants.ID]){
-      dialogActionState.status = 500
-      dialogActionState.result = ""
-      dialogActionState.errorMsg = "You can't delete your own user"
-      return setDialogActionState(dialogActionState);
-    }
-
-    const deleteState = await deleteAction(
-      clickedRow[GlobalConstants.EMAIL],
-      defaultFormActionState,
-    );
-    setDialogActionState(deleteState);
-    if (deleteState.status === 200)
-      updateDatagridData();
-  };
-
-  const validateRow = async () => {
-    const validateState = await validateAction(clickedRow, defaultFormActionState)
-    setDialogActionState(validateState);
-    if (validateState.status === 200) updateDatagridData();
+  const handleRowAction = async (rowAction: RowActionProps) => {
+    const rowActionState = await rowAction.serverAction(clickedRow, defaultFormActionState)
+    setDialogActionState(rowActionState)
+    if (rowActionState.status === 200) updateDatagridData()
   }
 
+  const getRowActionButton = (rowAction: RowActionProps) =>
+    rowAction.available && <Button key={rowAction.name} onClick={()=>handleRowAction(rowAction)} color={rowAction.buttonColor || "secondary"}>
+          {FieldLabels[rowAction.name]}
+        </Button>
+  
   const closeDialog = () => {
     setClickedRow(null);
     setDialogActionState(defaultFormActionState);
@@ -169,10 +159,9 @@ const Datagrid: React.FC<DatagridProps> = ({
         {
           dialogActionState.result && <Typography color="success">{dialogActionState.result}</Typography>
         }
-        {!!validateAction && <Button key="validate" onClick={validateRow}>Validate</Button>}
-        <Button key="delete" color="error" onClick={deleteRow}>
-          Delete
-        </Button>
+        {
+          !!rowActions && rowActions.map(rowAction=> getRowActionButton(rowAction))
+        }
       </Dialog>
     </Stack>
   );

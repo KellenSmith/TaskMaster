@@ -2,6 +2,9 @@ import GlobalConstants from "../../GlobalConstants";
 
 export const FieldLabels = {
   [GlobalConstants.ID]: "ID",
+  [GlobalConstants.UPDATE]: "Update",
+  [GlobalConstants.DELETE]: "Delete",
+  [GlobalConstants.VALIDATE_MEMBERSHIP]: "Validate Membership",
   // Profile
   [GlobalConstants.PROFILE]: "Profile",
   // User
