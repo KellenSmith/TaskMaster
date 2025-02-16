@@ -46,7 +46,6 @@ export const RenderedFields = {
 RenderedFields[GlobalConstants.USER] = [
   ...RenderedFields[GlobalConstants.PROFILE],
   GlobalConstants.ROLE,
-  GlobalConstants.CREATED,
   GlobalConstants.MEMBERSHIP_RENEWED,
 ];
 
@@ -72,7 +71,6 @@ export const RequiredFields = {
 RequiredFields[GlobalConstants.USER] = [
   ...RenderedFields[GlobalConstants.PROFILE],
   GlobalConstants.ROLE,
-  GlobalConstants.CREATED,
   GlobalConstants.MEMBERSHIP_RENEWED,
 ];
 
@@ -83,6 +81,5 @@ export const selectFieldOptions = {
 
 export const datePickerFields = [
   // User
-  GlobalConstants.CREATED,
   GlobalConstants.MEMBERSHIP_RENEWED,
 ];
