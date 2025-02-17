@@ -19,7 +19,7 @@ const isRequestAuthorized = (request: NextRequest): boolean => {
 
 const purgeStaleMembershipApplications = async (): Promise<NextResponse> => {
   const latestCreateDateIfStale = dayjs().subtract(
-    OrgSettings[GlobalConstants.PURGE_STALE_APPLICATIONS],
+    OrgSettings[GlobalConstants.PURGE_STALE_APPLICATIONS] as number,
     "d"
   );
 

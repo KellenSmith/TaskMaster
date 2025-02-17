@@ -11,6 +11,8 @@ import {
   getUserByUniqueKey,
 } from "./auth/auth";
 import dayjs from "dayjs";
+import { sendUserCredentials } from "./mail-service/mail-service";
+import bcrypt from "bcryptjs";
 
 const getStrippedFormData = (formData: FormData): any => {
   const strippedFormData = Object.fromEntries(
@@ -161,35 +163,14 @@ const createUserCredentialsTransaction = (
 };
 
 const getGeneratedUserCredentials = async (
-  userEmail: string
+  userEmail: string,
+  generatedPassword: string
 ): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
-  const generatedPassword = "123456"; // await bcrypt.genSalt()
   const generatedUserCredentials = await generateUserCredentials(
     generatedPassword
   );
   generatedUserCredentials[GlobalConstants.EMAIL] = userEmail;
   return generatedUserCredentials;
-};
-
-export const createUserCredentials = async (
-  userEmail: string,
-  currentActionState: FormActionState
-): Promise<FormActionState> => {
-  const newActionState = { ...currentActionState };
-  const generatedUserCredentials = (await getGeneratedUserCredentials(
-    userEmail
-  )) as Prisma.UserCredentialsCreateInput;
-  try {
-    await createUserCredentialsTransaction(generatedUserCredentials);
-    newActionState.status = 201;
-    newActionState.errorMsg = "";
-    newActionState.result = "";
-  } catch (error) {
-    newActionState.status = 500;
-    newActionState.errorMsg = error.message;
-    newActionState.result = "";
-  }
-  return newActionState;
 };
 
 export const validateUserMembership = async (
@@ -202,17 +183,28 @@ export const validateUserMembership = async (
   const userIdentifier: UserIdentifier = {
     [GlobalConstants.EMAIL]: user[GlobalConstants.EMAIL],
   };
+  const generatedPassword = "123456"; //await bcrypt.genSalt();
   const generatedUserCredentials = (await getGeneratedUserCredentials(
-    user[GlobalConstants.EMAIL]
+    user[GlobalConstants.EMAIL],
+    generatedPassword
   )) as Prisma.UserCredentialsCreateInput;
   const credentialsTransaction = createUserCredentialsTransaction(
     generatedUserCredentials
   );
   const userTransaction = updateUserTransaction(newUserData, userIdentifier);
 
+  // Email new credentials to user email
+  try {
+    await sendUserCredentials(user[GlobalConstants.EMAIL], generatedPassword);
+  } catch (error) {
+    newActionState.status = error.statusCode;
+    newActionState.result = "";
+    newActionState.errorMsg = `Credentials could not be sent to user because:\n${error.message}`;
+    return newActionState;
+  }
+
   try {
     await prisma.$transaction([credentialsTransaction, userTransaction]);
-    // TODO: Email new credentials to user email
     newActionState.status = 200;
     newActionState.errorMsg = "";
     newActionState.result = "Validated membership";
