@@ -212,7 +212,7 @@ export const validateUserMembership = async (
 
   try {
     await prisma.$transaction([credentialsTransaction, userTransaction]);
-    // Email new credentials to user email
+    // TODO: Email new credentials to user email
     newActionState.status = 200;
     newActionState.errorMsg = "";
     newActionState.result = "Validated membership";

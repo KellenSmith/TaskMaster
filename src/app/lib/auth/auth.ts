@@ -9,6 +9,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { FormActionState } from "../../ui/form/Form";
+import { OrgSettings } from "../org-settings";
 
 export const generateUserCredentials = async (
   password: string
@@ -23,7 +24,9 @@ export const generateUserCredentials = async (
 };
 
 export const createSession = async (formData: FormData) => {
-  const expiresAt = dayjs().add(1, "d").toDate();
+  const expiresAt = dayjs()
+    .add(OrgSettings[GlobalConstants.COOKIE_LIFESPAN], "d")
+    .toDate();
   const loggedInUser = await getUserByUniqueKey(
     GlobalConstants.EMAIL,
     formData.get(GlobalConstants.EMAIL) as string

@@ -12,6 +12,8 @@ import {login} from '../lib/auth/auth'
 import { useState } from "react";
 import { defaultActionState } from "../ui/form/Form";
 import { Button, Stack, Typography } from "@mui/material";
+import { isMembershipExpired } from "../lib/definitions";
+import dayjs from "dayjs";
 
 const ProfilePage = () => {
   const { user, updateLoggedInUser, logOut } = useUserContext();
@@ -76,6 +78,13 @@ const ProfilePage = () => {
     return updateCredentialsState;
   };
 
+  const renewMembership = async () => {
+    // TODO: Membership payment flow
+    const updatedRenewTime = new FormData()
+    updatedRenewTime.append(GlobalConstants.MEMBERSHIP_RENEWED, dayjs().toISOString())
+    return await updateUserProfile(defaultActionState, updatedRenewTime)
+  }
+
   const deleteMyAccount = async () => {
     const deleteState = await deleteUser(
       user,
@@ -99,6 +108,9 @@ const ProfilePage = () => {
         action={validateAndUpdateCredentials}
       ></Form>
       {errorMsg && <Typography color="error">{errorMsg}</Typography>}
+      {
+        isMembershipExpired(user) && <Button onClick={renewMembership}>Renew membership</Button>
+      }
       <Button color="error" onClick={deleteMyAccount}>
         Delete My Account
       </Button>
