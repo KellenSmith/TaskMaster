@@ -1,10 +1,12 @@
 const GlobalConstants = {
   // Organization settings
+  ORG_NAME: "org_name",
   MEMBERSHIP_DURATION: "membership_duration",
   COOKIE_LIFESPAN: "cookie_lifespan",
   PURGE_STALE_APPLICATIONS: "purge_stale_applications",
   ORG_NOREPLY_EMAIL: "org_noreply_email",
   ORG_REPLY_EMAIL: "org_noreply_email",
+  MEMBERSHIP_EXPIRES_REMINDER: "membership_expires_reminder",
   // Routes
   PUBLIC: "public",
   PRIVATE: "private",
