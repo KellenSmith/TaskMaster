@@ -1,4 +1,7 @@
 const GlobalConstants = {
+  // Organization settings
+  MEMBERSHIP_DURATION: "membership_duration",
+  COOKIE_LIFESPAN: "cookie_lifespan",
   // Routes
   PUBLIC: "public",
   PRIVATE: "private",
