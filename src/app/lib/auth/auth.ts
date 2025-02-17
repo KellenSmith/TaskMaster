@@ -23,7 +23,7 @@ export const generateUserCredentials = async (
 };
 
 export const createSession = async (formData: FormData) => {
-  const expiresAt = dayjs().add(60, "s").toDate();
+  const expiresAt = dayjs().add(1, "d").toDate();
   const loggedInUser = await getUserByUniqueKey(
     GlobalConstants.EMAIL,
     formData.get(GlobalConstants.EMAIL) as string
