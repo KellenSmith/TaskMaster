@@ -2,6 +2,7 @@ const GlobalConstants = {
   // Organization settings
   MEMBERSHIP_DURATION: "membership_duration",
   COOKIE_LIFESPAN: "cookie_lifespan",
+  PURGE_STALE_APPLICATIONS: "purge_stale_applications",
   // Routes
   PUBLIC: "public",
   PRIVATE: "private",
