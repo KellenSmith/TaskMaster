@@ -89,6 +89,8 @@ There is a kanban-board, with columns "to do", "in progress" and "completed", co
 - The database is periodically purged of stale membership applications
 - Users are notified by email when their membership is about to expire
 - Membership payment is handled automatically through Swish
+- Monthly newsletters are automatically sent out to all members with a summary of upcoming events etc.
+  Templates and unsubscriptions are handled by email host Sendgrid.
 
 ## Information bank
 

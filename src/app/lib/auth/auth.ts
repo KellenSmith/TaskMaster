@@ -25,7 +25,7 @@ export const generateUserCredentials = async (
 
 export const createSession = async (formData: FormData) => {
   const expiresAt = dayjs()
-    .add(OrgSettings[GlobalConstants.COOKIE_LIFESPAN], "d")
+    .add(OrgSettings[GlobalConstants.COOKIE_LIFESPAN] as number, "d")
     .toDate();
   const loggedInUser = await getUserByUniqueKey(
     GlobalConstants.EMAIL,
