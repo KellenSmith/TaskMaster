@@ -1,10 +1,21 @@
-// Main Cron job for the Task Manager
+/**
+ * Main Cron job for the Task Manager
+ *
+ * NOTE:
+ * Vercel hobby plan covers 2 cron jobs triggeres once/day
+ * upgrade if more is needed
+ */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { OrgSettings } from "../lib/org-settings";
+
+const isRequestAuthorized = (request: NextRequest): boolean => {
+  const authHeader = request.headers.get("authorization");
+  return authHeader === `Bearer ${process.env.CRON_SECRET}`;
+};
 
 const purgeStaleMembershipApplications = async (): Promise<NextResponse> => {
   const latestCreateDateIfStale = dayjs().subtract(
@@ -34,6 +45,13 @@ const purgeStaleMembershipApplications = async (): Promise<NextResponse> => {
   }
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isRequestAuthorized(request)) {
+    // Log unauthorized access to api for sleuthing
+    return new NextResponse("Unauthorized", {
+      status: 401,
+    });
+  }
+
   return await purgeStaleMembershipApplications();
 }
