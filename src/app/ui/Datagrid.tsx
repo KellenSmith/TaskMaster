@@ -12,13 +12,13 @@ import React, { useEffect, useMemo, useState, startTransition } from "react";
 import { datePickerFields, FieldLabels } from "./form/FieldCfg";
 import { redirect, usePathname } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
-import Form, { FormActionState } from "./form/Form";
+import Form, { FormActionState, defaultActionState as defaultFormActionState } from "./form/Form";
 import { useUserContext } from "../context/UserContext";
 
 export interface DatagridActionState {
   status: number;
   errorMsg: string;
-  result: object[];
+  result: any[];
 }
 
 export const defaultActionState: DatagridActionState = {
@@ -26,6 +26,13 @@ export const defaultActionState: DatagridActionState = {
   errorMsg: "",
   result: [],
 };
+
+export interface RowActionProps {
+  name: string,
+  serverAction: (clickedRow: any, currentActionState: FormActionState) => Promise<FormActionState>,
+  available: (clickedRow: any) => boolean,
+  buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning"
+}
 
 interface DatagridProps {
   name: string;
@@ -36,32 +43,26 @@ interface DatagridProps {
     userId: string,
     currentActionState: FormActionState,
     formData: FormData,
-  ) => Promise<FormActionState>;
-  deleteAction: (
-    userId: string,
-    currentActionState: DatagridActionState,
-  ) => Promise<DatagridActionState>;
+  ) => Promise<FormActionState>,
+  rowActions: RowActionProps[],
 }
 
 const Datagrid: React.FC<DatagridProps> = ({
   name,
   fetchData,
   updateAction,
-  deleteAction,
+  rowActions
 }) => {
   const apiRef = useGridApiRef();
   const pathname = usePathname();
   const [clickedRow, setClickedRow] = useState(null);
   const [fetchedDataState, setFetchedDataState] =
     useState<DatagridActionState>(defaultActionState);
-  const [dialogErrorMsg, setDialogErrorMsg] = useState("");
-  const { user } = useUserContext();
+  const [dialogActionState, setDialogActionState] = useState(defaultFormActionState)
 
   const updateDatagridData = async () => {
     const newActionState = await fetchData(fetchedDataState);
     setFetchedDataState(newActionState);
-    if (newActionState.status !== 200)
-      setDialogErrorMsg(newActionState.errorMsg);
   };
 
   // Fetch data on first render
@@ -117,21 +118,20 @@ const Datagrid: React.FC<DatagridProps> = ({
     return updateState;
   };
 
-  const deleteRow = async () => {
-    if (clickedRow[GlobalConstants.ID] === user[GlobalConstants.ID])
-      return setDialogErrorMsg("You can't delete your own user");
-    const deleteState = await deleteAction(
-      clickedRow[GlobalConstants.EMAIL],
-      fetchedDataState,
-    );
-    if (deleteState.status !== 200)
-      return setDialogErrorMsg(deleteState.errorMsg);
-    updateDatagridData();
-  };
+  const handleRowAction = async (rowAction: RowActionProps) => {
+    const rowActionState = await rowAction.serverAction(clickedRow, defaultFormActionState)
+    setDialogActionState(rowActionState)
+    if (rowActionState.status === 200) updateDatagridData()
+  }
 
+  const getRowActionButton = (clickedRow: any, rowAction: RowActionProps) => 
+    rowAction.available(clickedRow) && <Button key={rowAction.name} onClick={()=>handleRowAction(rowAction)} color={rowAction.buttonColor || "secondary"}>
+          {FieldLabels[rowAction.name]}
+        </Button>
+  
   const closeDialog = () => {
     setClickedRow(null);
-    setDialogErrorMsg("");
+    setDialogActionState(defaultFormActionState);
   };
   return (
     <Stack sx={{ height: "100%" }}>
@@ -152,12 +152,15 @@ const Datagrid: React.FC<DatagridProps> = ({
           action={updateRow}
           defaultValues={clickedRow}
         />
-        {!!dialogErrorMsg && (
-          <Typography color="error">{dialogErrorMsg}</Typography>
-        )}
-        <Button color="error" onClick={deleteRow}>
-          Delete
-        </Button>
+        {
+          dialogActionState.errorMsg && <Typography color="error">{dialogActionState.errorMsg}</Typography>
+        }
+        {
+          dialogActionState.result && <Typography color="success">{dialogActionState.result}</Typography>
+        }
+        {
+          !!rowActions && rowActions.map(rowAction=> getRowActionButton(clickedRow,rowAction))
+        }
       </Dialog>
     </Stack>
   );

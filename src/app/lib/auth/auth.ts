@@ -8,9 +8,10 @@ import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
+import { FormActionState } from "../../ui/form/Form";
 
 export const generateUserCredentials = async (
-  password: string,
+  password: string
 ): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -21,25 +22,59 @@ export const generateUserCredentials = async (
   return newUserCredentials;
 };
 
-export const authenticateUser = async (formData: FormData) => {
-  const filterParams = {
-    [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
-  } as unknown;
+export const createSession = async (formData: FormData) => {
+  const expiresAt = dayjs().add(60, "s").toDate();
+  const loggedInUser = await getUserByUniqueKey(
+    GlobalConstants.EMAIL,
+    formData.get(GlobalConstants.EMAIL) as string
+  );
+
+  await encryptJWT(loggedInUser, expiresAt);
+};
+
+export const login = async (
+  currentActionState: FormActionState,
+  formData: FormData
+): Promise<FormActionState> => {
+  const authState = { ...currentActionState };
+
+  const loggedInUser = await getUserByUniqueKey(
+    GlobalConstants.EMAIL,
+    formData.get(GlobalConstants.EMAIL) as string
+  );
+
+  if (!loggedInUser) {
+    authState.status = 404;
+    authState.errorMsg = "Please apply for membership";
+    authState.result = "";
+    return authState;
+  }
+  if (!loggedInUser[GlobalConstants.MEMBERSHIP_RENEWED]) {
+    authState.status = 403;
+    authState.errorMsg = "Membership pending";
+    authState.result = "";
+    return authState;
+  }
+
   const userCredentials = await prisma.userCredentials.findUnique({
-    where: filterParams as Prisma.UserCredentialsWhereUniqueInput,
+    where: {
+      [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
+    } as any as Prisma.UserCredentialsWhereUniqueInput,
   });
-  if (!userCredentials) throw new Error("Please apply for membership");
+
   const passwordsMatch = await bcrypt.compare(
     formData.get(GlobalConstants.PASSWORD) as string,
-    userCredentials[GlobalConstants.HASHED_PASSWORD],
+    userCredentials[GlobalConstants.HASHED_PASSWORD]
   );
-  if (!passwordsMatch) throw new Error("Invalid credentials");
-
-  const loggedInUser = getUserByUniqueKey(
-    GlobalConstants.EMAIL,
-    userCredentials[GlobalConstants.EMAIL],
-  );
-  return loggedInUser;
+  if (!passwordsMatch) {
+    authState.status = 401;
+    authState.errorMsg = "Invalid credentials";
+    authState.result = "";
+    return authState;
+  }
+  authState.result = JSON.stringify(loggedInUser);
+  await createSession(formData);
+  return authState;
 };
 
 const getEncryptionKey = () =>
@@ -47,7 +82,7 @@ const getEncryptionKey = () =>
 
 const encryptJWT = async (
   loggedInUser: Prisma.UserWhereUniqueInput,
-  expiresAt: Date,
+  expiresAt: Date
 ) => {
   // Encode the user ID as jwt
   const jwt = await new SignJWT(loggedInUser)
@@ -67,7 +102,7 @@ const encryptJWT = async (
 
 export const getUserByUniqueKey = async (
   key: string,
-  value: string,
+  value: string
 ): Promise<Prisma.UserWhereUniqueInput | null> => {
   const userFilterParams = {
     [key]: value,
@@ -76,16 +111,6 @@ export const getUserByUniqueKey = async (
     where: userFilterParams as Prisma.UserWhereUniqueInput,
   });
   return loggedInUser;
-};
-
-export const createSession = async (formData: FormData) => {
-  const expiresAt = dayjs().add(60, "s").toDate();
-  const loggedInUser = await getUserByUniqueKey(
-    GlobalConstants.EMAIL,
-    formData.get(GlobalConstants.EMAIL) as string,
-  );
-
-  await encryptJWT(loggedInUser, expiresAt);
 };
 
 export const decryptJWT = async (): Promise<JWTPayload> | undefined => {

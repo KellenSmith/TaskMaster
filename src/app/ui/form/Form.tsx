@@ -55,7 +55,7 @@ const Form: React.FC<FormProps> = ({
     defaultActionState,
   );
   const [dateFieldValues, setDateFieldValues] = useState<{
-    [key: string]: Dayjs | null;
+    [key: string]: Dayjs;
   }>(
     Object.fromEntries(
       RenderedFields[name].map((fieldId) => [fieldId, dayjs()]),
@@ -100,7 +100,7 @@ const Form: React.FC<FormProps> = ({
                 ? defaultValues[fieldId]
                 : dayjs()
             }
-            value={dateFieldValues[fieldId] || dayjs()}
+            value={dateFieldValues[fieldId] || null}
             onChange={(newValue) =>
               setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))
             }

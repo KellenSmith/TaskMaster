@@ -11,38 +11,35 @@ export const config = {
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$|.*\\.ico$).*)"],
 };
 
-const routeHasPrivacyStatus = (
-  reqPath: string,
-  privacyStatus: string,
-): boolean => {
-  for (let route of routes[privacyStatus]) {
-    if (reqPath.startsWith(`/${route}`)) return true;
-  }
-  return false;
-};
-
 export default async function middleware(req: NextRequest) {
   const reqPath = req.nextUrl.pathname;
   const redirectUrl = new NextURL(req.nextUrl);
+  redirectUrl.pathname = `/${GlobalConstants.LOGIN}`;
   const loggedInUser = await decryptJWT();
 
-  redirectUrl.pathname = `/${GlobalConstants.LOGIN}`;
-  // Redirect to login from non-public pages if the user is not logged in
-  if (!routeHasPrivacyStatus(reqPath, GlobalConstants.PUBLIC) && !loggedInUser)
+  // User not logged in
+  if (!loggedInUser) {
+    const routeIsPublic = routes[GlobalConstants.PUBLIC]
+      .map((route) => `/${route}`)
+      .includes(reqPath);
+    if (routeIsPublic) return NextResponse.next();
+    // Redirect to login from non-public pages if the user is not logged in
     return NextResponse.redirect(redirectUrl);
-
+  }
   redirectUrl.pathname = "/";
   // Redirect logged in users from login to home
-  if (loggedInUser && reqPath === `/${GlobalConstants.LOGIN}`)
+  if (reqPath === `/${GlobalConstants.LOGIN}`)
     return NextResponse.redirect(redirectUrl);
 
   // Redirect non-admins to home from admin pages or login
-  if (routeHasPrivacyStatus(reqPath, GlobalConstants.ADMIN)) {
+  const routeIsAdmin = routes[GlobalConstants.ADMIN]
+    .map((route) => `/${route}`)
+    .includes(reqPath);
+  if (routeIsAdmin) {
     const userIsAdmin =
       loggedInUser[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
     if (!userIsAdmin) return NextResponse.redirect(redirectUrl);
   }
-
   // Allow logged in users to access all private routes
   return NextResponse.next();
 }

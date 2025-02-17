@@ -2,6 +2,10 @@ import GlobalConstants from "../../GlobalConstants";
 
 export const FieldLabels = {
   [GlobalConstants.ID]: "ID",
+  [GlobalConstants.UPDATE]: "Update",
+  [GlobalConstants.DELETE]: "Delete",
+  [GlobalConstants.VALIDATE_MEMBERSHIP]: "Validate Membership",
+  [GlobalConstants.APPLY]: "Apply For Membership",
   // Profile
   [GlobalConstants.PROFILE]: "Profile",
   // User
@@ -12,8 +16,8 @@ export const FieldLabels = {
   [GlobalConstants.EMAIL]: "Email",
   [GlobalConstants.PHONE]: "Phone",
   [GlobalConstants.ROLE]: "Role",
-  [GlobalConstants.MEMBER_SINCE]: "Member Since",
-  [GlobalConstants.MEMBERSHIP_RENEWED_AT]: "Membership Renewed At",
+  [GlobalConstants.CREATED]: "Created",
+  [GlobalConstants.MEMBERSHIP_RENEWED]: "Membership Renewed",
   // Login
   [GlobalConstants.LOGIN]: "Login",
   [GlobalConstants.PASSWORD]: "Password",
@@ -42,12 +46,12 @@ export const RenderedFields = {
     GlobalConstants.REPEAT_PASSWORD,
   ],
 };
+// Apply
+RenderedFields[GlobalConstants.APPLY] = RenderedFields[GlobalConstants.PROFILE];
 // User
 RenderedFields[GlobalConstants.USER] = [
   ...RenderedFields[GlobalConstants.PROFILE],
   GlobalConstants.ROLE,
-  GlobalConstants.MEMBER_SINCE,
-  GlobalConstants.MEMBERSHIP_RENEWED_AT,
 ];
 
 export const RequiredFields = {
@@ -68,12 +72,12 @@ export const RequiredFields = {
     GlobalConstants.REPEAT_PASSWORD,
   ],
 };
+// Apply
+RequiredFields[GlobalConstants.APPLY] = RequiredFields[GlobalConstants.PROFILE];
 // User
 RequiredFields[GlobalConstants.USER] = [
   ...RenderedFields[GlobalConstants.PROFILE],
   GlobalConstants.ROLE,
-  GlobalConstants.MEMBER_SINCE,
-  GlobalConstants.MEMBERSHIP_RENEWED_AT,
 ];
 
 export const selectFieldOptions = {
@@ -83,6 +87,6 @@ export const selectFieldOptions = {
 
 export const datePickerFields = [
   // User
-  GlobalConstants.MEMBER_SINCE,
-  GlobalConstants.MEMBERSHIP_RENEWED_AT,
+  GlobalConstants.CREATED,
+  GlobalConstants.MEMBERSHIP_RENEWED,
 ];
