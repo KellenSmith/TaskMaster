@@ -3,6 +3,8 @@ const GlobalConstants = {
   MEMBERSHIP_DURATION: "membership_duration",
   COOKIE_LIFESPAN: "cookie_lifespan",
   PURGE_STALE_APPLICATIONS: "purge_stale_applications",
+  ORG_NOREPLY_EMAIL: "org_noreply_email",
+  ORG_REPLY_EMAIL: "org_noreply_email",
   // Routes
   PUBLIC: "public",
   PRIVATE: "private",
