@@ -16,7 +16,7 @@ model User {
     email             String           @unique
     phone             String           @unique
     created           DateTime         @default(now())
-    membershipRenewed DateTime? // Membership is invalid if missing or expired
+    membershipRenewed DateTime? // Membership is invalid if null or expired
     role              String           @default("user") // user, admin
     userCredentials   UserCredentials?
 
