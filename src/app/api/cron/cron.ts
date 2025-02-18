@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../prisma/prisma-client";
-import GlobalConstants from "../GlobalConstants";
+import { prisma } from "../../../prisma/prisma-client";
+import GlobalConstants from "../../GlobalConstants";
 import dayjs from "dayjs";
-import { OrgSettings } from "../lib/org-settings";
-import { remindExpiringMembers } from "../lib/mail-service/mail-service";
+import { OrgSettings } from "../../lib/org-settings";
+import { remindExpiringMembers } from "../../lib/mail-service/mail-service";
 
 export const purgeStaleMembershipApplications = async (): Promise<string> => {
   const latestCreateDateIfNotStale = dayjs().subtract(
