@@ -2,11 +2,17 @@ const GlobalConstants = {
   // Organization settings
   ORG_NAME: "org_name",
   MEMBERSHIP_DURATION: "membership_duration",
+  MEMBERSHIP_FEE: "membership_fee",
   COOKIE_LIFESPAN: "cookie_lifespan",
   PURGE_STALE_APPLICATIONS: "purge_stale_applications",
   ORG_NOREPLY_EMAIL: "org_noreply_email",
   ORG_REPLY_EMAIL: "org_noreply_email",
   MEMBERSHIP_EXPIRES_REMINDER: "membership_expires_reminder",
+  // Swish
+  SWISH_BASE_URL: "swish_base_url",
+  SWISH_MSS_URL: "swish_mss_url",
+  SWISH_CALLBACK_URL: "swish_callback_url",
+  SWISH_PAYEE_ALIAS: "swish_payee_alias",
   // Routes
   PUBLIC: "public",
   PRIVATE: "private",

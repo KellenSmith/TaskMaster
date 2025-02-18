@@ -13,7 +13,9 @@ import { useState } from "react";
 import { defaultActionState } from "../ui/form/Form";
 import { Button, Stack, Typography } from "@mui/material";
 import { isMembershipExpired } from "../lib/definitions";
-import dayjs from "dayjs";
+import axios from "axios";
+import { redirect } from "next/navigation";
+import { ICreatePaymentRequestResponse } from "../api/swish/swish-utils";
 
 const ProfilePage = () => {
   const { user, updateLoggedInUser, logOut } = useUserContext();
@@ -78,11 +80,35 @@ const ProfilePage = () => {
     return updateCredentialsState;
   };
 
+  const handleMobilePaymentFlow = (paymentRequest: ICreatePaymentRequestResponse, callbackUrl: string) => {
+    const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${callbackUrl}`;
+    // Open or redirect the user to the url
+    redirect(appUrl);
+  }
+
   const renewMembership = async () => {
     // TODO: Membership payment flow
-    const updatedRenewTime = new FormData()
-    updatedRenewTime.append(GlobalConstants.MEMBERSHIP_RENEWED, dayjs().toISOString())
-    return await updateUserProfile(defaultActionState, updatedRenewTime)
+    try {
+      const createdPaymentRequestResponse = await axios.get("http://localhost:3000/api/swish");
+      if (createdPaymentRequestResponse.data){
+        const createdPaymentRequest = createdPaymentRequestResponse.data
+        const callbackUrl = `http://localhost:3000/profile/receipt?ref=${createdPaymentRequest.id}`;
+        const userAgent = navigator.userAgent
+        console.log(userAgent)
+        
+        // TODO: Redirect to swish app if on mobile, else to QR code
+      
+        
+    }
+    } catch (error) {console.log(error)}
+
+
+
+    //
+    // const updatedRenewTime = new FormData()
+    // updatedRenewTime.append(GlobalConstants.MEMBERSHIP_RENEWED, dayjs().toISOString())
+    // return await updateUserProfile(defaultActionState, updatedRenewTime)
+    return defaultActionState
   }
 
   const deleteMyAccount = async () => {
