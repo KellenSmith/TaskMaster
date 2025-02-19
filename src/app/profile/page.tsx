@@ -11,15 +11,20 @@ import {
 import {login} from '../lib/auth/auth'
 import { useState } from "react";
 import { defaultActionState } from "../ui/form/Form";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Dialog, DialogContent, DialogContentText, DialogTitle, Stack, Typography } from "@mui/material";
 import { isMembershipExpired } from "../lib/definitions";
 import axios from "axios";
-import { redirect } from "next/navigation";
+import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { ICreatePaymentRequestResponse } from "../api/swish/swish-utils";
+import { OrgSettings } from "../lib/org-settings";
+import Image from "next/image";
 
 const ProfilePage = () => {
   const { user, updateLoggedInUser, logOut } = useUserContext();
   const [errorMsg, setErrorMsg] = useState("");
+  const [qrCodeUrl, setQrCodeUrl] = useState("")
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   const updateUserProfile = async (
     currentActionState: FormActionState,
@@ -80,35 +85,55 @@ const ProfilePage = () => {
     return updateCredentialsState;
   };
 
-  const handleMobilePaymentFlow = (paymentRequest: ICreatePaymentRequestResponse, callbackUrl: string) => {
-    const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${callbackUrl}`;
-    // Open or redirect the user to the url
-    redirect(appUrl);
+  const handleMobilePaymentFlow = async () => {
+    try {
+      const paymentRequestResponse =  await axios.get(`${OrgSettings[GlobalConstants.BASE_URL]}/api/swish`);
+      if (!!paymentRequestResponse.data){
+        const paymentRequest = paymentRequestResponse.data
+        // TODO: check callback url
+        const callbackUrl = ""
+        const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${callbackUrl}`;
+        // Open or redirect the user to the url
+        redirect(appUrl);
+      }
+      
+    } catch {
+      setErrorMsg("Something went wrong while renewing your membership")
+    }
+    
+  }
+
+  const handleDesktopPaymentFlow = async () => {
+    try {
+      const createdPaymentRequestResponse = await axios.get(`${OrgSettings[GlobalConstants.BASE_URL]}/api/swish`, {
+        responseType: 'arraybuffer'
+      });
+      
+      if (createdPaymentRequestResponse.status === 200) {
+          const qrCodeBlob = new Blob([createdPaymentRequestResponse.data], { type: 'image/png' });
+          const url = URL.createObjectURL(qrCodeBlob);
+          setQrCodeUrl(url);
+       
+      }
+    } catch (error) {
+      setErrorMsg("Something went wrong while renewing your membership")
+    }
   }
 
   const renewMembership = async () => {
-    // TODO: Membership payment flow
-    try {
-      const createdPaymentRequestResponse = await axios.get("http://localhost:3000/api/swish");
-      if (createdPaymentRequestResponse.data){
-        const createdPaymentRequest = createdPaymentRequestResponse.data
-        const callbackUrl = `http://localhost:3000/profile/receipt?ref=${createdPaymentRequest.id}`;
-        const userAgent = navigator.userAgent
-        console.log(userAgent)
-        
-        // TODO: Redirect to swish app if on mobile, else to QR code
-      
-        
+    // TODO: Redirect to swish app if on mobile, else show QR code 
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+      await handleMobilePaymentFlow();
+    } else {
+      await handleDesktopPaymentFlow()
     }
-    } catch (error) {console.log(error)}
 
+    return defaultActionState;
+  }
 
-
-    //
-    // const updatedRenewTime = new FormData()
-    // updatedRenewTime.append(GlobalConstants.MEMBERSHIP_RENEWED, dayjs().toISOString())
-    // return await updateUserProfile(defaultActionState, updatedRenewTime)
-    return defaultActionState
+  const closeQrCodeDialog = () => {
+    URL.revokeObjectURL(qrCodeUrl)
+    setQrCodeUrl("")
   }
 
   const deleteMyAccount = async () => {
@@ -121,6 +146,7 @@ const ProfilePage = () => {
   };
 
   return (
+    <>
     <Stack>
       <Form
         name={GlobalConstants.PROFILE}
@@ -141,6 +167,22 @@ const ProfilePage = () => {
         Delete My Account
       </Button>
     </Stack>
+    <Dialog open={!!qrCodeUrl}>
+      <DialogTitle>Renew membership</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {
+            `Scan the QR code to pay your membership fee of ${OrgSettings[GlobalConstants.MEMBERSHIP_FEE]} SEK`
+          }
+        </DialogContentText>
+      <Image 
+        alt="swish qr code" 
+        src={qrCodeUrl} 
+        width={OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE] as number} 
+        height={OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE] as number}/>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 };
 

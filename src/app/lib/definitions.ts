@@ -7,7 +7,10 @@ import { OrgSettings } from "./org-settings";
 
 export const routes = {
   [GlobalConstants.ADMIN]: [`${GlobalConstants.MEMBERS}`],
-  [GlobalConstants.PRIVATE]: [`${GlobalConstants.PROFILE}`],
+  [GlobalConstants.PRIVATE]: [
+    `${GlobalConstants.PROFILE}`,
+    `${GlobalConstants.PROFILE}/${GlobalConstants.RECEIPT}`,
+  ],
   [GlobalConstants.PUBLIC]: [
     `${GlobalConstants.HOME}`,
     `${GlobalConstants.LOGIN}`,

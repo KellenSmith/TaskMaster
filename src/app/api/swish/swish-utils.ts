@@ -10,7 +10,8 @@ export interface ICreatePaymentRequestResponse {
 
 export const createPaymentRequest = async (
   amount: number,
-  message: string
+  message: string,
+  callbackUrl: string
 ): Promise<ICreatePaymentRequestResponse | null> => {
   // Lowercase and "-" disallowed by Swish
   const instructionUUID = uuidv4().toUpperCase().replaceAll("-", "");
@@ -18,7 +19,7 @@ export const createPaymentRequest = async (
   const data = {
     payeeAlias: OrgSettings[GlobalConstants.SWISH_PAYEE_ALIAS],
     currency: "SEK",
-    callbackUrl: "https://example.com/swishcallback",
+    callbackUrl: callbackUrl,
     amount: amount,
     message: message,
     callbackIdentifier: "11A86BE70EA346E4B1C39C874173F478",
@@ -36,5 +37,33 @@ export const createPaymentRequest = async (
       const { paymentrequesttoken } = response.headers;
       return { id: instructionUUID, token: paymentrequesttoken };
     }
-  } catch {}
+  } catch (error) {
+    console.log(error.response);
+    return null;
+  }
+};
+
+export const getQrCodeForPaymentRequest = async (
+  paymentRequest: ICreatePaymentRequestResponse
+): Promise<ArrayBuffer | null> => {
+  const data = {
+    token: paymentRequest.token,
+    size: OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE],
+    format: "png",
+    border: "0",
+  };
+
+  try {
+    const response = await swish.post(
+      `https://mpc.getswish.net/qrg-swish/api/v1/commerce`,
+      data,
+      { responseType: "arraybuffer" }
+    );
+
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (error) {
+    return null;
+  }
 };

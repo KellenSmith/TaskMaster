@@ -1,5 +1,8 @@
-import { NextResponse } from "next/server";
-import { createPaymentRequest } from "./swish-utils";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  createPaymentRequest,
+  getQrCodeForPaymentRequest,
+} from "./swish-utils";
 import GlobalConstants from "../../GlobalConstants";
 import { OrgSettings } from "../../lib/org-settings";
 
@@ -11,11 +14,29 @@ export const config = {
   runtime: "nodejs",
 };
 
-export const GET = async () => {
-  const resp = await createPaymentRequest(
+export const GET = async (request: NextRequest): Promise<NextResponse> => {
+  // TODO: verify caller auth
+  const requestUrl = new URL(request.url);
+  const callbackUrl = `${requestUrl.origin}/${requestUrl.pathname}`;
+
+  const paymentRequest = await createPaymentRequest(
     OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number,
-    "swish message"
+    "swish message",
+    callbackUrl
   );
 
-  return NextResponse.json(resp || null);
+  const qrCode = await getQrCodeForPaymentRequest(paymentRequest);
+
+  return new NextResponse(qrCode, {
+    headers: {
+      "Content-Type": "image/png",
+    },
+  });
+};
+
+export const POST = async (request: NextRequest): Promise<NextResponse> => {
+  // TODO: Verify caller ID
+  const paymentRequest = request.json();
+
+  return NextResponse.json("OK");
 };

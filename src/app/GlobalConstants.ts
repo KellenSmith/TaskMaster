@@ -1,6 +1,7 @@
 const GlobalConstants = {
   // Organization settings
   ORG_NAME: "org_name",
+  BASE_URL: "base_url",
   MEMBERSHIP_DURATION: "membership_duration",
   MEMBERSHIP_FEE: "membership_fee",
   COOKIE_LIFESPAN: "cookie_lifespan",
@@ -11,7 +12,10 @@ const GlobalConstants = {
   // Swish
   SWISH_BASE_URL: "swish_base_url",
   SWISH_MSS_URL: "swish_mss_url",
+  SWISH_CALLBACK_PATH: "callback_path",
   SWISH_CALLBACK_URL: "swish_callback_url",
+  SWISH_QR_CODE_SIZE: "swish_qr_code_size",
+  REQUEST_REFERER: "referer",
   SWISH_PAYEE_ALIAS: "swish_payee_alias",
   // Routes
   PUBLIC: "public",
@@ -20,6 +24,7 @@ const GlobalConstants = {
   HOME: "",
   LOGIN: "login",
   PROFILE: "profile",
+  RECEIPT: "receipt",
   MEMBERS: "members",
   CREATE: "create",
   // DB
