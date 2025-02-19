@@ -23,24 +23,26 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   const requestUrl = new URL(request.url);
   const userId = requestUrl.searchParams.get(GlobalConstants.ID);
 
-  if (!userId) {
-    return new NextResponse("User ID missing when generating QR code", {
+  if (!userId)
+    return new NextResponse("Failed to generate QR code", {
       status: 500,
     });
-  }
 
   const paymentRequest = await createPaymentRequest(
     OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number,
     userId
   );
-
-  const qrCode = await getQrCodeForPaymentRequest(paymentRequest);
-
-  if (!qrCode) {
+  if (!paymentRequest)
     return new NextResponse("Failed to generate QR code", {
       status: 500,
     });
-  }
+
+  const qrCode = await getQrCodeForPaymentRequest(paymentRequest);
+
+  if (!qrCode)
+    return new NextResponse("Failed to generate QR code", {
+      status: 500,
+    });
 
   return new NextResponse(qrCode, {
     headers: {
