@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { swish } from "./swish-client";
 import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
+import { SwishConstants } from "../../lib/swish-constants";
 
 export interface ICreatePaymentRequestResponse {
   id: string;
@@ -10,8 +11,7 @@ export interface ICreatePaymentRequestResponse {
 
 export const createPaymentRequest = async (
   amount: number,
-  message: string,
-  callbackUrl: string
+  message: string
 ): Promise<ICreatePaymentRequestResponse | null> => {
   // Lowercase and "-" disallowed by Swish
   const instructionUUID = uuidv4().toUpperCase().replaceAll("-", "");
@@ -19,7 +19,7 @@ export const createPaymentRequest = async (
   const data = {
     payeeAlias: OrgSettings[GlobalConstants.SWISH_PAYEE_ALIAS],
     currency: "SEK",
-    callbackUrl: callbackUrl,
+    callbackUrl: SwishConstants.CALLBACK_URL,
     amount: amount,
     message: message,
     callbackIdentifier: "11A86BE70EA346E4B1C39C874173F478",

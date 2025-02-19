@@ -21,13 +21,11 @@ export const config = {
 export const GET = async (request: NextRequest): Promise<NextResponse> => {
   // TODO: verify caller auth
   const requestUrl = new URL(request.url);
-  const callbackUrl = `${requestUrl.origin}/${requestUrl.pathname}`;
   const userId = requestUrl.searchParams.get(GlobalConstants.ID);
 
   const paymentRequest = await createPaymentRequest(
     OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number,
-    userId,
-    callbackUrl
+    userId
   );
 
   const qrCode = await getQrCodeForPaymentRequest(paymentRequest);

@@ -3,7 +3,7 @@ import Image from "next/image"
 import { redirect } from "next/navigation"
 import { OrgSettings } from "../lib/org-settings"
 import GlobalConstants from "../GlobalConstants"
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import React, { Dispatch, SetStateAction, useRef, useState } from "react"
 import axios from "axios"
 import dayjs from "dayjs"
 import { SwishConstants } from "../lib/swish-constants"
@@ -24,6 +24,7 @@ const RenewMembership = ({open, setOpen}: IRenewMembership) => {
     const closeQrCodeDialog = () => {
         clearInterval(intervalIdRef.current);
         URL.revokeObjectURL(qrCodeUrl)
+        setPaymentStatus(SwishConstants.PENDING)
         setOpen(false)
       }
 
@@ -33,7 +34,7 @@ const RenewMembership = ({open, setOpen}: IRenewMembership) => {
         "id": "0902D12C7FAE43D3AAAC49622AA79FEF",
         "payeePaymentReference": "0123456789",
         "paymentReference": "652ED6A2BCDE4BA8AD11D7334E9567B7",
-        "callbackUrl": "https://example.com/api/swishcb/paymentrequests",
+        "callbackUrl": SwishConstants.CALLBACK_URL,
         "payerAlias": "46712347689",
         "payeeAlias": "1234679304",
         "amount": 100.00,
@@ -45,7 +46,7 @@ const RenewMembership = ({open, setOpen}: IRenewMembership) => {
         "errorCode": null,
         "errorMessage": null
     }
-    await axios.post(`${OrgSettings[GlobalConstants.BASE_URL]}/api/swish`, examplePaymentConf);
+    await axios.post(SwishConstants.CALLBACK_URL, examplePaymentConf);
     }
 
     const handleMobilePaymentFlow = async () => {
@@ -53,9 +54,7 @@ const RenewMembership = ({open, setOpen}: IRenewMembership) => {
           const paymentRequestResponse =  await axios.get(`${OrgSettings[GlobalConstants.BASE_URL]}/api/swish`);
           if (!!paymentRequestResponse.data){
             const paymentRequest = paymentRequestResponse.data
-            // TODO: check callback url
-            const callbackUrl = ""
-            const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${callbackUrl}`;
+            const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${SwishConstants.CALLBACK_URL}`;
             // Open or redirect the user to the url
             redirect(appUrl);
           }
