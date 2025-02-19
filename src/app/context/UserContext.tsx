@@ -33,8 +33,11 @@ const UserContextProvider: React.FC<UserContextProviderProps> = ({
 
   const updateLoggedInUser = async () => {
     const serverResponse = await getLoggedInUser(defaultActionState);
-    if (serverResponse.status === 200)
-      setUser(JSON.parse(serverResponse.result));
+    if (serverResponse.status === 200){
+      const loggedInUser = JSON.parse(serverResponse.result)
+      setUser(loggedInUser);
+      return loggedInUser
+    }
   };
 
   const loginAndUpdateUser = async (
@@ -62,7 +65,7 @@ const UserContextProvider: React.FC<UserContextProviderProps> = ({
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, logOut, login: loginAndUpdateUser, updateLoggedInUser }}>
+    <UserContext.Provider value={{ user, logOut, login: loginAndUpdateUser, updateLoggedInUser }}>
       {children}
     </UserContext.Provider>
   );

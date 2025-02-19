@@ -12,7 +12,6 @@ import {
 } from "./auth/auth";
 import dayjs from "dayjs";
 import { sendUserCredentials } from "./mail-service/mail-service";
-import bcrypt from "bcryptjs";
 
 const getStrippedFormData = (formData: FormData): any => {
   const strippedFormData = Object.fromEntries(
@@ -183,7 +182,7 @@ export const validateUserMembership = async (
   const userIdentifier: UserIdentifier = {
     [GlobalConstants.EMAIL]: user[GlobalConstants.EMAIL],
   };
-  const generatedPassword = "123456"; //await bcrypt.genSalt();
+  const generatedPassword = "123456"; //await generateSalt();
   const generatedUserCredentials = (await getGeneratedUserCredentials(
     user[GlobalConstants.EMAIL],
     generatedPassword

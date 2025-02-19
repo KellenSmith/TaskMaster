@@ -1,6 +1,5 @@
 "use server";
 
-import bcrypt from "bcryptjs";
 import { JWTPayload, jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
@@ -11,11 +10,41 @@ import dayjs from "dayjs";
 import { FormActionState } from "../../ui/form/Form";
 import { OrgSettings } from "../org-settings";
 
+// Generate a random string of specified length
+export const generateSalt = async (): Promise<string> => {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+    ""
+  );
+};
+
+// Hash a password using SHA-256 and salt
+export const hashPassword = async (
+  password: string,
+  salt: string
+): Promise<string> => {
+  // Combine password and salt
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + salt);
+
+  // Hash using SHA-256
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+  // Convert to hex string
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+
+  return hashHex;
+};
+
 export const generateUserCredentials = async (
   password: string
 ): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
-  const salt = await bcrypt.genSalt();
-  const hashedPassword = await bcrypt.hash(password, salt);
+  const salt = await generateSalt();
+  const hashedPassword = await hashPassword(password, salt);
   const newUserCredentials = {
     [GlobalConstants.SALT]: salt,
     [GlobalConstants.HASHED_PASSWORD]: hashedPassword,
@@ -64,10 +93,16 @@ export const login = async (
       [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
     } as any as Prisma.UserCredentialsWhereUniqueInput,
   });
-
-  const passwordsMatch = await bcrypt.compare(
+  const hashedPassword = await hashPassword(
     formData.get(GlobalConstants.PASSWORD) as string,
-    userCredentials[GlobalConstants.HASHED_PASSWORD]
+    userCredentials[GlobalConstants.SALT]
+  );
+  const passwordsMatch =
+    hashedPassword === userCredentials[GlobalConstants.HASHED_PASSWORD];
+  console.log(
+    hashedPassword,
+    userCredentials[GlobalConstants.HASHED_PASSWORD],
+    hashedPassword === userCredentials[GlobalConstants.HASHED_PASSWORD]
   );
   if (!passwordsMatch) {
     authState.status = 401;

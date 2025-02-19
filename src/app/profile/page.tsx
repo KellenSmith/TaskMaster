@@ -13,11 +13,12 @@ import { useState } from "react";
 import { defaultActionState } from "../ui/form/Form";
 import { Button, Stack, Typography } from "@mui/material";
 import { isMembershipExpired } from "../lib/definitions";
-import dayjs from "dayjs";
+import RenewMembership from "./RenewMembership";
 
 const ProfilePage = () => {
   const { user, updateLoggedInUser, logOut } = useUserContext();
   const [errorMsg, setErrorMsg] = useState("");
+  const [openRenewMembershipDialog, setOpenRenewMembershipDialog] = useState(false)
 
   const updateUserProfile = async (
     currentActionState: FormActionState,
@@ -76,14 +77,7 @@ const ProfilePage = () => {
       updatedPassWord,
     );
     return updateCredentialsState;
-  };
-
-  const renewMembership = async () => {
-    // TODO: Membership payment flow
-    const updatedRenewTime = new FormData()
-    updatedRenewTime.append(GlobalConstants.MEMBERSHIP_RENEWED, dayjs().toISOString())
-    return await updateUserProfile(defaultActionState, updatedRenewTime)
-  }
+  }; 
 
   const deleteMyAccount = async () => {
     const deleteState = await deleteUser(
@@ -95,6 +89,7 @@ const ProfilePage = () => {
   };
 
   return (
+    <>
     <Stack>
       <Form
         name={GlobalConstants.PROFILE}
@@ -109,12 +104,14 @@ const ProfilePage = () => {
       ></Form>
       {errorMsg && <Typography color="error">{errorMsg}</Typography>}
       {
-        isMembershipExpired(user) && <Button onClick={renewMembership}>Renew membership</Button>
+        isMembershipExpired(user) && <Button onClick={()=>setOpenRenewMembershipDialog(true)}>Renew membership</Button>
       }
       <Button color="error" onClick={deleteMyAccount}>
         Delete My Account
       </Button>
     </Stack>
+    <RenewMembership open={openRenewMembershipDialog} setOpen={setOpenRenewMembershipDialog}/>
+    </>
   );
 };
 
