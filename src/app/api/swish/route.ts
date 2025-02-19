@@ -49,11 +49,8 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
       GlobalConstants.MEMBERSHIP_RENEWED,
       confirmedPaymentRequest.datePaid
     );
-    await updateUser(
-      confirmedPaymentRequest.message,
-      defaultActionState,
-      updatedMembershipRenewedDate
-    );
+    const userId = confirmedPaymentRequest.message;
+    await updateUser(userId, defaultActionState, updatedMembershipRenewedDate);
   } else {
     // Error handling
   }

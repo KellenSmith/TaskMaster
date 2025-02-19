@@ -39,7 +39,7 @@ const RenewMembership = ({open, setOpen}: IRenewMembership) => {
         "payeeAlias": "1234679304",
         "amount": 100.00,
         "currency": "SEK",
-        "message": "bf558bcb-18aa-4d57-953c-ef1acc95859d", // kellen3 user id
+        "message": "8a08c6e2-bbc9-41b6-9a51-0f989559f8f1", // kellen3 user id
         "status": "PAID",
         "dateCreated": "2022-04-13T09:05:32.717Z",
         "datePaid": dayjs().toISOString(),
