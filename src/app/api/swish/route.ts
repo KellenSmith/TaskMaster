@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   createPaymentRequest,
   getQrCodeForPaymentRequest,
+  IPaymentRequestConfirmed,
+  SwishConstants,
 } from "./swish-utils";
 import GlobalConstants from "../../GlobalConstants";
 import { OrgSettings } from "../../lib/org-settings";
+import { updateUser } from "../../lib/actions";
+import { defaultActionState } from "../../ui/form/Form";
 
 /**
  * Run this serverless fcn in nodejs env to enable configuring
@@ -18,10 +22,11 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   // TODO: verify caller auth
   const requestUrl = new URL(request.url);
   const callbackUrl = `${requestUrl.origin}/${requestUrl.pathname}`;
+  const userId = requestUrl.searchParams.get(GlobalConstants.ID);
 
   const paymentRequest = await createPaymentRequest(
     OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number,
-    "swish message",
+    userId,
     callbackUrl
   );
 
@@ -36,7 +41,24 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
   // TODO: Verify caller ID
-  const paymentRequest = request.json();
-
+  const confirmedPaymentRequest: IPaymentRequestConfirmed =
+    await request.json();
+  // TODO: Verify swish caller ID
+  console.log(confirmedPaymentRequest);
+  if (confirmedPaymentRequest.status === SwishConstants.PAID) {
+    // Update user's membership renewed date
+    const updatedMembershipRenewedDate = new FormData();
+    updatedMembershipRenewedDate.append(
+      GlobalConstants.MEMBERSHIP_RENEWED,
+      confirmedPaymentRequest.datePaid
+    );
+    await updateUser(
+      confirmedPaymentRequest.message,
+      defaultActionState,
+      updatedMembershipRenewedDate
+    );
+  } else {
+    // Error handling
+  }
   return NextResponse.json("OK");
 };
