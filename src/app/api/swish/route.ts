@@ -3,9 +3,9 @@ import {
   createPaymentRequest,
   getQrCodeForPaymentRequest,
   IPaymentRequestConfirmed,
-  SwishConstants,
 } from "./swish-utils";
 import GlobalConstants from "../../GlobalConstants";
+import { SwishConstants } from "../../lib/swish-constants";
 import { OrgSettings } from "../../lib/org-settings";
 import { updateUser } from "../../lib/actions";
 import { defaultActionState } from "../../ui/form/Form";
@@ -44,7 +44,6 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
   const confirmedPaymentRequest: IPaymentRequestConfirmed =
     await request.json();
   // TODO: Verify swish caller ID
-  console.log(confirmedPaymentRequest);
   if (confirmedPaymentRequest.status === SwishConstants.PAID) {
     // Update user's membership renewed date
     const updatedMembershipRenewedDate = new FormData();

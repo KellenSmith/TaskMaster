@@ -43,7 +43,6 @@ export const remindAboutExpiringMembership = async (): Promise<string> => {
   );
   const latestRenewDate = earliestRenewDate.add(1, "d");
 
-  console.log(earliestRenewDate.toISOString(), latestRenewDate.toISOString());
   const expiringUsers = await prisma.user.findMany({
     where: {
       [GlobalConstants.MEMBERSHIP_RENEWED]: {

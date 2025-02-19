@@ -43,8 +43,8 @@ export const isUserAuthorized = (
 export const isMembershipExpired = (user: any): boolean => {
   if (!user || !user[GlobalConstants.MEMBERSHIP_RENEWED]) return true;
   const expiryDate = dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(
-    OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number,
+    (OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number) + 1,
     "d"
   );
-  return expiryDate.isBefore(dayjs());
+  return dayjs().isAfter(expiryDate);
 };
