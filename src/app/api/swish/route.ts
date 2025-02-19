@@ -23,6 +23,12 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   const requestUrl = new URL(request.url);
   const userId = requestUrl.searchParams.get(GlobalConstants.ID);
 
+  if (!userId) {
+    return new NextResponse("User ID missing when generating QR code", {
+      status: 500,
+    });
+  }
+
   const paymentRequest = await createPaymentRequest(
     OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number,
     userId
