@@ -73,7 +73,6 @@ const RenewMembership = ({open, setOpen}: IRenewMembership) => {
       const startTime = dayjs()
       const waitTime = 5*60 // s
       intervalIdRef.current = setInterval(async () => {
-        console.log("interval run")
         if (dayjs().isAfter(startTime.add(waitTime, 's'))){
           clearInterval(intervalIdRef.current)
           setPaymentStatus(SwishConstants.EXPIRED)
