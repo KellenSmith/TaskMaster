@@ -3,6 +3,13 @@ import { swish } from "./swish-client";
 import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
 
+export const SwishConstants = {
+  PENDING: "PENDING",
+  PAID: "PAID",
+  EXPIRED: "EXPIRED",
+  ERROR: "ERROR",
+};
+
 export interface ICreatePaymentRequestResponse {
   id: string;
   token: string;
@@ -67,3 +74,34 @@ export const getQrCodeForPaymentRequest = async (
     return null;
   }
 };
+
+export interface IPaymentRequestConfirmed {
+  id: string;
+  payeePaymentReference: string;
+  paymentReference: string;
+  callbackUrl: string;
+  payerAlias?: string;
+  payeeAlias: string;
+  amount: number;
+  currency: string;
+  message: string;
+  status: string;
+  dateCreated: string;
+  datePaid: string;
+  errorCode: number | null;
+  errorMessage: string | null;
+}
+
+async function getPaymentRequest(paymentRequest: IPaymentRequestConfirmed) {
+  try {
+    const response = await swish.get(
+      `https://mss.cpc.getswish.net/swish-cpcapi/api/v1/paymentrequests/${paymentRequest.id}`
+    );
+
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (error) {
+    return null;
+  }
+}
