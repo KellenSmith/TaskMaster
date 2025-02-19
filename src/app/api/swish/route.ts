@@ -30,6 +30,12 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
 
   const qrCode = await getQrCodeForPaymentRequest(paymentRequest);
 
+  if (!qrCode) {
+    return new NextResponse("Failed to generate QR code", {
+      status: 500,
+    });
+  }
+
   return new NextResponse(qrCode, {
     headers: {
       "Content-Type": "image/png",
