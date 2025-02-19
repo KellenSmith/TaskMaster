@@ -6,11 +6,11 @@ import { OrgSettings } from "./org-settings";
 // Convention: "path"=`/${route}`
 
 export const routes = {
-  [GlobalConstants.ADMIN]: [`${GlobalConstants.MEMBERS}`],
-  [GlobalConstants.PRIVATE]: [
-    `${GlobalConstants.PROFILE}`,
-    `${GlobalConstants.PROFILE}/${GlobalConstants.RECEIPT}`,
+  [GlobalConstants.ADMIN]: [
+    `${GlobalConstants.MEMBERS}`,
+    `${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`,
   ],
+  [GlobalConstants.PRIVATE]: [`${GlobalConstants.PROFILE}`],
   [GlobalConstants.PUBLIC]: [
     `${GlobalConstants.HOME}`,
     `${GlobalConstants.LOGIN}`,
