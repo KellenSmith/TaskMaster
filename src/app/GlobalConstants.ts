@@ -23,6 +23,7 @@ const GlobalConstants = {
     ADMIN: "admin",
     HOME: "",
     LOGIN: "login",
+    RESET: "reset",
     PROFILE: "profile",
     RECEIPT: "receipt",
     MEMBERS: "members",

@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { sendUserCredentials } from "./mail-service/mail-service";
 
 const getStrippedFormData = (formData: FormData): any => {
-    const strippedFormData = Object.fromEntries(formData.entries().filter(([_, value]) => !!value));
+    const strippedFormData = Object.fromEntries(formData.entries().filter(([_, value]) => !!value)); // eslint-disable-line no-unused-vars
     return strippedFormData;
 };
 
@@ -155,6 +155,48 @@ const createUserCredentialsTransaction = (
     return transaction;
 };
 
+export const resetUserCredentials = async (
+    currentActionState: FormActionState,
+    formData: FormData,
+) => {
+    const newActionState = { ...currentActionState };
+    const userEmail = formData.get(GlobalConstants.EMAIL) as string;
+    const generatedPassword = "123456"; //TODO : await generateSalt();
+    const generatedUserCredentials = (await getGeneratedUserCredentials(
+        userEmail,
+        generatedPassword,
+    )) as Prisma.UserCredentialsCreateInput;
+
+    // Email new credentials to user email
+    try {
+        await sendUserCredentials(userEmail, generatedPassword);
+    } catch (error) {
+        newActionState.status = error.statusCode;
+        newActionState.result = "";
+        newActionState.errorMsg = `Credentials could not be sent to user because:\n${error.message}`;
+        return newActionState;
+    }
+
+    try {
+        const deleteCredentialsTransaction = prisma.userCredentials.deleteMany({
+            where: {
+                [GlobalConstants.EMAIL]: userEmail,
+            },
+        });
+        const createCredentialsTransaction =
+            createUserCredentialsTransaction(generatedUserCredentials);
+        await prisma.$transaction([deleteCredentialsTransaction, createCredentialsTransaction]);
+        newActionState.status = 200;
+        newActionState.errorMsg = "";
+        newActionState.result = "Reset credentials";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
 const getGeneratedUserCredentials = async (
     userEmail: string,
     generatedPassword: string,
@@ -174,7 +216,7 @@ export const validateUserMembership = async (
     const userIdentifier: UserIdentifier = {
         [GlobalConstants.EMAIL]: user[GlobalConstants.EMAIL],
     };
-    const generatedPassword = "123456"; //await generateSalt();
+    const generatedPassword = "123456"; //TODO: await generateSalt();
     const generatedUserCredentials = (await getGeneratedUserCredentials(
         user[GlobalConstants.EMAIL],
         generatedPassword,

@@ -148,7 +148,9 @@ export const decryptJWT = async (): Promise<JWTPayload> | undefined => {
         });
         const jwtPayload = result?.payload;
         return jwtPayload;
-    } catch {}
+    } catch {
+        return null;
+    }
 };
 
 export const deleteUserCookie = async () => {

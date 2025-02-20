@@ -23,20 +23,20 @@ export const defaultActionState: DatagridActionState = {
 export interface RowActionProps {
     name: string;
     serverAction: (
-        clickedRow: any,
-        currentActionState: FormActionState,
+        clickedRow: any, // eslint-disable-line no-unused-vars
+        currentActionState: FormActionState, // eslint-disable-line no-unused-vars
     ) => Promise<FormActionState>;
-    available: (clickedRow: any) => boolean;
+    available: (clickedRow: any) => boolean; // eslint-disable-line no-unused-vars
     buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning";
 }
 
 interface DatagridProps {
     name: string;
-    fetchData: (currentActionState: DatagridActionState) => Promise<DatagridActionState>;
+    fetchData: (currentActionState: DatagridActionState) => Promise<DatagridActionState>; // eslint-disable-line no-unused-vars
     updateAction: (
-        userId: string,
-        currentActionState: FormActionState,
-        formData: FormData,
+        userId: string, // eslint-disable-line no-unused-vars
+        currentActionState: FormActionState, // eslint-disable-line no-unused-vars
+        formData: FormData, // eslint-disable-line no-unused-vars
     ) => Promise<FormActionState>;
     rowActions: RowActionProps[];
 }

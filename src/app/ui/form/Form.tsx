@@ -10,7 +10,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useActionState, useState, Fragment } from "react";
+import { useActionState, useState, Fragment, FC } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -37,11 +37,11 @@ export const defaultActionState: FormActionState = {
 interface FormProps {
     name: string;
     buttonLabel: string;
-    action: (currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>;
+    action: (currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
     defaultValues?: any;
 }
 
-const Form: React.FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
+const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
     const [actionState, formAction, isPending] = useActionState(action, defaultActionState);
     const [dateFieldValues, setDateFieldValues] = useState<{
         [key: string]: Dayjs;
