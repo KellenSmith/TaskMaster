@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { isUserAuthorized, routes, routesToPath } from "../lib/definitions";
+import { CalendarIcon } from "@mui/x-date-pickers";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -49,6 +50,9 @@ const NavPanel = () => {
                     >
                         LOGO
                     </Typography>
+                    <Button onClick={() => redirect(`/${GlobalConstants.CALENDAR}`)}>
+                        <CalendarIcon />
+                    </Button>
                     {user ? (
                         <Button onClick={logOut}>
                             <LogoutIcon />

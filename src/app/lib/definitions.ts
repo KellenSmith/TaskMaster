@@ -16,6 +16,7 @@ export const routes = {
         GlobalConstants.LOGIN,
         `${GlobalConstants.LOGIN}/${GlobalConstants.RESET}`,
         GlobalConstants.APPLY,
+        GlobalConstants.CALENDAR,
     ],
 };
 

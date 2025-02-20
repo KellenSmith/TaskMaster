@@ -8,11 +8,7 @@ import { DatagridActionState } from "../ui/Datagrid";
 import { decryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
 import dayjs from "dayjs";
 import { sendUserCredentials } from "./mail-service/mail-service";
-
-const getStrippedFormData = (formData: FormData): any => {
-    const strippedFormData = Object.fromEntries(formData.entries().filter(([_, value]) => !!value)); // eslint-disable-line no-unused-vars
-    return strippedFormData;
-};
+import { getStrippedFormData } from "./action-utils";
 
 export const createUser = async (
     currentActionState: FormActionState,

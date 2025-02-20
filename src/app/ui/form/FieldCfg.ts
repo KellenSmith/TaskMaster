@@ -28,6 +28,14 @@ export const FieldLabels = {
     [GlobalConstants.CURRENT_PASSWORD]: "Current Password",
     [GlobalConstants.NEW_PASSWORD]: "New Password",
     [GlobalConstants.REPEAT_PASSWORD]: "Repeat Password",
+    //Event
+    [GlobalConstants.TITLE]: "Title",
+    [GlobalConstants.LOCATION]: "Location",
+    [GlobalConstants.START_TIME]: "Start time",
+    [GlobalConstants.END_TIME]: "End time",
+    [GlobalConstants.MAX_PARTICIPANTS]: "Maximum no. of participants",
+    [GlobalConstants.FULL_TICKET_PRICE]: "Full ticket price",
+    [GlobalConstants.DESCRIPTION]: "Description",
 };
 
 export const RenderedFields = {
@@ -48,6 +56,15 @@ export const RenderedFields = {
         GlobalConstants.CURRENT_PASSWORD,
         GlobalConstants.NEW_PASSWORD,
         GlobalConstants.REPEAT_PASSWORD,
+    ],
+    [GlobalConstants.EVENT]: [
+        GlobalConstants.TITLE,
+        GlobalConstants.LOCATION,
+        GlobalConstants.START_TIME,
+        GlobalConstants.END_TIME,
+        GlobalConstants.MAX_PARTICIPANTS,
+        GlobalConstants.FULL_TICKET_PRICE,
+        GlobalConstants.DESCRIPTION,
     ],
 };
 // Apply
@@ -77,6 +94,15 @@ export const RequiredFields = {
         GlobalConstants.NEW_PASSWORD,
         GlobalConstants.REPEAT_PASSWORD,
     ],
+    [GlobalConstants.EVENT]: [
+        GlobalConstants.TITLE,
+        GlobalConstants.LOCATION,
+        GlobalConstants.START_TIME,
+        GlobalConstants.END_TIME,
+        GlobalConstants.MAX_PARTICIPANTS,
+        GlobalConstants.FULL_TICKET_PRICE,
+        GlobalConstants.DESCRIPTION,
+    ],
 };
 // Apply
 RequiredFields[GlobalConstants.APPLY] = RequiredFields[GlobalConstants.PROFILE];
@@ -95,4 +121,11 @@ export const datePickerFields = [
     // User
     GlobalConstants.CREATED,
     GlobalConstants.MEMBERSHIP_RENEWED,
+    GlobalConstants.START_TIME,
+    GlobalConstants.END_TIME,
+];
+
+export const multiLineFields = [
+    // Event
+    GlobalConstants.DESCRIPTION,
 ];
