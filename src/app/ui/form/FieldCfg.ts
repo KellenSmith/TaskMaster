@@ -21,6 +21,8 @@ export const FieldLabels = {
     // Login
     [GlobalConstants.LOGIN]: "Login",
     [GlobalConstants.PASSWORD]: "Password",
+    // Reset
+    [GlobalConstants.RESET]: "Reset",
     // Credentials
     [GlobalConstants.USER_CREDENTIALS]: "User Credentials",
     [GlobalConstants.CURRENT_PASSWORD]: "Current Password",
@@ -39,6 +41,8 @@ export const RenderedFields = {
     ],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL, GlobalConstants.PASSWORD],
+    // Reset
+    [GlobalConstants.RESET]: [GlobalConstants.EMAIL],
     // Credentials
     [GlobalConstants.USER_CREDENTIALS]: [
         GlobalConstants.CURRENT_PASSWORD,
@@ -65,6 +69,8 @@ export const RequiredFields = {
     ],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL, GlobalConstants.PASSWORD],
+    // Reset
+    [GlobalConstants.RESET]: [GlobalConstants.RESET],
     // Credentials
     [GlobalConstants.USER_CREDENTIALS]: [
         GlobalConstants.CURRENT_PASSWORD,
