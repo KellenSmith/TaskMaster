@@ -60,7 +60,7 @@ export const getEventById = async (
 ): Promise<DatagridActionState> => {
     const newActionState: DatagridActionState = { ...currentState };
     try {
-        const event = await prisma.event.findUnique({
+        const event = await prisma.event.findUniqueOrThrow({
             where: {
                 [GlobalConstants.ID]: eventId,
             } as any as Prisma.EventWhereUniqueInput,
@@ -102,7 +102,25 @@ export const updateEvent = async (
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
-        newActionState.result = null;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const deleteEvent = async (eventId: string, currentActionState: FormActionState) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.event.delete({
+            where: { [GlobalConstants.ID]: eventId } as any as Prisma.EventWhereUniqueInput,
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `Deleted event`;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
     }
     return newActionState;
 };

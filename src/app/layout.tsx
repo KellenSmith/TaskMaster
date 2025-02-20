@@ -18,7 +18,9 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
             <body style={{ height: "100vh", backgroundColor: "#121212" }}>
                 <ContextProviders>
                     <NavPanel />
-                    <Stack padding={4}>{children}</Stack>
+                    <Stack sx={{ height: "100%" }} padding={4}>
+                        {children}
+                    </Stack>
                 </ContextProviders>
             </body>
         </html>
