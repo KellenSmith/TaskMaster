@@ -91,11 +91,6 @@ export const login = async (
         userCredentials[GlobalConstants.SALT],
     );
     const passwordsMatch = hashedPassword === userCredentials[GlobalConstants.HASHED_PASSWORD];
-    console.log(
-        hashedPassword,
-        userCredentials[GlobalConstants.HASHED_PASSWORD],
-        hashedPassword === userCredentials[GlobalConstants.HASHED_PASSWORD],
-    );
     if (!passwordsMatch) {
         authState.status = 401;
         authState.errorMsg = "Invalid credentials";
