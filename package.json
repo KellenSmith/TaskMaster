@@ -1,43 +1,45 @@
 {
-  "name": "task-master",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack --experimental-https",
-    "build": "pnpm prisma generate --schema=./src/prisma/schema.prisma && next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prisma-generate": "pnpm prisma generate --schema=./src/prisma/schema.prisma",
-    "prisma-migrate": "pnpm prisma migrate dev --schema=./src/prisma/schema.prisma",
-    "prisma-push": "pnpm prisma db push --schema=./src/prisma/schema.prisma"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^6.4.4",
-    "@mui/material": "^6.4.4",
-    "@mui/x-data-grid": "^7.26.0",
-    "@mui/x-date-pickers": "^7.26.0",
-    "@prisma/client": "^6.3.1",
-    "@types/bcryptjs": "^2.4.6",
-    "axios": "^1.7.9",
-    "dayjs": "^1.11.13",
-    "jose": "^5.9.6",
-    "next": "15.1.6",
-    "prisma": "^6.3.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "resend": "^4.1.2",
-    "uuid": "^11.0.5",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@types/node": "22.13.1",
-    "@types/react": "^19.0.8",
-    "@typescript-eslint/eslint-plugin": "^8.24.0",
-    "@typescript-eslint/parser": "^8.24.0",
-    "eslint": "^9.20.0",
-    "eslint-config-next": "15.1.6"
-  }
+    "name": "task-master",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev --turbopack --experimental-https",
+        "build": "pnpm prisma generate --schema=./src/prisma/schema.prisma && next build",
+        "start": "next start",
+        "lint": "next lint",
+        "prisma-generate": "pnpm prisma generate --schema=./src/prisma/schema.prisma",
+        "prisma-migrate": "pnpm prisma migrate dev --schema=./src/prisma/schema.prisma",
+        "prisma-push": "pnpm prisma db push --schema=./src/prisma/schema.prisma"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.0",
+        "@mui/icons-material": "^6.4.4",
+        "@mui/material": "^6.4.4",
+        "@mui/x-data-grid": "^7.26.0",
+        "@mui/x-date-pickers": "^7.26.0",
+        "@prisma/client": "^6.3.1",
+        "@types/bcryptjs": "^2.4.6",
+        "axios": "^1.7.9",
+        "dayjs": "^1.11.13",
+        "jose": "^5.9.6",
+        "next": "15.1.6",
+        "prisma": "^6.3.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "resend": "^4.1.2",
+        "uuid": "^11.0.5",
+        "zod": "^3.24.1"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3",
+        "@next/eslint-plugin-next": "^15.1.7",
+        "@types/node": "22.13.1",
+        "@types/react": "^19.0.8",
+        "@typescript-eslint/eslint-plugin": "^8.24.0",
+        "@typescript-eslint/parser": "^8.24.0",
+        "eslint": "^9.20.0",
+        "eslint-config-next": "15.1.6",
+        "prettier": "^3.5.1"
+    }
 }

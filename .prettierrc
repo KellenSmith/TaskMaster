@@ -1,0 +1,14 @@
+{
+    "printWidth": 100,
+    "tabWidth": 4,
+    "overrides": [
+        {
+            "files": ["*.js", "*.jsx", "*.ts", "*.tsx"],
+            "options": {
+                "printWidth": 100
+            }
+        }
+    ],
+    "proseWrap": "preserve",
+    "endOfLine": "lf"
+}

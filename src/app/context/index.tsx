@@ -8,6 +8,7 @@ import "dayjs/locale/en-gb";
 
 import ThemeContextProvider from "./ThemeContext";
 import ComponentWrapper from "./ComponentWrapper";
+import { FC, ReactNode } from "react";
 
 const locale = "en-gb";
 
@@ -15,17 +16,17 @@ dayjs.extend(isoWeek);
 dayjs.locale(locale);
 
 interface ContextProvidersProps {
-  children: React.ReactNode;
+    children: ReactNode;
 }
 
-const ContextProviders: React.FC<ContextProvidersProps> = ({ children }) => {
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={locale}>
-      <ThemeContextProvider>
-        <ComponentWrapper>{children}</ComponentWrapper>
-      </ThemeContextProvider>
-    </LocalizationProvider>
-  );
+const ContextProviders: FC<ContextProvidersProps> = ({ children }) => {
+    return (
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={locale}>
+            <ThemeContextProvider>
+                <ComponentWrapper>{children}</ComponentWrapper>
+            </ThemeContextProvider>
+        </LocalizationProvider>
+    );
 };
 
 export default ContextProviders;

@@ -6,25 +6,23 @@ import { ThemeContext } from "./ThemeContext";
 import UserContextProvider from "./UserContext";
 
 interface ComponentWrapperProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 const ComponentWrapper: React.FC<ComponentWrapperProps> = ({ children }) => {
-  const themeContext = useContext(ThemeContext);
+    const themeContext = useContext(ThemeContext);
 
-  if (!themeContext) {
-    throw new Error(
-      "ComponentWrapper must be used within a ThemeContextProvider",
+    if (!themeContext) {
+        throw new Error("ComponentWrapper must be used within a ThemeContextProvider");
+    }
+
+    const { theme } = themeContext;
+
+    return (
+        <ThemeProvider theme={theme}>
+            <UserContextProvider>{children}</UserContextProvider>
+        </ThemeProvider>
     );
-  }
-
-  const { theme } = themeContext;
-
-  return (
-    <ThemeProvider theme={theme}>
-      <UserContextProvider>{children}</UserContextProvider>
-    </ThemeProvider>
-  );
 };
 
 export default ComponentWrapper;

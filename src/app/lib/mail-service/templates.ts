@@ -3,11 +3,8 @@
 import GlobalConstants from "../../GlobalConstants";
 import { OrgSettings } from "../org-settings";
 
-export const userCredentialsTemplate = (
-  userEmail: string,
-  userPassword: string
-): string => {
-  return `
+export const userCredentialsTemplate = (userEmail: string, userPassword: string): string => {
+    return `
     <html>
     <head>
       <title>Here are your TaskMaster credentials</title>
@@ -23,7 +20,7 @@ export const userCredentialsTemplate = (
 };
 
 export const membershipExpiresReminderTemplate = (): string => {
-  return `
+    return `
     <html>
     <head>
       <title>Membership expiring</title>
@@ -31,7 +28,7 @@ export const membershipExpiresReminderTemplate = (): string => {
     <body>
       <p>
         Your membership expires in ${
-          OrgSettings[GlobalConstants.MEMBERSHIP_EXPIRES_REMINDER]
+            OrgSettings[GlobalConstants.MEMBERSHIP_EXPIRES_REMINDER]
         } days. Renew it in the application.
       </p>
     </body>

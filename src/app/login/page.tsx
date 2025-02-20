@@ -8,20 +8,16 @@ import { FieldLabels } from "../ui/form/FieldCfg";
 import { redirect } from "next/navigation";
 
 const LoginForm: React.FC = () => {
-  const { login } = useUserContext();
+    const { login } = useUserContext();
 
-  return (
-    <Stack>
-      <Form
-        name={GlobalConstants.LOGIN}
-        buttonLabel={GlobalConstants.LOGIN}
-        action={login}
-      />
-      <Button onClick={()=>redirect(`/${GlobalConstants.APPLY}`)}>{FieldLabels[GlobalConstants.APPLY]}</Button>
-    </Stack>
-    
-    
-  );
+    return (
+        <Stack>
+            <Form name={GlobalConstants.LOGIN} buttonLabel={GlobalConstants.LOGIN} action={login} />
+            <Button onClick={() => redirect(`/${GlobalConstants.APPLY}`)}>
+                {FieldLabels[GlobalConstants.APPLY]}
+            </Button>
+        </Stack>
+    );
 };
 
 export default LoginForm;
