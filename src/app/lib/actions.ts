@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { sendUserCredentials } from "./mail-service/mail-service";
 
 const getStrippedFormData = (formData: FormData): any => {
-    const strippedFormData = Object.fromEntries(formData.entries().filter(([_, value]) => !!value));
+    const strippedFormData = Object.fromEntries(formData.entries().filter(([_, value]) => !!value)); // eslint-disable-line no-unused-vars
     return strippedFormData;
 };
 
