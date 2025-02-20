@@ -36,6 +36,7 @@ export const FieldLabels = {
     [GlobalConstants.MAX_PARTICIPANTS]: "Maximum no. of participants",
     [GlobalConstants.FULL_TICKET_PRICE]: "Full ticket price",
     [GlobalConstants.DESCRIPTION]: "Description",
+    [GlobalConstants.HOST]: "Host",
 };
 
 export const RenderedFields = {

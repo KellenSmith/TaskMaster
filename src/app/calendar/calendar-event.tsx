@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Tooltip } from "@mui/material";
+import { Card, Tooltip, useTheme } from "@mui/material";
 import dayjs from "dayjs";
 import { FC } from "react";
 import { useUserContext } from "../context/UserContext";
@@ -21,6 +21,7 @@ export interface CalendarEventProps {
 
 const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     const { user } = useUserContext();
+    const theme = useTheme();
     const pathname = usePathname();
 
     const goToEventPage = () => redirect(`${pathname}/${event[GlobalConstants.ID]}`);
@@ -30,11 +31,12 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
         >
             <Card
                 elevation={0}
+                sx={{
+                    backgroundColor: theme.palette.primary.dark,
+                    ...(user && { cursor: "pointer" }),
+                }}
                 {...(user && {
                     onClick: goToEventPage,
-                    sx: {
-                        cursor: "pointer",
-                    },
                 })}
             >
                 {event.title}

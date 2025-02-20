@@ -64,6 +64,9 @@ export const getEventById = async (
             where: {
                 [GlobalConstants.ID]: eventId,
             } as any as Prisma.EventWhereUniqueInput,
+            include: {
+                [GlobalConstants.HOST]: true,
+            },
         });
         newActionState.status = 200;
         newActionState.result = [event];

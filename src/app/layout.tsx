@@ -1,6 +1,7 @@
 import React from "react";
 import ContextProviders from "./context";
 import NavPanel from "./ui/NavPanel";
+import { Stack } from "@mui/material";
 
 export const metadata = {
     title: "TaskMaster",
@@ -17,7 +18,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
             <body style={{ height: "100vh", backgroundColor: "#121212" }}>
                 <ContextProviders>
                     <NavPanel />
-                    {children}
+                    <Stack padding={4}>{children}</Stack>
                 </ContextProviders>
             </body>
         </html>

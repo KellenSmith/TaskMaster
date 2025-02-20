@@ -4,9 +4,10 @@ import { usePathname } from "next/navigation";
 import { getEventById, updateEvent } from "../../lib/event-actions";
 import { defaultActionState } from "../../ui/Datagrid";
 import { startTransition, useActionState, useEffect, useMemo } from "react";
-import { CircularProgress, Stack } from "@mui/material";
+import { CircularProgress, Stack, TextField } from "@mui/material";
 import Form, { FormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
+import { FieldLabels } from "../../ui/form/FieldCfg";
 
 const EventPage = () => {
     const pathname = usePathname();
@@ -33,19 +34,34 @@ const EventPage = () => {
         return updateEvent(eventId, currentActionState, formData);
     };
 
+    const getHostNickname = () =>
+        fetchEventState.result.length > 0
+            ? fetchEventState.result[0][GlobalConstants.HOST][GlobalConstants.NICKNAME]
+            : "";
+
     return (
         <Stack>
             {isEventPending ? (
                 <CircularProgress />
             ) : (
-                <Form
-                    name={GlobalConstants.EVENT}
-                    buttonLabel="save"
-                    action={updateEventById}
-                    defaultValues={
-                        fetchEventState.result.length > 0 ? fetchEventState.result[0] : undefined
-                    }
-                />
+                <Stack>
+                    <TextField
+                        disabled
+                        label={FieldLabels[GlobalConstants.HOST]}
+                        name={GlobalConstants.HOST}
+                        defaultValue={getHostNickname()}
+                    />
+                    <Form
+                        name={GlobalConstants.EVENT}
+                        buttonLabel="save"
+                        action={updateEventById}
+                        defaultValues={
+                            fetchEventState.result.length > 0
+                                ? fetchEventState.result[0]
+                                : undefined
+                        }
+                    />
+                </Stack>
             )}
         </Stack>
     );
