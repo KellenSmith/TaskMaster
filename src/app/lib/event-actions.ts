@@ -66,6 +66,9 @@ export const getEventById = async (
             } as any as Prisma.EventWhereUniqueInput,
             include: {
                 [GlobalConstants.HOST]: true,
+                _count: {
+                    select: { participantUsers: true },
+                },
             },
         });
         newActionState.status = 200;
@@ -117,6 +120,28 @@ export const deleteEvent = async (eventId: string, currentActionState: FormActio
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Deleted event`;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const addEventParticipant = async (
+    userId: string,
+    eventId: string,
+    currentActionState: FormActionState,
+) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.participantInEvent.create({
+            data: { userId: userId, eventId: eventId },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `See you there!`;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
