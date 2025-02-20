@@ -1,6 +1,11 @@
-import { Paper, Tooltip, useTheme } from "@mui/material";
+"use client";
+
+import { Card, Tooltip, useTheme } from "@mui/material";
 import dayjs from "dayjs";
 import { FC } from "react";
+import { useUserContext } from "../context/UserContext";
+import { usePathname, redirect } from "next/navigation";
+import GlobalConstants from "../GlobalConstants";
 
 export interface ICalendarEvent {
     id: string;
@@ -15,29 +20,27 @@ export interface CalendarEventProps {
 }
 
 const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
+    const { user } = useUserContext();
     const theme = useTheme();
+    const pathname = usePathname();
 
+    const goToEventPage = () => redirect(`${pathname}/${event[GlobalConstants.ID]}`);
     return (
         <Tooltip
             title={`${dayjs(event.startTime).format("L HH:mm")} - ${dayjs(event.endTime).format("L HH:mm")}`}
         >
-            <Paper
+            <Card
                 elevation={0}
                 sx={{
-                    backgroundColor: event.color || theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText,
-                    padding: "2px 4px",
-                    borderRadius: 1,
-                    fontSize: "0.75rem",
-                    mb: 0.5,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    cursor: "pointer",
+                    backgroundColor: theme.palette.primary.dark,
+                    ...(user && { cursor: "pointer" }),
                 }}
+                {...(user && {
+                    onClick: goToEventPage,
+                })}
             >
                 {event.title}
-            </Paper>
+            </Card>
         </Tooltip>
     );
 };

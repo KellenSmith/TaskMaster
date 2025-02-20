@@ -44,10 +44,65 @@ export const getAllEvents = async (
     try {
         const events: Prisma.EventUncheckedCreateInput[] = await prisma.event.findMany();
         newActionState.status = 200;
+        newActionState.errorMsg = "";
         newActionState.result = events;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
+        newActionState.result = [];
+    }
+    return newActionState;
+};
+
+export const getEventById = async (
+    eventId: string,
+    currentState: DatagridActionState,
+): Promise<DatagridActionState> => {
+    const newActionState: DatagridActionState = { ...currentState };
+    try {
+        const event = await prisma.event.findUnique({
+            where: {
+                [GlobalConstants.ID]: eventId,
+            } as any as Prisma.EventWhereUniqueInput,
+            include: {
+                [GlobalConstants.HOST]: true,
+            },
+        });
+        newActionState.status = 200;
+        newActionState.result = [event];
+        newActionState.errorMsg = "";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = [];
+    }
+    return newActionState;
+};
+
+export const updateEvent = async (
+    eventId: string,
+    currentActionState: FormActionState,
+    formData: FormData,
+): Promise<FormActionState> => {
+    const newActionState = { ...currentActionState };
+
+    const strippedFormData = getStrippedFormData(
+        formData,
+        createEventSchema,
+    ) as Prisma.UserUpdateInput;
+
+    try {
+        await prisma.event.update({
+            where: { [GlobalConstants.ID]: eventId } as any as Prisma.EventWhereUniqueInput,
+            data: strippedFormData,
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `Updated successfully`;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = null;
     }
     return newActionState;
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { createTheme, Theme } from "@mui/material";
+import { blueGrey } from "@mui/material/colors";
 import { createContext, useState, useEffect, ReactNode, FC } from "react";
 
 interface ThemeContextProps {
@@ -20,6 +21,9 @@ const ThemeContextProvider: FC<ThemeContextProviderProps> = ({ children }) => {
         const newTheme = createTheme({
             palette: {
                 mode: "dark",
+                primary: {
+                    main: blueGrey["600"],
+                },
             },
         });
         setTheme(newTheme);
