@@ -17,8 +17,9 @@ import {
     selectFieldOptions,
     RequiredFields,
     datePickerFields,
+    multiLineFields,
 } from "./FieldCfg";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DateTimeField } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 
@@ -75,8 +76,9 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
         if (datePickerFields.includes(fieldId)) {
             return (
                 <Fragment key={fieldId}>
-                    <DatePicker
+                    <DateTimeField
                         key={fieldId}
+                        format="L HH:MM"
                         label={FieldLabels[fieldId]}
                         defaultValue={
                             defaultValues && fieldId in defaultValues
@@ -105,6 +107,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
                 label={FieldLabels[fieldId]}
                 name={fieldId}
                 required={RequiredFields[name].includes(fieldId)}
+                multiline={multiLineFields.includes(fieldId)}
                 defaultValue={
                     defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : ""
                 }
