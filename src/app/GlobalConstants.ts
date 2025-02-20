@@ -37,6 +37,7 @@ const GlobalConstants = {
     APPLY: "apply",
     // User
     USER: "user",
+    USER_ID: "userId",
     FIRST_NAME: "firstName",
     SURNAME: "surName",
     NICKNAME: "nickname",
@@ -48,6 +49,9 @@ const GlobalConstants = {
     EXPIRED: "expired",
     CREATED: "created",
     MEMBERSHIP_RENEWED: "membershipRenewed",
+    HOSTING_EVENTS: "hostingEvents",
+    PARTICIPANT_EVENTS: "participantEvents",
+    RESERVE_EVENTS: "reserveEvents",
     // Login
     PASSWORD: "password",
     CURRENT_PASSWORD: "current_password",
@@ -57,6 +61,20 @@ const GlobalConstants = {
     USER_CREDENTIALS: "userCredentials",
     SALT: "salt",
     HASHED_PASSWORD: "hashedPassword",
+    // Event
+    EVENT: "event",
+    EVENT_ID: "eventId",
+    TITLE: "title",
+    LOCATION: "location",
+    START_TIME: "startTime",
+    END_TIME: "endTime",
+    DESCRIPTION: "description",
+    MAX_PARTICIPANTS: "maxParticipants",
+    FULL_TICKET_PRICE: "fullTicketPrice",
+    HOST: "host",
+    HOST_ID: "hostId",
+    PARTICIPANT_USERS: "participantUsers",
+    RESERVE_USERS: "reserveUsers",
 };
 
 export default GlobalConstants;
