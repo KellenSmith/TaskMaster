@@ -6,6 +6,7 @@ import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { getStrippedFormData } from "./action-utils";
 import { createEventSchema } from "./event-schema";
+import { DatagridActionState } from "../ui/Datagrid";
 
 export const createEvent = async (
     hostId: string,
@@ -32,6 +33,21 @@ export const createEvent = async (
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
         newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const getAllEvents = async (
+    currentState: DatagridActionState,
+): Promise<DatagridActionState> => {
+    const newActionState: DatagridActionState = { ...currentState };
+    try {
+        const events: Prisma.EventUncheckedCreateInput[] = await prisma.event.findMany();
+        newActionState.status = 200;
+        newActionState.result = events;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
     }
     return newActionState;
 };
