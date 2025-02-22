@@ -3,7 +3,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
-import GlobalConstants from "../GlobalConstants";
 import { getStrippedFormData } from "./action-utils";
 import { createEventSchema } from "./event-schema";
 import { DatagridActionState } from "../ui/Datagrid";
@@ -20,14 +19,14 @@ export const createEvent = async (
     try {
         const createdEvent = await prisma.event.create({
             data: {
-                [GlobalConstants.HOST_ID]: hostId,
+                hostId: hostId,
                 ...parsedFormData,
-            } as Prisma.EventUncheckedCreateInput,
+            } as Prisma.EventCreateInput,
         });
         newActionState.errorMsg = "";
         newActionState.status = 201;
-        newActionState.result = `Event #${createdEvent[GlobalConstants.ID]} ${
-            createdEvent[GlobalConstants.TITLE]
+        newActionState.result = `Event #${createdEvent.id} ${
+            createdEvent.title
         } created successfully`;
     } catch (error) {
         newActionState.status = 500;
@@ -42,7 +41,7 @@ export const getAllEvents = async (
 ): Promise<DatagridActionState> => {
     const newActionState: DatagridActionState = { ...currentState };
     try {
-        const events: Prisma.EventUncheckedCreateInput[] = await prisma.event.findMany();
+        const events = await prisma.event.findMany();
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = events;
@@ -62,10 +61,20 @@ export const getEventById = async (
     try {
         const event = await prisma.event.findUniqueOrThrow({
             where: {
-                [GlobalConstants.ID]: eventId,
-            } as any as Prisma.EventWhereUniqueInput,
+                id: eventId,
+            } as Prisma.EventWhereUniqueInput,
             include: {
-                [GlobalConstants.HOST]: true,
+                host: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+                participantUsers: {
+                    select: {
+                        userId: true,
+                    },
+                },
             },
         });
         newActionState.status = 200;
@@ -93,7 +102,7 @@ export const updateEvent = async (
 
     try {
         await prisma.event.update({
-            where: { [GlobalConstants.ID]: eventId } as any as Prisma.EventWhereUniqueInput,
+            where: { id: eventId } as Prisma.EventWhereUniqueInput,
             data: strippedFormData,
         });
         newActionState.errorMsg = "";
@@ -112,11 +121,40 @@ export const deleteEvent = async (eventId: string, currentActionState: FormActio
 
     try {
         await prisma.event.delete({
-            where: { [GlobalConstants.ID]: eventId } as any as Prisma.EventWhereUniqueInput,
+            where: { id: eventId } as Prisma.EventWhereUniqueInput,
         });
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Deleted event`;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const addEventParticipant = async (
+    userId: string,
+    eventId: string,
+    currentActionState: FormActionState,
+) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.participantInEvent.create({
+            data: {
+                userId: userId,
+                eventId: eventId,
+            },
+            include: {
+                Event: true,
+                User: true,
+            },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `See you there!`;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;

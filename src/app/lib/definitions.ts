@@ -10,13 +10,12 @@ export const routes = {
         GlobalConstants.MEMBERS,
         `${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`,
     ],
-    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE],
+    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         `${GlobalConstants.LOGIN}/${GlobalConstants.RESET}`,
         GlobalConstants.APPLY,
-        GlobalConstants.CALENDAR,
     ],
 };
 
@@ -45,3 +44,9 @@ export const isMembershipExpired = (user: any): boolean => {
     );
     return dayjs().isAfter(expiryDate);
 };
+
+export const isUserAdmin = (user: any): boolean =>
+    user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
+
+export const isUserHost = (user: any, event: any): boolean =>
+    user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
