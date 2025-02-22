@@ -17,6 +17,7 @@ import Form, {
 import GlobalConstants from "../../GlobalConstants";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
+import { isUserAdmin, isUserHost } from "../../lib/definitions";
 
 const EventPage = () => {
     const theme = useTheme();
@@ -103,12 +104,17 @@ const EventPage = () => {
                                 ? fetchEventState.result[0]
                                 : undefined
                         }
+                        readOnly={
+                            !(isUserAdmin(user) || isUserHost(user, fetchEventState.result[0]))
+                        }
                     />
                     {getEventActionMsg()}
                     <Button onClick={participate}>participate</Button>
-                    <Button color="error" onClick={deleteEventAndRedirect}>
-                        delete
-                    </Button>
+                    {isUserAdmin(user) && (
+                        <Button color="error" onClick={deleteEventAndRedirect}>
+                            delete
+                        </Button>
+                    )}
                 </Stack>
             )}
         </Stack>

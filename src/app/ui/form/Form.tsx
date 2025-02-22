@@ -40,9 +40,10 @@ interface FormProps {
     buttonLabel: string;
     action: (currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
     defaultValues?: any;
+    readOnly?: boolean;
 }
 
-const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
+const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnly = false }) => {
     const [actionState, formAction, isPending] = useActionState(action, defaultActionState);
     const [dateFieldValues, setDateFieldValues] = useState<{
         [key: string]: Dayjs;
@@ -60,6 +61,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
             const options = selectFieldOptions[fieldId];
             return (
                 <Autocomplete
+                    readOnly={readOnly}
                     key={fieldId}
                     renderInput={(params) => <TextField {...params} label={FieldLabels[fieldId]} />}
                     autoSelect={fieldId in RequiredFields[name]}
@@ -77,6 +79,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
             return (
                 <Fragment key={fieldId}>
                     <DateTimeField
+                        disabled={readOnly}
                         key={fieldId}
                         format="L HH:MM"
                         label={FieldLabels[fieldId]}
@@ -103,6 +106,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
         }
         return (
             <TextField
+                disabled={readOnly}
                 key={fieldId}
                 label={FieldLabels[fieldId]}
                 name={fieldId}
@@ -126,9 +130,11 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues }) => {
                     {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
                 </Stack>
                 {getStatusMsg()}
-                <Button type="submit" variant="contained" disabled={isPending}>
-                    {buttonLabel}
-                </Button>
+                {!readOnly && (
+                    <Button type="submit" variant="contained" disabled={isPending}>
+                        {buttonLabel}
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );

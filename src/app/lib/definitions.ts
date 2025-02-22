@@ -45,3 +45,9 @@ export const isMembershipExpired = (user: any): boolean => {
     );
     return dayjs().isAfter(expiryDate);
 };
+
+export const isUserAdmin = (user: any): boolean =>
+    user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
+
+export const isUserHost = (user: any, event: any): boolean =>
+    user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
