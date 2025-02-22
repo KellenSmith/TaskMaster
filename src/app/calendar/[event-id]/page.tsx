@@ -35,6 +35,11 @@ const EventPage = () => {
         defaultDatagridActionState,
     );
 
+    const getEventResult = () => {
+        if (fetchEventState.result.length < 1) return null;
+        return fetchEventState.result[0];
+    };
+
     useEffect(() => {
         startTransition(() => {
             fetchEventAction();
@@ -46,21 +51,30 @@ const EventPage = () => {
     const participate = async () => {
         const participateResult = await addEventParticipant(
             user[GlobalConstants.ID],
-            fetchEventState.result[0][GlobalConstants.ID],
+            getEventResult()[GlobalConstants.ID],
             defaultFormActionState,
         );
+        setEventActionState(participateResult);
         startTransition(() => fetchEventAction());
         return participateResult;
+    };
+
+    const isUserParticipant = () => {
+        const event = getEventResult();
+        if (!event) return false;
+        return event[GlobalConstants.PARTICIPANT_USERS]
+            .map((participant: any) => participant[GlobalConstants.USER_ID])
+            .includes(user[GlobalConstants.ID]);
     };
 
     const updateEventById = async (currentActionState: FormActionState, formData: FormData) => {
         return updateEvent(eventId, currentActionState, formData);
     };
 
-    const getHostNickname = () =>
-        fetchEventState.result.length > 0
-            ? fetchEventState.result[0][GlobalConstants.HOST][GlobalConstants.NICKNAME]
-            : "";
+    const getHostNickname = () => {
+        const event = getEventResult();
+        event ? event[GlobalConstants.HOST][GlobalConstants.NICKNAME] : "";
+    };
 
     const deleteEventAndRedirect = async () => {
         const deleteResult = await deleteEvent(eventId, defaultFormActionState);
@@ -93,23 +107,21 @@ const EventPage = () => {
                         defaultValue={getHostNickname()}
                     />
                     <Typography color="primary">
-                        {`Participants: ${fetchEventState.result[0][GlobalConstants.COUNT][GlobalConstants.PARTICIPANT_USERS]}`}
+                        {`Participants: ${getEventResult()[GlobalConstants.PARTICIPANT_USERS].length}`}
                     </Typography>
                     <Form
                         name={GlobalConstants.EVENT}
                         buttonLabel="save"
                         action={updateEventById}
                         defaultValues={
-                            fetchEventState.result.length > 0
-                                ? fetchEventState.result[0]
-                                : undefined
+                            fetchEventState.result.length > 0 ? getEventResult() : undefined
                         }
-                        readOnly={
-                            !(isUserAdmin(user) || isUserHost(user, fetchEventState.result[0]))
-                        }
+                        readOnly={!(isUserAdmin(user) || isUserHost(user, getEventResult()))}
                     />
                     {getEventActionMsg()}
-                    <Button onClick={participate}>participate</Button>
+                    {!(isUserHost(user, getEventResult()) || isUserParticipant()) && (
+                        <Button onClick={participate}>participate</Button>
+                    )}
                     {isUserAdmin(user) && (
                         <Button color="error" onClick={deleteEventAndRedirect}>
                             delete

@@ -10,13 +10,12 @@ export const routes = {
         GlobalConstants.MEMBERS,
         `${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`,
     ],
-    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE],
+    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         `${GlobalConstants.LOGIN}/${GlobalConstants.RESET}`,
         GlobalConstants.APPLY,
-        GlobalConstants.CALENDAR,
     ],
 };
 

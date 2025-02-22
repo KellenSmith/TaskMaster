@@ -63,9 +63,9 @@ model Event {
 // Each event can have multiple participants
 model ParticipantInEvent {
     User    User   @relation(fields: [userId], references: [id])
-    userId  String @unique
+    userId  String
     Event   Event  @relation(fields: [eventId], references: [id])
-    eventId String @unique
+    eventId String
 
     @@id([userId, eventId])
 }
@@ -75,9 +75,9 @@ model ParticipantInEvent {
 // Each event can have multiple reserve users
 model ReserveInEvent {
     User    User   @relation(fields: [userId], references: [id])
-    userId  String @unique
+    userId  String
     Event   Event  @relation(fields: [eventId], references: [id])
-    eventId String @unique
+    eventId String
 
     @@id([userId, eventId])
 }
