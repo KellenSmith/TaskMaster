@@ -41,31 +41,6 @@ export const createPaymentRequest = async (
     }
 };
 
-export const getQrCodeForPaymentRequest = async (
-    paymentRequest: ICreatePaymentRequestResponse,
-): Promise<ArrayBuffer | null> => {
-    const data = {
-        token: paymentRequest.token,
-        size: OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE],
-        format: "png",
-        border: "0",
-    };
-
-    try {
-        const response = await swish.post(
-            `https://mpc.getswish.net/qrg-swish/api/v1/commerce`,
-            data,
-            { responseType: "arraybuffer" },
-        );
-
-        if (response.status === 200) {
-            return response.data;
-        }
-    } catch {
-        return null;
-    }
-};
-
 export interface IPaymentRequestConfirmed {
     id: string;
     payeePaymentReference: string;

@@ -1,12 +1,12 @@
 import { Button, Stack, Typography } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
-import { addEventParticipant, addEventReserve } from "../../lib/event-actions";
+import { addEventReserve } from "../../lib/event-actions";
 import { startTransition, useActionState } from "react";
 import { defaultActionState, FormActionState } from "../../ui/form/Form";
-import { isUserHost } from "../../lib/definitions";
+import { isUserHost, isUserParticipant } from "../../lib/definitions";
 
-const ParticipationSection = ({ event, fetchEventAction }) => {
+const ParticipationSection = ({ event, fetchEventAction, setPaymentHandlerOpen }) => {
     const { user } = useUserContext();
 
     const actAndUpdateEvent = (buttonAction: Function) => {
@@ -21,19 +21,10 @@ const ParticipationSection = ({ event, fetchEventAction }) => {
             serverAction(user[GlobalConstants.ID], event[GlobalConstants.ID], currentActionState);
     };
 
-    const [participateActionState, participateAction, isParticipatePending] = useActionState(
-        appendUserEventData(addEventParticipant),
-        defaultActionState,
-    );
     const [reserveActionState, reserveAction, isReservePending] = useActionState(
         appendUserEventData(addEventReserve),
         defaultActionState,
     );
-
-    const isUserParticipant = () =>
-        event[GlobalConstants.PARTICIPANT_USERS]
-            .map((participant: any) => participant[GlobalConstants.USER_ID])
-            .includes(user[GlobalConstants.ID]);
 
     const findReserveUserIndexById = () => {
         return event[GlobalConstants.RESERVE_USERS].findIndex(
@@ -53,7 +44,8 @@ const ParticipationSection = ({ event, fetchEventAction }) => {
 
     const getContent = () => {
         if (isUserHost(user, event)) return;
-        if (isUserParticipant()) return <Typography color="primary">See you there!</Typography>;
+        if (isUserParticipant(user, event))
+            return <Typography color="primary">See you there!</Typography>;
         if (isUserReserve())
             return (
                 <Typography color="primary" maxWidth="25%">
@@ -69,24 +61,19 @@ const ParticipationSection = ({ event, fetchEventAction }) => {
                     get on reserve list
                 </Button>
             );
-        <Button
-            disabled={isParticipatePending}
-            onClick={() => actAndUpdateEvent(participateAction)}
-        >
-            participate
-        </Button>;
+        return <Button onClick={() => setPaymentHandlerOpen(true)}>participate</Button>;
     };
 
     return (
-        <Stack>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography color="primary">{getParticipantsText()}</Typography>
-                {getContent()}
+        <>
+            <Stack>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography color="primary">{getParticipantsText()}</Typography>
+                    {getContent()}
+                </Stack>
+                <Typography color="error">{reserveActionState.errorMsg}</Typography>
             </Stack>
-            <Typography color="error">
-                {participateActionState.errorMsg || reserveActionState.errorMsg}
-            </Typography>
-        </Stack>
+        </>
     );
 };
 

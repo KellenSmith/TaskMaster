@@ -8,25 +8,48 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { OrgSettings } from "../lib/org-settings";
-import GlobalConstants from "../GlobalConstants";
-import React, { Dispatch, SetStateAction, useRef, useState } from "react";
+import { OrgSettings } from "../../lib/org-settings";
+import GlobalConstants from "../../GlobalConstants";
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
-import { SwishConstants } from "../lib/swish-constants";
-import { isMembershipExpired } from "../lib/definitions";
-import { useUserContext } from "../context/UserContext";
+import { SwishConstants } from "../../lib/swish-constants";
+import { useUserContext } from "../../context/UserContext";
 
-interface IRenewMembership {
+interface ISwishPaymentHandler {
+    title: string;
     open: boolean;
     setOpen: Dispatch<SetStateAction<boolean>>;
+    hasPaid: () => Promise<boolean>;
+    paymentAmount: number;
+    callbackEndpoint: string;
+    callbackParams?: any;
 }
 
-const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
-    const { user, updateLoggedInUser } = useUserContext();
+const SwishPaymentHandler = ({
+    title,
+    open,
+    setOpen,
+    hasPaid,
+    paymentAmount,
+    callbackEndpoint,
+    callbackParams,
+}: ISwishPaymentHandler) => {
+    const { user } = useUserContext();
     const [qrCodeUrl, setQrCodeUrl] = useState("");
     const [paymentStatus, setPaymentStatus] = useState(SwishConstants.PENDING);
     const intervalIdRef = useRef(null);
+    const callbackUrl = useMemo(() => {
+        const url = new URL(
+            `/api/swish/${callbackEndpoint}`,
+            OrgSettings[GlobalConstants.BASE_URL] as string,
+        );
+        if (callbackParams)
+            Object.keys(callbackParams).forEach((param) =>
+                url.searchParams.append(param, callbackParams[param]),
+            );
+        return url.toString();
+    }, [callbackEndpoint, callbackParams]);
 
     const closeQrCodeDialog = () => {
         clearInterval(intervalIdRef.current);
@@ -35,35 +58,38 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
         setOpen(false);
     };
 
-    const simulateSwishPayment = async () => {
+    const simulatePaymentCallback = async () => {
         // Simulate response from swish
         const examplePaymentConf = {
             id: "0902D12C7FAE43D3AAAC49622AA79FEF",
             payeePaymentReference: "0123456789",
             paymentReference: "652ED6A2BCDE4BA8AD11D7334E9567B7",
-            callbackUrl: SwishConstants.CALLBACK_URL,
+            callbackUrl: callbackUrl,
             payerAlias: "46712347689",
             payeeAlias: "1234679304",
             amount: 100.0,
             currency: "SEK",
-            message: "8a08c6e2-bbc9-41b6-9a51-0f989559f8f1", // kellen3 user id
+            message: user[GlobalConstants.ID],
             status: "PAID",
             dateCreated: "2022-04-13T09:05:32.717Z",
             datePaid: dayjs().toISOString(),
             errorCode: null,
             errorMessage: null,
         };
-        await axios.post(SwishConstants.CALLBACK_URL, examplePaymentConf);
+        await axios.post(callbackUrl, examplePaymentConf);
     };
 
     const handleMobilePaymentFlow = async () => {
+        const requestUrl = new URL(
+            "/api/swish/payment-request-token",
+            OrgSettings[GlobalConstants.BASE_URL] as string,
+        );
+        requestUrl.searchParams.set(GlobalConstants.ID, user[GlobalConstants.ID]);
         try {
-            const paymentRequestResponse = await axios.get(
-                `${OrgSettings[GlobalConstants.BASE_URL]}/api/swish`,
-            );
+            const paymentRequestResponse = await axios.get(requestUrl.toString());
             if (paymentRequestResponse.data) {
                 const paymentRequest = paymentRequestResponse.data;
-                const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${SwishConstants.CALLBACK_URL}`;
+                const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${callbackUrl}`;
                 // Open or redirect the user to the url
                 redirect(appUrl);
             }
@@ -74,9 +100,9 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
 
     /**
      * Wait for payment for 5 minutes
-     * Update user every 5 seconds. If membership is valid, stop waiting.
+     * Update user every 5 seconds. If payment has been made, stop waiting.
      */
-    const waitForMembershipRenewal = async () => {
+    const waitForPayment = async () => {
         const startTime = dayjs();
         const waitTime = 5 * 60; // s
         intervalIdRef.current = setInterval(async () => {
@@ -84,25 +110,34 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
                 clearInterval(intervalIdRef.current);
                 setPaymentStatus(SwishConstants.EXPIRED);
             }
-            const updatedUser = await updateLoggedInUser();
-            if (!isMembershipExpired(updatedUser)) {
+            if (await hasPaid()) {
                 clearInterval(intervalIdRef.current);
                 setPaymentStatus(SwishConstants.PAID);
             }
         }, 10000);
     };
 
+    // Clear interval if unmount without finishing waiting for payment
+    useEffect(() => {
+        return () => {
+            clearInterval(intervalIdRef.current);
+            setOpen(false);
+        };
+    }, [setOpen]);
+
     const handleDesktopPaymentFlow = async () => {
         try {
-            const createdPaymentRequestResponse = await axios.get(
-                `${OrgSettings[GlobalConstants.BASE_URL]}/api/swish?${GlobalConstants.ID}=${user[GlobalConstants.ID]}`,
-                {
-                    responseType: "arraybuffer",
-                },
+            const requestUrl = new URL(
+                "/api/swish/payment-request-qr-code",
+                OrgSettings[GlobalConstants.BASE_URL] as string,
             );
+            requestUrl.searchParams.set(GlobalConstants.ID, user[GlobalConstants.ID]);
+            const swishQrCodeResponse = await axios.get(requestUrl.toString(), {
+                responseType: "arraybuffer",
+            });
 
-            if (createdPaymentRequestResponse.status === 200) {
-                const qrCodeBlob = new Blob([createdPaymentRequestResponse.data], {
+            if (swishQrCodeResponse.status === 200) {
+                const qrCodeBlob = new Blob([swishQrCodeResponse.data], {
                     type: "image/png",
                 });
                 const url = URL.createObjectURL(qrCodeBlob);
@@ -118,7 +153,7 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
             await handleMobilePaymentFlow();
         } else {
             await handleDesktopPaymentFlow();
-            await waitForMembershipRenewal();
+            await waitForPayment();
         }
     };
 
@@ -127,7 +162,7 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
             case SwishConstants.PENDING:
                 return qrCodeUrl ? "Awaiting your payment..." : "";
             case SwishConstants.PAID:
-                return "Thank you for your payment! Your membership has been renewed";
+                return "Thank you for your payment!";
             case SwishConstants.EXPIRED:
                 return "Your payment request expired";
             default: {
@@ -138,12 +173,12 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
 
     return (
         <Dialog open={open} onClose={closeQrCodeDialog}>
-            <DialogTitle>Renew membership</DialogTitle>
+            <DialogTitle>{title}</DialogTitle>
             <DialogContent>
                 {qrCodeUrl ? (
                     <Stack>
                         <DialogContentText>
-                            {`Scan the QR code to pay your membership fee of ${OrgSettings[GlobalConstants.MEMBERSHIP_FEE]} SEK`}
+                            {`Scan the QR code to pay ${paymentAmount} SEK`}
                         </DialogContentText>
 
                         <Image
@@ -153,7 +188,7 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
                             height={OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE] as number}
                         />
                         {/* TODO: Remove payment simulation in production */}
-                        <Button onClick={simulateSwishPayment}>simulate pay</Button>
+                        <Button onClick={simulatePaymentCallback}>simulate pay</Button>
                     </Stack>
                 ) : (
                     <Button onClick={startPaymentProcess}>start swish payment process</Button>
@@ -165,4 +200,4 @@ const RenewMembership = ({ open, setOpen }: IRenewMembership) => {
     );
 };
 
-export default RenewMembership;
+export default SwishPaymentHandler;

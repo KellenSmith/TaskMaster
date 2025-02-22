@@ -9,7 +9,8 @@ import { useState } from "react";
 import { defaultActionState } from "../ui/form/Form";
 import { Button, Stack, Typography } from "@mui/material";
 import { isMembershipExpired } from "../lib/definitions";
-import RenewMembership from "./RenewMembership";
+import SwishPaymentHandler from "../ui/swish/SwishPaymentHandler";
+import { OrgSettings } from "../lib/org-settings";
 
 const ProfilePage = () => {
     const { user, updateLoggedInUser, logOut } = useUserContext();
@@ -72,6 +73,11 @@ const ProfilePage = () => {
         await logOut();
     };
 
+    const hasRenewedMembership = async () => {
+        const updatedUser = await updateLoggedInUser();
+        return !isMembershipExpired(updatedUser);
+    };
+
     return (
         <>
             <Stack>
@@ -96,9 +102,14 @@ const ProfilePage = () => {
                     Delete My Account
                 </Button>
             </Stack>
-            <RenewMembership
+            <SwishPaymentHandler
+                title={"Renew membership"}
                 open={openRenewMembershipDialog}
                 setOpen={setOpenRenewMembershipDialog}
+                hasPaid={hasRenewedMembership}
+                paymentAmount={OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number}
+                callbackEndpoint="renew-membership"
+                callbackParams={{ [GlobalConstants.ID]: user[GlobalConstants.ID] }}
             />
         </>
     );
