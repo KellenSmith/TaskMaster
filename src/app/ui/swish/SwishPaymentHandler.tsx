@@ -10,7 +10,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
-import React, { Dispatch, SetStateAction, useMemo, useRef, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { SwishConstants } from "../../lib/swish-constants";
@@ -23,6 +23,7 @@ interface ISwishPaymentHandler {
     hasPaid: () => Promise<boolean>;
     paymentAmount: number;
     callbackEndpoint: string;
+    callbackParams?: any;
 }
 
 const SwishPaymentHandler = ({
@@ -32,15 +33,23 @@ const SwishPaymentHandler = ({
     hasPaid,
     paymentAmount,
     callbackEndpoint,
+    callbackParams,
 }: ISwishPaymentHandler) => {
     const { user } = useUserContext();
     const [qrCodeUrl, setQrCodeUrl] = useState("");
     const [paymentStatus, setPaymentStatus] = useState(SwishConstants.PENDING);
-    const callbackUrl = useMemo(
-        () => new URL(callbackEndpoint, OrgSettings[GlobalConstants.BASE_URL] as string).toString(),
-        [callbackEndpoint],
-    );
     const intervalIdRef = useRef(null);
+    const callbackUrl = useMemo(() => {
+        const url = new URL(
+            `/api/swish/${callbackEndpoint}`,
+            OrgSettings[GlobalConstants.BASE_URL] as string,
+        );
+        if (callbackParams)
+            Object.keys(callbackParams).forEach((param) =>
+                url.searchParams.append(param, callbackParams[param]),
+            );
+        return url.toString();
+    }, [callbackEndpoint, callbackParams]);
 
     const closeQrCodeDialog = () => {
         clearInterval(intervalIdRef.current);
@@ -107,6 +116,14 @@ const SwishPaymentHandler = ({
             }
         }, 10000);
     };
+
+    // Clear interval if unmount without finishing waiting for payment
+    useEffect(() => {
+        return () => {
+            clearInterval(intervalIdRef.current);
+            setOpen(false);
+        };
+    }, [setOpen]);
 
     const handleDesktopPaymentFlow = async () => {
         try {

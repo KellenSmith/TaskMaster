@@ -108,7 +108,8 @@ const ProfilePage = () => {
                 setOpen={setOpenRenewMembershipDialog}
                 hasPaid={hasRenewedMembership}
                 paymentAmount={OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number}
-                callbackEndpoint="/api/swish/renew-membership"
+                callbackEndpoint="renew-membership"
+                callbackParams={{ [GlobalConstants.ID]: user[GlobalConstants.ID] }}
             />
         </>
     );

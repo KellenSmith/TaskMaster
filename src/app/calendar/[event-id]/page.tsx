@@ -12,8 +12,9 @@ import Form, {
 import GlobalConstants from "../../GlobalConstants";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost, isUserParticipant } from "../../lib/definitions";
 import ParticipationSection from "./ParticipationSection";
+import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
 
 const EventPage = () => {
     const theme = useTheme();
@@ -21,6 +22,7 @@ const EventPage = () => {
     const pathname = usePathname();
     const eventId = useMemo(() => pathname.split("/").at(-1), [pathname]);
     const [eventActionState, setEventActionState] = useState(defaultFormActionState);
+    const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
 
     const getEvent = async () => {
         return getEventById(eventId, fetchEventState);
@@ -48,11 +50,6 @@ const EventPage = () => {
         return updateEvent(eventId, currentActionState, formData);
     };
 
-    const getHostNickname = () => {
-        const event = getEventResult();
-        event ? event[GlobalConstants.HOST][GlobalConstants.NICKNAME] : "";
-    };
-
     const deleteEventAndRedirect = async () => {
         const deleteResult = await deleteEvent(eventId, defaultFormActionState);
         if (deleteResult.status !== 200) return setEventActionState(deleteResult);
@@ -67,6 +64,14 @@ const EventPage = () => {
             return <Typography color="success">{eventActionState.result}</Typography>;
     };
 
+    const hasBoughtTicket = async (): Promise<boolean> => {
+        startTransition(() => {
+            fetchEventAction();
+        });
+        console.log(user[GlobalConstants.ID], getEventResult());
+        return isUserParticipant(user, getEventResult());
+    };
+
     return (
         !!user && (
             <Stack>
@@ -77,34 +82,58 @@ const EventPage = () => {
                         {"Sorry, this event doesn't exist"}
                     </Typography>
                 ) : (
-                    <Stack>
-                        <TextField
-                            disabled
-                            label={FieldLabels[GlobalConstants.HOST]}
-                            name={GlobalConstants.HOST}
-                            defaultValue={getHostNickname()}
-                        />
-                        <ParticipationSection
-                            event={getEventResult()}
-                            fetchEventAction={fetchEventAction}
-                        />
-
-                        <Form
-                            name={GlobalConstants.EVENT}
-                            buttonLabel="save"
-                            action={updateEventById}
-                            defaultValues={
-                                fetchEventState.result.length > 0 ? getEventResult() : undefined
+                    <>
+                        <Stack>
+                            <TextField
+                                disabled
+                                label={FieldLabels[GlobalConstants.HOST]}
+                                name={GlobalConstants.HOST}
+                                value={
+                                    getEventResult()[GlobalConstants.HOST][GlobalConstants.NICKNAME]
+                                }
+                            />
+                            <ParticipationSection
+                                event={getEventResult()}
+                                fetchEventAction={fetchEventAction}
+                                setPaymentHandlerOpen={setPaymentHandlerOpen}
+                            />
+                            <Form
+                                name={GlobalConstants.EVENT}
+                                buttonLabel="save"
+                                action={updateEventById}
+                                defaultValues={
+                                    fetchEventState.result.length > 0 ? getEventResult() : undefined
+                                }
+                                readOnly={
+                                    !(isUserAdmin(user) || isUserHost(user, getEventResult()))
+                                }
+                            />
+                            {getEventActionMsg()}
+                            {isUserAdmin(user) && (
+                                <Button color="error" onClick={deleteEventAndRedirect}>
+                                    delete
+                                </Button>
+                            )}
+                        </Stack>
+                        <SwishPaymentHandler
+                            title="Buy ticket"
+                            open={paymentHandlerOpen}
+                            setOpen={setPaymentHandlerOpen}
+                            hasPaid={hasBoughtTicket}
+                            paymentAmount={
+                                getEventResult()
+                                    ? getEventResult()[GlobalConstants.FULL_TICKET_PRICE]
+                                    : 0
                             }
-                            readOnly={!(isUserAdmin(user) || isUserHost(user, getEventResult()))}
+                            callbackEndpoint="buy-event-ticket"
+                            callbackParams={{
+                                [GlobalConstants.USER_ID]: user[GlobalConstants.ID],
+                                [GlobalConstants.EVENT_ID]: getEventResult()
+                                    ? getEventResult()[GlobalConstants.ID]
+                                    : "",
+                            }}
                         />
-                        {getEventActionMsg()}
-                        {isUserAdmin(user) && (
-                            <Button color="error" onClick={deleteEventAndRedirect}>
-                                delete
-                            </Button>
-                        )}
-                    </Stack>
+                    </>
                 )}
             </Stack>
         )
