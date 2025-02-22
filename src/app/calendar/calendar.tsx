@@ -97,7 +97,7 @@ const CalendarDashboard: FC = () => {
         return (
             <Stack sx={{ height: "100%", width: "100%" }}>
                 <Grid2 container spacing={2} columns={7} sx={{ height: "100%" }}>
-                    {dayjs.weekdays().map((day) => (
+                    {dayjs.weekdaysShort().map((day) => (
                         <Grid2 key={day} size={1} alignContent="center">
                             <Typography
                                 key={day}

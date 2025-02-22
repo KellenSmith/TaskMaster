@@ -19,6 +19,7 @@ dayjs.locale(locale);
 dayjs.updateLocale(locale, {
     weekStart: 1,
     weekdays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    weekdaysShort: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 });
 
 interface ContextProvidersProps {
