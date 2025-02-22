@@ -1,12 +1,7 @@
 "use client";
 
 import { redirect, usePathname } from "next/navigation";
-import {
-    addEventParticipant,
-    deleteEvent,
-    getEventById,
-    updateEvent,
-} from "../../lib/event-actions";
+import { deleteEvent, getEventById, updateEvent } from "../../lib/event-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../ui/Datagrid";
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
 import { Button, CircularProgress, Stack, TextField, Typography, useTheme } from "@mui/material";
@@ -18,6 +13,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import ParticipationSection from "./ParticipationSection";
 
 const EventPage = () => {
     const theme = useTheme();
@@ -48,25 +44,6 @@ const EventPage = () => {
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const participate = async () => {
-        const participateResult = await addEventParticipant(
-            user[GlobalConstants.ID],
-            getEventResult()[GlobalConstants.ID],
-            defaultFormActionState,
-        );
-        setEventActionState(participateResult);
-        startTransition(() => fetchEventAction());
-        return participateResult;
-    };
-
-    const isUserParticipant = () => {
-        const event = getEventResult();
-        if (!event) return false;
-        return event[GlobalConstants.PARTICIPANT_USERS]
-            .map((participant: any) => participant[GlobalConstants.USER_ID])
-            .includes(user[GlobalConstants.ID]);
-    };
-
     const updateEventById = async (currentActionState: FormActionState, formData: FormData) => {
         return updateEvent(eventId, currentActionState, formData);
     };
@@ -91,45 +68,46 @@ const EventPage = () => {
     };
 
     return (
-        <Stack>
-            {isEventPending ? (
-                <CircularProgress />
-            ) : fetchEventState.result.length < 1 ? (
-                <Typography color={theme.palette.text.secondary}>
-                    {"Sorry, this event doesn't exist"}
-                </Typography>
-            ) : (
-                <Stack>
-                    <TextField
-                        disabled
-                        label={FieldLabels[GlobalConstants.HOST]}
-                        name={GlobalConstants.HOST}
-                        defaultValue={getHostNickname()}
-                    />
-                    <Typography color="primary">
-                        {`Participants: ${getEventResult()[GlobalConstants.PARTICIPANT_USERS].length}`}
+        !!user && (
+            <Stack>
+                {isEventPending ? (
+                    <CircularProgress />
+                ) : !getEventResult() ? (
+                    <Typography color={theme.palette.text.secondary}>
+                        {"Sorry, this event doesn't exist"}
                     </Typography>
-                    <Form
-                        name={GlobalConstants.EVENT}
-                        buttonLabel="save"
-                        action={updateEventById}
-                        defaultValues={
-                            fetchEventState.result.length > 0 ? getEventResult() : undefined
-                        }
-                        readOnly={!(isUserAdmin(user) || isUserHost(user, getEventResult()))}
-                    />
-                    {getEventActionMsg()}
-                    {!(isUserHost(user, getEventResult()) || isUserParticipant()) && (
-                        <Button onClick={participate}>participate</Button>
-                    )}
-                    {isUserAdmin(user) && (
-                        <Button color="error" onClick={deleteEventAndRedirect}>
-                            delete
-                        </Button>
-                    )}
-                </Stack>
-            )}
-        </Stack>
+                ) : (
+                    <Stack>
+                        <TextField
+                            disabled
+                            label={FieldLabels[GlobalConstants.HOST]}
+                            name={GlobalConstants.HOST}
+                            defaultValue={getHostNickname()}
+                        />
+                        <ParticipationSection
+                            event={getEventResult()}
+                            fetchEventAction={fetchEventAction}
+                        />
+
+                        <Form
+                            name={GlobalConstants.EVENT}
+                            buttonLabel="save"
+                            action={updateEventById}
+                            defaultValues={
+                                fetchEventState.result.length > 0 ? getEventResult() : undefined
+                            }
+                            readOnly={!(isUserAdmin(user) || isUserHost(user, getEventResult()))}
+                        />
+                        {getEventActionMsg()}
+                        {isUserAdmin(user) && (
+                            <Button color="error" onClick={deleteEventAndRedirect}>
+                                delete
+                            </Button>
+                        )}
+                    </Stack>
+                )}
+            </Stack>
+        )
     );
 };
 

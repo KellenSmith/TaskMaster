@@ -15,7 +15,7 @@ const LoginForm: FC = () => {
         <Stack>
             <Form name={GlobalConstants.LOGIN} buttonLabel={GlobalConstants.LOGIN} action={login} />
             <Button onClick={() => redirect(`/${GlobalConstants.LOGIN}/${GlobalConstants.RESET}`)}>
-                forgot my password
+                reset password
             </Button>
             <Button onClick={() => redirect(`/${GlobalConstants.APPLY}`)}>
                 {FieldLabels[GlobalConstants.APPLY]}
