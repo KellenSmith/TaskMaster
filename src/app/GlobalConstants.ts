@@ -76,7 +76,7 @@ const GlobalConstants = {
     HOST_ID: "hostId",
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
-    COUNT: "_count",
+    QUEUEING_SINCE: "queueingSince",
 };
 
 export default GlobalConstants;

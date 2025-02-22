@@ -75,6 +75,15 @@ export const getEventById = async (
                         userId: true,
                     },
                 },
+                reserveUsers: {
+                    select: {
+                        userId: true,
+                        queueingSince: true,
+                    },
+                    orderBy: {
+                        queueingSince: "asc",
+                    },
+                },
             },
         });
         newActionState.status = 200;
@@ -155,6 +164,35 @@ export const addEventParticipant = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `See you there!`;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const addEventReserve = async (
+    userId: string,
+    eventId: string,
+    currentActionState: FormActionState,
+) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.reserveInEvent.create({
+            data: {
+                userId: userId,
+                eventId: eventId,
+            },
+            include: {
+                Event: true,
+                User: true,
+            },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `Successfully added to reserve list`;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
