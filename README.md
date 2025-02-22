@@ -66,6 +66,12 @@ An event page can be accessed by clicking on it in the calendar. An event page c
 
 An event can be created by clicking a button on the calendar page or a time slot in the calendar. The logged-in user is automatically set as the host. Additional co-hosts can be added through an autocomplete list of registered users, where only the nickname of the user is visible, or a comma-separated list of names. Only the host or co-hosts of the event or admins can edit and delete existing events.
 
+The list of participants and reserves is handled automatically.
+
+- Members can buy a ticket in the application.
+- Members can see a list of their owned tickets and events in their profile page
+- Members can request a refund of their ticket and the ticket will automatically be offered to a reserve. If the reserve pays for the ticket, the ticket price is automatically refunded to the original owner.
+
 An event host, co-host, or admin can access the event's task manager.
 An event is split into three phases: preparation, execution, and aftermath.
 
