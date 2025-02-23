@@ -24,6 +24,9 @@ model User {
     participantEvents ParticipantInEvent[]
     reserveEvents     ReserveInEvent[]
 
+    assignedTasks Task[] @relation("Assignee")
+    reporterTasks Task[] @relation("Reporter")
+
     @@map("users") // Map to table named "users"
 }
 
@@ -54,6 +57,7 @@ model Event {
 
     participantUsers ParticipantInEvent[]
     reserveUsers     ReserveInEvent[]
+    tasks            Task[]
 
     @@map("events")
 }
@@ -81,4 +85,23 @@ model ReserveInEvent {
     queueingSince DateTime @default(now())
 
     @@id([userId, eventId])
+}
+
+model Task {
+    id         String  @id @default(uuid())
+    Event      Event?  @relation(fields: [eventId], references: [id])
+    eventId    String?
+    Assignee   User?   @relation("Assignee", fields: [assigneeId], references: [id])
+    assigneeId String?
+    Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])
+    reporterId String?
+
+    tag         String?
+    name        String
+    phase       String
+    startTime   DateTime
+    endTIme     DateTime
+    description String
+
+    @@map("tasks")
 }
