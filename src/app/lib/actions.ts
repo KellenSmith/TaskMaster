@@ -276,3 +276,29 @@ export const deleteUser = async (
     }
     return newActionState;
 };
+
+export const getUserParticipantEvents = async (
+    userId: string,
+    currentState: DatagridActionState,
+): Promise<DatagridActionState> => {
+    const newActionState: DatagridActionState = { ...currentState };
+    try {
+        const events = await prisma.event.findMany({
+            where: {
+                participantUsers: {
+                    some: {
+                        userId: userId,
+                    },
+                },
+            },
+        });
+        newActionState.status = 200;
+        newActionState.errorMsg = "";
+        newActionState.result = events;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = [];
+    }
+    return newActionState;
+};
