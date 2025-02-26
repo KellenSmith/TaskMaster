@@ -96,6 +96,7 @@ model Task {
     Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])
     reporterId String?
 
+    status      String   @default("draft") // draft, published
     tag         String?
     name        String
     phase       String
