@@ -21,6 +21,7 @@ import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form, { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
+import { redirect } from "next/navigation";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
@@ -41,10 +42,10 @@ const CalendarDashboard: FC = () => {
             currentActionState,
             formData,
         );
-        startTransition(async () => {
-            fetchEventsAction();
-        });
-
+        if (createEventResult.status === 201) {
+            const createdEventId = createEventResult.result;
+            redirect(`${GlobalConstants.CALENDAR}/${createdEventId}`);
+        }
         return createEventResult;
     };
 
