@@ -77,6 +77,18 @@ const GlobalConstants = {
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueingSince",
+    // Task
+    TASK: "task",
+    TASK_ID: "taskId",
+    ASSIGNEE: "assignee",
+    ASSIGNEE_ID: "assigneeId",
+    REPORTER: "reporter",
+    REPORTER_ID: "reporterId",
+    TAG: "tag",
+    PHASE: "phase",
+    BEFORE: "before",
+    DURING: "during",
+    AFTER: "after",
 };
 
 export default GlobalConstants;
