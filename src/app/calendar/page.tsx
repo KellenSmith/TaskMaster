@@ -1,5 +1,3 @@
-"use client";
-
 import CalendarDashboard from "./calendar";
 
 const CalendarPage = () => {
