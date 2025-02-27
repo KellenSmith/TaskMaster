@@ -5,16 +5,14 @@ import { deleteEvent, getEventById, updateEvent } from "../../lib/event-actions"
 import { defaultActionState as defaultDatagridActionState } from "../../ui/Datagrid";
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
 import { Button, CircularProgress, Stack, TextField, Typography, useTheme } from "@mui/material";
-import Form, {
-    FormActionState,
-    defaultActionState as defaultFormActionState,
-} from "../../ui/form/Form";
+import { FormActionState, defaultActionState as defaultFormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 import { isUserAdmin, isUserHost, isUserParticipant } from "../../lib/definitions";
 import ParticipationSection from "./ParticipationSection";
 import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
+import EventDashboard from "./EventDashboard";
 
 const EventPage = () => {
     const theme = useTheme();
@@ -46,6 +44,12 @@ const EventPage = () => {
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const publishEvent = async () => {
+        const updateData = new FormData();
+        updateData.append(GlobalConstants.STATUS, GlobalConstants.PUBLISHED);
+        return updateEventById(defaultFormActionState, updateData);
+    };
+
     const updateEventById = async (currentActionState: FormActionState, formData: FormData) => {
         return updateEvent(eventId, currentActionState, formData);
     };
@@ -68,9 +72,10 @@ const EventPage = () => {
         startTransition(() => {
             fetchEventAction();
         });
-        console.log(user[GlobalConstants.ID], getEventResult());
         return isUserParticipant(user, getEventResult());
     };
+
+    const isEventDraft = () => getEventResult()[GlobalConstants.STATUS] === GlobalConstants.DRAFT;
 
     return (
         !!user && (
@@ -83,7 +88,12 @@ const EventPage = () => {
                     </Typography>
                 ) : (
                     <>
-                        <Stack>
+                        <Stack spacing={2}>
+                            {isEventDraft() && (
+                                <Typography variant="h4" color={theme.palette.primary.main}>
+                                    {"This is an event draft. It is only visible to you."}
+                                </Typography>
+                            )}
                             <TextField
                                 disabled
                                 label={FieldLabels[GlobalConstants.HOST]}
@@ -92,23 +102,24 @@ const EventPage = () => {
                                     getEventResult()[GlobalConstants.HOST][GlobalConstants.NICKNAME]
                                 }
                             />
-                            <ParticipationSection
+                            <EventDashboard
+                                saveEventAction={updateEventById}
                                 event={getEventResult()}
-                                fetchEventAction={fetchEventAction}
-                                setPaymentHandlerOpen={setPaymentHandlerOpen}
                             />
-                            <Form
-                                name={GlobalConstants.EVENT}
-                                buttonLabel="save"
-                                action={updateEventById}
-                                defaultValues={
-                                    fetchEventState.result.length > 0 ? getEventResult() : undefined
-                                }
-                                readOnly={
-                                    !(isUserAdmin(user) || isUserHost(user, getEventResult()))
-                                }
-                            />
+                            {!isEventDraft() && (
+                                <ParticipationSection
+                                    event={getEventResult()}
+                                    fetchEventAction={fetchEventAction}
+                                    setPaymentHandlerOpen={setPaymentHandlerOpen}
+                                />
+                            )}
+
                             {getEventActionMsg()}
+                            {isUserHost(user, getEventResult()) && (
+                                <Button color="success" onClick={publishEvent}>
+                                    publish
+                                </Button>
+                            )}
                             {isUserAdmin(user) && (
                                 <Button color="error" onClick={deleteEventAndRedirect}>
                                     delete
