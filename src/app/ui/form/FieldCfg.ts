@@ -39,8 +39,10 @@ export const FieldLabels = {
     [GlobalConstants.HOST]: "Host",
     // Task
     [GlobalConstants.TASK]: "Task",
+    [GlobalConstants.NAME]: "Name",
     [GlobalConstants.ASSIGNEE]: "Assignee",
     [GlobalConstants.REPORTER]: "Reporter",
+    [GlobalConstants.PHASE]: "Phase",
     [GlobalConstants.TAGS]: "Tags",
     [GlobalConstants.PHASE]: "Phase",
     [GlobalConstants.STATUS]: "Status",
@@ -173,3 +175,5 @@ export const multiLineFields = [
     // Event
     GlobalConstants.DESCRIPTION,
 ];
+
+export const allowSelectMultiple = [GlobalConstants.TAGS];

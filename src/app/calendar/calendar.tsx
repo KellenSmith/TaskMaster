@@ -147,11 +147,11 @@ const CalendarDashboard: FC = () => {
                 {isEventsPending ? <CircularProgress size={30} /> : getCalendarGrid()}
             </Stack>
             <Dialog maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
-                <DialogTitle>Create event</DialogTitle>
+                <DialogTitle>Create event draft</DialogTitle>
                 <DialogContent>
                     <Form
                         name={GlobalConstants.EVENT}
-                        buttonLabel={GlobalConstants.CREATE}
+                        buttonLabel={"create event draft"}
                         action={createEventWithHost}
                     />
                 </DialogContent>
