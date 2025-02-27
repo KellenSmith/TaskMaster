@@ -3,25 +3,29 @@
 import GlobalConstants from "../GlobalConstants";
 import Form, { FormActionState } from "../ui/form/Form";
 import { useUserContext } from "../context/UserContext";
-import { deleteUser, updateUser, updateUserCredentials } from "../lib/actions";
+import { deleteUser, updateUser, updateUserCredentials } from "../lib/user-actions";
 import { login } from "../lib/auth/auth";
 import { useState } from "react";
 import { defaultActionState } from "../ui/form/Form";
 import { Button, Stack, Typography } from "@mui/material";
-import { isMembershipExpired } from "../lib/definitions";
+import { isMembershipExpired, LoginSchema, UpdateCredentialsSchema } from "../lib/definitions";
 import SwishPaymentHandler from "../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../lib/org-settings";
+import { Prisma } from "@prisma/client";
 
 const AccountTab = () => {
     const { user, updateLoggedInUser, logOut } = useUserContext();
     const [errorMsg, setErrorMsg] = useState("");
     const [openRenewMembershipDialog, setOpenRenewMembershipDialog] = useState(false);
 
-    const updateUserProfile = async (currentActionState: FormActionState, formData: FormData) => {
+    const updateUserProfile = async (
+        currentActionState: FormActionState,
+        fieldValues: Prisma.UserUpdateInput,
+    ) => {
         const updateUserState = await updateUser(
             user[GlobalConstants.ID],
             currentActionState,
-            formData,
+            fieldValues,
         );
         await updateLoggedInUser();
         return updateUserState;
@@ -29,37 +33,29 @@ const AccountTab = () => {
 
     const validateAndUpdateCredentials = async (
         currentActionState: FormActionState,
-        formData: FormData,
+        fieldValues: UpdateCredentialsSchema,
     ) => {
         const newActionState = { ...currentActionState };
         // Check new and repeated passwords match
-        if (
-            formData.get(GlobalConstants.NEW_PASSWORD) !==
-            formData.get(GlobalConstants.REPEAT_PASSWORD)
-        ) {
+        if (fieldValues.newPassword !== fieldValues.repeatPassword) {
             newActionState.status = 500;
             newActionState.result = "";
             newActionState.errorMsg = "Passwords do not match";
             return newActionState;
         }
-
         // Check current password
-        const validatedCurrentPassword = new FormData();
-        validatedCurrentPassword.append(GlobalConstants.EMAIL, user[GlobalConstants.EMAIL]);
-        validatedCurrentPassword.append(
-            GlobalConstants.PASSWORD,
-            formData.get(GlobalConstants.CURRENT_PASSWORD),
-        );
+        const validatedCurrentPassword: LoginSchema = {
+            email: user.email,
+            password: fieldValues.currentPassword,
+        };
         const validateCurrentResult = await login(currentActionState, validatedCurrentPassword);
         if (validateCurrentResult.status !== 200) return validateCurrentResult;
 
         // Update credentials
-        const updatedPassWord = new FormData();
-        updatedPassWord.append(GlobalConstants.EMAIL, user[GlobalConstants.EMAIL]);
-        updatedPassWord.append(
-            GlobalConstants.PASSWORD,
-            formData.get(GlobalConstants.NEW_PASSWORD),
-        );
+        const updatedPassWord = {
+            email: user.email,
+            password: fieldValues.newPassword,
+        };
         const updateCredentialsState = await updateUserCredentials(
             currentActionState,
             updatedPassWord,

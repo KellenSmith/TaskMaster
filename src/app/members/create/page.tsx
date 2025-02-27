@@ -1,5 +1,5 @@
 import GlobalConstants from "../../GlobalConstants";
-import { createUser } from "../../lib/actions";
+import { createUser } from "../../lib/user-actions";
 import Form from "../../ui/form/Form";
 
 const CreateUserPage = () => {
