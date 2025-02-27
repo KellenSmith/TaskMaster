@@ -3,25 +3,24 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
-import { getStrippedFormData } from "./action-utils";
-import { createEventSchema } from "./event-schema";
 import { DatagridActionState } from "../ui/Datagrid";
 
 export const createEvent = async (
     hostId: string,
     currentActionState: FormActionState,
-    formData: FormData,
+    fieldValues: Prisma.EventCreateInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
-    // Get props in formData which are part of the event schema
-    const parsedFormData = getStrippedFormData(formData, createEventSchema);
-
     try {
         const createdEvent = await prisma.event.create({
             data: {
-                hostId: hostId,
-                ...parsedFormData,
-            } as Prisma.EventCreateInput,
+                ...fieldValues,
+                host: {
+                    connect: {
+                        id: hostId,
+                    },
+                },
+            },
         });
         newActionState.errorMsg = "";
         newActionState.status = 201;
@@ -100,19 +99,14 @@ export const getEventById = async (
 export const updateEvent = async (
     eventId: string,
     currentActionState: FormActionState,
-    formData: FormData,
+    fieldValues: Prisma.EventUpdateInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
 
-    const strippedFormData = getStrippedFormData(
-        formData,
-        createEventSchema,
-    ) as Prisma.UserUpdateInput;
-
     try {
         await prisma.event.update({
-            where: { id: eventId } as Prisma.EventWhereUniqueInput,
-            data: strippedFormData,
+            where: { id: eventId },
+            data: fieldValues,
         });
         newActionState.errorMsg = "";
         newActionState.status = 200;

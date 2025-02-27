@@ -10,7 +10,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useActionState, useState, Fragment, FC } from "react";
+import { useState, FC, ChangeEvent } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -18,9 +18,10 @@ import {
     RequiredFields,
     datePickerFields,
     multiLineFields,
+    allowSelectMultiple,
 } from "./FieldCfg";
 import { DateTimeField } from "@mui/x-date-pickers";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 
 export interface FormActionState {
@@ -38,16 +39,40 @@ export const defaultActionState: FormActionState = {
 interface FormProps {
     name: string;
     buttonLabel: string;
-    action: (currentActionState: FormActionState, formData: FormData) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
+    action: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
     defaultValues?: any;
     readOnly?: boolean;
 }
 
+const getFieldValues = (formName: string, defaultValues: any) => {
+    const fieldValues = {};
+    for (let fieldId of RenderedFields[formName]) {
+        if (defaultValues && fieldId in defaultValues)
+            fieldValues[fieldId] = defaultValues[fieldId];
+        else {
+            if (fieldId in selectFieldOptions) {
+                if (RequiredFields[formName].includes(fieldId)) {
+                    const defaultOption = selectFieldOptions[fieldId][0];
+                    fieldValues[fieldId] = allowSelectMultiple.includes(fieldId)
+                        ? [defaultOption]
+                        : defaultOption;
+                } else fieldValues[fieldId] = allowSelectMultiple.includes(fieldId) ? [] : "";
+            } else fieldValues[fieldId] = "";
+        }
+    }
+    return fieldValues;
+};
+
 const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnly = false }) => {
-    const [actionState, formAction, isPending] = useActionState(action, defaultActionState);
-    const [dateFieldValues, setDateFieldValues] = useState<{
-        [key: string]: Dayjs;
-    }>(Object.fromEntries(RenderedFields[name].map((fieldId) => [fieldId, dayjs()])));
+    const [fieldValues, setFieldValues] = useState<{ [key: string]: string | string[] }>(
+        getFieldValues(name, defaultValues),
+    );
+    const [loading, setLoading] = useState(false);
+    const [actionState, setActionState] = useState(defaultActionState);
+
+    const changeFieldValue = (fieldId: string, value: string | string[]) => {
+        setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
+    };
 
     const getStatusMsg = () => {
         if (actionState.errorMsg)
@@ -56,52 +81,46 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
             return <Typography color="success">{actionState.result}</Typography>;
     };
 
+    const submitForm = async (event) => {
+        event.preventDefault();
+        setLoading(true);
+        const newActionState = await action(actionState, fieldValues);
+        setActionState(newActionState);
+        setLoading(false);
+    };
+
     const getFieldComp = (fieldId: string) => {
         if (fieldId in selectFieldOptions) {
-            const options = selectFieldOptions[fieldId];
             return (
                 <Autocomplete
                     readOnly={readOnly}
                     key={fieldId}
                     renderInput={(params) => <TextField {...params} label={FieldLabels[fieldId]} />}
                     autoSelect={fieldId in RequiredFields[name]}
-                    options={options}
-                    defaultValue={
-                        defaultValues && fieldId in defaultValues
-                            ? defaultValues[fieldId]
-                            : options[0]
+                    options={selectFieldOptions[fieldId]}
+                    value={fieldValues[fieldId]}
+                    onChange={(_, newValue) =>
+                        changeFieldValue(fieldId, newValue as string | string[])
                     }
-                    getOptionLabel={(option) => option[0].toUpperCase() + option.slice(1)}
+                    multiple={allowSelectMultiple.includes(fieldId)}
                 ></Autocomplete>
             );
         }
         if (datePickerFields.includes(fieldId)) {
             return (
-                <Fragment key={fieldId}>
-                    <DateTimeField
-                        disabled={readOnly}
-                        key={fieldId}
-                        format="L HH:MM"
-                        label={FieldLabels[fieldId]}
-                        defaultValue={
-                            defaultValues && fieldId in defaultValues
-                                ? defaultValues[fieldId]
-                                : dayjs()
-                        }
-                        value={dateFieldValues[fieldId] || null}
-                        onChange={(newValue) =>
-                            setDateFieldValues((prev) => ({ ...prev, [fieldId]: newValue }))
-                        }
-                    />
-                    <input
-                        key={`${fieldId}-hidden-input`}
-                        type="hidden"
-                        name={fieldId}
-                        value={
-                            dateFieldValues[fieldId] ? dateFieldValues[fieldId]!.toISOString() : ""
-                        }
-                    />
-                </Fragment>
+                <DateTimeField
+                    disabled={readOnly}
+                    key={fieldId}
+                    label={FieldLabels[fieldId]}
+                    value={
+                        dayjs(fieldValues[fieldId] as string).isValid()
+                            ? dayjs(fieldValues[fieldId] as string)
+                            : null
+                    }
+                    onChange={(newValue) =>
+                        newValue.isValid() && changeFieldValue(fieldId, newValue.toISOString())
+                    }
+                />
             );
         }
         return (
@@ -112,9 +131,10 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
                 name={fieldId}
                 required={RequiredFields[name].includes(fieldId)}
                 multiline={multiLineFields.includes(fieldId)}
-                defaultValue={
-                    defaultValues && fieldId in defaultValues ? defaultValues[fieldId] : ""
-                }
+                value={fieldValues[fieldId]}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    changeFieldValue(fieldId, event.target.value);
+                }}
                 {...(fieldId.includes(GlobalConstants.PASSWORD) && {
                     type: GlobalConstants.PASSWORD,
                 })}
@@ -123,7 +143,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
     };
 
     return (
-        <Card component="form" action={formAction}>
+        <Card component="form" onSubmit={submitForm}>
             <CardHeader title={FieldLabels[name]} />
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
@@ -131,7 +151,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
                 </Stack>
                 {getStatusMsg()}
                 {!readOnly && (
-                    <Button type="submit" variant="contained" disabled={isPending}>
+                    <Button type="submit" variant="contained" disabled={loading}>
                         {buttonLabel}
                     </Button>
                 )}

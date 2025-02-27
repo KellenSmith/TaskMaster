@@ -15,6 +15,7 @@ import { useUserContext } from "../../context/UserContext";
 import { isUserAdmin, isUserHost, isUserParticipant } from "../../lib/definitions";
 import ParticipationSection from "./ParticipationSection";
 import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
+import { Prisma } from "@prisma/client";
 
 const EventPage = () => {
     const theme = useTheme();
@@ -46,8 +47,11 @@ const EventPage = () => {
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const updateEventById = async (currentActionState: FormActionState, formData: FormData) => {
-        return updateEvent(eventId, currentActionState, formData);
+    const updateEventById = async (
+        currentActionState: FormActionState,
+        fieldValues: Prisma.EventUpdateInput,
+    ) => {
+        return updateEvent(eventId, currentActionState, fieldValues);
     };
 
     const deleteEventAndRedirect = async () => {

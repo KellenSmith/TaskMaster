@@ -1,7 +1,7 @@
 "use client";
 
 import { Stack } from "@mui/material";
-import { deleteUser, getAllUsers, updateUser, validateUserMembership } from "../lib/actions";
+import { deleteUser, getAllUsers, updateUser, validateUserMembership } from "../lib/user-actions";
 import Datagrid, { RowActionProps } from "../ui/Datagrid";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";

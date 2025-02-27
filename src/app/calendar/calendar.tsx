@@ -21,6 +21,7 @@ import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form, { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
+import { Prisma } from "@prisma/client";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
@@ -35,12 +36,11 @@ const CalendarDashboard: FC = () => {
     );
     const [createOpen, setCreateOpen] = useState(false);
 
-    const createEventWithHost = async (currentActionState: FormActionState, formData: FormData) => {
-        const createEventResult = await createEvent(
-            user[GlobalConstants.ID],
-            currentActionState,
-            formData,
-        );
+    const createEventWithHost = async (
+        currentActionState: FormActionState,
+        fieldValues: Prisma.EventCreateInput,
+    ) => {
+        const createEventResult = await createEvent(user.id, currentActionState, fieldValues);
         startTransition(async () => {
             fetchEventsAction();
         });

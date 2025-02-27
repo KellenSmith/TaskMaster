@@ -130,3 +130,5 @@ export const multiLineFields = [
     // Event
     GlobalConstants.DESCRIPTION,
 ];
+
+export const allowSelectMultiple = [];

@@ -4,7 +4,7 @@ import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
 import { Button, Stack } from "@mui/material";
 import { FC } from "react";
-import { resetUserCredentials } from "../../lib/actions";
+import { resetUserCredentials } from "../../lib/user-actions";
 
 const LoginForm: FC = () => {
     return (

@@ -9,10 +9,11 @@ import {
     useEffect,
     useState,
 } from "react";
-import { getLoggedInUser } from "../lib/actions";
+import { getLoggedInUser } from "../lib/user-actions";
 import { deleteUserCookie, login } from "../lib/auth/auth";
 import { defaultActionState, FormActionState } from "../ui/form/Form";
 import { redirect } from "next/navigation";
+import { LoginSchema } from "../lib/definitions";
 
 export const UserContext = createContext(null);
 
@@ -38,8 +39,11 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
         }
     };
 
-    const loginAndUpdateUser = async (currentActionState: FormActionState, formData: FormData) => {
-        const logInActionState = await login(currentActionState, formData);
+    const loginAndUpdateUser = async (
+        currentActionState: FormActionState,
+        fieldValues: LoginSchema,
+    ) => {
+        const logInActionState = await login(currentActionState, fieldValues);
         if (logInActionState.status === 200) {
             setUser(JSON.parse(logInActionState.result));
             redirect("/");

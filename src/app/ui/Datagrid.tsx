@@ -36,7 +36,7 @@ interface DatagridProps {
     updateAction: (
         userId: string, // eslint-disable-line no-unused-vars
         currentActionState: FormActionState, // eslint-disable-line no-unused-vars
-        formData: FormData, // eslint-disable-line no-unused-vars
+        fieldValues: any, // eslint-disable-line no-unused-vars
     ) => Promise<FormActionState>;
     rowActions: RowActionProps[];
 }
@@ -91,11 +91,11 @@ const Datagrid: React.FC<DatagridProps> = ({ name, fetchData, updateAction, rowA
 
     const onRowClicked = (params: GridRowParams) => setClickedRow(params.row);
 
-    const updateRow = async (currentActionState: FormActionState, formData: FormData) => {
+    const updateRow = async (currentActionState: FormActionState, fieldValues: any) => {
         const updateState = await updateAction(
             clickedRow[GlobalConstants.ID],
             currentActionState,
-            formData,
+            fieldValues,
         );
         updateDatagridData();
         return updateState;
