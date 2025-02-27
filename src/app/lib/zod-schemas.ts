@@ -33,4 +33,6 @@ export const createTaskSchema = updateTaskSchema.omit({
     [GlobalConstants.ASSIGNEE_ID]: true,
     [GlobalConstants.REPORTER_ID]: true,
     [GlobalConstants.STATUS]: true,
+    [GlobalConstants.PHASE]: true,
+    [GlobalConstants.TAGS]: true,
 });
