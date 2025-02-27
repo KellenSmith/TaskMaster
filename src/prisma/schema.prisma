@@ -91,7 +91,7 @@ model ReserveInEvent {
 model Task {
     id         String  @id @default(uuid())
     Event      Event?  @relation(fields: [eventId], references: [id])
-    eventId    String?
+    eventId    String? // Tasks without event id are considered defaults
     Assignee   User?   @relation("Assignee", fields: [assigneeId], references: [id])
     assigneeId String?
     Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])

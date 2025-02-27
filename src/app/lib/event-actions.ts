@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { getStrippedFormData } from "./action-utils";
-import { createEventSchema } from "./event-schema";
+import { createEventSchema } from "./zod-schemas";
 import { DatagridActionState } from "../ui/Datagrid";
 
 export const createEvent = async (
