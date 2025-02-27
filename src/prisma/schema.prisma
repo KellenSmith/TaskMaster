@@ -51,6 +51,7 @@ model Event {
     description     String
     maxParticipants Int
     fullTicketPrice Int
+    status          String   @default("draft") // draft, published
 
     host   User   @relation(fields: [hostId], references: [id])
     hostId String
@@ -96,7 +97,7 @@ model Task {
     Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])
     reporterId String?
 
-    status      String   @default("draft") // draft, published
+    status      String   @default("to do") // to do, in progress, in review, done
     tag         String?
     name        String
     phase       String
