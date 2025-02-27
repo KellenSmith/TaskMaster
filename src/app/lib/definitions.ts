@@ -55,3 +55,18 @@ export const isUserParticipant = (user: any, event: any) =>
     event[GlobalConstants.PARTICIPANT_USERS]
         .map((participant: any) => participant[GlobalConstants.USER_ID])
         .includes(user[GlobalConstants.ID]);
+
+export interface LoginSchema {
+    email: string;
+    password: string;
+}
+
+export interface ResetCredentialsSchema {
+    email: string;
+}
+
+export interface UpdateCredentialsSchema {
+    currentPassword: string;
+    newPassword: string;
+    repeatPassword: string;
+}

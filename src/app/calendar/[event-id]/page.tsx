@@ -13,6 +13,7 @@ import { isUserAdmin, isUserHost, isUserParticipant } from "../../lib/definition
 import ParticipationSection from "./ParticipationSection";
 import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
 import EventDashboard from "./EventDashboard";
+import { Prisma } from "@prisma/client";
 
 const EventPage = () => {
     const theme = useTheme();
@@ -45,13 +46,15 @@ const EventPage = () => {
     }, []);
 
     const publishEvent = async () => {
-        const updateData = new FormData();
-        updateData.append(GlobalConstants.STATUS, GlobalConstants.PUBLISHED);
+        const updateData: Prisma.EventUpdateInput = { status: GlobalConstants.PUBLISHED };
         return updateEventById(defaultFormActionState, updateData);
     };
 
-    const updateEventById = async (currentActionState: FormActionState, formData: FormData) => {
-        return updateEvent(eventId, currentActionState, formData);
+    const updateEventById = async (
+        currentActionState: FormActionState,
+        fieldValues: Prisma.EventUpdateInput,
+    ) => {
+        return updateEvent(eventId, currentActionState, fieldValues);
     };
 
     const deleteEventAndRedirect = async () => {

@@ -1,12 +1,12 @@
 import GlobalConstants from "../GlobalConstants";
-import { createUser } from "../lib/actions";
+import { createUser } from "../lib/user-actions";
 import { FieldLabels } from "../ui/form/FieldCfg";
 import Form, { FormActionState } from "../ui/form/Form";
 
 const ApplyPage = () => {
-    const submitApplication = async (currentActionState: FormActionState, formData: FormData) => {
+    const submitApplication = async (currentActionState: FormActionState, fieldValues: any) => {
         "use server";
-        const submitState = await createUser(currentActionState, formData);
+        const submitState = await createUser(currentActionState, fieldValues);
         if (submitState.status === 201) submitState.result = "Application submitted";
         return submitState;
     };

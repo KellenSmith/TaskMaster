@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserParticipantEvents } from "../lib/actions";
+import { getUserParticipantEvents } from "../lib/user-actions";
 import React, { useEffect, useState } from "react";
 import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import { useUserContext } from "../context/UserContext";

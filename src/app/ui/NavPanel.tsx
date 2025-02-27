@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { isUserAuthorized, routes, routesToPath } from "../lib/definitions";
+import { Article } from "@mui/icons-material";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -17,6 +18,10 @@ const NavPanel = () => {
 
     const toggleDrawerOpen = () => {
         setDrawerOpen((prev) => !prev);
+    };
+
+    const openReadme = () => {
+        window.open("/README.pdf", "_blank");
     };
 
     const getLinkGroup = (privacyStatus: string) => {
@@ -49,6 +54,9 @@ const NavPanel = () => {
                     >
                         LOGO
                     </Typography>
+                    <Button onClick={openReadme}>
+                        <Article />
+                    </Button>
                     {user ? (
                         <Button onClick={logOut}>
                             <LogoutIcon />

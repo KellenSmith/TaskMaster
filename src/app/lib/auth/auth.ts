@@ -9,6 +9,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { FormActionState } from "../../ui/form/Form";
 import { OrgSettings } from "../org-settings";
+import { LoginSchema } from "../definitions";
 
 // Generate a random string of specified length
 export const generateSalt = async (): Promise<string> => {
@@ -45,13 +46,13 @@ export const generateUserCredentials = async (
     return newUserCredentials;
 };
 
-export const createSession = async (formData: FormData) => {
+export const createSession = async (fieldValues: LoginSchema) => {
     const expiresAt = dayjs()
         .add(OrgSettings[GlobalConstants.COOKIE_LIFESPAN] as number, "d")
         .toDate();
     const loggedInUser = await getUserByUniqueKey(
         GlobalConstants.EMAIL,
-        formData.get(GlobalConstants.EMAIL) as string,
+        fieldValues.email as string,
     );
 
     await encryptJWT(loggedInUser, expiresAt);
@@ -59,14 +60,11 @@ export const createSession = async (formData: FormData) => {
 
 export const login = async (
     currentActionState: FormActionState,
-    formData: FormData,
+    fieldValues: LoginSchema,
 ): Promise<FormActionState> => {
     const authState = { ...currentActionState };
 
-    const loggedInUser = await getUserByUniqueKey(
-        GlobalConstants.EMAIL,
-        formData.get(GlobalConstants.EMAIL) as string,
-    );
+    const loggedInUser = await getUserByUniqueKey(GlobalConstants.EMAIL, fieldValues.email);
 
     if (!loggedInUser) {
         authState.status = 404;
@@ -83,14 +81,15 @@ export const login = async (
 
     const userCredentials = await prisma.userCredentials.findUnique({
         where: {
-            [GlobalConstants.EMAIL]: formData.get(GlobalConstants.EMAIL),
+            email: fieldValues.email,
         } as any as Prisma.UserCredentialsWhereUniqueInput,
     });
     const hashedPassword = await hashPassword(
-        formData.get(GlobalConstants.PASSWORD) as string,
+        fieldValues.password as string,
         userCredentials[GlobalConstants.SALT],
     );
-    const passwordsMatch = hashedPassword === userCredentials[GlobalConstants.HASHED_PASSWORD];
+    console.log(fieldValues.password);
+    const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
     if (!passwordsMatch) {
         authState.status = 401;
         authState.errorMsg = "Invalid credentials";
@@ -98,7 +97,7 @@ export const login = async (
         return authState;
     }
     authState.result = JSON.stringify(loggedInUser);
-    await createSession(formData);
+    await createSession(fieldValues);
     return authState;
 };
 
