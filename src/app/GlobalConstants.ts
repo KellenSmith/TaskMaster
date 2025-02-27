@@ -72,6 +72,9 @@ const GlobalConstants = {
     DESCRIPTION: "description",
     MAX_PARTICIPANTS: "maxParticipants",
     FULL_TICKET_PRICE: "fullTicketPrice",
+    STATUS: "status",
+    DRAFT: "draft",
+    PUBLISHED: "published",
     HOST: "host",
     HOST_ID: "hostId",
     PARTICIPANT_USERS: "participantUsers",
@@ -89,6 +92,10 @@ const GlobalConstants = {
     BEFORE: "before",
     DURING: "during",
     AFTER: "after",
+    TO_DO: "to do",
+    IN_PROGRESS: "in progress",
+    IN_REVIEW: "in review",
+    DONE: "done",
 };
 
 export default GlobalConstants;

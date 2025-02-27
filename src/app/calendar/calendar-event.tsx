@@ -32,7 +32,10 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
             <Card
                 elevation={0}
                 sx={{
-                    backgroundColor: theme.palette.primary.dark,
+                    backgroundColor:
+                        event[GlobalConstants.STATUS] === GlobalConstants.DRAFT
+                            ? theme.palette.primary.light
+                            : theme.palette.primary.dark,
                     ...(user && { cursor: "pointer" }),
                 }}
                 {...(user && {
