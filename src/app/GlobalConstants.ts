@@ -87,7 +87,7 @@ const GlobalConstants = {
     ASSIGNEE_ID: "assigneeId",
     REPORTER: "reporter",
     REPORTER_ID: "reporterId",
-    TAG: "tag",
+    TAGS: "tags",
     PHASE: "phase",
     BEFORE: "before",
     DURING: "during",

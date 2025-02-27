@@ -97,10 +97,10 @@ model Task {
     Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])
     reporterId String?
 
-    status      String   @default("to do") // to do, in progress, in review, done
-    tag         String?
+    phase       String   @default("before") // before, during, after
     name        String
-    phase       String
+    status      String   @default("to do") // to do, in progress, in review, done
+    tags        String[] @default([])
     startTime   DateTime
     endTIme     DateTime
     description String

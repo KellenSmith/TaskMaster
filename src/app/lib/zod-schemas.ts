@@ -13,3 +13,24 @@ export const updateEventSchema = z.object({
 });
 
 export const createEventSchema = updateEventSchema.omit({ [GlobalConstants.ID]: true });
+
+export const updateTaskSchema = z.object({
+    [GlobalConstants.ID]: z.string(),
+    [GlobalConstants.EVENT_ID]: z.string(),
+    [GlobalConstants.ASSIGNEE_ID]: z.string(),
+    [GlobalConstants.REPORTER_ID]: z.string(),
+    [GlobalConstants.STATUS]: z.string(),
+    [GlobalConstants.TAGS]: z.array(z.string()),
+    [GlobalConstants.NAME]: z.string(),
+    [GlobalConstants.PHASE]: z.string(),
+    [GlobalConstants.START_TIME]: z.coerce.date(),
+    [GlobalConstants.END_TIME]: z.coerce.date(),
+    [GlobalConstants.DESCRIPTION]: z.string(),
+});
+
+export const createTaskSchema = updateTaskSchema.omit({
+    [GlobalConstants.ID]: true,
+    [GlobalConstants.ASSIGNEE_ID]: true,
+    [GlobalConstants.REPORTER_ID]: true,
+    [GlobalConstants.STATUS]: true,
+});
