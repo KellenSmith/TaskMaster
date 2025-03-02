@@ -1,13 +1,13 @@
 "use client";
 
 import GlobalConstants from "../GlobalConstants";
-import Form, { FormActionState } from "../ui/form/Form";
+import Form, { FormActionState, getFormActionMsg } from "../ui/form/Form";
 import { useUserContext } from "../context/UserContext";
 import { deleteUser, updateUser, updateUserCredentials } from "../lib/user-actions";
 import { login } from "../lib/auth/auth";
 import { useState } from "react";
 import { defaultActionState } from "../ui/form/Form";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import { isMembershipExpired, LoginSchema, UpdateCredentialsSchema } from "../lib/definitions";
 import SwishPaymentHandler from "../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../lib/org-settings";
@@ -15,7 +15,7 @@ import { Prisma } from "@prisma/client";
 
 const AccountTab = () => {
     const { user, updateLoggedInUser, logOut } = useUserContext();
-    const [errorMsg, setErrorMsg] = useState("");
+    const [accountActionState, setAccountActionState] = useState(defaultActionState);
     const [openRenewMembershipDialog, setOpenRenewMembershipDialog] = useState(false);
 
     const updateUserProfile = async (
@@ -65,8 +65,8 @@ const AccountTab = () => {
 
     const deleteMyAccount = async () => {
         const deleteState = await deleteUser(user, defaultActionState);
-        if (deleteState.status !== 200) return setErrorMsg(deleteState.errorMsg);
-        await logOut();
+        if (deleteState.status === 200) logOut();
+        setAccountActionState(deleteState);
     };
 
     const hasRenewedMembership = async () => {
@@ -89,7 +89,7 @@ const AccountTab = () => {
                         buttonLabel="save"
                         action={validateAndUpdateCredentials}
                     ></Form>
-                    {errorMsg && <Typography color="error">{errorMsg}</Typography>}
+                    {getFormActionMsg(accountActionState)}
                     {isMembershipExpired(user) && (
                         <Button onClick={() => setOpenRenewMembershipDialog(true)}>
                             Renew membership

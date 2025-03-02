@@ -3,15 +3,23 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 
-export const createOrUpdateTasks = async (
+export const createTasks = async (
+    eventId: string,
     currentActionState: FormActionState,
     taskList: Prisma.TaskCreateInput[],
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
 
     try {
-        await prisma.task.createMany({
-            data: taskList,
+        await prisma.event.update({
+            where: {
+                id: eventId,
+            },
+            data: {
+                tasks: {
+                    createMany: { data: taskList },
+                },
+            },
         });
         newActionState.errorMsg = "";
         newActionState.status = 201;

@@ -1,12 +1,16 @@
 "use client";
 
-import { Button, Dialog, Stack, Typography } from "@mui/material";
+import { Button, Dialog, Stack } from "@mui/material";
 import { DataGrid, GridColDef, GridRowParams, GridRowsProp, useGridApiRef } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, useState, startTransition } from "react";
 import { datePickerFields, FieldLabels } from "./form/FieldCfg";
 import { redirect, usePathname } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
-import Form, { FormActionState, defaultActionState as defaultFormActionState } from "./form/Form";
+import Form, {
+    FormActionState,
+    defaultActionState as defaultFormActionState,
+    getFormActionMsg,
+} from "./form/Form";
 
 export interface DatagridActionState {
     status: number;
@@ -141,12 +145,7 @@ const Datagrid: React.FC<DatagridProps> = ({ name, fetchData, updateAction, rowA
                     action={updateRow}
                     defaultValues={clickedRow}
                 />
-                {dialogActionState.errorMsg && (
-                    <Typography color="error">{dialogActionState.errorMsg}</Typography>
-                )}
-                {dialogActionState.result && (
-                    <Typography color="success">{dialogActionState.result}</Typography>
-                )}
+                {getFormActionMsg(dialogActionState)}
                 {!!rowActions &&
                     rowActions.map((rowAction) => getRowActionButton(clickedRow, rowAction))}
             </Dialog>
