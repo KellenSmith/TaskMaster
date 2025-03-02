@@ -102,7 +102,7 @@ model Task {
     status      String   @default("to do") // to do, in progress, in review, done
     tags        String[] @default([])
     startTime   DateTime
-    endTIme     DateTime
+    endTime     DateTime
     description String
 
     @@map("tasks")
