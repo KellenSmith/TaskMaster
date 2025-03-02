@@ -85,8 +85,6 @@ export const RenderedFields = {
     ],
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
-        GlobalConstants.ASSIGNEE,
-        GlobalConstants.REPORTER,
         GlobalConstants.PHASE,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,

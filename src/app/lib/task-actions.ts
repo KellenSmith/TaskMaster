@@ -1,10 +1,11 @@
 "use server";
+
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 
-export const createTasks = async (
+export const updateEventTasks = async (
     eventId: string,
     currentActionState: FormActionState,
     taskList: Prisma.TaskCreateInput[],
@@ -12,15 +13,40 @@ export const createTasks = async (
     const newActionState = { ...currentActionState };
 
     try {
-        await prisma.task.createMany({
-            data: taskList.map((task) => ({
+        const tasksToCreate = taskList
+            .filter((task) => !task.id)
+            .map((task) => ({
                 ...task,
                 eventId: eventId,
-            })),
+            }));
+
+        const updateTasks = taskList
+            .filter((task) => task.id)
+            .map((task) =>
+                prisma.task.update({
+                    where: { id: task.id },
+                    data: task,
+                }),
+            );
+
+        const taskIds = taskList.map((task) => task.id).filter((id) => id !== undefined);
+        const deleteUnSelectedTasks = prisma.task.deleteMany({
+            where: {
+                eventId: eventId,
+                id: {
+                    notIn: taskIds,
+                },
+            },
         });
+        await prisma.$transaction([
+            deleteUnSelectedTasks,
+            ...updateTasks,
+            prisma.task.createMany({ data: tasksToCreate }),
+        ]);
+
         newActionState.errorMsg = "";
         newActionState.status = 201;
-        newActionState.result = "Created tasks";
+        newActionState.result = "Updated tasks";
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
