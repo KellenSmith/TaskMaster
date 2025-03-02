@@ -1,26 +1,23 @@
 "use client";
 
-import { redirect, usePathname } from "next/navigation";
-import { deleteEvent, getEventById, updateEvent } from "../../lib/event-actions";
+import { usePathname } from "next/navigation";
+import { getEventById } from "../../lib/event-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../ui/Datagrid";
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
-import { Button, CircularProgress, Stack, TextField, Typography, useTheme } from "@mui/material";
-import { FormActionState, defaultActionState as defaultFormActionState } from "../../ui/form/Form";
+import { CircularProgress, Stack, TextField, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
-import { isUserAdmin, isUserHost, isUserParticipant } from "../../lib/definitions";
+import { isUserParticipant } from "../../lib/definitions";
 import ParticipationSection from "./ParticipationSection";
 import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
 import EventDashboard from "./EventDashboard";
-import { Prisma } from "@prisma/client";
 
 const EventPage = () => {
     const theme = useTheme();
     const { user } = useUserContext();
     const pathname = usePathname();
     const eventId = useMemo(() => pathname.split("/").at(-1), [pathname]);
-    const [eventActionState, setEventActionState] = useState(defaultFormActionState);
     const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
 
     const getEvent = async () => {
@@ -44,32 +41,6 @@ const EventPage = () => {
         // Only fetch event on first render
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const publishEvent = async () => {
-        const updateData: Prisma.EventUpdateInput = { status: GlobalConstants.PUBLISHED };
-        return updateEventById(defaultFormActionState, updateData);
-    };
-
-    const updateEventById = async (
-        currentActionState: FormActionState,
-        fieldValues: Prisma.EventUpdateInput,
-    ) => {
-        return updateEvent(eventId, currentActionState, fieldValues);
-    };
-
-    const deleteEventAndRedirect = async () => {
-        const deleteResult = await deleteEvent(eventId, defaultFormActionState);
-        if (deleteResult.status !== 200) return setEventActionState(deleteResult);
-        // Redirect to calendar when event is deleted
-        redirect(`/${GlobalConstants.CALENDAR}`);
-    };
-
-    const getEventActionMsg = () => {
-        if (eventActionState.status !== 200)
-            return <Typography color="error">{eventActionState.errorMsg}</Typography>;
-        if (eventActionState.result)
-            return <Typography color="success">{eventActionState.result}</Typography>;
-    };
 
     const hasBoughtTicket = async (): Promise<boolean> => {
         startTransition(() => {
@@ -105,10 +76,6 @@ const EventPage = () => {
                                     getEventResult()[GlobalConstants.HOST][GlobalConstants.NICKNAME]
                                 }
                             />
-                            <EventDashboard
-                                saveEventAction={updateEventById}
-                                event={getEventResult()}
-                            />
                             {!isEventDraft() && (
                                 <ParticipationSection
                                     event={getEventResult()}
@@ -116,18 +83,7 @@ const EventPage = () => {
                                     setPaymentHandlerOpen={setPaymentHandlerOpen}
                                 />
                             )}
-
-                            {getEventActionMsg()}
-                            {isUserHost(user, getEventResult()) && (
-                                <Button color="success" onClick={publishEvent}>
-                                    publish
-                                </Button>
-                            )}
-                            {isUserAdmin(user) && (
-                                <Button color="error" onClick={deleteEventAndRedirect}>
-                                    delete
-                                </Button>
-                            )}
+                            <EventDashboard event={getEventResult()} />
                         </Stack>
                         <SwishPaymentHandler
                             title="Buy ticket"
