@@ -2,7 +2,7 @@
 
 import { Button, Stack, Tab, Tabs } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
@@ -11,7 +11,7 @@ import { redirect } from "next/navigation";
 import { deleteEvent, updateEvent } from "../../lib/event-actions";
 import { Prisma } from "@prisma/client";
 
-const EventDashboard = ({ event }) => {
+const EventDashboard = ({ event, fetchEventAction }) => {
     const { user } = useUserContext();
     const tabs = useMemo(() => ({ event: "Event", tasks: "Tasks" }), []);
 
@@ -22,7 +22,15 @@ const EventDashboard = ({ event }) => {
         currentActionState: FormActionState,
         fieldValues: Prisma.EventUpdateInput,
     ) => {
-        return updateEvent(event[GlobalConstants.ID], currentActionState, fieldValues);
+        const updateEventResult = await updateEvent(
+            event[GlobalConstants.ID],
+            currentActionState,
+            fieldValues,
+        );
+        startTransition(() => {
+            fetchEventAction();
+        });
+        return updateEventResult;
     };
 
     const publishEvent = async () => {

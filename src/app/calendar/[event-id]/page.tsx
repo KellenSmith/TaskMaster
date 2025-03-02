@@ -83,7 +83,10 @@ const EventPage = () => {
                                     setPaymentHandlerOpen={setPaymentHandlerOpen}
                                 />
                             )}
-                            <EventDashboard event={getEventResult()} />
+                            <EventDashboard
+                                event={getEventResult()}
+                                fetchEventAction={fetchEventAction}
+                            />
                         </Stack>
                         <SwishPaymentHandler
                             title="Buy ticket"
