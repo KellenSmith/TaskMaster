@@ -88,7 +88,6 @@ export const login = async (
         fieldValues.password as string,
         userCredentials[GlobalConstants.SALT],
     );
-    console.log(fieldValues.password);
     const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
     if (!passwordsMatch) {
         authState.status = 401;

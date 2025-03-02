@@ -1,3 +1,4 @@
+"use server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
@@ -11,15 +12,11 @@ export const createTasks = async (
     const newActionState = { ...currentActionState };
 
     try {
-        await prisma.event.update({
-            where: {
-                id: eventId,
-            },
-            data: {
-                tasks: {
-                    createMany: { data: taskList },
-                },
-            },
+        await prisma.task.createMany({
+            data: taskList.map((task) => ({
+                ...task,
+                eventId: eventId,
+            })),
         });
         newActionState.errorMsg = "";
         newActionState.status = 201;
