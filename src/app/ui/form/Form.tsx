@@ -10,7 +10,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, FC, ChangeEvent } from "react";
+import { useState, FC, ChangeEvent, ReactElement } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -34,6 +34,13 @@ export const defaultActionState: FormActionState = {
     status: 200,
     errorMsg: "",
     result: "",
+};
+
+export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null => {
+    if (formActionState.errorMsg)
+        return <Typography color="error">{formActionState.errorMsg}</Typography>;
+    if (formActionState.result)
+        return <Typography color="success">{formActionState.result}</Typography>;
 };
 
 interface FormProps {
@@ -72,13 +79,6 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
 
     const changeFieldValue = (fieldId: string, value: string | string[]) => {
         setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
-    };
-
-    const getStatusMsg = () => {
-        if (actionState.errorMsg)
-            return <Typography color="error">{actionState.errorMsg}</Typography>;
-        if (actionState.result)
-            return <Typography color="success">{actionState.result}</Typography>;
     };
 
     const submitForm = async (event) => {
@@ -149,7 +149,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
                 <Stack spacing={2}>
                     {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
                 </Stack>
-                {getStatusMsg()}
+                {getFormActionMsg(actionState)}
                 {!readOnly && (
                     <Button type="submit" variant="contained" disabled={loading}>
                         {buttonLabel}

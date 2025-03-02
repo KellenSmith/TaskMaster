@@ -22,6 +22,7 @@ import Form, { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { Prisma } from "@prisma/client";
+import { redirect } from "next/navigation";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
@@ -40,11 +41,15 @@ const CalendarDashboard: FC = () => {
         currentActionState: FormActionState,
         fieldValues: Prisma.EventCreateInput,
     ) => {
-        const createEventResult = await createEvent(user.id, currentActionState, fieldValues);
-        startTransition(async () => {
-            fetchEventsAction();
-        });
-
+        const createEventResult = await createEvent(
+            user[GlobalConstants.ID],
+            currentActionState,
+            fieldValues,
+        );
+        if (createEventResult.status === 201) {
+            const createdEventId = createEventResult.result;
+            redirect(`${GlobalConstants.CALENDAR}/${createdEventId}`);
+        }
         return createEventResult;
     };
 
@@ -146,11 +151,11 @@ const CalendarDashboard: FC = () => {
                 {isEventsPending ? <CircularProgress size={30} /> : getCalendarGrid()}
             </Stack>
             <Dialog maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
-                <DialogTitle>Create event</DialogTitle>
+                <DialogTitle>Create event draft</DialogTitle>
                 <DialogContent>
                     <Form
                         name={GlobalConstants.EVENT}
-                        buttonLabel={GlobalConstants.CREATE}
+                        buttonLabel={"create event draft"}
                         action={createEventWithHost}
                     />
                 </DialogContent>

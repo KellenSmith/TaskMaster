@@ -3,7 +3,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import { addEventReserve } from "../../lib/event-actions";
 import { startTransition, useActionState } from "react";
-import { defaultActionState, FormActionState } from "../../ui/form/Form";
+import { defaultActionState, FormActionState, getFormActionMsg } from "../../ui/form/Form";
 import { isUserHost, isUserParticipant } from "../../lib/definitions";
 
 const ParticipationSection = ({ event, fetchEventAction, setPaymentHandlerOpen }) => {
@@ -71,7 +71,7 @@ const ParticipationSection = ({ event, fetchEventAction, setPaymentHandlerOpen }
                     <Typography color="primary">{getParticipantsText()}</Typography>
                     {getContent()}
                 </Stack>
-                <Typography color="error">{reserveActionState.errorMsg}</Typography>
+                {getFormActionMsg(reserveActionState)}
             </Stack>
         </>
     );

@@ -18,12 +18,6 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
     const confirmedPaymentRequest: IPaymentRequestConfirmed = await request.json();
     // TODO: Verify swish caller ID
     if (confirmedPaymentRequest.status === SwishConstants.PAID) {
-        // Update user's membership renewed date
-        const updatedMembershipRenewedDate = new FormData();
-        updatedMembershipRenewedDate.append(
-            GlobalConstants.MEMBERSHIP_RENEWED,
-            confirmedPaymentRequest.datePaid,
-        );
         const userId = new URL(request.url).searchParams.get(GlobalConstants.USER_ID);
         const eventId = new URL(request.url).searchParams.get(GlobalConstants.EVENT_ID);
         await addEventParticipant(userId, eventId, defaultActionState);

@@ -37,6 +37,22 @@ export const FieldLabels = {
     [GlobalConstants.FULL_TICKET_PRICE]: "Full ticket price",
     [GlobalConstants.DESCRIPTION]: "Description",
     [GlobalConstants.HOST]: "Host",
+    // Task
+    [GlobalConstants.TASK]: "Task",
+    [GlobalConstants.NAME]: "Name",
+    [GlobalConstants.ASSIGNEE]: "Assignee",
+    [GlobalConstants.REPORTER]: "Reporter",
+    [GlobalConstants.PHASE]: "Phase",
+    [GlobalConstants.TAGS]: "Tags",
+    [GlobalConstants.PHASE]: "Phase",
+    [GlobalConstants.STATUS]: "Status",
+    [GlobalConstants.BEFORE]: "Before",
+    [GlobalConstants.DURING]: "During",
+    [GlobalConstants.AFTER]: "After",
+    [GlobalConstants.TO_DO]: "To Do",
+    [GlobalConstants.IN_PROGRESS]: "In Progress",
+    [GlobalConstants.IN_REVIEW]: "In Review",
+    [GlobalConstants.DONE]: "Done",
 };
 
 export const RenderedFields = {
@@ -66,6 +82,14 @@ export const RenderedFields = {
         GlobalConstants.MAX_PARTICIPANTS,
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
+    ],
+    [GlobalConstants.TASK]: [
+        GlobalConstants.NAME,
+        GlobalConstants.PHASE,
+        GlobalConstants.START_TIME,
+        GlobalConstants.END_TIME,
+        GlobalConstants.DESCRIPTION,
+        GlobalConstants.TAGS,
     ],
 };
 // Apply
@@ -104,6 +128,13 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
+    [GlobalConstants.TASK]: [
+        GlobalConstants.PHASE,
+        GlobalConstants.NAME,
+        GlobalConstants.START_TIME,
+        GlobalConstants.END_TIME,
+        GlobalConstants.DESCRIPTION,
+    ],
 };
 // Apply
 RequiredFields[GlobalConstants.APPLY] = RequiredFields[GlobalConstants.PROFILE];
@@ -116,6 +147,18 @@ RequiredFields[GlobalConstants.USER] = [
 export const selectFieldOptions = {
     // User
     [GlobalConstants.ROLE]: [GlobalConstants.USER, GlobalConstants.ADMIN],
+    [GlobalConstants.PHASE]: [
+        GlobalConstants.BEFORE,
+        GlobalConstants.DURING,
+        GlobalConstants.AFTER,
+    ],
+    [GlobalConstants.STATUS]: [
+        GlobalConstants.TO_DO,
+        GlobalConstants.IN_PROGRESS,
+        GlobalConstants.IN_REVIEW,
+        GlobalConstants.DONE,
+    ],
+    [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
 };
 
 export const datePickerFields = [
@@ -131,4 +174,4 @@ export const multiLineFields = [
     GlobalConstants.DESCRIPTION,
 ];
 
-export const allowSelectMultiple = [];
+export const allowSelectMultiple = [GlobalConstants.TAGS];

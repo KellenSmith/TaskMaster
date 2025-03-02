@@ -12,8 +12,9 @@ const ProfilePage = () => {
     return (
         <Stack>
             <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
-                <Tab key={tabs.account} value={tabs.account} label={tabs.account} />
-                <Tab key={tabs.events} value={tabs.events} label={tabs.events} />
+                {Object.keys(tabs).map((tab) => (
+                    <Tab key={tabs[tab]} value={tabs[tab]} label={tabs[tab]} />
+                ))}
             </Tabs>
             {openTab === tabs.account && <AccountTab />}
             {openTab === tabs.events && <EventsTab />}

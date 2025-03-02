@@ -24,9 +24,7 @@ export const createEvent = async (
         });
         newActionState.errorMsg = "";
         newActionState.status = 201;
-        newActionState.result = `Event #${createdEvent.id} ${
-            createdEvent.title
-        } created successfully`;
+        newActionState.result = createdEvent.id;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
