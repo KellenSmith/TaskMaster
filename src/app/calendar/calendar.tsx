@@ -159,7 +159,7 @@ const CalendarDashboard: FC = () => {
                         action={createEventWithHost}
                     />
                 </DialogContent>
-            </Dialog>{" "}
+            </Dialog>
         </>
     );
 };

@@ -45,8 +45,8 @@ export const getFormActionMsg = (formActionState: FormActionState): ReactElement
 
 interface FormProps {
     name: string;
-    buttonLabel: string;
-    action: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
+    buttonLabel?: string;
+    action?: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
     defaultValues?: any;
     readOnly?: boolean;
 }
