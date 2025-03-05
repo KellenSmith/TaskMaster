@@ -23,6 +23,7 @@ import { defaultActionState as defaultDatagridActionState } from "../../../ui/Da
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import { allowSelectMultiple, datePickerFields, RenderedFields } from "../../../ui/form/FieldCfg";
+import TaskKanBanBoard from "./TaskKanBanBoard";
 
 const testTaskOptions = [
     {
@@ -74,6 +75,30 @@ const testTaskOptions = [
         description: "test description",
     },
 ];
+
+export const sortTasks = (tasks) =>
+    tasks.sort((taska, taskb) => {
+        if (
+            dayjs(taska[GlobalConstants.END_TIME]).isSame(
+                dayjs(taskb[GlobalConstants.END_TIME]),
+                "minute",
+            )
+        ) {
+            if (
+                dayjs(taska[GlobalConstants.START_TIME]).isSame(
+                    dayjs(taskb[GlobalConstants.START_TIME]),
+                    "minute",
+                )
+            )
+                return taska[GlobalConstants.NAME].localeCompare(taskb[GlobalConstants.NAME]);
+            return dayjs(taska[GlobalConstants.START_TIME]).isBefore(
+                dayjs(taskb[GlobalConstants.START_TIME]),
+            );
+        }
+        return dayjs(taska[GlobalConstants.END_TIME]).isBefore(
+            dayjs(taskb[GlobalConstants.END_TIME]),
+        );
+    });
 
 const TaskDashboard = ({ event }) => {
     const hasLoadedTasks = useRef(false);
@@ -254,31 +279,10 @@ const TaskDashboard = ({ event }) => {
         const tasksForPhase = [...selectedTasks, ...taskOptions].filter(
             (task) => task[GlobalConstants.PHASE] === phase,
         );
-        return tasksForPhase.sort((taska, taskb) => {
-            if (
-                dayjs(taska[GlobalConstants.END_TIME]).isSame(
-                    dayjs(taskb[GlobalConstants.END_TIME]),
-                    "minute",
-                )
-            ) {
-                if (
-                    dayjs(taska[GlobalConstants.START_TIME]).isSame(
-                        dayjs(taskb[GlobalConstants.START_TIME]),
-                        "minute",
-                    )
-                )
-                    return taska[GlobalConstants.NAME].localeCompare(taskb[GlobalConstants.NAME]);
-                return dayjs(taska[GlobalConstants.START_TIME]).isBefore(
-                    dayjs(taskb[GlobalConstants.START_TIME]),
-                );
-            }
-            return dayjs(taska[GlobalConstants.END_TIME]).isBefore(
-                dayjs(taskb[GlobalConstants.END_TIME]),
-            );
-        });
+        return sortTasks(tasksForPhase);
     };
 
-    return (
+    return event[GlobalConstants.STATUS] === GlobalConstants.DRAFT ? (
         <>
             <Stack spacing={2}>
                 {[GlobalConstants.BEFORE, GlobalConstants.DURING, GlobalConstants.AFTER].map(
@@ -317,6 +321,8 @@ const TaskDashboard = ({ event }) => {
                 />
             </Dialog>
         </>
+    ) : (
+        <TaskKanBanBoard event={event} />
     );
 };
 

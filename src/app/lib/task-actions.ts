@@ -5,6 +5,30 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 
+export const updateTaskById = async (
+    taskId: string,
+    currentActionState: FormActionState,
+    newTaskData: Prisma.TaskUpdateInput,
+) => {
+    const newActionState = { ...currentActionState };
+    try {
+        await prisma.task.update({
+            where: {
+                id: taskId,
+            },
+            data: newTaskData,
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = "Updated task";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
 export const updateEventTasks = async (
     eventId: string,
     currentActionState: FormActionState,
