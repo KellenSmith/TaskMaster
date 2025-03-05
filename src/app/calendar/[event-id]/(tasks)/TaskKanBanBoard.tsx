@@ -33,15 +33,6 @@ const TaskKanBanBoard = ({ event }) => {
         }
     }, [event, loadTasks]);
 
-    const assignTaskToMe = async (task) => {
-        const updateTaskResult = await updateTaskById(
-            task[GlobalConstants.ID],
-            defaultActionState,
-            { [GlobalConstants.ASSIGNEE_ID]: user[GlobalConstants.ID] },
-        );
-        setTaskActionState(updateTaskResult);
-    };
-
     const updateTaskStatus = async (task, status) => {
         const updateTaskResult = await updateTaskById(
             task[GlobalConstants.ID],
