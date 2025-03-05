@@ -7,12 +7,10 @@ import GlobalConstants from "../../../GlobalConstants";
 import { sortTasks } from "./TaskDashboard";
 import Form, { defaultActionState, getFormActionMsg } from "../../../ui/form/Form";
 import { geteventTasks, updateTaskById } from "../../../lib/task-actions";
-import { useUserContext } from "../../../context/UserContext";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 
 const TaskKanBanBoard = ({ event }) => {
     const theme = useTheme();
-    const { user } = useUserContext();
     const [tasks, setTasks] = useState([]);
     const [viewTask, setViewTask] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultActionState);
