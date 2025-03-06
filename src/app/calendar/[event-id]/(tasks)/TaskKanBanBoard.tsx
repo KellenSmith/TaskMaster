@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import GlobalConstants from "../../../GlobalConstants";
 import { sortTasks } from "./TaskDashboard";
 import Form, { defaultActionState, getFormActionMsg } from "../../../ui/form/Form";
-import { geteventTasks, updateTaskById } from "../../../lib/task-actions";
+import { getEventTasks, updateTaskById } from "../../../lib/task-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 
 const TaskKanBanBoard = ({ event }) => {
@@ -18,8 +18,8 @@ const TaskKanBanBoard = ({ event }) => {
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
 
     const loadTasks = useCallback(async () => {
-        const fetchedEventTasks = await geteventTasks(
-            event[GlobalConstants.ID],
+        const fetchedEventTasks = await getEventTasks(
+            { eventId: event[GlobalConstants.ID] },
             defaultDatagridActionState,
         );
         setTasks(fetchedEventTasks.result);

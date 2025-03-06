@@ -8,17 +8,15 @@ import { CircularProgress, Stack, TextField, Typography, useTheme } from "@mui/m
 import GlobalConstants from "../../GlobalConstants";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
-import { isUserParticipant } from "../../lib/definitions";
 import ParticipationSection from "./ParticipationSection";
-import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
-import EventDashboard from "./EventDashboard";
+import EventDashboard, { tabs } from "./EventDashboard";
 
 const EventPage = () => {
     const theme = useTheme();
     const { user } = useUserContext();
     const pathname = usePathname();
     const eventId = useMemo(() => pathname.split("/").at(-1), [pathname]);
-    const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
+    const [openTab, setOpenTab] = useState(tabs.event);
 
     const getEvent = async () => {
         return getEventById(eventId, fetchEventState);
@@ -41,13 +39,6 @@ const EventPage = () => {
         // Only fetch event on first render
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const hasBoughtTicket = async (): Promise<boolean> => {
-        startTransition(() => {
-            fetchEventAction();
-        });
-        return isUserParticipant(user, getEventResult());
-    };
 
     const isEventDraft = () => getEventResult()[GlobalConstants.STATUS] === GlobalConstants.DRAFT;
 
@@ -80,32 +71,16 @@ const EventPage = () => {
                                 <ParticipationSection
                                     event={getEventResult()}
                                     fetchEventAction={fetchEventAction}
-                                    setPaymentHandlerOpen={setPaymentHandlerOpen}
+                                    setOpenTab={setOpenTab}
                                 />
                             )}
                             <EventDashboard
                                 event={getEventResult()}
                                 fetchEventAction={fetchEventAction}
+                                openTab={openTab}
+                                setOpenTab={setOpenTab}
                             />
                         </Stack>
-                        <SwishPaymentHandler
-                            title="Buy ticket"
-                            open={paymentHandlerOpen}
-                            setOpen={setPaymentHandlerOpen}
-                            hasPaid={hasBoughtTicket}
-                            paymentAmount={
-                                getEventResult()
-                                    ? getEventResult()[GlobalConstants.FULL_TICKET_PRICE]
-                                    : 0
-                            }
-                            callbackEndpoint="buy-event-ticket"
-                            callbackParams={{
-                                [GlobalConstants.USER_ID]: user[GlobalConstants.ID],
-                                [GlobalConstants.EVENT_ID]: getEventResult()
-                                    ? getEventResult()[GlobalConstants.ID]
-                                    : "",
-                            }}
-                        />
                     </>
                 )}
             </Stack>

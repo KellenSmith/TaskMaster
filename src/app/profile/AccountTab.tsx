@@ -106,7 +106,9 @@ const AccountTab = () => {
                     hasPaid={hasRenewedMembership}
                     paymentAmount={OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number}
                     callbackEndpoint="renew-membership"
-                    callbackParams={{ [GlobalConstants.ID]: user[GlobalConstants.ID] }}
+                    callbackParams={
+                        new URLSearchParams([[GlobalConstants.ID, user[GlobalConstants.ID]]])
+                    }
                 />
             </>
         )

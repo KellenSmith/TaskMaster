@@ -19,7 +19,7 @@ interface CalendarDayProps {
 const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
     const { user } = useUserContext();
 
-    const shouldSHowEvent = (event: any) => {
+    const shouldShowEvent = (event: any) => {
         const eventInDay = date.isBetween(
             dayjs(event[GlobalConstants.START_TIME]),
             dayjs(event[GlobalConstants.END_TIME]),
@@ -27,13 +27,17 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
             "[]",
         );
         if (!eventInDay) return false;
-        return isUserAdmin(user) || isUserHost(user, event);
+        return (
+            event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED ||
+            isUserAdmin(user) ||
+            isUserHost(user, event)
+        );
     };
 
     const getEmptyDay = () => <Paper key={`empty-end-${date.date()}`} elevation={0} />;
 
     const getDayComp = () => {
-        const eventsForDay = events.filter((event: ICalendarEvent) => shouldSHowEvent(event));
+        const eventsForDay = events.filter((event: ICalendarEvent) => shouldShowEvent(event));
         if (eventsForDay.length < 1) return getEmptyDay();
         return (
             <Stack

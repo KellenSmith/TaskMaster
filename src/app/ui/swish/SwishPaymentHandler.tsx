@@ -44,10 +44,7 @@ const SwishPaymentHandler = ({
             `/api/swish/${callbackEndpoint}`,
             OrgSettings[GlobalConstants.BASE_URL] as string,
         );
-        if (callbackParams)
-            Object.keys(callbackParams).forEach((param) =>
-                url.searchParams.append(param, callbackParams[param]),
-            );
+        if (callbackParams) url.search = callbackParams;
         return url.toString();
     }, [callbackEndpoint, callbackParams]);
 
