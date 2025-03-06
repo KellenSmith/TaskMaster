@@ -2,7 +2,7 @@
 
 import { FC } from "react";
 import { Paper, Stack, Typography } from "@mui/material";
-import CalendarEvent, { ICalendarEvent } from "./calendar-event";
+import CalendarEvent, { ICalendarEvent } from "./CalendarEvent";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import GlobalConstants from "../GlobalConstants";
