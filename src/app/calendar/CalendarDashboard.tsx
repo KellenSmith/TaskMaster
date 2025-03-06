@@ -13,7 +13,7 @@ import {
     DialogContent,
 } from "@mui/material";
 import dayjs from "dayjs";
-import CalendarDay from "./calendar-day";
+import CalendarDay from "./CalendarDay";
 import { defaultActionState } from "../ui/Datagrid";
 import { createEvent, getAllEvents } from "../lib/event-actions";
 import localeData from "dayjs/plugin/localeData";

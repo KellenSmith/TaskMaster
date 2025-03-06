@@ -1,4 +1,4 @@
-import CalendarDashboard from "./calendar";
+import CalendarDashboard from "./CalendarDashboard";
 
 const CalendarPage = () => {
     return <CalendarDashboard />;

@@ -2,7 +2,7 @@
 
 import { Button, Stack, Tab, Tabs } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { startTransition, useMemo, useState } from "react";
+import { startTransition, useState } from "react";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
@@ -11,12 +11,12 @@ import { redirect } from "next/navigation";
 import { deleteEvent, updateEvent } from "../../lib/event-actions";
 import { Prisma } from "@prisma/client";
 
-const EventDashboard = ({ event, fetchEventAction }) => {
+export const tabs = { event: "Event", tasks: "Participate" };
+
+const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const { user } = useUserContext();
-    const tabs = useMemo(() => ({ event: "Event", tasks: "Tasks" }), []);
 
     const [eventActionState, setEventActionState] = useState(defaultActionState);
-    const [openTab, setTab] = useState(tabs.event);
 
     const updateEventById = async (
         currentActionState: FormActionState,
@@ -48,7 +48,7 @@ const EventDashboard = ({ event, fetchEventAction }) => {
 
     return (
         <Stack>
-            <Tabs value={openTab} onChange={(_, newTab) => setTab(newTab)}>
+            <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
                 {Object.keys(tabs).map((tab) => (
                     <Tab key={tabs[tab]} value={tabs[tab]} label={tabs[tab]} />
                 ))}
@@ -75,7 +75,9 @@ const EventDashboard = ({ event, fetchEventAction }) => {
                     )}
                 </>
             )}
-            {openTab === tabs.tasks && <TaskDashboard event={event} />}
+            {openTab === tabs.tasks && (
+                <TaskDashboard event={event} fetchEventAction={fetchEventAction} />
+            )}
         </Stack>
     );
 };

@@ -5,8 +5,9 @@ import { addEventReserve } from "../../lib/event-actions";
 import { startTransition, useActionState } from "react";
 import { defaultActionState, FormActionState, getFormActionMsg } from "../../ui/form/Form";
 import { isUserHost, isUserParticipant } from "../../lib/definitions";
+import { tabs } from "./EventDashboard";
 
-const ParticipationSection = ({ event, fetchEventAction, setPaymentHandlerOpen }) => {
+const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {
     const { user } = useUserContext();
 
     const actAndUpdateEvent = (buttonAction: Function) => {
@@ -61,7 +62,7 @@ const ParticipationSection = ({ event, fetchEventAction, setPaymentHandlerOpen }
                     get on reserve list
                 </Button>
             );
-        return <Button onClick={() => setPaymentHandlerOpen(true)}>participate</Button>;
+        return <Button onClick={() => setOpenTab(tabs.tasks)}>participate</Button>;
     };
 
     return (

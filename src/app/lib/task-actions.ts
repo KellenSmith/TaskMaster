@@ -79,16 +79,14 @@ export const updateEventTasks = async (
     return newActionState;
 };
 
-export const geteventTasks = async (
-    eventId: string | null,
+export const getEventTasks = async (
+    searchParams: Prisma.TaskWhereInput | null, // Null if fetching default tasks
     currentState: DatagridActionState,
 ): Promise<DatagridActionState> => {
     const newActionState: DatagridActionState = { ...currentState };
     try {
         const tasks = await prisma.task.findMany({
-            where: {
-                eventId: eventId,
-            },
+            where: searchParams,
         });
         newActionState.status = 200;
         newActionState.errorMsg = "";
@@ -97,6 +95,36 @@ export const geteventTasks = async (
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
         newActionState.result = [];
+    }
+    return newActionState;
+};
+
+export const assignTasksToUser = async (
+    userId: string,
+    taskIds: string[],
+    currentActionState: FormActionState,
+) => {
+    const newActionState = { ...currentActionState };
+    try {
+        await prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                assignedTasks: {
+                    connect: taskIds.map((taskId) => ({
+                        id: taskId,
+                    })),
+                },
+            },
+        });
+        newActionState.status = 200;
+        newActionState.errorMsg = "";
+        newActionState.result = "Assigned tasks";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
     }
     return newActionState;
 };

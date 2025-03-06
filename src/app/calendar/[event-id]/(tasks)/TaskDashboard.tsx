@@ -8,7 +8,11 @@ import {
     Dialog,
     FormControlLabel,
     FormGroup,
+    Paper,
     Stack,
+    Switch,
+    Typography,
+    useTheme,
 } from "@mui/material";
 import Form, {
     defaultActionState as defaultFormActionState,
@@ -16,14 +20,17 @@ import Form, {
     getFormActionMsg,
 } from "../../../ui/form/Form";
 import GlobalConstants from "../../../GlobalConstants";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { CloseRounded, Edit, ExpandMore } from "@mui/icons-material";
-import { updateEventTasks, geteventTasks } from "../../../lib/task-actions";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
+import { CloseRounded, Edit, ExpandMore, RemoveRedEye } from "@mui/icons-material";
+import { updateEventTasks, getEventTasks, assignTasksToUser } from "../../../lib/task-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import { allowSelectMultiple, datePickerFields, RenderedFields } from "../../../ui/form/FieldCfg";
 import TaskKanBanBoard from "./TaskKanBanBoard";
+import { isUserHost, isUserParticipant } from "../../../lib/definitions";
+import { useUserContext } from "../../../context/UserContext";
+import SwishPaymentHandler from "../../../ui/swish/SwishPaymentHandler";
 
 const testTaskOptions = [
     {
@@ -100,12 +107,18 @@ export const sortTasks = (tasks) =>
         );
     });
 
-const TaskDashboard = ({ event }) => {
+const TaskDashboard = ({ event, fetchEventAction }) => {
+    const theme = useTheme();
+    const { user } = useUserContext();
     const hasLoadedTasks = useRef(false);
+    const hasLoadedUserTasks = useRef(false);
     const [taskOptions, setTaskOptions] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
+    const [userTasks, setUserTasks] = useState([]);
     const [viewTask, setViewTask] = useState(null);
+    const [showKanBanView, setShowKanBanView] = useState(false);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
+    const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
 
     const taskAlreadyExists = (newTask: any) =>
         [...taskOptions, ...selectedTasks]
@@ -149,20 +162,40 @@ const TaskDashboard = ({ event }) => {
         defaultTasks.length > 0 && setTaskOptions([...taskOptions, ...defaultTasks]);
     };
 
-    const loadSelectedTasks = useCallback(async () => {
-        const fetchedEventTasks = await geteventTasks(
-            event[GlobalConstants.ID],
+    const loadEventTasks = useCallback(async () => {
+        const fetchedEventTasks = await getEventTasks(
+            { eventId: event[GlobalConstants.ID] },
             defaultDatagridActionState,
         );
-        setSelectedTasks((prev) => [...prev, ...fetchedEventTasks.result]);
-    }, [event]);
+        if (isUserHost(user, event))
+            setSelectedTasks((prev) => [...prev, ...fetchedEventTasks.result]);
+        else setTaskOptions(fetchedEventTasks.result);
+    }, [event, user]);
 
     useEffect(() => {
         if (event && !hasLoadedTasks.current) {
             hasLoadedTasks.current = true;
-            loadSelectedTasks();
+            loadEventTasks();
         }
-    }, [event, loadSelectedTasks]);
+    }, [event, loadEventTasks]);
+
+    const loadUserTasks = useCallback(async () => {
+        const fetchedUserEventTasksResult = await getEventTasks(
+            {
+                eventId: event[GlobalConstants.ID],
+                assigneeId: user[GlobalConstants.ID],
+            },
+            defaultDatagridActionState,
+        );
+        setUserTasks(fetchedUserEventTasksResult.result);
+    }, [event, user]);
+
+    useEffect(() => {
+        if (event && !hasLoadedUserTasks.current) {
+            hasLoadedUserTasks.current = true;
+            loadUserTasks();
+        }
+    }, [event, loadUserTasks]);
 
     const getTaskDefaultValues = () => {
         const defaultTask = viewTask || {};
@@ -232,7 +265,8 @@ const TaskDashboard = ({ event }) => {
     const isTaskSelected = (task: any) =>
         selectedTasks
             .map((task) => task[GlobalConstants.NAME])
-            .includes(task[GlobalConstants.NAME]);
+            .includes(task[GlobalConstants.NAME]) ||
+        userTasks.map((task) => task[GlobalConstants.NAME]).includes(task[GlobalConstants.NAME]);
 
     const toggleTask = (toggledTask: any) => {
         if (isTaskSelected(toggledTask)) {
@@ -249,27 +283,52 @@ const TaskDashboard = ({ event }) => {
     };
 
     const getTaskComp = (task: any) => (
-        <Stack
-            key={task[GlobalConstants.ID] || task[GlobalConstants.NAME]}
-            direction="row"
-            justifyContent="space-between"
-        >
-            <FormControlLabel
-                control={
-                    <Checkbox checked={isTaskSelected(task)} onChange={() => toggleTask(task)} />
-                }
-                label={task[GlobalConstants.NAME]}
-            />
-            <Stack direction="row">
-                {isTaskSelected(task) ? (
-                    <Button onClick={() => setViewTask(task)}>
-                        <Edit />
-                    </Button>
-                ) : (
-                    <Button onClick={() => deleteTaskFromOptions(task)}>
-                        <CloseRounded />
-                    </Button>
-                )}
+        <Stack>
+            <Stack
+                key={task[GlobalConstants.ID] || task[GlobalConstants.NAME]}
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+            >
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            disabled={userTasks
+                                .map((task) => task[GlobalConstants.ID])
+                                .includes(task[GlobalConstants.ID])}
+                            checked={isTaskSelected(task)}
+                            onChange={() => toggleTask(task)}
+                        />
+                    }
+                    label={task[GlobalConstants.NAME]}
+                />
+
+                <Stack direction="row">
+                    {isUserHost ? (
+                        <Button onClick={() => setViewTask(task)}>
+                            <RemoveRedEye />
+                        </Button>
+                    ) : isTaskSelected(task) ? (
+                        <Button onClick={() => setViewTask(task)}>
+                            <Edit />
+                        </Button>
+                    ) : (
+                        isUserHost(user, event) && (
+                            <Button onClick={() => deleteTaskFromOptions(task)}>
+                                <CloseRounded />
+                            </Button>
+                        )
+                    )}
+                </Stack>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+                <Typography variant="body2">
+                    {dayjs(task[GlobalConstants.START_TIME]).format("L HH:MM")}
+                </Typography>
+                {"-"}
+                <Typography variant="body2">
+                    {dayjs(task[GlobalConstants.END_TIME]).format("L HH:MM")}
+                </Typography>
             </Stack>
         </Stack>
     );
@@ -282,47 +341,161 @@ const TaskDashboard = ({ event }) => {
         return sortTasks(tasksForPhase);
     };
 
-    return event[GlobalConstants.STATUS] === GlobalConstants.DRAFT ? (
-        <>
-            <Stack spacing={2}>
-                {[GlobalConstants.BEFORE, GlobalConstants.DURING, GlobalConstants.AFTER].map(
-                    (phase) => (
-                        <Accordion key={phase}>
-                            <AccordionSummary
-                                sx={{ textTransform: "capitalize" }}
-                                expandIcon={<ExpandMore />}
-                            >
-                                {phase}
-                            </AccordionSummary>
-                            <FormGroup>
-                                {getSortedTasksForPhase(phase).map((task) => getTaskComp(task))}
-                            </FormGroup>
-                        </Accordion>
-                    ),
-                )}
-                {getFormActionMsg(taskActionState)}
+    const getReducedTicketPrice = () => {
+        const fullPrice = event[GlobalConstants.FULL_TICKET_PRICE];
+        const nTasks = selectedTasks.length;
+        const fullTaskBurden = 3;
+        const reducedTicketPrice = (1 - Math.min(1, nTasks * (1 / fullTaskBurden))) * fullPrice;
+        return Math.round(reducedTicketPrice);
+    };
 
-                <Button onClick={loadDefaultTaskOptions}>load default tasks</Button>
-                <Button onClick={() => setViewTask({})}>add task</Button>
-                <Button onClick={saveSelectedTasks}>save tasks</Button>
-            </Stack>
-            <Dialog open={viewTask !== null} onClose={() => setViewTask(null)}>
-                <Form
-                    name={GlobalConstants.TASK}
-                    action={
-                        Object.keys(viewTask || {}).length === 0
-                            ? addSelectedTask
-                            : editSelectedTask
-                    }
-                    defaultValues={getTaskDefaultValues()}
-                    buttonLabel={
-                        Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
-                    }
-                />
-            </Dialog>
+    const hasBoughtTicket = async (): Promise<boolean> => {
+        startTransition(() => {
+            fetchEventAction();
+        });
+        return isUserParticipant(user, event);
+    };
+
+    const assignSelectedTasks = async () => {
+        const assignResult = await assignTasksToUser(
+            user[GlobalConstants.ID],
+            selectedTasks.map((task) => task[GlobalConstants.ID]),
+            defaultFormActionState,
+        );
+        setTaskActionState(assignResult);
+        loadUserTasks();
+    };
+
+    return (
+        <>
+            {isUserHost(user, event) && (
+                <Stack direction="row" alignItems="center">
+                    <Typography color={theme.palette.primary.main}>Task menu</Typography>
+                    <Switch
+                        checked={showKanBanView}
+                        onChange={() => setShowKanBanView((prev) => !prev)}
+                    />
+                    <Typography color={theme.palette.primary.main}>KanBan</Typography>
+                </Stack>
+            )}
+            {showKanBanView ? (
+                <TaskKanBanBoard event={event} />
+            ) : (
+                <>
+                    <Stack spacing={2}>
+                        <Stack direction="row" spacing={2}>
+                            <Stack spacing={2} width="100%">
+                                {[
+                                    GlobalConstants.BEFORE,
+                                    GlobalConstants.DURING,
+                                    GlobalConstants.AFTER,
+                                ].map((phase) => (
+                                    <Accordion key={phase}>
+                                        <AccordionSummary
+                                            sx={{ textTransform: "capitalize" }}
+                                            expandIcon={<ExpandMore />}
+                                        >
+                                            {phase}
+                                        </AccordionSummary>
+                                        <FormGroup>
+                                            {getSortedTasksForPhase(phase).map((task) =>
+                                                getTaskComp(task),
+                                            )}
+                                        </FormGroup>
+                                    </Accordion>
+                                ))}
+                            </Stack>
+                            {!isUserHost(user, event) && (
+                                <Stack component={Paper} spacing={2} width="100%">
+                                    <Typography variant="h6" color={theme.palette.primary.main}>
+                                        My tasks
+                                    </Typography>
+                                    {selectedTasks.length < 1 && userTasks.length < 1 ? (
+                                        <Typography>
+                                            Sign up for tasks or volunteer shifts to reduce your
+                                            ticket price!
+                                        </Typography>
+                                    ) : (
+                                        <>
+                                            {sortTasks(userTasks).map((task) => getTaskComp(task))}
+                                            {sortTasks(selectedTasks).map((task) =>
+                                                getTaskComp(task),
+                                            )}
+                                            {isUserParticipant(user, event) ? (
+                                                <Typography>
+                                                    You already have a ticket but feel free to help
+                                                    out if you want an extra special event
+                                                </Typography>
+                                            ) : (
+                                                <Typography>
+                                                    {`Thanks for helping out! Your ticket price is ${getReducedTicketPrice()} SEK`}
+                                                </Typography>
+                                            )}
+                                        </>
+                                    )}
+                                </Stack>
+                            )}
+                        </Stack>
+                        {getFormActionMsg(taskActionState)}
+
+                        {isUserHost(user, event) ? (
+                            <Stack spacing={2}>
+                                <Button onClick={loadDefaultTaskOptions}>load default tasks</Button>
+                                <Button onClick={() => setViewTask({})}>add task</Button>
+                                <Button onClick={saveSelectedTasks}>save tasks</Button>
+                            </Stack>
+                        ) : isUserParticipant(user, event) ? (
+                            <Button onClick={assignSelectedTasks}>assign tasks to me</Button>
+                        ) : (
+                            <Button onClick={() => setPaymentHandlerOpen(true)}>buy ticket</Button>
+                        )}
+                    </Stack>
+                    <Dialog open={!!viewTask} onClose={() => setViewTask(null)}>
+                        <Form
+                            name={GlobalConstants.TASK}
+                            readOnly={!isUserHost(user, event)}
+                            action={
+                                Object.keys(viewTask || {}).length === 0
+                                    ? addSelectedTask
+                                    : editSelectedTask
+                            }
+                            defaultValues={getTaskDefaultValues()}
+                            buttonLabel={
+                                Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
+                            }
+                        />
+                        {viewTask && !isUserHost(user, event) && (
+                            <Button
+                                onClick={() => {
+                                    toggleTask(viewTask);
+                                    setViewTask(null);
+                                }}
+                            >
+                                {isTaskSelected(viewTask) ? "unselect" : "select"}
+                            </Button>
+                        )}
+                    </Dialog>
+                    <SwishPaymentHandler
+                        title="Buy ticket"
+                        open={paymentHandlerOpen}
+                        setOpen={setPaymentHandlerOpen}
+                        hasPaid={hasBoughtTicket}
+                        paymentAmount={getReducedTicketPrice()}
+                        callbackEndpoint="buy-event-ticket"
+                        callbackParams={
+                            new URLSearchParams([
+                                [GlobalConstants.USER_ID, user[GlobalConstants.ID]],
+                                [GlobalConstants.EVENT_ID, event ? event[GlobalConstants.ID] : ""],
+                                ...selectedTasks.map((task) => [
+                                    GlobalConstants.TASK_ID,
+                                    task[GlobalConstants.ID],
+                                ]),
+                            ])
+                        }
+                    />
+                </>
+            )}
         </>
-    ) : (
-        <TaskKanBanBoard event={event} />
     );
 };
 
