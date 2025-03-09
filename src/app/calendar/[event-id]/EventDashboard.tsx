@@ -63,11 +63,12 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                         readOnly={!(isUserAdmin(user) || isUserHost(user, event))}
                     />
                     {getFormActionMsg(eventActionState)}
-                    {isUserHost(user, event) && (
-                        <Button color="success" onClick={publishEvent}>
-                            publish
-                        </Button>
-                    )}
+                    {isUserHost(user, event) &&
+                        event[GlobalConstants.STATUS] === GlobalConstants.DRAFT && (
+                            <Button color="success" onClick={publishEvent}>
+                                publish
+                            </Button>
+                        )}
                     {isUserAdmin(user) && (
                         <Button color="error" onClick={deleteEventAndRedirect}>
                             delete

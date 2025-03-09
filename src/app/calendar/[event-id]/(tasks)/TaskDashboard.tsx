@@ -111,10 +111,8 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
     const theme = useTheme();
     const { user } = useUserContext();
     const hasLoadedTasks = useRef(false);
-    const hasLoadedUserTasks = useRef(false);
     const [taskOptions, setTaskOptions] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
-    const [userTasks, setUserTasks] = useState([]);
     const [viewTask, setViewTask] = useState(null);
     const [showKanBanView, setShowKanBanView] = useState(false);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
@@ -167,9 +165,23 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
             { eventId: event[GlobalConstants.ID] },
             defaultDatagridActionState,
         );
-        if (isUserHost(user, event))
-            setSelectedTasks((prev) => [...prev, ...fetchedEventTasks.result]);
-        else setTaskOptions(fetchedEventTasks.result);
+        // TODO: Remove already assigned tasks when not in edit mode (not assignable again to a participant)
+        // Set fetched tasks as selected when in edit mode.
+        // Fetched tasks are options for event participants. Already assigned tasks are readonly.
+        if (isUserHost(user, event)) {
+            setSelectedTasks(fetchedEventTasks.result);
+        } else {
+            setTaskOptions(
+                fetchedEventTasks.result.filter(
+                    (task) => task[GlobalConstants.ASSIGNEE_ID] !== user[GlobalConstants.ID],
+                ),
+            );
+            setSelectedTasks(
+                fetchedEventTasks.result.filter(
+                    (task) => task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID],
+                ),
+            );
+        }
     }, [event, user]);
 
     useEffect(() => {
@@ -178,24 +190,6 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
             loadEventTasks();
         }
     }, [event, loadEventTasks]);
-
-    const loadUserTasks = useCallback(async () => {
-        const fetchedUserEventTasksResult = await getEventTasks(
-            {
-                eventId: event[GlobalConstants.ID],
-                assigneeId: user[GlobalConstants.ID],
-            },
-            defaultDatagridActionState,
-        );
-        setUserTasks(fetchedUserEventTasksResult.result);
-    }, [event, user]);
-
-    useEffect(() => {
-        if (event && !hasLoadedUserTasks.current) {
-            hasLoadedUserTasks.current = true;
-            loadUserTasks();
-        }
-    }, [event, loadUserTasks]);
 
     const getTaskDefaultValues = () => {
         const defaultTask = viewTask || {};
@@ -259,6 +253,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
             defaultFormActionState,
             selectedTasks,
         );
+        startTransition(() => loadEventTasks());
         setTaskActionState(saveTasksResult);
     };
 
@@ -266,7 +261,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
         selectedTasks
             .map((task) => task[GlobalConstants.NAME])
             .includes(task[GlobalConstants.NAME]) ||
-        userTasks.map((task) => task[GlobalConstants.NAME]).includes(task[GlobalConstants.NAME]);
+        task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID];
 
     const toggleTask = (toggledTask: any) => {
         if (isTaskSelected(toggledTask)) {
@@ -283,19 +278,14 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
     };
 
     const getTaskComp = (task: any) => (
-        <Stack>
-            <Stack
-                key={task[GlobalConstants.ID] || task[GlobalConstants.NAME]}
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-            >
+        <Stack key={task[GlobalConstants.ID] || task[GlobalConstants.NAME]}>
+            <Stack key="title" direction="row" justifyContent="space-between" alignItems="center">
                 <FormControlLabel
                     control={
                         <Checkbox
-                            disabled={userTasks
-                                .map((task) => task[GlobalConstants.ID])
-                                .includes(task[GlobalConstants.ID])}
+                            disabled={
+                                task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID]
+                            }
                             checked={isTaskSelected(task)}
                             onChange={() => toggleTask(task)}
                         />
@@ -321,12 +311,12 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                     )}
                 </Stack>
             </Stack>
-            <Stack direction="row" justifyContent="space-between">
-                <Typography variant="body2">
+            <Stack key="time" direction="row" justifyContent="space-between">
+                <Typography key="start" variant="body2">
                     {dayjs(task[GlobalConstants.START_TIME]).format("L HH:MM")}
                 </Typography>
                 {"-"}
-                <Typography variant="body2">
+                <Typography key="end" variant="body2">
                     {dayjs(task[GlobalConstants.END_TIME]).format("L HH:MM")}
                 </Typography>
             </Stack>
@@ -363,19 +353,19 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
             defaultFormActionState,
         );
         setTaskActionState(assignResult);
-        loadUserTasks();
+        loadEventTasks();
     };
 
     return (
         <>
             {isUserHost(user, event) && (
                 <Stack direction="row" alignItems="center">
-                    <Typography color={theme.palette.primary.main}>Task menu</Typography>
+                    <Typography color={theme.palette.primary.main}>Bulk Edit</Typography>
                     <Switch
                         checked={showKanBanView}
                         onChange={() => setShowKanBanView((prev) => !prev)}
                     />
-                    <Typography color={theme.palette.primary.main}>KanBan</Typography>
+                    <Typography color={theme.palette.primary.main}>Progress Overview</Typography>
                 </Stack>
             )}
             {showKanBanView ? (
@@ -410,14 +400,13 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                                     <Typography variant="h6" color={theme.palette.primary.main}>
                                         My tasks
                                     </Typography>
-                                    {selectedTasks.length < 1 && userTasks.length < 1 ? (
+                                    {selectedTasks.length < 1 ? (
                                         <Typography>
                                             Sign up for tasks or volunteer shifts to reduce your
                                             ticket price!
                                         </Typography>
                                     ) : (
                                         <>
-                                            {sortTasks(userTasks).map((task) => getTaskComp(task))}
                                             {sortTasks(selectedTasks).map((task) =>
                                                 getTaskComp(task),
                                             )}
