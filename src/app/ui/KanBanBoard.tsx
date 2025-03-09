@@ -29,6 +29,7 @@ const KanBanBoard = ({ tasks, fetchDbTasks, readOnly = true }) => {
         const deleteTaskResult = await deleteTask(viewTask[GlobalConstants.ID], taskActionState);
         startTransition(() => fetchDbTasks());
         setTaskActionState(deleteTaskResult);
+        setViewTask(null);
     };
 
     const handleDragStart = (task) => {
@@ -130,7 +131,11 @@ const KanBanBoard = ({ tasks, fetchDbTasks, readOnly = true }) => {
                     action={updateViewTask}
                     buttonLabel="save task"
                 />
-                {!readOnly && <Button onClick={deleteViewTask}>delete</Button>}
+                {!readOnly && (
+                    <Button color="error" onClick={deleteViewTask}>
+                        delete
+                    </Button>
+                )}
             </Dialog>
         </>
     );
