@@ -104,6 +104,13 @@ Possibly an external link to a well-organized cloud drive.
 
 TBD
 
+## Languages
+
+The application should be viewable in several languages by selecting a flag at the top of the page.
+
+The texts for each language should be stored in the database, indexed by an id of each field.
+Upon rendering, the texts for the chosen language are loaded into a LanguageContext. Wrappers are created around label components, typographies, links etc. which shows the text for the selected language from the LanguageContext and defaults to English if no translation exists for the field. The text should be editable by an admin. Upon edit, a new text is saved in the database for the field id.
+
 ## Contributions
 
 To contribute to this project, go through the following steps to setup the environment on your computer:
