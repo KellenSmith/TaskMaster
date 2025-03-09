@@ -77,7 +77,11 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                 </>
             )}
             {openTab === tabs.tasks && (
-                <TaskDashboard event={event} fetchEventAction={fetchEventAction} />
+                <TaskDashboard
+                    readOnly={isUserHost(user, event)}
+                    event={event}
+                    fetchEventAction={fetchEventAction}
+                />
             )}
         </Stack>
     );

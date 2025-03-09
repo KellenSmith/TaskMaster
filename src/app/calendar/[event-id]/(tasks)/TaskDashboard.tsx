@@ -28,9 +28,10 @@ import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import { allowSelectMultiple, datePickerFields, RenderedFields } from "../../../ui/form/FieldCfg";
 import TaskKanBanBoard from "./TaskKanBanBoard";
-import { isUserHost, isUserParticipant } from "../../../lib/definitions";
+import { isUserParticipant } from "../../../lib/definitions";
 import { useUserContext } from "../../../context/UserContext";
 import SwishPaymentHandler from "../../../ui/swish/SwishPaymentHandler";
+import { OrgSettings } from "../../../lib/org-settings";
 
 const testTaskOptions = [
     {
@@ -107,7 +108,7 @@ export const sortTasks = (tasks) =>
         );
     });
 
-const TaskDashboard = ({ event, fetchEventAction }) => {
+const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
     const theme = useTheme();
     const { user } = useUserContext();
     const hasLoadedTasks = useRef(false);
@@ -168,7 +169,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
         // TODO: Remove already assigned tasks when not in edit mode (not assignable again to a participant)
         // Set fetched tasks as selected when in edit mode.
         // Fetched tasks are options for event participants. Already assigned tasks are readonly.
-        if (isUserHost(user, event)) {
+        if (readOnly) {
             setSelectedTasks(fetchedEventTasks.result);
         } else {
             setTaskOptions(
@@ -182,7 +183,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                 ),
             );
         }
-    }, [event, user]);
+    }, [event, readOnly, user]);
 
     useEffect(() => {
         if (event && !hasLoadedTasks.current) {
@@ -294,7 +295,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                 />
 
                 <Stack direction="row">
-                    {isUserHost ? (
+                    {readOnly ? (
                         <Button onClick={() => setViewTask(task)}>
                             <RemoveRedEye />
                         </Button>
@@ -303,11 +304,9 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                             <Edit />
                         </Button>
                     ) : (
-                        isUserHost(user, event) && (
-                            <Button onClick={() => deleteTaskFromOptions(task)}>
-                                <CloseRounded />
-                            </Button>
-                        )
+                        <Button onClick={() => deleteTaskFromOptions(task)}>
+                            <CloseRounded />
+                        </Button>
                     )}
                 </Stack>
             </Stack>
@@ -334,8 +333,13 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
     const getReducedTicketPrice = () => {
         const fullPrice = event[GlobalConstants.FULL_TICKET_PRICE];
         const nTasks = selectedTasks.length;
-        const fullTaskBurden = 3;
-        const reducedTicketPrice = (1 - Math.min(1, nTasks * (1 / fullTaskBurden))) * fullPrice;
+        const reducedTicketPrice =
+            (1 -
+                Math.min(
+                    1,
+                    nTasks * (1 / (OrgSettings[GlobalConstants.FULL_EVENT_TASK_BURDEN] as number)),
+                )) *
+            fullPrice;
         return Math.round(reducedTicketPrice);
     };
 
@@ -358,7 +362,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
 
     return (
         <>
-            {isUserHost(user, event) && (
+            {!readOnly && (
                 <Stack direction="row" alignItems="center">
                     <Typography color={theme.palette.primary.main}>Bulk Edit</Typography>
                     <Switch
@@ -395,7 +399,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                                     </Accordion>
                                 ))}
                             </Stack>
-                            {!isUserHost(user, event) && (
+                            {readOnly && (
                                 <Stack component={Paper} spacing={2} width="100%">
                                     <Typography variant="h6" color={theme.palette.primary.main}>
                                         My tasks
@@ -427,7 +431,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                         </Stack>
                         {getFormActionMsg(taskActionState)}
 
-                        {isUserHost(user, event) ? (
+                        {!readOnly ? (
                             <Stack spacing={2}>
                                 <Button onClick={loadDefaultTaskOptions}>load default tasks</Button>
                                 <Button onClick={() => setViewTask({})}>add task</Button>
@@ -442,7 +446,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                     <Dialog open={!!viewTask} onClose={() => setViewTask(null)}>
                         <Form
                             name={GlobalConstants.TASK}
-                            readOnly={!isUserHost(user, event)}
+                            readOnly={readOnly}
                             action={
                                 Object.keys(viewTask || {}).length === 0
                                     ? addSelectedTask
@@ -453,7 +457,7 @@ const TaskDashboard = ({ event, fetchEventAction }) => {
                                 Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
                             }
                         />
-                        {viewTask && !isUserHost(user, event) && (
+                        {viewTask && readOnly && (
                             <Button
                                 onClick={() => {
                                     toggleTask(viewTask);

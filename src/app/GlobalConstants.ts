@@ -96,6 +96,7 @@ const GlobalConstants = {
     IN_PROGRESS: "in progress",
     IN_REVIEW: "in review",
     DONE: "done",
+    FULL_EVENT_TASK_BURDEN: "fullEventTaskBurden",
 };
 
 export default GlobalConstants;
