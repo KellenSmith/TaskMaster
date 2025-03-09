@@ -10,7 +10,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import React, { Dispatch, SetStateAction, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { SwishConstants } from "../../lib/swish-constants";
@@ -77,6 +77,7 @@ const SwishPaymentHandler = ({
     };
 
     const handleMobilePaymentFlow = async () => {
+        // TODO: Check that this works
         const requestUrl = new URL(
             "/api/swish/payment-request-token",
             OrgSettings[GlobalConstants.BASE_URL] as string,
@@ -95,32 +96,11 @@ const SwishPaymentHandler = ({
         }
     };
 
-    /**
-     * Wait for payment for 5 minutes
-     * Update user every 5 seconds. If payment has been made, stop waiting.
-     */
-    const waitForPayment = async () => {
-        const startTime = dayjs();
-        const waitTime = 5 * 60; // s
-        intervalIdRef.current = setInterval(async () => {
-            if (dayjs().isAfter(startTime.add(waitTime, "s"))) {
-                clearInterval(intervalIdRef.current);
-                setPaymentStatus(SwishConstants.EXPIRED);
-            }
-            if (await hasPaid()) {
-                clearInterval(intervalIdRef.current);
-                setPaymentStatus(SwishConstants.PAID);
-            }
-        }, 10000);
+    const finishPayment = async () => {
+        if (await hasPaid()) {
+            setPaymentStatus(SwishConstants.PAID);
+        }
     };
-
-    // Clear interval if unmount without finishing waiting for payment
-    useEffect(() => {
-        return () => {
-            clearInterval(intervalIdRef.current);
-            setOpen(false);
-        };
-    }, [setOpen]);
 
     const handleDesktopPaymentFlow = async () => {
         try {
@@ -150,7 +130,6 @@ const SwishPaymentHandler = ({
             await handleMobilePaymentFlow();
         } else {
             await handleDesktopPaymentFlow();
-            await waitForPayment();
         }
     };
 
@@ -172,7 +151,7 @@ const SwishPaymentHandler = ({
         <Dialog open={open} onClose={closeQrCodeDialog}>
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>
-                {qrCodeUrl ? (
+                {qrCodeUrl && paymentStatus === SwishConstants.PENDING ? (
                     <Stack>
                         <DialogContentText>
                             {`Scan the QR code to pay ${paymentAmount} SEK`}
@@ -186,6 +165,7 @@ const SwishPaymentHandler = ({
                         />
                         {/* TODO: Remove payment simulation in production */}
                         <Button onClick={simulatePaymentCallback}>simulate pay</Button>
+                        <Button onClick={finishPayment}>finish</Button>
                     </Stack>
                 ) : (
                     <Button onClick={startPaymentProcess}>start swish payment process</Button>
