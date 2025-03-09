@@ -1,22 +1,45 @@
 "use client";
 
-import { Button, Stack, Tab, Tabs } from "@mui/material";
+import { Button, Tab, Tabs } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { startTransition, useState } from "react";
+import { startTransition, Suspense, useActionState, useState } from "react";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
-import Form, { defaultActionState, FormActionState, getFormActionMsg } from "../../ui/form/Form";
+import Form, {
+    defaultActionState as defaultFormActionState,
+    FormActionState,
+    getFormActionMsg,
+} from "../../ui/form/Form";
 import { redirect } from "next/navigation";
 import { deleteEvent, updateEvent } from "../../lib/event-actions";
 import { Prisma } from "@prisma/client";
+import { defaultActionState as defaultDatagridActionState } from "../../ui/Datagrid";
+import { getEventTasks } from "../../lib/task-actions";
 
 export const tabs = { event: "Event", tasks: "Participate" };
 
 const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const { user } = useUserContext();
+    const [eventActionState, setEventActionState] = useState(defaultFormActionState);
 
-    const [eventActionState, setEventActionState] = useState(defaultActionState);
+    const fetchEventTasks = async () => {
+        return await getEventTasks(
+            { eventId: event[GlobalConstants.ID] },
+            defaultDatagridActionState,
+        );
+    };
+    const [tasksActionState, fetchTasksAction, isTasksPending] = useActionState(
+        fetchEventTasks,
+        defaultDatagridActionState,
+    );
+
+    const changeTab = async (newTab) => {
+        if (newTab === tabs.tasks) {
+            startTransition(() => fetchTasksAction());
+        }
+        setOpenTab(newTab);
+    };
 
     const updateEventById = async (
         currentActionState: FormActionState,
@@ -35,20 +58,20 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
 
     const publishEvent = async () => {
         const updateData: Prisma.EventUpdateInput = { status: GlobalConstants.PUBLISHED };
-        const publishEventResult = await updateEventById(defaultActionState, updateData);
+        const publishEventResult = await updateEventById(defaultFormActionState, updateData);
         setEventActionState(publishEventResult);
     };
 
     const deleteEventAndRedirect = async () => {
-        const deleteResult = await deleteEvent(event[GlobalConstants.ID], defaultActionState);
+        const deleteResult = await deleteEvent(event[GlobalConstants.ID], defaultFormActionState);
         if (deleteResult.status !== 200) return setEventActionState(deleteResult);
         // Redirect to calendar when event is deleted
         redirect(`/${GlobalConstants.CALENDAR}`);
     };
 
     return (
-        <Stack>
-            <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
+        <Suspense>
+            <Tabs value={openTab} onChange={(_, newTab) => changeTab(newTab)}>
                 {Object.keys(tabs).map((tab) => (
                     <Tab key={tabs[tab]} value={tabs[tab]} label={tabs[tab]} />
                 ))}
@@ -78,12 +101,15 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
             )}
             {openTab === tabs.tasks && (
                 <TaskDashboard
-                    readOnly={isUserHost(user, event)}
+                    readOnly={!isUserHost(user, event)}
                     event={event}
                     fetchEventAction={fetchEventAction}
+                    tasks={tasksActionState.result}
+                    fetchTasksAction={fetchTasksAction}
+                    isTasksPending={isTasksPending}
                 />
             )}
-        </Stack>
+        </Suspense>
     );
 };
 export default EventDashboard;

@@ -4,8 +4,9 @@ import { useUserContext } from "../../context/UserContext";
 import { addEventReserve } from "../../lib/event-actions";
 import { startTransition, useActionState } from "react";
 import { defaultActionState, FormActionState, getFormActionMsg } from "../../ui/form/Form";
-import { isUserHost, isUserParticipant } from "../../lib/definitions";
+import { isUserHost } from "../../lib/definitions";
 import { tabs } from "./EventDashboard";
+import { isUserParticipant } from "./event-utils";
 
 const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {
     const { user } = useUserContext();

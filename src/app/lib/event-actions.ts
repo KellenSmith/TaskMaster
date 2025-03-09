@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
+import { createEventSchema } from "./zod-schemas";
 
 export const createEvent = async (
     hostId: string,
@@ -11,10 +12,13 @@ export const createEvent = async (
     fieldValues: Prisma.EventCreateInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
+
     try {
+        const parsedFieldValues = createEventSchema.parse(fieldValues) as Prisma.EventCreateInput;
+
         const createdEvent = await prisma.event.create({
             data: {
-                ...fieldValues,
+                ...parsedFieldValues,
                 host: {
                     connect: {
                         id: hostId,

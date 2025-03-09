@@ -51,11 +51,6 @@ export const isUserAdmin = (user: any): boolean =>
 export const isUserHost = (user: any, event: any): boolean =>
     user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
 
-export const isUserParticipant = (user: any, event: any) =>
-    event[GlobalConstants.PARTICIPANT_USERS]
-        .map((participant: any) => participant[GlobalConstants.USER_ID])
-        .includes(user[GlobalConstants.ID]);
-
 export interface LoginSchema {
     email: string;
     password: string;
