@@ -5,6 +5,25 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 
+export const deleteTask = async (taskId: string, currentActionState: FormActionState) => {
+    const newActionState = { ...currentActionState };
+    try {
+        await prisma.task.delete({
+            where: {
+                id: taskId,
+            },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = "Deleted task";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
 export const updateTaskById = async (
     taskId: string,
     currentActionState: FormActionState,
