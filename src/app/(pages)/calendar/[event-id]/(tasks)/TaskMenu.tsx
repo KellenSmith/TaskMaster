@@ -328,6 +328,24 @@ const TaskMenu = ({
         return sortTasks(tasksForPhase);
     };
 
+    const toggleAllTasksForPhase = (phase) => {
+        const selectedPhaseTasks = selectedTasks.filter(
+            (task) => task[GlobalConstants.PHASE] === phase,
+        );
+        const phaseTaskOptions = taskOptions.filter(
+            (task) => task[GlobalConstants.PHASE] === phase,
+        );
+        if (phaseTaskOptions.length > 0) {
+            setSelectedTasks((prev) => [...prev, ...phaseTaskOptions]);
+            setTaskOptions((prev) => prev.filter((task) => task[GlobalConstants.PHASE] !== phase));
+        } else {
+            setTaskOptions((prev) => [...prev, ...selectedPhaseTasks]);
+            setSelectedTasks((prev) =>
+                prev.filter((task) => task[GlobalConstants.PHASE] !== phase),
+            );
+        }
+    };
+
     return (
         <>
             <Stack spacing={2}>
@@ -345,6 +363,23 @@ const TaskMenu = ({
                                 >
                                     {phase}
                                 </AccordionSummary>
+                                {!readOnly && (
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={
+                                                    taskOptions.filter(
+                                                        (task) =>
+                                                            task[GlobalConstants.PHASE] === phase,
+                                                    ).length < 1
+                                                }
+                                                onChange={() => toggleAllTasksForPhase(phase)}
+                                            />
+                                        }
+                                        label="Toggle All"
+                                    />
+                                )}
+
                                 <FormGroup>
                                     {isTasksPending ? (
                                         <CircularProgress />

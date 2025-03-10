@@ -56,7 +56,7 @@ const EventPage = () => {
                         <Stack spacing={2}>
                             {isEventDraft() && (
                                 <Typography variant="h4" color={theme.palette.primary.main}>
-                                    {"This is an event draft. It is only visible to you."}
+                                    {"This is an event draft. It is only visible to the host."}
                                 </Typography>
                             )}
                             <TextField

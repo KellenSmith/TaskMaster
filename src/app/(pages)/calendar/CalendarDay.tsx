@@ -8,6 +8,7 @@ import isBetween from "dayjs/plugin/isBetween";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
+import { isEventPublished } from "./[event-id]/event-utils";
 
 dayjs.extend(isBetween);
 
@@ -20,20 +21,18 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
     const { user } = useUserContext();
 
     const shouldShowEvent = (event: any) => {
-        const startTime = dayjs(event[GlobalConstants.START_TIME]);
+        let startTime = dayjs(event[GlobalConstants.START_TIME]);
         let endTime = dayjs(event[GlobalConstants.END_TIME]);
 
         // Count events ending before 04:00 as belonging to the day before
-        if (0 <= endTime.hour() && endTime.hour() <= 4)
-            endTime = endTime.subtract(1, "day").hour(23).minute(59);
+        if (0 <= endTime.hour() && endTime.hour() <= 4) {
+            const newEndTime = endTime.subtract(1, "day").hour(23).minute(59);
+            if (newEndTime.isAfter(startTime)) endTime = newEndTime;
+        }
 
         const eventInDay = date.isBetween(startTime, endTime, "day", "[]");
         if (!eventInDay) return false;
-        return (
-            event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED ||
-            isUserAdmin(user) ||
-            isUserHost(user, event)
-        );
+        return isEventPublished(event) || isUserAdmin(user) || isUserHost(user, event);
     };
 
     const getEmptyDay = () => <Paper key={`empty-end-${date.date()}`} elevation={0} />;
