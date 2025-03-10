@@ -18,6 +18,9 @@ export const FieldLabels = {
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED]: "Created",
     [GlobalConstants.MEMBERSHIP_RENEWED]: "Membership Renewed",
+    [GlobalConstants.PENDING]: "Pending",
+    [GlobalConstants.ACTIVE]: "Active",
+    [GlobalConstants.EXPIRED]: "Expired",
     // Login
     [GlobalConstants.LOGIN]: "Login",
     [GlobalConstants.PASSWORD]: "Password",

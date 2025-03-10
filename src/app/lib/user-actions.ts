@@ -38,7 +38,11 @@ export const getAllUsers = async (
 ): Promise<DatagridActionState> => {
     const newActionState: DatagridActionState = { ...currentState };
     try {
-        const users: Prisma.UserCreateInput[] = await prisma.user.findMany();
+        const users = await prisma.user.findMany({
+            include: {
+                userCredentials: true,
+            },
+        });
         newActionState.status = 200;
         newActionState.result = users;
     } catch (error) {

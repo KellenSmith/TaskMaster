@@ -43,9 +43,18 @@ interface DatagridProps {
         fieldValues: any, // eslint-disable-line no-unused-vars
     ) => Promise<FormActionState>;
     rowActions: RowActionProps[];
+    customColumns?: GridColDef[];
+    hiddenColumns?: string[];
 }
 
-const Datagrid: React.FC<DatagridProps> = ({ name, fetchData, updateAction, rowActions }) => {
+const Datagrid: React.FC<DatagridProps> = ({
+    name,
+    fetchData,
+    updateAction,
+    rowActions,
+    customColumns,
+    hiddenColumns,
+}) => {
     const apiRef = useGridApiRef();
     const pathname = usePathname();
     const [clickedRow, setClickedRow] = useState(null);
@@ -80,11 +89,11 @@ const Datagrid: React.FC<DatagridProps> = ({ name, fetchData, updateAction, rowA
             headerName: key in FieldLabels ? FieldLabels[key] : key,
             type: datePickerFields.includes(key) ? "dateTime" : "string",
         })) as GridColDef[];
-        return columns;
+        return [...columns, ...customColumns];
     };
 
     const rows = useMemo(getRows, [fetchedDataState]);
-    const columns = useMemo(getColumns, [fetchedDataState]);
+    const columns = useMemo(getColumns, [fetchedDataState, customColumns]);
 
     useEffect(() => {
         apiRef.current.autosizeColumns({
@@ -133,6 +142,13 @@ const Datagrid: React.FC<DatagridProps> = ({ name, fetchData, updateAction, rowA
                 rows={rows}
                 onRowClick={onRowClicked}
                 columns={columns}
+                initialState={{
+                    columns: {
+                        columnVisibilityModel: Object.fromEntries(
+                            hiddenColumns.map((hiddenColumn) => [hiddenColumn, false]),
+                        ),
+                    },
+                }}
                 autoPageSize
             />
             <Button onClick={() => redirect(`${pathname}/${GlobalConstants.CREATE}`)}>

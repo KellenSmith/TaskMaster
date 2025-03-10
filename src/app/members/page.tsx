@@ -5,6 +5,9 @@ import { deleteUser, getAllUsers, updateUser, validateUserMembership } from "../
 import Datagrid, { RowActionProps } from "../ui/Datagrid";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
+import { GridColDef } from "@mui/x-data-grid";
+import { FieldLabels } from "../ui/form/FieldCfg";
+import { isMembershipExpired } from "../lib/definitions";
 
 const MembersPage = () => {
     const { user } = useUserContext();
@@ -24,6 +27,22 @@ const MembersPage = () => {
             buttonColor: "error",
         },
     ];
+
+    const customColumns: GridColDef[] = [
+        {
+            field: GlobalConstants.STATUS,
+            headerName: FieldLabels[GlobalConstants.STATUS],
+            valueGetter: (_, row) => {
+                let status = GlobalConstants.ACTIVE;
+                if (!row[GlobalConstants.USER_CREDENTIALS]) status = GlobalConstants.PENDING;
+                else if (isMembershipExpired(row)) status = GlobalConstants.EXPIRED;
+                return FieldLabels[status] || status;
+            },
+        },
+    ];
+
+    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.USER_CREDENTIALS];
+
     // TODO: If on mobile, just show list of pending members, viewable and validatable
     return (
         <Stack sx={{ height: "100%" }}>
@@ -32,6 +51,8 @@ const MembersPage = () => {
                 fetchData={getAllUsers}
                 updateAction={updateUser}
                 rowActions={rowActions}
+                customColumns={customColumns}
+                hiddenColumns={hiddenColumns}
             />
         </Stack>
     );
