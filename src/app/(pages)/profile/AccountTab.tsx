@@ -74,6 +74,8 @@ const AccountTab = () => {
         return !isMembershipExpired(updatedUser);
     };
 
+    // TODO: Renew access token when membership has been validated
+
     return (
         user && (
             <>
