@@ -1,14 +1,14 @@
 "use client";
 
-import { getUserParticipantEvents } from "../lib/user-actions";
+import { getUserParticipantEvents } from "../../lib/user-actions";
 import React, { useEffect, useState } from "react";
 import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
-import { useUserContext } from "../context/UserContext";
-import GlobalConstants from "../GlobalConstants";
-import { defaultActionState } from "../ui/Datagrid";
+import { useUserContext } from "../../context/UserContext";
+import GlobalConstants from "../../GlobalConstants";
+import { defaultActionState } from "../../ui/Datagrid";
 import { redirect } from "next/navigation";
-import { OrgSettings } from "../lib/org-settings";
-import { formatDate } from "../ui/utils";
+import { OrgSettings } from "../../lib/org-settings";
+import { formatDate } from "../../ui/utils";
 const EventsTab: React.FC = () => {
     const { user } = useUserContext();
     const [events, setEvents] = useState<any[]>([]);

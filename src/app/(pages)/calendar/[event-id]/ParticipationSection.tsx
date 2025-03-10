@@ -1,10 +1,10 @@
 import { Button, Stack, Typography } from "@mui/material";
-import GlobalConstants from "../../GlobalConstants";
-import { useUserContext } from "../../context/UserContext";
-import { addEventReserve } from "../../lib/event-actions";
+import GlobalConstants from "../../../GlobalConstants";
+import { useUserContext } from "../../../context/UserContext";
+import { addEventReserve } from "../../../lib/event-actions";
 import { startTransition, useActionState } from "react";
-import { defaultActionState, FormActionState, getFormActionMsg } from "../../ui/form/Form";
-import { isUserHost } from "../../lib/definitions";
+import { defaultActionState, FormActionState, getFormActionMsg } from "../../../ui/form/Form";
+import { isUserHost } from "../../../lib/definitions";
 import { tabs } from "./EventDashboard";
 import { isUserParticipant } from "./event-utils";
 

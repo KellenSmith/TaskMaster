@@ -18,19 +18,23 @@ import Form, {
     defaultActionState as defaultFormActionState,
     FormActionState,
     getFormActionMsg,
-} from "../../../ui/form/Form";
-import GlobalConstants from "../../../GlobalConstants";
+} from "../../../../ui/form/Form";
+import GlobalConstants from "../../../../GlobalConstants";
 import { startTransition, useEffect, useState } from "react";
 import { CloseRounded, Edit, ExpandMore, RemoveRedEye } from "@mui/icons-material";
-import { updateEventTasks, assignTasksToUser } from "../../../lib/task-actions";
+import { updateEventTasks, assignTasksToUser } from "../../../../lib/task-actions";
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
-import { allowSelectMultiple, datePickerFields, RenderedFields } from "../../../ui/form/FieldCfg";
-import { useUserContext } from "../../../context/UserContext";
-import SwishPaymentHandler from "../../../ui/swish/SwishPaymentHandler";
-import { OrgSettings } from "../../../lib/org-settings";
+import {
+    allowSelectMultiple,
+    datePickerFields,
+    RenderedFields,
+} from "../../../../ui/form/FieldCfg";
+import { useUserContext } from "../../../../context/UserContext";
+import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
+import { OrgSettings } from "../../../../lib/org-settings";
 import { isUserParticipant, sortTasks } from "../event-utils";
-import { formatDate } from "../../../ui/utils";
+import { formatDate } from "../../../../ui/utils";
 
 const testTaskOptions = [
     {

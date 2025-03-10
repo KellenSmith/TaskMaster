@@ -72,18 +72,19 @@ export const login = async (
         authState.result = "";
         return authState;
     }
-    if (!loggedInUser[GlobalConstants.MEMBERSHIP_RENEWED]) {
-        authState.status = 403;
-        authState.errorMsg = "Membership pending";
-        authState.result = "";
-        return authState;
-    }
 
     const userCredentials = await prisma.userCredentials.findUnique({
         where: {
             email: fieldValues.email,
         } as any as Prisma.UserCredentialsWhereUniqueInput,
     });
+    if (!userCredentials) {
+        authState.status = 403;
+        authState.errorMsg = "Membership pending";
+        authState.result = "";
+        return authState;
+    }
+
     const hashedPassword = await hashPassword(
         fieldValues.password as string,
         userCredentials[GlobalConstants.SALT],

@@ -5,9 +5,9 @@ import { Paper, Stack, Typography } from "@mui/material";
 import CalendarEvent, { ICalendarEvent } from "./CalendarEvent";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-import GlobalConstants from "../GlobalConstants";
-import { isUserAdmin, isUserHost } from "../lib/definitions";
-import { useUserContext } from "../context/UserContext";
+import GlobalConstants from "../../GlobalConstants";
+import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { useUserContext } from "../../context/UserContext";
 
 dayjs.extend(isBetween);
 
@@ -20,12 +20,14 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
     const { user } = useUserContext();
 
     const shouldShowEvent = (event: any) => {
-        const eventInDay = date.isBetween(
-            dayjs(event[GlobalConstants.START_TIME]),
-            dayjs(event[GlobalConstants.END_TIME]),
-            "day",
-            "[]",
-        );
+        const startTime = dayjs(event[GlobalConstants.START_TIME]);
+        let endTime = dayjs(event[GlobalConstants.END_TIME]);
+
+        // Count events ending before 04:00 as belonging to the day before
+        if (0 <= endTime.hour() && endTime.hour() <= 4)
+            endTime = endTime.subtract(1, "day").hour(23).minute(59);
+
+        const eventInDay = date.isBetween(startTime, endTime, "day", "[]");
         if (!eventInDay) return false;
         return (
             event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED ||

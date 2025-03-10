@@ -6,7 +6,6 @@ import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
 import { decryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
-import dayjs from "dayjs";
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { LoginSchema, ResetCredentialsSchema } from "./definitions";
 
@@ -196,17 +195,12 @@ export const validateUserMembership = async (
     currentActionState: FormActionState,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
-    const newUserData = { membershipRenewed: dayjs().toISOString() } as Prisma.UserUpdateInput;
-    const userIdentifier: UserIdentifier = {
-        email: user.email as string,
-    };
+
     const generatedPassword = "123456"; //TODO: await generateSalt();
     const generatedUserCredentials = (await getGeneratedUserCredentials(
         user.email as string,
         generatedPassword,
     )) as Prisma.UserCredentialsCreateInput;
-    const credentialsTransaction = createUserCredentialsTransaction(generatedUserCredentials);
-    const userTransaction = updateUserTransaction(newUserData, userIdentifier);
 
     // Email new credentials to user email
     try {
@@ -219,7 +213,7 @@ export const validateUserMembership = async (
     }
 
     try {
-        await prisma.$transaction([credentialsTransaction, userTransaction]);
+        await createUserCredentialsTransaction(generatedUserCredentials);
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = "Validated membership";

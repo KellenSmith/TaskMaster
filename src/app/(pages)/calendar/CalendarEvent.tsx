@@ -2,10 +2,10 @@
 
 import { Card, Tooltip, useTheme } from "@mui/material";
 import { FC } from "react";
-import { useUserContext } from "../context/UserContext";
+import { useUserContext } from "../../context/UserContext";
 import { usePathname, redirect } from "next/navigation";
-import GlobalConstants from "../GlobalConstants";
-import { formatDate } from "../ui/utils";
+import GlobalConstants from "../../GlobalConstants";
+import { formatDate } from "../../ui/utils";
 
 export interface ICalendarEvent {
     id: string;

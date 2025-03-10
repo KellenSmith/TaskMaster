@@ -1,16 +1,16 @@
 "use client";
 
-import GlobalConstants from "../GlobalConstants";
-import Form, { FormActionState, getFormActionMsg } from "../ui/form/Form";
-import { useUserContext } from "../context/UserContext";
-import { deleteUser, updateUser, updateUserCredentials } from "../lib/user-actions";
-import { login } from "../lib/auth/auth";
+import GlobalConstants from "../../GlobalConstants";
+import Form, { FormActionState, getFormActionMsg } from "../../ui/form/Form";
+import { useUserContext } from "../../context/UserContext";
+import { deleteUser, updateUser, updateUserCredentials } from "../../lib/user-actions";
+import { login } from "../../lib/auth/auth";
 import { useState } from "react";
-import { defaultActionState } from "../ui/form/Form";
+import { defaultActionState } from "../../ui/form/Form";
 import { Button, Stack } from "@mui/material";
-import { isMembershipExpired, LoginSchema, UpdateCredentialsSchema } from "../lib/definitions";
-import SwishPaymentHandler from "../ui/swish/SwishPaymentHandler";
-import { OrgSettings } from "../lib/org-settings";
+import { isMembershipExpired, LoginSchema, UpdateCredentialsSchema } from "../../lib/definitions";
+import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
+import { OrgSettings } from "../../lib/org-settings";
 import { Prisma } from "@prisma/client";
 
 const AccountTab = () => {

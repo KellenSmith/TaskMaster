@@ -1,21 +1,19 @@
 "use client";
 
 import { Button, Tab, Tabs } from "@mui/material";
-import GlobalConstants from "../../GlobalConstants";
-import { startTransition, Suspense, useActionState, useState } from "react";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
-import { useUserContext } from "../../context/UserContext";
+import GlobalConstants from "../../../GlobalConstants";
+import { startTransition, Suspense, useState } from "react";
+import { isUserAdmin, isUserHost } from "../../../lib/definitions";
+import { useUserContext } from "../../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
 import Form, {
     defaultActionState as defaultFormActionState,
     FormActionState,
     getFormActionMsg,
-} from "../../ui/form/Form";
+} from "../../../ui/form/Form";
 import { redirect } from "next/navigation";
-import { deleteEvent, updateEvent } from "../../lib/event-actions";
+import { deleteEvent, updateEvent } from "../../../lib/event-actions";
 import { Prisma } from "@prisma/client";
-import { defaultActionState as defaultDatagridActionState } from "../../ui/Datagrid";
-import { getEventTasks } from "../../lib/task-actions";
 
 export const tabs = { event: "Event", tasks: "Participate" };
 
@@ -23,21 +21,7 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const { user } = useUserContext();
     const [eventActionState, setEventActionState] = useState(defaultFormActionState);
 
-    const fetchEventTasks = async () => {
-        return await getEventTasks(
-            { eventId: event[GlobalConstants.ID] },
-            defaultDatagridActionState,
-        );
-    };
-    const [tasksActionState, fetchTasksAction, isTasksPending] = useActionState(
-        fetchEventTasks,
-        defaultDatagridActionState,
-    );
-
     const changeTab = async (newTab) => {
-        if (newTab === tabs.tasks) {
-            startTransition(() => fetchTasksAction());
-        }
         setOpenTab(newTab);
     };
 
@@ -104,9 +88,6 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                     readOnly={!isUserHost(user, event)}
                     event={event}
                     fetchEventAction={fetchEventAction}
-                    tasks={tasksActionState.result}
-                    fetchTasksAction={fetchTasksAction}
-                    isTasksPending={isTasksPending}
                 />
             )}
         </Suspense>

@@ -15,7 +15,7 @@ import {
 import { deleteTask, updateTaskById } from "../lib/task-actions";
 import GlobalConstants from "../GlobalConstants";
 import Form, { defaultActionState, getFormActionMsg } from "./form/Form";
-import { sortTasks } from "../calendar/[event-id]/event-utils";
+import { sortTasks } from "../(pages)/calendar/[event-id]/event-utils";
 import { formatDate } from "./utils";
 
 const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {

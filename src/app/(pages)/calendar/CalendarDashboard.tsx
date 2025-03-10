@@ -14,13 +14,13 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
-import { defaultActionState } from "../ui/Datagrid";
-import { createEvent, getAllEvents } from "../lib/event-actions";
+import { defaultActionState } from "../../ui/Datagrid";
+import { createEvent, getAllEvents } from "../../lib/event-actions";
 import localeData from "dayjs/plugin/localeData";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
-import Form, { FormActionState } from "../ui/form/Form";
-import GlobalConstants from "../GlobalConstants";
-import { useUserContext } from "../context/UserContext";
+import Form, { FormActionState } from "../../ui/form/Form";
+import GlobalConstants from "../../GlobalConstants";
+import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015

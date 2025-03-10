@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import GlobalConstants from "../../GlobalConstants";
+import GlobalConstants from "../../../GlobalConstants";
 
 export const isEventPublished = (event) =>
     event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED;
