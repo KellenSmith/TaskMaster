@@ -12,11 +12,11 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import dayjs from "dayjs";
 import { deleteTask, updateTaskById } from "../lib/task-actions";
 import GlobalConstants from "../GlobalConstants";
 import Form, { defaultActionState, getFormActionMsg } from "./form/Form";
 import { sortTasks } from "../calendar/[event-id]/event-utils";
+import { formatDate } from "./utils";
 
 const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const theme = useTheme();
@@ -75,11 +75,11 @@ const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) =
                 <Typography variant="body1">{task[GlobalConstants.NAME]}</Typography>
                 <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">
-                        {dayjs(task[GlobalConstants.START_TIME]).format("L HH:MM")}
+                        {formatDate(task[GlobalConstants.START_TIME])}
                     </Typography>
                     {"-"}
                     <Typography variant="body2">
-                        {dayjs(task[GlobalConstants.END_TIME]).format("L HH:MM")}
+                        {formatDate(task[GlobalConstants.END_TIME])}
                     </Typography>
                 </Stack>
             </Card>

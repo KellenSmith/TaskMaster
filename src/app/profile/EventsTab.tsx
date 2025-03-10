@@ -6,9 +6,9 @@ import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import { useUserContext } from "../context/UserContext";
 import GlobalConstants from "../GlobalConstants";
 import { defaultActionState } from "../ui/Datagrid";
-import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import { OrgSettings } from "../lib/org-settings";
+import { formatDate } from "../ui/utils";
 const EventsTab: React.FC = () => {
     const { user } = useUserContext();
     const [events, setEvents] = useState<any[]>([]);
@@ -39,10 +39,10 @@ const EventsTab: React.FC = () => {
                                         {event.title}
                                     </Typography>
                                     <Typography color="textSecondary">
-                                        Start Date: {dayjs(event.startDate).format("L HH:MM")}
+                                        Start Date: {formatDate(event[GlobalConstants.START_TIME])}
                                     </Typography>
                                     <Typography color="textSecondary">
-                                        End Date: {dayjs(event.endDate).format("L HH:MM")}
+                                        End Date: {formatDate(event[GlobalConstants.END_TIME])}
                                     </Typography>
                                 </Stack>
                                 <Button

@@ -30,6 +30,7 @@ import { useUserContext } from "../../../context/UserContext";
 import SwishPaymentHandler from "../../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../../lib/org-settings";
 import { isUserParticipant, sortTasks } from "../event-utils";
+import { formatDate } from "../../../ui/utils";
 
 const testTaskOptions = [
     {
@@ -305,11 +306,11 @@ const TaskMenu = ({
             </Stack>
             <Stack key="time" direction="row" justifyContent="space-between">
                 <Typography key="start" variant="body2">
-                    {dayjs(task[GlobalConstants.START_TIME]).format("L HH:MM")}
+                    {formatDate(task[GlobalConstants.START_TIME])}
                 </Typography>
                 {"-"}
                 <Typography key="end" variant="body2">
-                    {dayjs(task[GlobalConstants.END_TIME]).format("L HH:MM")}
+                    {formatDate(task[GlobalConstants.END_TIME])}
                 </Typography>
             </Stack>
         </Stack>
