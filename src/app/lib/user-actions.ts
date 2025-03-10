@@ -5,7 +5,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
-import { decryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
+import { decryptJWT, encryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { LoginSchema, ResetCredentialsSchema } from "./definitions";
 
@@ -62,6 +62,8 @@ export const getLoggedInUser = async (
             GlobalConstants.ID,
             jwtPayload[GlobalConstants.ID] as string,
         );
+        // Renew JWT
+        encryptJWT(loggedInUser);
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = JSON.stringify(loggedInUser);

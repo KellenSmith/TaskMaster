@@ -47,15 +47,12 @@ export const generateUserCredentials = async (
 };
 
 export const createSession = async (fieldValues: LoginSchema) => {
-    const expiresAt = dayjs()
-        .add(OrgSettings[GlobalConstants.COOKIE_LIFESPAN] as number, "d")
-        .toDate();
     const loggedInUser = await getUserByUniqueKey(
         GlobalConstants.EMAIL,
         fieldValues.email as string,
     );
 
-    await encryptJWT(loggedInUser, expiresAt);
+    await encryptJWT(loggedInUser);
 };
 
 export const login = async (
@@ -103,7 +100,10 @@ export const login = async (
 
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
 
-const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput, expiresAt: Date) => {
+export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
+    const expiresAt = dayjs()
+        .add(OrgSettings[GlobalConstants.COOKIE_LIFESPAN] as number, "d")
+        .toDate();
     // Encode the user ID as jwt
     const jwt = await new SignJWT(loggedInUser)
         .setProtectedHeader({
