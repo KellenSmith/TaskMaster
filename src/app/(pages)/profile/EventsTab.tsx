@@ -7,7 +7,6 @@ import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
 import { defaultActionState } from "../../ui/Datagrid";
 import { redirect } from "next/navigation";
-import { OrgSettings } from "../../lib/org-settings";
 import { formatDate } from "../../ui/utils";
 const EventsTab: React.FC = () => {
     const { user } = useUserContext();
@@ -49,7 +48,7 @@ const EventsTab: React.FC = () => {
                                     size="small"
                                     onClick={() =>
                                         redirect(
-                                            `${OrgSettings[GlobalConstants.BASE_URL]}/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]}`,
+                                            `${process.env.NEXT_PUBLIC_API_URL}/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]}`,
                                         )
                                     }
                                 >

@@ -6,7 +6,6 @@ import GlobalConstants from "../GlobalConstants";
 
 export const OrgSettings = {
     [GlobalConstants.ORG_NAME]: "Task Master",
-    [GlobalConstants.BASE_URL]: "https://localhost:3000",
     [GlobalConstants.COOKIE_LIFESPAN]: 1, //days
 
     [GlobalConstants.ORG_NOREPLY_EMAIL]: "onboarding@resend.dev",

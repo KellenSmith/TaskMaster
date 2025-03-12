@@ -40,10 +40,8 @@ const SwishPaymentHandler = ({
     const [paymentStatus, setPaymentStatus] = useState(SwishConstants.PENDING);
     const intervalIdRef = useRef(null);
     const callbackUrl = useMemo(() => {
-        const url = new URL(
-            `/api/swish/${callbackEndpoint}`,
-            OrgSettings[GlobalConstants.BASE_URL] as string,
-        );
+        console.log(process.env.NEXT_PUBLIC_API_URL);
+        const url = new URL(`/api/swish/${callbackEndpoint}`, process.env.NEXT_PUBLIC_API_URL);
         if (callbackParams) url.search = callbackParams;
         return url.toString();
     }, [callbackEndpoint, callbackParams]);
@@ -80,7 +78,7 @@ const SwishPaymentHandler = ({
         // TODO: Check that this works
         const requestUrl = new URL(
             "/api/swish/payment-request-token",
-            OrgSettings[GlobalConstants.BASE_URL] as string,
+            process.env.NEXT_PUBLIC_API_URL,
         );
         requestUrl.searchParams.set(GlobalConstants.ID, user[GlobalConstants.ID]);
         try {
@@ -106,7 +104,7 @@ const SwishPaymentHandler = ({
         try {
             const requestUrl = new URL(
                 "/api/swish/payment-request-qr-code",
-                OrgSettings[GlobalConstants.BASE_URL] as string,
+                process.env.NEXT_PUBLIC_API_URL,
             );
             requestUrl.searchParams.set(GlobalConstants.ID, user[GlobalConstants.ID]);
             const swishQrCodeResponse = await axios.get(requestUrl.toString(), {
@@ -120,7 +118,8 @@ const SwishPaymentHandler = ({
                 const url = URL.createObjectURL(qrCodeBlob);
                 setQrCodeUrl(url);
             }
-        } catch {
+        } catch (error) {
+            console.log(error);
             setPaymentStatus(SwishConstants.ERROR);
         }
     };
@@ -134,6 +133,7 @@ const SwishPaymentHandler = ({
     };
 
     const getPaymentStatusMsg = () => {
+        console.log("status: ", paymentStatus);
         switch (paymentStatus) {
             case SwishConstants.PENDING:
                 return qrCodeUrl ? "Awaiting your payment..." : "";
