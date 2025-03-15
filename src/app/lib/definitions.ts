@@ -6,15 +6,12 @@ import { OrgSettings } from "./org-settings";
 // Convention: "path"=`/${route}`
 
 export const routes = {
-    [GlobalConstants.ADMIN]: [
-        GlobalConstants.MEMBERS,
-        `${GlobalConstants.MEMBERS}/${GlobalConstants.CREATE}`,
-    ],
+    [GlobalConstants.ADMIN]: [GlobalConstants.MEMBERS],
     [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
-        `${GlobalConstants.LOGIN}/${GlobalConstants.RESET}`,
+        GlobalConstants.RESET,
         GlobalConstants.APPLY,
     ],
 };
@@ -32,8 +29,9 @@ export const isUserAuthorized = (path: string, user: JWTPayload | null): boolean
 
     // Allow admins access to all routes
     if (user[GlobalConstants.ROLE] === GlobalConstants.ADMIN) return true;
-    // Allow regular users access to everything except admin routes.
-    return !routesToPath(routes[GlobalConstants.ADMIN]).includes(path);
+    // Allow regular users access to everything except admin paths.
+    const adminPaths = routesToPath(routes[GlobalConstants.ADMIN]);
+    return !adminPaths.some((adminPath) => path.startsWith(adminPath));
 };
 
 export const isMembershipExpired = (user: any): boolean => {

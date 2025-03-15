@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { AppBar, Toolbar, Typography, Drawer, List, ListItem, Button } from "@mui/material";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Drawer,
+    List,
+    ListItem,
+    Button,
+    ListSubheader,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
@@ -31,7 +40,14 @@ const NavPanel = () => {
                     .filter((route) => isUserAuthorized(route, user))
                     .map((route) => (
                         <ListItem key={route}>
-                            <Button onClick={() => redirect(route)}>{route}</Button>
+                            <Button
+                                onClick={() => {
+                                    setDrawerOpen(false);
+                                    redirect(route);
+                                }}
+                            >
+                                {route.slice(1)}
+                            </Button>
                         </ListItem>
                     ))}
             </List>
@@ -73,7 +89,12 @@ const NavPanel = () => {
                     <MenuOpenIcon />
                 </Button>
                 {getLinkGroup(GlobalConstants.PRIVATE)}
-                {getLinkGroup(GlobalConstants.ADMIN)}
+                {user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN && (
+                    <>
+                        <ListSubheader>ADMIN</ListSubheader>
+                        {getLinkGroup(GlobalConstants.ADMIN)}
+                    </>
+                )}
             </Drawer>
         </>
     );
