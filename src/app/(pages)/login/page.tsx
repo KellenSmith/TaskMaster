@@ -20,9 +20,7 @@ const LoginForm: FC = () => {
                 readOnly={false}
                 editable={false}
             />
-            <Button onClick={() => redirect(`/${GlobalConstants.LOGIN}/${GlobalConstants.RESET}`)}>
-                reset password
-            </Button>
+            <Button onClick={() => redirect(`/${GlobalConstants.RESET}`)}>reset password</Button>
             <Button onClick={() => redirect(`/${GlobalConstants.APPLY}`)}>
                 {FieldLabels[GlobalConstants.APPLY]}
             </Button>
