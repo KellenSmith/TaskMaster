@@ -67,7 +67,7 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                         buttonLabel="save"
                         action={updateEventById}
                         defaultValues={event}
-                        readOnly={!(isUserAdmin(user) || isUserHost(user, event))}
+                        editable={isUserHost(user, event)}
                     />
                     {getFormActionMsg(eventActionState)}
                     {isUserHost(user, event) &&

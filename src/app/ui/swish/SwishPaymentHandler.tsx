@@ -118,8 +118,7 @@ const SwishPaymentHandler = ({
                 const url = URL.createObjectURL(qrCodeBlob);
                 setQrCodeUrl(url);
             }
-        } catch (error) {
-            console.log(error);
+        } catch {
             setPaymentStatus(SwishConstants.ERROR);
         }
     };
@@ -133,7 +132,6 @@ const SwishPaymentHandler = ({
     };
 
     const getPaymentStatusMsg = () => {
-        console.log("status: ", paymentStatus);
         switch (paymentStatus) {
             case SwishConstants.PENDING:
                 return qrCodeUrl ? "Awaiting your payment..." : "";

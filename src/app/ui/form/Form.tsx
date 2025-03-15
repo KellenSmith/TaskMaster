@@ -10,7 +10,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, FC, ChangeEvent, ReactElement } from "react";
+import { useState, FC, ChangeEvent, ReactElement, useEffect } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -20,9 +20,10 @@ import {
     multiLineFields,
     allowSelectMultiple,
 } from "./FieldCfg";
-import { DateTimeField } from "@mui/x-date-pickers";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
+import { Cancel, Edit } from "@mui/icons-material";
 
 export interface FormActionState {
     status: number;
@@ -49,6 +50,7 @@ interface FormProps {
     action?: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
     defaultValues?: any;
     readOnly?: boolean;
+    editable?: boolean;
 }
 
 const getFieldValues = (formName: string, defaultValues: any) => {
@@ -70,12 +72,24 @@ const getFieldValues = (formName: string, defaultValues: any) => {
     return fieldValues;
 };
 
-const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnly = false }) => {
+const Form: FC<FormProps> = ({
+    name,
+    buttonLabel,
+    action,
+    defaultValues,
+    readOnly = true,
+    editable = true,
+}) => {
     const [fieldValues, setFieldValues] = useState<{ [key: string]: string | string[] }>(
         getFieldValues(name, defaultValues),
     );
     const [loading, setLoading] = useState(false);
     const [actionState, setActionState] = useState(defaultActionState);
+    const [editMode, setEditMode] = useState(!readOnly);
+
+    useEffect(() => {
+        setEditMode(!readOnly);
+    }, [readOnly]);
 
     const changeFieldValue = (fieldId: string, value: string | string[]) => {
         setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
@@ -87,13 +101,14 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
         const newActionState = await action(actionState, fieldValues);
         setActionState(newActionState);
         setLoading(false);
+        editable && newActionState.status === 200 && setEditMode(false);
     };
 
     const getFieldComp = (fieldId: string) => {
         if (fieldId in selectFieldOptions) {
             return (
                 <Autocomplete
-                    readOnly={readOnly}
+                    disabled={!editMode}
                     key={fieldId}
                     renderInput={(params) => <TextField {...params} label={FieldLabels[fieldId]} />}
                     autoSelect={fieldId in RequiredFields[name]}
@@ -108,8 +123,8 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
         }
         if (datePickerFields.includes(fieldId)) {
             return (
-                <DateTimeField
-                    disabled={readOnly}
+                <DateTimePicker
+                    disabled={!editMode}
                     key={fieldId}
                     label={FieldLabels[fieldId]}
                     value={
@@ -125,7 +140,7 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
         }
         return (
             <TextField
-                disabled={readOnly}
+                disabled={!editMode}
                 key={fieldId}
                 label={FieldLabels[fieldId]}
                 name={fieldId}
@@ -144,13 +159,28 @@ const Form: FC<FormProps> = ({ name, buttonLabel, action, defaultValues, readOnl
 
     return (
         <Card component="form" onSubmit={submitForm}>
-            <CardHeader title={FieldLabels[name]} />
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <CardHeader title={FieldLabels[name]} />
+                {editable &&
+                    (editMode ? (
+                        <Cancel
+                            sx={{ padding: 2 }}
+                            onClick={() => {
+                                setFieldValues(defaultValues);
+                                setEditMode(false);
+                            }}
+                        />
+                    ) : (
+                        <Edit sx={{ padding: 2 }} onClick={() => setEditMode(true)} />
+                    ))}
+            </Stack>
+
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
                     {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
                 </Stack>
                 {getFormActionMsg(actionState)}
-                {!readOnly && (
+                {editMode && (
                     <Button type="submit" variant="contained" disabled={loading}>
                         {buttonLabel}
                     </Button>

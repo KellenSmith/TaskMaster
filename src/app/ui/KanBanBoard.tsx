@@ -17,6 +17,7 @@ import GlobalConstants from "../GlobalConstants";
 import Form, { defaultActionState, getFormActionMsg } from "./form/Form";
 import { sortTasks } from "../(pages)/calendar/[event-id]/event-utils";
 import { formatDate } from "./utils";
+import { isUserHost } from "../lib/definitions";
 
 const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const theme = useTheme();
@@ -146,10 +147,11 @@ const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) =
             <Dialog open={!!viewTask} onClose={() => setViewTask(null)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    readOnly={readOnly}
                     defaultValues={viewTask}
                     action={updateViewTask}
                     buttonLabel="save task"
+                    readOnly={true}
+                    editable={!readOnly}
                 />
                 {!readOnly && (
                     <Button color="error" onClick={deleteViewTask}>

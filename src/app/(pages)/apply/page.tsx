@@ -15,6 +15,8 @@ const ApplyPage = () => {
             name={GlobalConstants.APPLY}
             buttonLabel={FieldLabels[GlobalConstants.APPLY]}
             action={submitApplication}
+            readOnly={false}
+            editable={false}
         />
     );
 };

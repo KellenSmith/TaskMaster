@@ -35,6 +35,7 @@ import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../../../lib/org-settings";
 import { isUserParticipant, sortTasks } from "../event-utils";
 import { formatDate } from "../../../../ui/utils";
+import { isUserHost } from "../../../../lib/definitions";
 
 const testTaskOptions = [
     {
@@ -423,7 +424,6 @@ const TaskMenu = ({
             <Dialog open={!!viewTask} onClose={() => setViewTask(null)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    readOnly={readOnly}
                     action={
                         Object.keys(viewTask || {}).length === 0
                             ? addSelectedTask
@@ -433,6 +433,7 @@ const TaskMenu = ({
                     buttonLabel={
                         Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
                     }
+                    editable={isUserHost(user, event)}
                 />
                 {viewTask && readOnly && (
                     <Button
