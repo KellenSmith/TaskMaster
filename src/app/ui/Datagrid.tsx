@@ -80,6 +80,9 @@ const Datagrid: React.FC<DatagridProps> = ({
     const getRows = () => {
         if (fetchedDataState.status !== 200) return [];
         const rows: GridRowsProp[] = fetchedDataState.result as GridRowsProp[];
+        setClickedRow((prev) =>
+            prev ? rows.find((row) => row[GlobalConstants.ID] === prev[GlobalConstants.ID]) : null,
+        );
         return rows;
     };
 
