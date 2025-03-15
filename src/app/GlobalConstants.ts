@@ -9,6 +9,7 @@ const GlobalConstants = {
     ORG_NOREPLY_EMAIL: "orgNoreplyEmail",
     ORG_REPLY_EMAIL: "orgNoreplyEmail",
     MEMBERSHIP_EXPIRES_REMINDER: "membershipExpiresReminder",
+    NEWSLETTER_FREQUENCY: "newsletterFrequency",
     // Swish
     SWISH_BASE_URL: "swishBaseUrl",
     SWISH_MSS_URL: "swishMssUrl",
@@ -50,6 +51,8 @@ const GlobalConstants = {
     EXPIRED: "expired",
     CREATED: "created",
     MEMBERSHIP_RENEWED: "membershipRenewed",
+    CONSENT_TO_NEWSLETTERS: "consentToNewsletters",
+    CONSENT_GDPR: "consentGDPR",
     HOSTING_EVENTS: "hostingEvents",
     PARTICIPANT_EVENTS: "participantEvents",
     RESERVE_EVENTS: "reserveEvents",

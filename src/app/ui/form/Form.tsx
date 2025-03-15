@@ -6,6 +6,8 @@ import {
     Card,
     CardContent,
     CardHeader,
+    Checkbox,
+    FormControlLabel,
     Stack,
     TextField,
     Typography,
@@ -19,6 +21,7 @@ import {
     datePickerFields,
     multiLineFields,
     allowSelectMultiple,
+    checkboxFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
@@ -66,6 +69,8 @@ const getFieldValues = (formName: string, defaultValues: any) => {
                         ? [defaultOption]
                         : defaultOption;
                 } else fieldValues[fieldId] = allowSelectMultiple.includes(fieldId) ? [] : "";
+            } else if (checkboxFields.includes(fieldId)) {
+                fieldValues[fieldId] = false;
             } else fieldValues[fieldId] = "";
         }
     }
@@ -80,7 +85,7 @@ const Form: FC<FormProps> = ({
     readOnly = true,
     editable = true,
 }) => {
-    const [fieldValues, setFieldValues] = useState<{ [key: string]: string | string[] }>(
+    const [fieldValues, setFieldValues] = useState<{ [key: string]: string | string[] | boolean }>(
         getFieldValues(name, defaultValues),
     );
     const [loading, setLoading] = useState(false);
@@ -91,7 +96,7 @@ const Form: FC<FormProps> = ({
         setEditMode(!readOnly);
     }, [readOnly]);
 
-    const changeFieldValue = (fieldId: string, value: string | string[]) => {
+    const changeFieldValue = (fieldId: string, value: string | string[] | boolean) => {
         setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
     };
 
@@ -138,6 +143,23 @@ const Form: FC<FormProps> = ({
                 />
             );
         }
+        if (checkboxFields.includes(fieldId))
+            return (
+                <FormControlLabel
+                    key={fieldId}
+                    required={RequiredFields[name].includes(fieldId)}
+                    control={
+                        <Checkbox
+                            disabled={!editMode}
+                            checked={fieldValues[fieldId] as boolean}
+                            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                                changeFieldValue(fieldId, event.target.checked)
+                            }
+                        />
+                    }
+                    label={FieldLabels[fieldId]}
+                />
+            );
         return (
             <TextField
                 disabled={!editMode}

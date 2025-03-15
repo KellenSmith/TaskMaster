@@ -9,16 +9,17 @@ datasource db {
 }
 
 model User {
-    id                String           @id @default(uuid())
-    firstName         String
-    surName           String
-    nickname          String
-    email             String           @unique
-    phone             String           @unique
-    created           DateTime         @default(now())
-    membershipRenewed DateTime? // Membership is invalid if null or expired
-    role              String           @default("user") // user, admin
-    userCredentials   UserCredentials?
+    id                   String           @id @default(uuid())
+    firstName            String
+    surName              String
+    nickname             String
+    email                String           @unique
+    phone                String           @unique
+    created              DateTime         @default(now())
+    membershipRenewed    DateTime? // Membership is invalid if null or expired
+    consentToNewsletters Boolean          @default(true)
+    role                 String           @default("user") // user, admin
+    userCredentials      UserCredentials?
 
     hostingEvents     Event[]
     participantEvents ParticipantInEvent[]
