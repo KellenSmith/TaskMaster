@@ -157,6 +157,8 @@ const CalendarDashboard: FC = () => {
                         name={GlobalConstants.EVENT}
                         buttonLabel={"create event draft"}
                         action={createEventWithHost}
+                        readOnly={false}
+                        editable={false}
                     />
                 </DialogContent>
             </Dialog>

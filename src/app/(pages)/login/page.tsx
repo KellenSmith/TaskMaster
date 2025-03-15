@@ -13,7 +13,13 @@ const LoginForm: FC = () => {
 
     return (
         <Stack>
-            <Form name={GlobalConstants.LOGIN} buttonLabel={GlobalConstants.LOGIN} action={login} />
+            <Form
+                name={GlobalConstants.LOGIN}
+                buttonLabel={GlobalConstants.LOGIN}
+                action={login}
+                readOnly={false}
+                editable={false}
+            />
             <Button onClick={() => redirect(`/${GlobalConstants.LOGIN}/${GlobalConstants.RESET}`)}>
                 reset password
             </Button>

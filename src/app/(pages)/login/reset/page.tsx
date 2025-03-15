@@ -2,7 +2,7 @@
 
 import GlobalConstants from "../../../GlobalConstants";
 import Form from "../../../ui/form/Form";
-import { Button, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import { FC } from "react";
 import { resetUserCredentials } from "../../../lib/user-actions";
 
@@ -13,8 +13,9 @@ const LoginForm: FC = () => {
                 name={GlobalConstants.RESET}
                 buttonLabel={GlobalConstants.RESET}
                 action={resetUserCredentials}
+                readOnly={false}
+                editable={false}
             />
-            <Button>{GlobalConstants.RESET}</Button>
         </Stack>
     );
 };
