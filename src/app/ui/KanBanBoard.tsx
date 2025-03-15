@@ -2,7 +2,6 @@
 
 import React, { startTransition, useState } from "react";
 import {
-    Button,
     Card,
     CircularProgress,
     Dialog,
@@ -17,6 +16,7 @@ import GlobalConstants from "../GlobalConstants";
 import Form, { defaultActionState, getFormActionMsg } from "./form/Form";
 import { sortTasks } from "../(pages)/calendar/[event-id]/event-utils";
 import { formatDate } from "./utils";
+import ConfirmButton from "./ConfirmButton";
 
 const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const theme = useTheme();
@@ -153,9 +153,9 @@ const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) =
                     editable={!readOnly}
                 />
                 {!readOnly && (
-                    <Button color="error" onClick={deleteViewTask}>
+                    <ConfirmButton color="error" onClick={deleteViewTask}>
                         delete
-                    </Button>
+                    </ConfirmButton>
                 )}
             </Dialog>
         </>

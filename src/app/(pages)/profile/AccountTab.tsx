@@ -12,6 +12,7 @@ import { isMembershipExpired, LoginSchema, UpdateCredentialsSchema } from "../..
 import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../lib/org-settings";
 import { Prisma } from "@prisma/client";
+import ConfirmButton from "../../ui/ConfirmButton";
 
 const AccountTab = () => {
     const { user, updateLoggedInUser, logOut } = useUserContext();
@@ -97,9 +98,9 @@ const AccountTab = () => {
                             Renew membership
                         </Button>
                     )}
-                    <Button color="error" onClick={deleteMyAccount}>
+                    <ConfirmButton color="error" onClick={deleteMyAccount}>
                         Delete My Account
-                    </Button>
+                    </ConfirmButton>
                 </Stack>
                 <SwishPaymentHandler
                     title={"Renew membership"}

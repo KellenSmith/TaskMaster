@@ -11,6 +11,7 @@ import Form, {
     defaultActionState as defaultFormActionState,
     getFormActionMsg,
 } from "./form/Form";
+import ConfirmButton from "./ConfirmButton";
 
 export interface DatagridActionState {
     status: number;
@@ -120,16 +121,20 @@ const Datagrid: React.FC<DatagridProps> = ({
         if (rowActionState.status === 200) updateDatagridData();
     };
 
-    const getRowActionButton = (clickedRow: any, rowAction: RowActionProps) =>
-        rowAction.available(clickedRow) && (
-            <Button
-                key={rowAction.name}
-                onClick={() => handleRowAction(rowAction)}
-                color={rowAction.buttonColor || "secondary"}
-            >
-                {FieldLabels[rowAction.name]}
-            </Button>
+    const getRowActionButton = (clickedRow: any, rowAction: RowActionProps) => {
+        const ButtonComponent = rowAction.buttonColor === "error" ? ConfirmButton : Button;
+        return (
+            rowAction.available(clickedRow) && (
+                <ButtonComponent
+                    key={rowAction.name}
+                    onClick={() => handleRowAction(rowAction)}
+                    color={rowAction.buttonColor || "secondary"}
+                >
+                    {FieldLabels[rowAction.name]}
+                </ButtonComponent>
+            )
         );
+    };
 
     const closeDialog = () => {
         setClickedRow(null);
