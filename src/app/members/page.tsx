@@ -12,12 +12,13 @@ import { isMembershipExpired } from "../lib/definitions";
 const MembersPage = () => {
     const { user } = useUserContext();
 
+    const isMembershipPending = (user) => !user[GlobalConstants.USER_CREDENTIALS];
+
     const rowActions: RowActionProps[] = [
         {
             name: GlobalConstants.VALIDATE_MEMBERSHIP,
             serverAction: validateUserMembership,
-            available: (clickedRow) =>
-                !(clickedRow && clickedRow[GlobalConstants.MEMBERSHIP_RENEWED]),
+            available: (clickedRow) => clickedRow && isMembershipPending(clickedRow),
         },
         {
             name: GlobalConstants.DELETE,
@@ -34,7 +35,7 @@ const MembersPage = () => {
             headerName: FieldLabels[GlobalConstants.STATUS],
             valueGetter: (_, row) => {
                 let status = GlobalConstants.ACTIVE;
-                if (!row[GlobalConstants.USER_CREDENTIALS]) status = GlobalConstants.PENDING;
+                if (isMembershipPending(row)) status = GlobalConstants.PENDING;
                 else if (isMembershipExpired(row)) status = GlobalConstants.EXPIRED;
                 return FieldLabels[status] || status;
             },

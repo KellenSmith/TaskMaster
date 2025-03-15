@@ -14,6 +14,7 @@ import Form, {
 import { redirect } from "next/navigation";
 import { deleteEvent, updateEvent } from "../../../lib/event-actions";
 import { Prisma } from "@prisma/client";
+import ConfirmButton from "../../../ui/ConfirmButton";
 
 export const tabs = { event: "Event", tasks: "Participate" };
 
@@ -77,9 +78,9 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                             </Button>
                         )}
                     {isUserAdmin(user) && (
-                        <Button color="error" onClick={deleteEventAndRedirect}>
+                        <ConfirmButton color="error" onClick={deleteEventAndRedirect}>
                             delete
-                        </Button>
+                        </ConfirmButton>
                     )}
                 </>
             )}
