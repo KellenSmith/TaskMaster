@@ -40,9 +40,18 @@ const MembersPage = () => {
                 return FieldLabels[status] || status;
             },
         },
+        {
+            field: "newsletters",
+            headerName: "Newsletters",
+            valueGetter: (_, row) => row[GlobalConstants.CONSENT_TO_NEWSLETTERS],
+        },
     ];
 
-    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.USER_CREDENTIALS];
+    const hiddenColumns = [
+        GlobalConstants.ID,
+        GlobalConstants.USER_CREDENTIALS,
+        GlobalConstants.CONSENT_TO_NEWSLETTERS,
+    ];
 
     // TODO: If on mobile, just show list of pending members, viewable and validatable
     return (

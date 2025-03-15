@@ -10,6 +10,7 @@ export const OrgSettings = {
 
     [GlobalConstants.ORG_NOREPLY_EMAIL]: "onboarding@resend.dev",
     [GlobalConstants.ORG_REPLY_EMAIL]: "onboarding@resend.dev",
+    [GlobalConstants.NEWSLETTER_FREQUENCY]: "monthly",
 
     // Membership
     [GlobalConstants.MEMBERSHIP_DURATION]: 365, // days

@@ -1,4 +1,5 @@
 import GlobalConstants from "../../GlobalConstants";
+import { OrgSettings } from "../../lib/org-settings";
 
 export const FieldLabels = {
     [GlobalConstants.ID]: "ID",
@@ -18,6 +19,8 @@ export const FieldLabels = {
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED]: "Created",
     [GlobalConstants.MEMBERSHIP_RENEWED]: "Membership Renewed",
+    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to recieving ${OrgSettings[GlobalConstants.NEWSLETTER_FREQUENCY]} newsletters from Wish`,
+    [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the Wish member registry",
     [GlobalConstants.PENDING]: "Pending",
     [GlobalConstants.ACTIVE]: "Active",
     [GlobalConstants.EXPIRED]: "Expired",
@@ -66,6 +69,7 @@ export const RenderedFields = {
         GlobalConstants.NICKNAME,
         GlobalConstants.EMAIL,
         GlobalConstants.PHONE,
+        GlobalConstants.CONSENT_TO_NEWSLETTERS,
     ],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL, GlobalConstants.PASSWORD],
@@ -96,7 +100,10 @@ export const RenderedFields = {
     ],
 };
 // Apply
-RenderedFields[GlobalConstants.APPLY] = RenderedFields[GlobalConstants.PROFILE];
+RenderedFields[GlobalConstants.APPLY] = [
+    ...RenderedFields[GlobalConstants.PROFILE],
+    GlobalConstants.CONSENT_GDPR,
+];
 // User
 RenderedFields[GlobalConstants.USER] = [
     ...RenderedFields[GlobalConstants.PROFILE],
@@ -140,7 +147,10 @@ export const RequiredFields = {
     ],
 };
 // Apply
-RequiredFields[GlobalConstants.APPLY] = RequiredFields[GlobalConstants.PROFILE];
+RequiredFields[GlobalConstants.APPLY] = [
+    ...RequiredFields[GlobalConstants.PROFILE],
+    GlobalConstants.CONSENT_GDPR,
+];
 // User
 RequiredFields[GlobalConstants.USER] = [
     ...RenderedFields[GlobalConstants.PROFILE],
@@ -164,6 +174,8 @@ export const selectFieldOptions = {
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
 };
 
+export const allowSelectMultiple = [GlobalConstants.TAGS];
+
 export const datePickerFields = [
     // User
     GlobalConstants.CREATED,
@@ -177,4 +189,7 @@ export const multiLineFields = [
     GlobalConstants.DESCRIPTION,
 ];
 
-export const allowSelectMultiple = [GlobalConstants.TAGS];
+export const checkboxFields = [
+    GlobalConstants.CONSENT_TO_NEWSLETTERS,
+    GlobalConstants.CONSENT_GDPR,
+];
