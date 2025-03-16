@@ -12,7 +12,7 @@ model User {
     id                   String           @id @default(uuid())
     firstName            String
     surName              String
-    nickname             String
+    nickname             String           @unique
     email                String           @unique
     phone                String           @unique
     created              DateTime         @default(now())
