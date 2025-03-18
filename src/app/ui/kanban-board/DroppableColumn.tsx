@@ -1,18 +1,22 @@
-import { Paper, Stack, Typography, useTheme } from "@mui/material";
+import { CircularProgress, Paper, Stack, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { updateTaskById } from "../../lib/task-actions";
 import { defaultActionState } from "../form/Form";
 import { startTransition } from "react";
+import { sortTasks } from "../../(pages)/calendar/[event-id]/event-utils";
+import DraggableTask from "./DraggableTask";
 
 const DroppableColumn = ({
     status,
+    tasks,
+    isTasksPending,
     draggedOverColumn,
     setDraggedOverColumn,
     draggedTask,
     setDraggedTask,
+    setViewTask,
     fetchDbTasks,
     setTaskActionState,
-    children,
 }) => {
     const theme = useTheme();
 
@@ -50,7 +54,20 @@ const DroppableColumn = ({
             }}
         >
             <Typography variant="h6">{status.toUpperCase()}</Typography>
-            <Stack spacing={2}>{children}</Stack>
+            <Stack spacing={2}>
+                {isTasksPending ? (
+                    <CircularProgress />
+                ) : (
+                    sortTasks(tasks.filter((task) => task.status === status)).map((task) => (
+                        <DraggableTask
+                            key={task[GlobalConstants.ID]}
+                            task={task}
+                            setDraggedTask={setDraggedTask}
+                            setViewTask={setViewTask}
+                        />
+                    ))
+                )}
+            </Stack>
         </Paper>
     );
 };

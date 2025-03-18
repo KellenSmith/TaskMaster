@@ -1,14 +1,13 @@
 "use client";
 
 import React, { startTransition, useState } from "react";
-import { CircularProgress, Dialog, Grid2 } from "@mui/material";
+import { Dialog, Grid2 } from "@mui/material";
 import { deleteTask, updateTaskById } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
 import Form, { defaultActionState, getFormActionMsg } from "../form/Form";
-import { sortTasks } from "../../(pages)/calendar/[event-id]/event-utils";
 import ConfirmButton from "../ConfirmButton";
-import DraggableTask from "./DraggableTask";
 import DroppableColumn from "./DroppableColumn";
+import { selectFieldOptions } from "../form/FieldCfg";
 
 const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const [viewTask, setViewTask] = useState(null);
@@ -37,37 +36,20 @@ const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) =
         <>
             {getFormActionMsg(taskActionState)}
             <Grid2 container spacing={2} columns={4}>
-                {[
-                    GlobalConstants.TO_DO,
-                    GlobalConstants.IN_PROGRESS,
-                    GlobalConstants.IN_REVIEW,
-                    GlobalConstants.DONE,
-                ].map((status) => (
+                {selectFieldOptions[GlobalConstants.STATUS].map((status) => (
                     <Grid2 size={1} key={status}>
                         <DroppableColumn
                             status={status}
+                            tasks={tasks.filter((task) => task[GlobalConstants.STATUS] === status)}
+                            isTasksPending={isTasksPending}
                             draggedOverColumn={draggedOverColumn}
                             setDraggedOverColumn={setDraggedOverColumn}
                             draggedTask={draggedTask}
                             setDraggedTask={setDraggedTask}
                             fetchDbTasks={fetchDbTasks}
                             setTaskActionState={setTaskActionState}
-                        >
-                            {isTasksPending ? (
-                                <CircularProgress />
-                            ) : (
-                                sortTasks(tasks.filter((task) => task.status === status)).map(
-                                    (task) => (
-                                        <DraggableTask
-                                            key={task[GlobalConstants.ID]}
-                                            task={task}
-                                            setDraggedTask={setDraggedTask}
-                                            setViewTask={setViewTask}
-                                        />
-                                    ),
-                                )
-                            )}
-                        </DroppableColumn>
+                            setViewTask={setViewTask}
+                        />
                     </Grid2>
                 ))}
             </Grid2>
