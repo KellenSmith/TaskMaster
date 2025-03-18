@@ -84,7 +84,7 @@ export const updateEventTasks = async (
             where: {
                 eventId: eventId,
                 id: {
-                    notIn: updateTasks.map((task) => task[GlobalConstants.ID]),
+                    notIn: taskList.map((task) => task[GlobalConstants.ID]),
                 },
             },
         });

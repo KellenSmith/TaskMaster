@@ -30,7 +30,6 @@ import { OrgSettings } from "../../../../lib/org-settings";
 import { isUserParticipant, sortTasks } from "../event-utils";
 import { isUserHost } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
-import { selectFieldOptions } from "../../../../ui/form/FieldCfg";
 
 const testTaskOptions = [
     {
@@ -221,21 +220,17 @@ const TaskMenu = ({
         return sortTasks(tasksForPhase);
     };
 
-    const getUniqueTaskNamesForPhase = (phase) => {
-        const taskNamesForPhase = getSortedTasksForPhase(phase).map(
-            (task) => task[GlobalConstants.NAME],
-        );
+    const getUniqueTaskNames = (taskList) => {
+        const taskNames = sortTasks(taskList).map((task) => task[GlobalConstants.NAME]);
         const uniqueTaskNames = [];
-        for (let taskName of taskNamesForPhase) {
+        for (let taskName of taskNames) {
             if (!uniqueTaskNames.includes(taskName)) uniqueTaskNames.push(taskName);
         }
         return uniqueTaskNames;
     };
 
-    const getTaskShiftsComp = (phase, taskName) => {
-        const taskShifts = getSortedTasksForPhase(phase).filter(
-            (task) => task[GlobalConstants.NAME] === taskName,
-        );
+    const getTaskShiftsComp = (taskList, taskName) => {
+        const taskShifts = taskList.filter((task) => task[GlobalConstants.NAME] === taskName);
         return (
             taskShifts.length > 0 && (
                 <TaskShifts
@@ -334,8 +329,12 @@ const TaskMenu = ({
                                     {isTasksPending ? (
                                         <CircularProgress />
                                     ) : (
-                                        getUniqueTaskNamesForPhase(phase).map((taskName) =>
-                                            getTaskShiftsComp(phase, taskName),
+                                        getUniqueTaskNames(getSortedTasksForPhase(phase)).map(
+                                            (taskName) =>
+                                                getTaskShiftsComp(
+                                                    getSortedTasksForPhase(phase),
+                                                    taskName,
+                                                ),
                                         )
                                     )}
                                 </FormGroup>
@@ -355,30 +354,33 @@ const TaskMenu = ({
                             <Typography variant="h6" color={theme.palette.primary.main}>
                                 My tasks
                             </Typography>
-                            {selectFieldOptions[GlobalConstants.PHASE].map((phase) =>
-                                getUniqueTaskNamesForPhase(phase).map((taskName) =>
-                                    getTaskShiftsComp(phase, taskName),
-                                ),
+                            {getUniqueTaskNames(selectedTasks).map((taskName) =>
+                                getTaskShiftsComp(selectedTasks, taskName),
                             )}
-                            <Typography>
-                                {selectedTasks.length < 1
-                                    ? "Sign up for tasks or volunteer shifts to reduce your ticket price!"
-                                    : `Thanks for helping out! Your ticket price is ${getReducedTicketPrice()} SEK`}
-                            </Typography>
+                            {isUserParticipant(user, event) ? (
+                                <Button onClick={assignSelectedTasks}>assign tasks to me</Button>
+                            ) : (
+                                <>
+                                    <Typography>
+                                        {selectedTasks.length < 1
+                                            ? "Sign up for tasks or volunteer shifts to reduce your ticket price!"
+                                            : `Thanks for helping out! Your ticket price is ${getReducedTicketPrice()} SEK`}
+                                    </Typography>
+                                    <Button onClick={() => setPaymentHandlerOpen(true)}>
+                                        buy ticket
+                                    </Button>
+                                </>
+                            )}
                         </Stack>
                     )}
                 </Stack>
                 {getFormActionMsg(taskActionState)}
 
-                {!readOnly ? (
+                {!readOnly && (
                     <Stack spacing={2}>
                         <Button onClick={loadDefaultTaskOptions}>load default tasks</Button>
                         <Button onClick={saveSelectedTasks}>save tasks</Button>
                     </Stack>
-                ) : isUserParticipant(user, event) ? (
-                    <Button onClick={assignSelectedTasks}>assign tasks to me</Button>
-                ) : (
-                    <Button onClick={() => setPaymentHandlerOpen(true)}>buy ticket</Button>
                 )}
             </Stack>
             <Dialog open={!!addTask} onClose={() => setAddTask(null)}>
