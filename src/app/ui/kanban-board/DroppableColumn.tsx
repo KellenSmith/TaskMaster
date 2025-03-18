@@ -24,13 +24,14 @@ const DroppableColumn = ({
     status,
     tasks,
     isTasksPending,
-    draggedOverColumn,
-    setDraggedOverColumn,
+    fetchDbTasks,
+    taskActionState,
+    setTaskActionState,
+    readOnly,
     draggedTask,
     setDraggedTask,
-    setViewTask,
-    fetchDbTasks,
-    setTaskActionState,
+    draggedOverColumn,
+    setDraggedOverColumn,
 }) => {
     const theme = useTheme();
 
@@ -69,12 +70,20 @@ const DroppableColumn = ({
                     key={tasksWithName[0][GlobalConstants.ID]}
                     task={tasksWithName[0]}
                     setDraggedTask={setDraggedTask}
-                    setViewTask={setViewTask}
+                    fetchDbTasks={fetchDbTasks}
+                    readOnly={readOnly}
+                    taskActionState={taskActionState}
+                    setTaskActionState={setTaskActionState}
                 />
             );
         return (
             <Card key={tasksWithName[0][GlobalConstants.NAME]}>
-                <Stack direction="row" justifyContent="space-between">
+                <Stack
+                    paddingLeft={2}
+                    paddingTop={2}
+                    direction="row"
+                    justifyContent="space-between"
+                >
                     <Typography variant="body1">{tasks[0][GlobalConstants.NAME]}</Typography>
                     <Typography variant="body1">
                         {formatDate(getEarliestStartTime(tasks)) +
@@ -84,14 +93,19 @@ const DroppableColumn = ({
                 </Stack>
                 <Accordion>
                     <AccordionSummary expandIcon={<ExpandMore />}>Shifts</AccordionSummary>
-                    {tasksWithName.map((task) => (
-                        <DraggableTask
-                            key={task[GlobalConstants.ID]}
-                            task={task}
-                            setDraggedTask={setDraggedTask}
-                            setViewTask={setViewTask}
-                        />
-                    ))}
+                    <Stack paddingLeft={2}>
+                        {tasksWithName.map((task) => (
+                            <DraggableTask
+                                key={task[GlobalConstants.ID]}
+                                task={task}
+                                setDraggedTask={setDraggedTask}
+                                fetchDbTasks={fetchDbTasks}
+                                readOnly={readOnly}
+                                taskActionState={taskActionState}
+                                setTaskActionState={setTaskActionState}
+                            />
+                        ))}
+                    </Stack>
                 </Accordion>
             </Card>
         );
