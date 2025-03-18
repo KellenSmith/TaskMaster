@@ -47,6 +47,7 @@ export const FieldLabels = {
     [GlobalConstants.TASK]: "Task",
     [GlobalConstants.NAME]: "Name",
     [GlobalConstants.ASSIGNEE]: "Assignee",
+    [GlobalConstants.ASSIGNEE_ID]: "Assignee",
     [GlobalConstants.REPORTER]: "Reporter",
     [GlobalConstants.PHASE]: "Phase",
     [GlobalConstants.TAGS]: "Tags",

@@ -4,8 +4,8 @@ import TaskMenu from "./TaskMenu";
 import { isUserHost } from "../../../../lib/definitions";
 import { isEventPublished, isUserParticipant } from "../event-utils";
 import { useUserContext } from "../../../../context/UserContext";
-import KanBanBoard from "../../../../ui/KanBanBoard";
-import { getEventTasks } from "../../../../lib/task-actions";
+import KanBanBoard from "../../../../ui/kanban-board/KanBanBoard";
+import { getFilteredTasks } from "../../../../lib/task-actions";
 import GlobalConstants from "../../../../GlobalConstants";
 import { defaultActionState as defaultDatagridActionState } from "../../../../ui/Datagrid";
 import { startTransition, useActionState, useEffect } from "react";
@@ -14,7 +14,7 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
     const { user } = useUserContext();
 
     const fetchEventTasks = async () => {
-        return await getEventTasks(
+        return await getFilteredTasks(
             { eventId: event[GlobalConstants.ID] },
             defaultDatagridActionState,
         );
