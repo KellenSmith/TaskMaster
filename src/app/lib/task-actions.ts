@@ -105,7 +105,7 @@ export const updateEventTasks = async (
     return newActionState;
 };
 
-export const getEventTasks = async (
+export const getFilteredTasks = async (
     searchParams: Prisma.TaskWhereInput | null, // Null if fetching default tasks
     currentState: DatagridActionState,
 ): Promise<DatagridActionState> => {
