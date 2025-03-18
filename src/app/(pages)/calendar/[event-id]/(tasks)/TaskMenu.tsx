@@ -54,7 +54,15 @@ const testTaskOptions = [
         name: "task 3",
         phase: GlobalConstants.DURING,
         startTime: dayjs().toISOString(),
-        endTime: dayjs().add(1, "hour").toISOString(),
+        endTime: dayjs().add(2, "hour").toISOString(),
+        description: "test description",
+    },
+    {
+        id: "7",
+        name: "task 3",
+        phase: GlobalConstants.DURING,
+        startTime: dayjs().add(2, "hour").toISOString(),
+        endTime: dayjs().add(4, "hour").toISOString(),
         description: "test description",
     },
     {
@@ -63,6 +71,14 @@ const testTaskOptions = [
         phase: GlobalConstants.DURING,
         startTime: dayjs().toISOString(),
         endTime: dayjs().add(1, "hour").toISOString(),
+        description: "test description",
+    },
+    {
+        id: "8",
+        name: "task 4",
+        phase: GlobalConstants.DURING,
+        startTime: dayjs().add(2, "hour").toISOString(),
+        endTime: dayjs().add(4, "hour").toISOString(),
         description: "test description",
     },
     {

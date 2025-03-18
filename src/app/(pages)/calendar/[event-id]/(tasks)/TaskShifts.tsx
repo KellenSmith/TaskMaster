@@ -1,9 +1,18 @@
-import { Accordion, AccordionSummary, Card, CardContent, Stack, Typography } from "@mui/material";
+import {
+    Accordion,
+    AccordionSummary,
+    Card,
+    CardContent,
+    Checkbox,
+    Stack,
+    Typography,
+} from "@mui/material";
 import GlobalConstants from "../../../../GlobalConstants";
 import dayjs, { Dayjs } from "dayjs";
 import { formatDate } from "../../../../ui/utils";
 import TaskMenuOption from "./TaskMenuOption";
 import { ExpandMore } from "@mui/icons-material";
+import { isTaskSelected } from "../event-utils";
 
 const TaskShifts = ({
     event,
@@ -24,16 +33,49 @@ const TaskShifts = ({
             .sort((start1: Dayjs, start2: Dayjs) => start1.isBefore(start2))
             .at(-1);
 
+    const areAllTaskShiftsSelected = () => {
+        for (let task of tasks) {
+            if (!isTaskSelected(task, selectedTasks)) return false;
+        }
+        return true;
+    };
+
+    const toggleAllTaskShifts = (checked) => {
+        if (checked) {
+            const tasksToSelect = tasks.filter((task) => !isTaskSelected(task, selectedTasks));
+            setSelectedTasks((prev) => [...prev, ...tasksToSelect]);
+            const idsToSelect = tasksToSelect.map((task) => task[GlobalConstants.ID]);
+            setTaskOptions((prev) =>
+                prev.filter((task) => !idsToSelect.includes(task[GlobalConstants.ID])),
+            );
+            return;
+        }
+        const tasksToUnSelect = tasks.filter((task) => isTaskSelected(task, selectedTasks));
+        setTaskOptions((prev) => [...prev, ...tasksToUnSelect]);
+        const idsToUnSelect = tasksToUnSelect.map((task) => task[GlobalConstants.ID]);
+        setSelectedTasks((prev) =>
+            prev.filter((task) => !idsToUnSelect.includes(task[GlobalConstants.ID])),
+        );
+    };
+
     const getTitleComp = () => {
         if (tasks.length > 1)
             return (
-                <Typography key="title" variant="body1">
-                    {tasks[0][GlobalConstants.NAME] +
-                        "\t" +
-                        formatDate(getEarliestStartTime()) +
-                        " - " +
-                        formatDate(getLatestEndTime())}
-                </Typography>
+                <Stack direction="row" alignItems="center">
+                    {!readOnly && (
+                        <Checkbox
+                            checked={areAllTaskShiftsSelected()}
+                            onChange={(event) => toggleAllTaskShifts(event.target.checked)}
+                        />
+                    )}
+                    <Typography key="title" variant="body1">
+                        {tasks[0][GlobalConstants.NAME] +
+                            "\t" +
+                            formatDate(getEarliestStartTime()) +
+                            " - " +
+                            formatDate(getLatestEndTime())}
+                    </Typography>
+                </Stack>
             );
         return (
             <TaskMenuOption

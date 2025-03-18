@@ -12,6 +12,7 @@ import {
 } from "../../../../ui/form/FieldCfg";
 import { isUserHost } from "../../../../lib/definitions";
 import { useState } from "react";
+import { isTaskSelected } from "../event-utils";
 
 const TaskMenuOption = ({
     event,
@@ -73,11 +74,8 @@ const TaskMenuOption = ({
             ),
         ]);
 
-    const isTaskSelected = (task: any) =>
-        selectedTasks.map((task) => task[GlobalConstants.ID]).includes(task[GlobalConstants.ID]);
-
     const toggleTask = (toggledTask: any) => {
-        if (isTaskSelected(toggledTask)) {
+        if (isTaskSelected(toggledTask, selectedTasks)) {
             setTaskOptions((prev) => [...prev, toggledTask]);
             setSelectedTasks((prev) => [
                 ...prev.filter(
@@ -106,7 +104,7 @@ const TaskMenuOption = ({
                                 disabled={
                                     task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID]
                                 }
-                                checked={isTaskSelected(task)}
+                                checked={isTaskSelected(task, selectedTasks)}
                                 onChange={() => toggleTask(task)}
                             />
                         }
@@ -114,7 +112,7 @@ const TaskMenuOption = ({
                     />
 
                     <Stack direction="row">
-                        {!readOnly && !isTaskSelected(task) && (
+                        {!readOnly && !isTaskSelected(task, selectedTasks) && (
                             <Button onClick={() => deleteTaskFromOptions(task)}>
                                 <CloseRounded />
                             </Button>
@@ -153,7 +151,7 @@ const TaskMenuOption = ({
                             setViewTask(null);
                         }}
                     >
-                        {isTaskSelected(viewTask) ? "unselect" : "select"}
+                        {isTaskSelected(viewTask, selectedTasks) ? "unselect" : "select"}
                     </Button>
                 )}
             </Dialog>

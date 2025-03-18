@@ -32,3 +32,6 @@ export const sortTasks = (tasks) =>
             dayjs(taskb[GlobalConstants.END_TIME]),
         );
     });
+
+export const isTaskSelected = (task: any, selectedTasks: any[]) =>
+    selectedTasks.map((task) => task[GlobalConstants.ID]).includes(task[GlobalConstants.ID]);
