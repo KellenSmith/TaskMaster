@@ -8,11 +8,10 @@ import {
     Typography,
 } from "@mui/material";
 import GlobalConstants from "../../../../GlobalConstants";
-import dayjs, { Dayjs } from "dayjs";
 import { formatDate } from "../../../../ui/utils";
 import TaskMenuOption from "./TaskMenuOption";
 import { ExpandMore } from "@mui/icons-material";
-import { isTaskSelected } from "../event-utils";
+import { getEarliestStartTime, getLatestEndTime, isTaskSelected } from "../event-utils";
 
 const TaskShifts = ({
     event,
@@ -22,17 +21,6 @@ const TaskShifts = ({
     setSelectedTasks,
     setTaskOptions,
 }) => {
-    const getEarliestStartTime = () =>
-        tasks
-            .map((task) => dayjs(task[GlobalConstants.START_TIME]))
-            .sort((start1: Dayjs, start2: Dayjs) => start1.isBefore(start2))[0];
-
-    const getLatestEndTime = () =>
-        tasks
-            .map((task) => dayjs(task[GlobalConstants.END_TIME]))
-            .sort((start1: Dayjs, start2: Dayjs) => start1.isBefore(start2))
-            .at(-1);
-
     const areAllTaskShiftsSelected = () => {
         for (let task of tasks) {
             if (!isTaskSelected(task, selectedTasks)) return false;
@@ -71,9 +59,9 @@ const TaskShifts = ({
                     <Typography key="title" variant="body1">
                         {tasks[0][GlobalConstants.NAME] +
                             "\t" +
-                            formatDate(getEarliestStartTime()) +
+                            formatDate(getEarliestStartTime(tasks)) +
                             " - " +
-                            formatDate(getLatestEndTime())}
+                            formatDate(getLatestEndTime(tasks))}
                     </Typography>
                 </Stack>
             );

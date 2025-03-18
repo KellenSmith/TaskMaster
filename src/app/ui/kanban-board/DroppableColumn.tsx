@@ -1,10 +1,24 @@
-import { CircularProgress, Paper, Stack, Typography, useTheme } from "@mui/material";
+import {
+    Accordion,
+    AccordionSummary,
+    Card,
+    CircularProgress,
+    Paper,
+    Stack,
+    Typography,
+    useTheme,
+} from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { updateTaskById } from "../../lib/task-actions";
 import { defaultActionState } from "../form/Form";
 import { startTransition } from "react";
-import { sortTasks } from "../../(pages)/calendar/[event-id]/event-utils";
+import {
+    getEarliestStartTime,
+    getLatestEndTime,
+} from "../../(pages)/calendar/[event-id]/event-utils";
 import DraggableTask from "./DraggableTask";
+import { ExpandMore } from "@mui/icons-material";
+import { formatDate } from "../utils";
 
 const DroppableColumn = ({
     status,
@@ -38,6 +52,51 @@ const DroppableColumn = ({
         setDraggedOverColumn(null);
     };
 
+    const getUniqueTaskNames = () => {
+        const uniqueTaskNames = [];
+        for (let task of tasks) {
+            if (!uniqueTaskNames.includes(task[GlobalConstants.NAME]))
+                uniqueTaskNames.push(task[GlobalConstants.NAME]);
+        }
+        return uniqueTaskNames;
+    };
+
+    const getTaskCompsForName = (taskName) => {
+        const tasksWithName = tasks.filter((task) => task[GlobalConstants.NAME] === taskName);
+        if (tasksWithName.length === 1)
+            return (
+                <DraggableTask
+                    key={tasksWithName[0][GlobalConstants.ID]}
+                    task={tasksWithName[0]}
+                    setDraggedTask={setDraggedTask}
+                    setViewTask={setViewTask}
+                />
+            );
+        return (
+            <Card key={tasksWithName[0][GlobalConstants.NAME]}>
+                <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body1">{tasks[0][GlobalConstants.NAME]}</Typography>
+                    <Typography variant="body1">
+                        {formatDate(getEarliestStartTime(tasks)) +
+                            " - " +
+                            formatDate(getLatestEndTime(tasks))}
+                    </Typography>
+                </Stack>
+                <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMore />}>Shifts</AccordionSummary>
+                    {tasksWithName.map((task) => (
+                        <DraggableTask
+                            key={task[GlobalConstants.ID]}
+                            task={task}
+                            setDraggedTask={setDraggedTask}
+                            setViewTask={setViewTask}
+                        />
+                    ))}
+                </Accordion>
+            </Card>
+        );
+    };
+
     return (
         <Paper
             elevation={3}
@@ -58,14 +117,7 @@ const DroppableColumn = ({
                 {isTasksPending ? (
                     <CircularProgress />
                 ) : (
-                    sortTasks(tasks.filter((task) => task.status === status)).map((task) => (
-                        <DraggableTask
-                            key={task[GlobalConstants.ID]}
-                            task={task}
-                            setDraggedTask={setDraggedTask}
-                            setViewTask={setViewTask}
-                        />
-                    ))
+                    getUniqueTaskNames().map((taskName) => getTaskCompsForName(taskName))
                 )}
             </Stack>
         </Paper>
