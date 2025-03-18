@@ -5,8 +5,12 @@ import { formatDate } from "../../../../ui/utils";
 import { useUserContext } from "../../../../context/UserContext";
 import Form, { FormActionState } from "../../../../ui/form/Form";
 import { Prisma } from "@prisma/client";
+import {
+    allowSelectMultiple,
+    datePickerFields,
+    RenderedFields,
+} from "../../../../ui/form/FieldCfg";
 import { isUserHost } from "../../../../lib/definitions";
-import { useState } from "react";
 
 const TaskMenuOption = ({
     event,
@@ -15,9 +19,44 @@ const TaskMenuOption = ({
     selectedTasks,
     setSelectedTasks,
     setTaskOptions,
+    viewTask,
+    setViewTask,
+    taskAlreadyExists,
 }) => {
     const { user } = useUserContext();
-    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const getTaskDefaultValues = () => {
+        const defaultTask = viewTask || {};
+        for (let fieldId of RenderedFields[GlobalConstants.TASK]) {
+            if (!defaultTask[fieldId]) {
+                if (fieldId === GlobalConstants.PHASE)
+                    defaultTask[fieldId] = GlobalConstants.BEFORE;
+                else if (allowSelectMultiple.includes(fieldId)) defaultTask[fieldId] = [];
+                else if (datePickerFields.includes(fieldId)) defaultTask[fieldId] = event[fieldId];
+                else defaultTask[fieldId] = "";
+            }
+        }
+        return defaultTask;
+    };
+
+    const addSelectedTask = async (
+        currentActionState: FormActionState,
+        newTask: Prisma.TaskCreateInput,
+    ) => {
+        const newActionState = { ...currentActionState };
+        // Ensure only one copy of a task can be added for an event
+        if (taskAlreadyExists(newTask)) {
+            newActionState.status = 500;
+            newActionState.errorMsg = "Task already exists";
+            newActionState.result = "";
+        } else {
+            setSelectedTasks((prev) => [...prev, newTask]);
+            newActionState.errorMsg = "";
+            newActionState.status = 201;
+            newActionState.result = "Task added";
+        }
+        return newActionState;
+    };
 
     const editSelectedTask = async (
         currentActionState: FormActionState,
@@ -25,12 +64,10 @@ const TaskMenuOption = ({
     ) => {
         const newActionState = { ...currentActionState };
         setSelectedTasks((prev) => [
-            ...prev.filter(
-                (selectedTask) => selectedTask[GlobalConstants.ID] !== task[GlobalConstants.ID],
-            ),
+            ...prev.filter((task) => task[GlobalConstants.NAME] !== viewTask[GlobalConstants.NAME]),
             newTaskValues,
         ]);
-        setDialogOpen(false);
+        setViewTask(null);
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = "Edited task";
@@ -40,7 +77,7 @@ const TaskMenuOption = ({
     const deleteTaskFromOptions = (task: any) =>
         setTaskOptions((prev) => [
             ...prev.filter(
-                (taskOption) => taskOption[GlobalConstants.ID] !== task[GlobalConstants.ID],
+                (taskOption) => taskOption[GlobalConstants.NAME] !== task[GlobalConstants.NAME],
             ),
         ]);
 
@@ -87,14 +124,14 @@ const TaskMenuOption = ({
                     />
 
                     <Stack direction="row">
+                        <Button onClick={() => setViewTask(task)}>
+                            <RemoveRedEye />
+                        </Button>
                         {!readOnly && !isTaskSelected(task) && (
                             <Button onClick={() => deleteTaskFromOptions(task)}>
                                 <CloseRounded />
                             </Button>
                         )}
-                        <Button onClick={() => setDialogOpen(true)}>
-                            <RemoveRedEye />
-                        </Button>
                     </Stack>
                 </Stack>
                 <Stack key="time" direction="row" justifyContent="space-between">
@@ -107,22 +144,30 @@ const TaskMenuOption = ({
                     </Typography>
                 </Stack>
             </Stack>
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+            <Dialog open={!!viewTask} onClose={() => setViewTask(null)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    action={editSelectedTask}
-                    defaultValues={task}
-                    buttonLabel="save task"
+                    action={
+                        Object.keys(viewTask || {}).length === 0
+                            ? addSelectedTask
+                            : editSelectedTask
+                    }
+                    defaultValues={getTaskDefaultValues()}
+                    buttonLabel={
+                        Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
+                    }
                     editable={isUserHost(user, event)}
                 />
-                <Button
-                    onClick={() => {
-                        toggleTask(task);
-                        setDialogOpen(false);
-                    }}
-                >
-                    {isTaskSelected(task) ? "unselect" : "select"}
-                </Button>
+                {viewTask && readOnly && (
+                    <Button
+                        onClick={() => {
+                            toggleTask(viewTask);
+                            setViewTask(null);
+                        }}
+                    >
+                        {isTaskSelected(viewTask) ? "unselect" : "select"}
+                    </Button>
+                )}
             </Dialog>
         </>
     );
