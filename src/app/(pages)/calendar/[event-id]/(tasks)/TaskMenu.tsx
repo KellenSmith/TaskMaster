@@ -28,12 +28,13 @@ import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../../../lib/org-settings";
 import { isUserParticipant, sortTasks } from "../event-utils";
-import TaskMenuOption from "./TaskMenuOption";
 import { isUserHost } from "../../../../lib/definitions";
+import TaskShifts from "./TaskShifts";
+import { selectFieldOptions } from "../../../../ui/form/FieldCfg";
 
 const testTaskOptions = [
     {
-        id: 1,
+        id: "1",
         name: "task 1",
         phase: GlobalConstants.BEFORE,
         startTime: dayjs().toISOString(),
@@ -41,7 +42,7 @@ const testTaskOptions = [
         description: "test description",
     },
     {
-        id: 2,
+        id: "2",
         name: "task 2",
         phase: GlobalConstants.BEFORE,
         startTime: dayjs().toISOString(),
@@ -49,7 +50,7 @@ const testTaskOptions = [
         description: "test description",
     },
     {
-        id: 3,
+        id: "3",
         name: "task 3",
         phase: GlobalConstants.DURING,
         startTime: dayjs().toISOString(),
@@ -57,7 +58,7 @@ const testTaskOptions = [
         description: "test description",
     },
     {
-        id: 4,
+        id: "4",
         name: "task 4",
         phase: GlobalConstants.DURING,
         startTime: dayjs().toISOString(),
@@ -65,7 +66,7 @@ const testTaskOptions = [
         description: "test description",
     },
     {
-        id: 5,
+        id: "5",
         name: "task 5",
         phase: GlobalConstants.AFTER,
         startTime: dayjs().toISOString(),
@@ -73,7 +74,7 @@ const testTaskOptions = [
         description: "test description",
     },
     {
-        id: 6,
+        id: "6",
         name: "task 6",
         phase: GlobalConstants.AFTER,
         startTime: dayjs().toISOString(),
@@ -94,7 +95,6 @@ const TaskMenu = ({
     const { user } = useUserContext();
     const [taskOptions, setTaskOptions] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
-    const [viewTask, setViewTask] = useState(null);
     const [addTask, setAddTask] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
     const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
@@ -150,11 +150,9 @@ const TaskMenu = ({
         const defaultTasks = testTaskOptions
             // Only load unique tasks
             .filter((task) => !taskAlreadyExists(task))
-            // Remove id so copies can be created
-            // eslint-disable-next-line no-unused-vars
-            .map(({ id, ...rest }) => ({
-                ...rest,
-                ...taskDefaultTimes[rest[GlobalConstants.PHASE]],
+            .map((task) => ({
+                ...task,
+                ...taskDefaultTimes[task[GlobalConstants.PHASE]],
             }));
         defaultTasks.length > 0 && setTaskOptions([...taskOptions, ...defaultTasks]);
     };
@@ -207,6 +205,36 @@ const TaskMenu = ({
         return sortTasks(tasksForPhase);
     };
 
+    const getUniqueTaskNamesForPhase = (phase) => {
+        const taskNamesForPhase = getSortedTasksForPhase(phase).map(
+            (task) => task[GlobalConstants.NAME],
+        );
+        const uniqueTaskNames = [];
+        for (let taskName of taskNamesForPhase) {
+            if (!uniqueTaskNames.includes(taskName)) uniqueTaskNames.push(taskName);
+        }
+        return uniqueTaskNames;
+    };
+
+    const getTaskShiftsComp = (phase, taskName) => {
+        const taskShifts = getSortedTasksForPhase(phase).filter(
+            (task) => task[GlobalConstants.NAME] === taskName,
+        );
+        return (
+            taskShifts.length > 0 && (
+                <TaskShifts
+                    key={taskName}
+                    event={event}
+                    tasks={taskShifts}
+                    readOnly={readOnly}
+                    selectedTasks={selectedTasks}
+                    setSelectedTasks={setSelectedTasks}
+                    setTaskOptions={setTaskOptions}
+                />
+            )
+        );
+    };
+
     const toggleAllTasksForPhase = (phase) => {
         const selectedPhaseTasks = selectedTasks.filter(
             (task) => task[GlobalConstants.PHASE] === phase,
@@ -226,7 +254,10 @@ const TaskMenu = ({
     };
 
     const openAddTask = (phase) => {
-        const defaultTask = { [GlobalConstants.PHASE]: phase, ...taskDefaultTimes[phase] };
+        const defaultTask = {
+            [GlobalConstants.PHASE]: phase,
+            ...taskDefaultTimes[phase],
+        };
         setAddTask(defaultTask);
     };
 
@@ -234,7 +265,14 @@ const TaskMenu = ({
         currentActionState: FormActionState,
         fieldValues: any,
     ): Promise<FormActionState> => {
-        setSelectedTasks((prev) => [...prev, fieldValues]);
+        // Generate unique id for the task for frontend identification
+        // (will be overwritten when created in database)
+        const dummyId =
+            getSortedTasksForPhase(fieldValues[GlobalConstants.PHASE])
+                .map((task) => task[GlobalConstants.ID])
+                .sort((id1, id2) => id1.localeCompare(id2))
+                .at(-1) + "+";
+        setSelectedTasks((prev) => [...prev, { [GlobalConstants.ID]: dummyId, ...fieldValues }]);
         setAddTask(null);
         return currentActionState;
     };
@@ -276,28 +314,13 @@ const TaskMenu = ({
                                         label="Toggle All"
                                     />
                                 )}
-
                                 <FormGroup>
                                     {isTasksPending ? (
                                         <CircularProgress />
                                     ) : (
-                                        getSortedTasksForPhase(phase).map((task) => (
-                                            <TaskMenuOption
-                                                key={
-                                                    task[GlobalConstants.ID] ||
-                                                    task[GlobalConstants.NAME]
-                                                }
-                                                event={event}
-                                                task={task}
-                                                readOnly={readOnly}
-                                                selectedTasks={selectedTasks}
-                                                setSelectedTasks={setSelectedTasks}
-                                                setTaskOptions={setTaskOptions}
-                                                viewTask={viewTask}
-                                                setViewTask={setViewTask}
-                                                taskAlreadyExists={taskAlreadyExists}
-                                            />
-                                        ))
+                                        getUniqueTaskNamesForPhase(phase).map((taskName) =>
+                                            getTaskShiftsComp(phase, taskName),
+                                        )
                                     )}
                                 </FormGroup>
                                 {isUserHost(user, event) && (
@@ -316,20 +339,11 @@ const TaskMenu = ({
                             <Typography variant="h6" color={theme.palette.primary.main}>
                                 My tasks
                             </Typography>
-                            {sortTasks(selectedTasks).map((task) => (
-                                <TaskMenuOption
-                                    key={task[GlobalConstants.ID] || task[GlobalConstants.NAME]}
-                                    event={event}
-                                    task={task}
-                                    readOnly={readOnly}
-                                    selectedTasks={selectedTasks}
-                                    setSelectedTasks={setSelectedTasks}
-                                    setTaskOptions={setTaskOptions}
-                                    viewTask={viewTask}
-                                    setViewTask={setViewTask}
-                                    taskAlreadyExists={taskAlreadyExists}
-                                />
-                            ))}
+                            {selectFieldOptions[GlobalConstants.PHASE].map((phase) =>
+                                getUniqueTaskNamesForPhase(phase).map((taskName) =>
+                                    getTaskShiftsComp(phase, taskName),
+                                ),
+                            )}
                             <Typography>
                                 {selectedTasks.length < 1
                                     ? "Sign up for tasks or volunteer shifts to reduce your ticket price!"
@@ -356,9 +370,7 @@ const TaskMenu = ({
                     name={GlobalConstants.TASK}
                     action={addNewTask}
                     defaultValues={addTask}
-                    buttonLabel={
-                        Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
-                    }
+                    buttonLabel="add task"
                     readOnly={false}
                     editable={false}
                 />

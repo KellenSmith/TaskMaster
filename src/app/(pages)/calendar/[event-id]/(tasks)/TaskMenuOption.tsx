@@ -11,6 +11,7 @@ import {
     RenderedFields,
 } from "../../../../ui/form/FieldCfg";
 import { isUserHost } from "../../../../lib/definitions";
+import { useState } from "react";
 
 const TaskMenuOption = ({
     event,
@@ -19,11 +20,9 @@ const TaskMenuOption = ({
     selectedTasks,
     setSelectedTasks,
     setTaskOptions,
-    viewTask,
-    setViewTask,
-    taskAlreadyExists,
 }) => {
     const { user } = useUserContext();
+    const [viewTask, setViewTask] = useState(null);
 
     const getTaskDefaultValues = () => {
         const defaultTask = viewTask || {};
@@ -44,17 +43,10 @@ const TaskMenuOption = ({
         newTask: Prisma.TaskCreateInput,
     ) => {
         const newActionState = { ...currentActionState };
-        // Ensure only one copy of a task can be added for an event
-        if (taskAlreadyExists(newTask)) {
-            newActionState.status = 500;
-            newActionState.errorMsg = "Task already exists";
-            newActionState.result = "";
-        } else {
-            setSelectedTasks((prev) => [...prev, newTask]);
-            newActionState.errorMsg = "";
-            newActionState.status = 201;
-            newActionState.result = "Task added";
-        }
+        setSelectedTasks((prev) => [...prev, newTask]);
+        newActionState.errorMsg = "";
+        newActionState.status = 201;
+        newActionState.result = "Task added";
         return newActionState;
     };
 
@@ -77,23 +69,21 @@ const TaskMenuOption = ({
     const deleteTaskFromOptions = (task: any) =>
         setTaskOptions((prev) => [
             ...prev.filter(
-                (taskOption) => taskOption[GlobalConstants.NAME] !== task[GlobalConstants.NAME],
+                (taskOption) => taskOption[GlobalConstants.ID] !== task[GlobalConstants.ID],
             ),
         ]);
 
     const isTaskSelected = (task: any) =>
-        selectedTasks
-            .map((task) => task[GlobalConstants.NAME])
-            .includes(task[GlobalConstants.NAME]) ||
-        task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID];
+        selectedTasks.map((task) => task[GlobalConstants.ID]).includes(task[GlobalConstants.ID]);
 
     const toggleTask = (toggledTask: any) => {
         if (isTaskSelected(toggledTask)) {
             setTaskOptions((prev) => [...prev, toggledTask]);
             setSelectedTasks((prev) => [
-                ...prev.filter((selectedTask) => {
-                    return selectedTask[GlobalConstants.NAME] !== toggledTask[GlobalConstants.NAME];
-                }),
+                ...prev.filter(
+                    (selectedTask) =>
+                        selectedTask[GlobalConstants.ID] !== toggledTask[GlobalConstants.ID],
+                ),
             ]);
             return;
         }
@@ -103,7 +93,7 @@ const TaskMenuOption = ({
 
     return (
         <>
-            <Stack key={task[GlobalConstants.ID] || task[GlobalConstants.NAME]}>
+            <Stack key={task[GlobalConstants.ID]}>
                 <Stack
                     key="title"
                     direction="row"
@@ -124,14 +114,14 @@ const TaskMenuOption = ({
                     />
 
                     <Stack direction="row">
-                        <Button onClick={() => setViewTask(task)}>
-                            <RemoveRedEye />
-                        </Button>
                         {!readOnly && !isTaskSelected(task) && (
                             <Button onClick={() => deleteTaskFromOptions(task)}>
                                 <CloseRounded />
                             </Button>
                         )}
+                        <Button onClick={() => setViewTask(task)}>
+                            <RemoveRedEye />
+                        </Button>
                     </Stack>
                 </Stack>
                 <Stack key="time" direction="row" justifyContent="space-between">
@@ -153,12 +143,10 @@ const TaskMenuOption = ({
                             : editSelectedTask
                     }
                     defaultValues={getTaskDefaultValues()}
-                    buttonLabel={
-                        Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
-                    }
+                    buttonLabel="save task"
                     editable={isUserHost(user, event)}
                 />
-                {viewTask && readOnly && (
+                {viewTask && (
                     <Button
                         onClick={() => {
                             toggleTask(viewTask);

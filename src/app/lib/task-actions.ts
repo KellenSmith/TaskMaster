@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
+import GlobalConstants from "../GlobalConstants";
 
 export const deleteTask = async (taskId: string, currentActionState: FormActionState) => {
     const newActionState = { ...currentActionState };
@@ -56,15 +57,22 @@ export const updateEventTasks = async (
     const newActionState = { ...currentActionState };
 
     try {
+        const existingTaskIds = (
+            await prisma.task.findMany({
+                where: { eventId: eventId },
+            })
+        ).map((task) => task[GlobalConstants.ID]);
         const tasksToCreate = taskList
-            .filter((task) => !task.id)
-            .map((task) => ({
-                ...task,
+            .filter((task) => !existingTaskIds.includes(task[GlobalConstants.ID]))
+            // Remove dummy id before creating in db
+            // eslint-disable-next-line no-unused-vars
+            .map(({ id, ...restTask }) => ({
+                ...restTask,
                 eventId: eventId,
             }));
 
         const updateTasks = taskList
-            .filter((task) => task.id)
+            .filter((task) => existingTaskIds.includes(task[GlobalConstants.ID]))
             .map((task) =>
                 prisma.task.update({
                     where: { id: task.id },
@@ -72,12 +80,11 @@ export const updateEventTasks = async (
                 }),
             );
 
-        const taskIds = taskList.map((task) => task.id).filter((id) => id !== undefined);
         const deleteUnSelectedTasks = prisma.task.deleteMany({
             where: {
                 eventId: eventId,
                 id: {
-                    notIn: taskIds,
+                    notIn: updateTasks.map((task) => task[GlobalConstants.ID]),
                 },
             },
         });
