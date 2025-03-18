@@ -364,10 +364,10 @@ const TaskMenu = ({
                                     <Typography>
                                         {selectedTasks.length < 1
                                             ? "Sign up for tasks or volunteer shifts to reduce your ticket price!"
-                                            : `Thanks for helping out! Your ticket price is ${getReducedTicketPrice()} SEK`}
+                                            : `Thanks for helping out!`}
                                     </Typography>
                                     <Button onClick={() => setPaymentHandlerOpen(true)}>
-                                        buy ticket
+                                        {"buy ticket: " + getReducedTicketPrice() + " SEK"}
                                     </Button>
                                 </>
                             )}
