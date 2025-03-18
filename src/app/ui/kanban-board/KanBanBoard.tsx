@@ -11,12 +11,12 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import { deleteTask, updateTaskById } from "../lib/task-actions";
-import GlobalConstants from "../GlobalConstants";
-import Form, { defaultActionState, getFormActionMsg } from "./form/Form";
-import { sortTasks } from "../(pages)/calendar/[event-id]/event-utils";
-import { formatDate } from "./utils";
-import ConfirmButton from "./ConfirmButton";
+import { deleteTask, updateTaskById } from "../../lib/task-actions";
+import GlobalConstants from "../../GlobalConstants";
+import Form, { defaultActionState, getFormActionMsg } from "../form/Form";
+import { sortTasks } from "../../(pages)/calendar/[event-id]/event-utils";
+import { formatDate } from "../utils";
+import ConfirmButton from "../ConfirmButton";
 
 const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const theme = useTheme();
