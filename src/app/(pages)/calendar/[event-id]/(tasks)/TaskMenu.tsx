@@ -94,7 +94,6 @@ const TaskMenu = ({
     const { user } = useUserContext();
     const [taskOptions, setTaskOptions] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
-    const [viewTask, setViewTask] = useState(null);
     const [addTask, setAddTask] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
     const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
@@ -207,6 +206,20 @@ const TaskMenu = ({
         return sortTasks(tasksForPhase);
     };
 
+    const getUniqueTaskNamesForPhase = (phase) => {
+        const sortedTasksForPhase = sortTasks(
+            [...selectedTasks, ...taskOptions].filter(
+                (task) => task[GlobalConstants.PHASE] === phase,
+            ),
+        );
+        const uniqueTaskNames = [];
+        for (let task of sortedTasksForPhase) {
+            if (!uniqueTaskNames.includes(task[GlobalConstants.NAME]))
+                uniqueTaskNames.push(task[GlobalConstants.NAME]);
+        }
+        return uniqueTaskNames;
+    };
+
     const toggleAllTasksForPhase = (phase) => {
         const selectedPhaseTasks = selectedTasks.filter(
             (task) => task[GlobalConstants.PHASE] === phase,
@@ -226,7 +239,15 @@ const TaskMenu = ({
     };
 
     const openAddTask = (phase) => {
-        const defaultTask = { [GlobalConstants.PHASE]: phase, ...taskDefaultTimes[phase] };
+        const defaultTask = {
+            [GlobalConstants.ID]:
+                tasks
+                    .map((task) => task[GlobalConstants.ID])
+                    .sort((taskId1: string, taskId2: string) => taskId1.localeCompare(taskId2))
+                    .at(-1) + "+",
+            [GlobalConstants.PHASE]: phase,
+            ...taskDefaultTimes[phase],
+        };
         setAddTask(defaultTask);
     };
 
@@ -293,9 +314,6 @@ const TaskMenu = ({
                                                 selectedTasks={selectedTasks}
                                                 setSelectedTasks={setSelectedTasks}
                                                 setTaskOptions={setTaskOptions}
-                                                viewTask={viewTask}
-                                                setViewTask={setViewTask}
-                                                taskAlreadyExists={taskAlreadyExists}
                                             />
                                         ))
                                     )}
@@ -325,9 +343,6 @@ const TaskMenu = ({
                                     selectedTasks={selectedTasks}
                                     setSelectedTasks={setSelectedTasks}
                                     setTaskOptions={setTaskOptions}
-                                    viewTask={viewTask}
-                                    setViewTask={setViewTask}
-                                    taskAlreadyExists={taskAlreadyExists}
                                 />
                             ))}
                             <Typography>
@@ -356,9 +371,7 @@ const TaskMenu = ({
                     name={GlobalConstants.TASK}
                     action={addNewTask}
                     defaultValues={addTask}
-                    buttonLabel={
-                        Object.keys(viewTask || {}).length === 0 ? "add task" : "save task"
-                    }
+                    buttonLabel="add task"
                     readOnly={false}
                     editable={false}
                 />
