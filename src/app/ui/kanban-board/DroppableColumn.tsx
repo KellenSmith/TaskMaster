@@ -115,7 +115,6 @@ const DroppableColumn = ({
                                             ([key, value]) => key !== GlobalConstants.ID,
                                         ),
                                     );
-                                    console.log(newTaskShift);
                                     newTaskShift[GlobalConstants.START_TIME] = latestEndTime;
                                     newTaskShift[GlobalConstants.END_TIME] = dayjs(latestEndTime)
                                         .add(2, "hour")

@@ -88,8 +88,6 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
         </FormControl>
     );
 
-    console.log(filters);
-
     const filterTasks = (tasks, filters) => {
         return tasks.filter((task) => {
             return Object.keys(filters).every((filterId) => {
