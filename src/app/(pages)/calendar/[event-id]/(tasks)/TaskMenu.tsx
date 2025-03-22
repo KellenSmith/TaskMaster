@@ -292,15 +292,17 @@ const TaskMenu = ({
         const membershipExpires = dayjs(membershipExpiresAt(user));
         if (membershipExpires.isBefore(dayjs(event[GlobalConstants.START_TIME]))) {
             const newTaskActionState = { ...taskActionState };
-            taskActionState.status = 500;
-            taskActionState.errorMsg =
+            newTaskActionState.status = 500;
+            newTaskActionState.errorMsg =
                 "Your membership expires before the event. Please renew your membership before buying a ticket.";
-            taskActionState.result = "";
+            newTaskActionState.result = "";
             setTaskActionState(newTaskActionState);
             return;
         }
         setPaymentHandlerOpen(true);
     };
+
+    console.log(taskActionState);
 
     return (
         <>
