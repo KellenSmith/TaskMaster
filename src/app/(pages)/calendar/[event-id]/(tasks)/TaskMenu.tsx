@@ -228,12 +228,11 @@ const TaskMenu = ({
         setTaskActionState(saveTasksResult);
     };
 
-    const getTaskShiftsComp = (taskList: any[], taskName: string) => {
-        const taskShifts = taskList.filter((task) => task[GlobalConstants.NAME] === taskName);
+    const getTaskShiftsComp = (taskList: any[]) => {
         return (
-            taskShifts.length > 0 && (
+            taskList.length > 0 && (
                 <Card
-                    key={taskName}
+                    key={taskList[0][GlobalConstants.NAME]}
                     sx={{
                         padding: 2,
                         "&:hover": {
@@ -244,7 +243,7 @@ const TaskMenu = ({
                 >
                     <TaskShifts
                         event={event}
-                        tasks={taskShifts}
+                        tasks={taskList}
                         readOnly={readOnly}
                         selectedTasks={selectedTasks}
                         setSelectedTasks={setSelectedTasks}
@@ -257,7 +256,7 @@ const TaskMenu = ({
                                 backgroundColor: theme.palette.divider,
                                 color: theme.palette.getContrastText(theme.palette.divider),
                             }}
-                            onClick={() => addShift(taskShifts)}
+                            onClick={() => addShift(taskList)}
                         >
                             add shift
                         </Button>
@@ -361,9 +360,7 @@ const TaskMenu = ({
                 taskList.filter((task) => task[GlobalConstants.NAME] === taskName),
             ),
         );
-        return sortedTasksGroupedByName.map((taskGroup) =>
-            getTaskShiftsComp(taskGroup, taskGroup[0][GlobalConstants.NAME]),
-        );
+        return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
     };
 
     return (

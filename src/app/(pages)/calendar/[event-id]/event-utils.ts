@@ -40,3 +40,30 @@ export const sortTasks = (task1, task2) => {
 
     return task1[GlobalConstants.NAME].localeCompare(task2[GlobalConstants.NAME]);
 };
+
+export const sortGroupedTasks = (groupedTasks) => {
+    return groupedTasks.sort((taskGroup1, taskGroup2) => {
+        const sortTask1 = {
+            [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup1),
+            [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup1),
+            [GlobalConstants.NAME]: taskGroup1[0][GlobalConstants.NAME],
+        };
+        const sortTask2 = {
+            [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup2),
+            [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup2),
+            [GlobalConstants.NAME]: taskGroup2[0][GlobalConstants.NAME],
+        };
+        return sortTasks(sortTask1, sortTask2);
+    });
+};
+
+export const getSortedTaskComps = (taskList, getTaskShiftsComp) => {
+    if (taskList.length < 1) return [];
+    const uniqueTaskNames = [...new Set(taskList.map((task) => task[GlobalConstants.NAME]))];
+    const sortedTasksGroupedByName = sortGroupedTasks(
+        uniqueTaskNames.map((taskName) =>
+            taskList.filter((task) => task[GlobalConstants.NAME] === taskName),
+        ),
+    );
+    return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
+};

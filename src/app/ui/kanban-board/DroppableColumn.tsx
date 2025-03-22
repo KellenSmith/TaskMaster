@@ -15,6 +15,8 @@ import { startTransition } from "react";
 import {
     getEarliestStartTime,
     getLatestEndTime,
+    getSortedTaskComps,
+    sortTasks,
 } from "../../(pages)/calendar/[event-id]/event-utils";
 import DraggableTask from "./DraggableTask";
 import { ExpandMore } from "@mui/icons-material";
@@ -45,7 +47,7 @@ const DroppableColumn = ({
         setTaskActionState(updateTaskResult);
     };
 
-    const handleDrop = (status) => {
+    const handleDrop = (status: string) => {
         if (draggedTask?.status !== status) {
             updateTaskStatus(draggedTask, status);
         }
@@ -53,22 +55,12 @@ const DroppableColumn = ({
         setDraggedOverColumn(null);
     };
 
-    const getUniqueTaskNames = () => {
-        const uniqueTaskNames = [];
-        for (let task of tasks) {
-            if (!uniqueTaskNames.includes(task[GlobalConstants.NAME]))
-                uniqueTaskNames.push(task[GlobalConstants.NAME]);
-        }
-        return uniqueTaskNames;
-    };
-
-    const getTaskCompsForName = (taskName) => {
-        const tasksWithName = tasks.filter((task) => task[GlobalConstants.NAME] === taskName);
-        if (tasksWithName.length === 1)
+    const getTaskShiftsComp = (taskList: any[]) => {
+        if (taskList.length === 1)
             return (
                 <DraggableTask
-                    key={tasksWithName[0][GlobalConstants.ID]}
-                    task={tasksWithName[0]}
+                    key={taskList[0][GlobalConstants.ID]}
+                    task={taskList[0]}
                     setDraggedTask={setDraggedTask}
                     fetchDbTasks={fetchDbTasks}
                     readOnly={readOnly}
@@ -77,14 +69,14 @@ const DroppableColumn = ({
                 />
             );
         return (
-            <Card key={tasksWithName[0][GlobalConstants.NAME]}>
+            <Card key={taskList[0][GlobalConstants.NAME]}>
                 <Stack
                     paddingLeft={2}
                     paddingTop={2}
                     direction="row"
                     justifyContent="space-between"
                 >
-                    <Typography variant="body1">{tasks[0][GlobalConstants.NAME]}</Typography>
+                    <Typography variant="body1">{taskList[0][GlobalConstants.NAME]}</Typography>
                     <Typography variant="body1">
                         {formatDate(getEarliestStartTime(tasks)) +
                             " - " +
@@ -94,7 +86,7 @@ const DroppableColumn = ({
                 <Accordion>
                     <AccordionSummary expandIcon={<ExpandMore />}>Shifts</AccordionSummary>
                     <Stack paddingLeft={2}>
-                        {tasksWithName.map((task) => (
+                        {taskList.sort(sortTasks).map((task) => (
                             <DraggableTask
                                 key={task[GlobalConstants.ID]}
                                 task={task}
@@ -131,7 +123,7 @@ const DroppableColumn = ({
                 {isTasksPending ? (
                     <CircularProgress />
                 ) : (
-                    getUniqueTaskNames().map((taskName) => getTaskCompsForName(taskName))
+                    getSortedTaskComps(tasks, getTaskShiftsComp)
                 )}
             </Stack>
         </Paper>
