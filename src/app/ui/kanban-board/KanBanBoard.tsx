@@ -26,7 +26,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
     const [taskActionState, setTaskActionState] = useState(defaultActionState);
 
     const getUniqueFilterOptions = (filterId) => {
-        if (filterId === GlobalConstants.ASSIGNEE_ID) return [user[GlobalConstants.ID]];
+        if (filterId === GlobalConstants.ASSIGNEE_ID) return [user[GlobalConstants.ID], null];
         const existingFilterOptions = [];
         for (let task of tasks) {
             if (Array.isArray(task[filterId]))
@@ -57,6 +57,14 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
             }));
     };
 
+    const getFilterOptionLabel = (filterId, filterOption) => {
+        if (filterId === GlobalConstants.ASSIGNEE_ID) {
+            if (filterOption === null) return "Unassigned";
+            return "My tasks";
+        }
+        return FieldLabels[filterOption] || filterOption;
+    };
+
     const getSwitchGroup = (filterId) => (
         <FormControl key={filterId} component="fieldset" variant="standard">
             <FormLabel component="legend">{FieldLabels[filterId]}</FormLabel>
@@ -73,16 +81,14 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
                                 name={filterOption}
                             />
                         }
-                        label={
-                            filterId === GlobalConstants.ASSIGNEE_ID
-                                ? "My tasks"
-                                : FieldLabels[filterOption] || filterOption
-                        }
+                        label={getFilterOptionLabel(filterId, filterOption)}
                     />
                 ))}
             </FormGroup>
         </FormControl>
     );
+
+    console.log(filters);
 
     const filterTasks = (tasks, filters) => {
         return tasks.filter((task) => {
