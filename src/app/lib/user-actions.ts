@@ -237,6 +237,19 @@ export const deleteUser = async (
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
+        const adminCount = await prisma.user.count({
+            where: {
+                role: GlobalConstants.ADMIN,
+            },
+        });
+
+        if (adminCount <= 1) {
+            newActionState.status = 400;
+            newActionState.errorMsg =
+                "You are the last admin standing. Find an heir before leaving.";
+            newActionState.result = "";
+            return newActionState;
+        }
         const deleteCredentials = prisma.userCredentials.deleteMany({
             where: {
                 email: user.email as string,
@@ -265,7 +278,7 @@ export const deleteUser = async (
     return newActionState;
 };
 
-export const getUserParticipantEvents = async (
+export const getUserEvents = async (
     userId: string,
     currentState: DatagridActionState,
 ): Promise<DatagridActionState> => {
@@ -273,11 +286,18 @@ export const getUserParticipantEvents = async (
     try {
         const events = await prisma.event.findMany({
             where: {
-                participantUsers: {
-                    some: {
-                        userId: userId,
+                OR: [
+                    {
+                        participantUsers: {
+                            some: {
+                                userId: userId,
+                            },
+                        },
                     },
-                },
+                    {
+                        hostId: userId,
+                    },
+                ],
             },
         });
         newActionState.status = 200;

@@ -90,12 +90,12 @@ const AccountTab = () => {
                 <Stack>
                     <Card>
                         <CardContent>
-                            <Typography color="primary">{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
-                            <Typography color="primary">
+                            <Typography color="secondary">{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
+                            <Typography color="secondary">
                                 {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
                             </Typography>
                             {isUserAdmin(user) && (
-                                <Typography color="primary">You are an admin</Typography>
+                                <Typography color="secondary">You are an admin</Typography>
                             )}
                         </CardContent>
                     </Card>

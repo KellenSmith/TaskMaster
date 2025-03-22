@@ -34,13 +34,15 @@ export const isUserAuthorized = (path: string, user: JWTPayload | null): boolean
     return !adminPaths.some((adminPath) => path.startsWith(adminPath));
 };
 
+export const membershipExpiresAt = (user) =>
+    dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED])
+        .add((OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number) + 1, "d")
+        .toISOString();
+
 export const isMembershipExpired = (user: any): boolean => {
     if (!user || !user[GlobalConstants.MEMBERSHIP_RENEWED]) return true;
-    const expiryDate = dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(
-        (OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number) + 1,
-        "d",
-    );
-    return dayjs().isAfter(expiryDate);
+    const expiryDate = membershipExpiresAt(user);
+    return dayjs().isAfter(dayjs(expiryDate));
 };
 
 export const isUserAdmin = (user: any): boolean =>

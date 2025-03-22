@@ -28,7 +28,7 @@ import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../../../lib/org-settings";
 import { isUserParticipant, sortTasks } from "../event-utils";
-import { isUserHost } from "../../../../lib/definitions";
+import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 
 const testTaskOptions = [
@@ -288,6 +288,20 @@ const TaskMenu = ({
         return currentActionState;
     };
 
+    const openTicketDialog = () => {
+        const membershipExpires = dayjs(membershipExpiresAt(user));
+        if (membershipExpires.isBefore(dayjs(event[GlobalConstants.START_TIME]))) {
+            const newTaskActionState = { ...taskActionState };
+            taskActionState.status = 500;
+            taskActionState.errorMsg =
+                "Your membership expires before the event. Please renew your membership before buying a ticket.";
+            taskActionState.result = "";
+            setTaskActionState(newTaskActionState);
+            return;
+        }
+        setPaymentHandlerOpen(true);
+    };
+
     return (
         <>
             <Stack spacing={2}>
@@ -366,7 +380,7 @@ const TaskMenu = ({
                                             ? "Sign up for tasks or volunteer shifts to reduce your ticket price!"
                                             : `Thanks for helping out!`}
                                     </Typography>
-                                    <Button onClick={() => setPaymentHandlerOpen(true)}>
+                                    <Button onClick={openTicketDialog}>
                                         {"buy ticket: " + getReducedTicketPrice() + " SEK"}
                                     </Button>
                                 </>
