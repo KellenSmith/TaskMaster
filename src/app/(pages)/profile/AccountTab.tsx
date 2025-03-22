@@ -7,12 +7,19 @@ import { deleteUser, updateUser, updateUserCredentials } from "../../lib/user-ac
 import { login } from "../../lib/auth/auth";
 import { useState } from "react";
 import { defaultActionState } from "../../ui/form/Form";
-import { Button, Stack } from "@mui/material";
-import { isMembershipExpired, LoginSchema, UpdateCredentialsSchema } from "../../lib/definitions";
+import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
+import {
+    isMembershipExpired,
+    isUserAdmin,
+    LoginSchema,
+    UpdateCredentialsSchema,
+} from "../../lib/definitions";
 import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../lib/org-settings";
 import { Prisma } from "@prisma/client";
 import ConfirmButton from "../../ui/ConfirmButton";
+import { formatDate } from "../../ui/utils";
+import dayjs from "dayjs";
 
 const AccountTab = () => {
     const { user, updateLoggedInUser, logOut } = useUserContext();
@@ -81,6 +88,17 @@ const AccountTab = () => {
         user && (
             <>
                 <Stack>
+                    <Card>
+                        <CardContent>
+                            <Typography color="primary">{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
+                            <Typography color="primary">
+                                {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
+                            </Typography>
+                            {isUserAdmin(user) && (
+                                <Typography color="primary">You are an admin</Typography>
+                            )}
+                        </CardContent>
+                    </Card>
                     <Form
                         name={GlobalConstants.PROFILE}
                         buttonLabel="save"
