@@ -46,10 +46,10 @@ export const isMembershipExpired = (user: any): boolean => {
 };
 
 export const isUserAdmin = (user: any): boolean =>
-    user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
+    user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
 
 export const isUserHost = (user: any, event: any): boolean =>
-    user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
+    user && user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
 
 export interface LoginSchema {
     email: string;

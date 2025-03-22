@@ -111,17 +111,15 @@ const AccountTab = () => {
                         action={validateAndUpdateCredentials}
                     ></Form>
                     {getFormActionMsg(accountActionState)}
-                    {isMembershipExpired(user) && (
-                        <Button onClick={() => setOpenRenewMembershipDialog(true)}>
-                            Renew membership
-                        </Button>
-                    )}
+                    <Button onClick={() => setOpenRenewMembershipDialog(true)}>
+                        {`${user[GlobalConstants.MEMBERSHIP_RENEWED] ? "extend" : "activate"} membership`}
+                    </Button>
                     <ConfirmButton color="error" onClick={deleteMyAccount}>
                         Delete My Account
                     </ConfirmButton>
                 </Stack>
                 <SwishPaymentHandler
-                    title={"Renew membership"}
+                    title={`${user[GlobalConstants.MEMBERSHIP_RENEWED] ? "Extend" : "Activate"} Membership`}
                     open={openRenewMembershipDialog}
                     setOpen={setOpenRenewMembershipDialog}
                     hasPaid={hasRenewedMembership}
