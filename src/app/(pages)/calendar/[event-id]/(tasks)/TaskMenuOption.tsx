@@ -1,4 +1,12 @@
-import { Button, Checkbox, Dialog, FormControlLabel, Stack, Typography } from "@mui/material";
+import {
+    Button,
+    Checkbox,
+    Dialog,
+    FormControlLabel,
+    Stack,
+    Tooltip,
+    Typography,
+} from "@mui/material";
 import GlobalConstants from "../../../../GlobalConstants";
 import { CloseRounded, RemoveRedEye } from "@mui/icons-material";
 import { formatDate } from "../../../../ui/utils";
@@ -103,9 +111,11 @@ const TaskMenuOption = ({
 
                     <Stack direction="row">
                         {!readOnly && !isTaskSelected(task, selectedTasks) && (
-                            <Button onClick={deleteTaskFromOptions}>
-                                <CloseRounded />
-                            </Button>
+                            <Tooltip title={"Delete task/shift"}>
+                                <Button onClick={deleteTaskFromOptions}>
+                                    <CloseRounded />
+                                </Button>
+                            </Tooltip>
                         )}
                         <Button onClick={() => setEditDialogOpen(true)}>
                             <RemoveRedEye />
