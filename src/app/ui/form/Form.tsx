@@ -124,7 +124,13 @@ const Form: FC<FormProps> = ({
                 <Autocomplete
                     disabled={!editMode}
                     key={fieldId}
-                    renderInput={(params) => <TextField {...params} label={FieldLabels[fieldId]} />}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label={FieldLabels[fieldId]}
+                            required={RequiredFields[name].includes(fieldId)}
+                        />
+                    )}
                     autoSelect={fieldId in RequiredFields[name]}
                     options={selectFieldOptions[fieldId]}
                     value={fieldValues[fieldId]}
@@ -149,6 +155,11 @@ const Form: FC<FormProps> = ({
                     onChange={(newValue) =>
                         newValue.isValid() && changeFieldValue(fieldId, newValue.toISOString())
                     }
+                    slotProps={{
+                        textField: {
+                            required: RequiredFields[name].includes(fieldId),
+                        },
+                    }}
                 />
             );
         }
