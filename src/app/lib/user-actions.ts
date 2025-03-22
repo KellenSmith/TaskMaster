@@ -9,6 +9,25 @@ import { decryptJWT, encryptJWT, generateUserCredentials, getUserByUniqueKey } f
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { LoginSchema, ResetCredentialsSchema } from "./definitions";
 
+export const getUserById = async (
+    currentState: DatagridActionState,
+    userId: string,
+): Promise<DatagridActionState> => {
+    const newActionState: DatagridActionState = { ...currentState };
+    try {
+        const user = await prisma.user.findUniqueOrThrow({
+            where: { id: userId },
+        });
+        newActionState.status = 200;
+        newActionState.result = [user];
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = [];
+    }
+    return newActionState;
+};
+
 export const createUser = async (
     currentActionState: FormActionState,
     fieldValues: Prisma.UserCreateInput,
@@ -45,9 +64,11 @@ export const getAllUsers = async (
         });
         newActionState.status = 200;
         newActionState.result = users;
+        newActionState.errorMsg = "";
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
+        newActionState.result = [];
     }
     return newActionState;
 };
