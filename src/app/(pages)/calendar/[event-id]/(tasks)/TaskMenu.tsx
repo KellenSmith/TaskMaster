@@ -28,7 +28,13 @@ import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../../../lib/org-settings";
-import { getEarliestStartTime, getLatestEndTime, isUserParticipant } from "../event-utils";
+import {
+    getEarliestEndTime,
+    getEarliestStartTime,
+    getLatestEndTime,
+    isUserParticipant,
+    sortTasks,
+} from "../event-utils";
 import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { getDummyId } from "../../../../ui/utils";
@@ -333,23 +339,17 @@ const TaskMenu = ({
 
     const sortGroupedTasks = (groupedTasks) => {
         return groupedTasks.sort((taskGroup1, taskGroup2) => {
-            const earliestStartTime1 = getEarliestStartTime(taskGroup1);
-            const earliestStartTime2 = getEarliestStartTime(taskGroup2);
-            if (earliestStartTime1 !== earliestStartTime2)
-                return earliestStartTime1.localeCompare(earliestStartTime2);
-
-            const earliestEndTime1 = taskGroup1
-                .map((task) => task[GlobalConstants.END_TIME])
-                .sort((startTime1, startTime2) => startTime1.localeCompare(startTime2))[0];
-            const earliestEndTime2 = taskGroup2
-                .map((task) => task[GlobalConstants.END_TIME])
-                .sort((startTime1, startTime2) => startTime1.localeCompare(startTime2))[0];
-            if (earliestEndTime1 !== earliestEndTime2)
-                return earliestEndTime1.localeCompare(earliestEndTime2);
-
-            return taskGroup1[0][GlobalConstants.NAME].localeCompare(
-                taskGroup2[0][GlobalConstants.NAME],
-            );
+            const sortTask1 = {
+                [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup1),
+                [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup1),
+                [GlobalConstants.NAME]: taskGroup1[0][GlobalConstants.NAME],
+            };
+            const sortTask2 = {
+                [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup2),
+                [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup2),
+                [GlobalConstants.NAME]: taskGroup2[0][GlobalConstants.NAME],
+            };
+            return sortTasks(sortTask1, sortTask2);
         });
     };
 

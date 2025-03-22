@@ -15,35 +15,28 @@ export const isTaskSelected = (task: any, selectedTasks: any[]) =>
 export const getEarliestStartTime = (tasks) =>
     tasks
         .map((task) => task[GlobalConstants.START_TIME])
-        .sort((startTime1, startTime2) => dayjs(startTime1).isBefore(dayjs(startTime2)))[0];
+        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
 
 export const getEarliestEndTime = (tasks) =>
     tasks
         .map((task) => task[GlobalConstants.END_TIME])
-        .sort((startTime1, startTime2) => dayjs(startTime1).isBefore(dayjs(startTime2)))[0];
+        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
 
 export const getLatestEndTime = (tasks) =>
     tasks
         .map((task) => task[GlobalConstants.END_TIME])
-        .sort((startTime1, startTime2) => dayjs(startTime1).isBefore(dayjs(startTime2)))
+        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))
         .at(-1);
 
-export const sortTasks = (tasks) =>
-    tasks.sort((task1, task2) => {
-        if (
-            dayjs(task1[GlobalConstants.START_TIME]).isSame(
-                task2[GlobalConstants.START_TIME],
-                "minute",
-            )
-        )
-            return dayjs(task1[GlobalConstants.START_TIME]).isBefore(
-                dayjs(task2[GlobalConstants.START_TIME]),
-            );
-        if (
-            dayjs(task1[GlobalConstants.END_TIME]).isSame(task2[GlobalConstants.END_TIME], "minute")
-        )
-            return dayjs(task1[GlobalConstants.END_TIME]).isBefore(
-                dayjs(task2[GlobalConstants.END_TIME]),
-            );
-        return task1[GlobalConstants.NAME].localeCompare(task2[GlobalConstants.NAME]);
-    });
+export const sortTasks = (task1, task2) => {
+    const startTime1 = dayjs(task1[GlobalConstants.START_TIME]);
+    const startTime2 = dayjs(task2[GlobalConstants.START_TIME]);
+    if (Math.abs(startTime2.diff(startTime1, "minute")) > 1)
+        return startTime1.diff(startTime2, "minute");
+
+    const endTime1 = dayjs(task1[GlobalConstants.END_TIME]);
+    const endTime2 = dayjs(task2[GlobalConstants.END_TIME]);
+    if (Math.abs(endTime2.diff(endTime1, "minute")) > 1) return endTime1.diff(endTime2, "minute");
+
+    return task1[GlobalConstants.NAME].localeCompare(task2[GlobalConstants.NAME]);
+};

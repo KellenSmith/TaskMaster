@@ -117,8 +117,8 @@ const TaskShifts = ({
                     {tasks?.length > 1 && (
                         <Accordion>
                             <AccordionSummary expandIcon={<ExpandMore />}>Shifts</AccordionSummary>
-                            <Stack key={tasks[GlobalConstants.NAME]} sx={{ paddingLeft: 2 }}>
-                                {sortTasks(tasks).map((task) => (
+                            <Stack key={tasks[0][GlobalConstants.NAME]} sx={{ paddingLeft: 2 }}>
+                                {tasks.sort(sortTasks).map((task) => (
                                     <TaskMenuOption
                                         key={task[GlobalConstants.ID]}
                                         task={task}
