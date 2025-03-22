@@ -40,12 +40,21 @@ export const defaultActionState: FormActionState = {
     result: "",
 };
 
-export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null => {
-    if (formActionState.errorMsg)
-        return <Typography color="error">{formActionState.errorMsg}</Typography>;
-    if (formActionState.result)
-        return <Typography color="success">{formActionState.result}</Typography>;
-};
+export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
+    (formActionState.errorMsg || formActionState.result) && (
+        <Card sx={{ padding: 2 }}>
+            {formActionState.errorMsg && (
+                <Typography color="error" textAlign="center">
+                    {formActionState.errorMsg}
+                </Typography>
+            )}
+            {formActionState.result && (
+                <Typography color="success" textAlign="center">
+                    {formActionState.result}
+                </Typography>
+            )}
+        </Card>
+    );
 
 interface FormProps {
     name: string;
@@ -115,7 +124,13 @@ const Form: FC<FormProps> = ({
                 <Autocomplete
                     disabled={!editMode}
                     key={fieldId}
-                    renderInput={(params) => <TextField {...params} label={FieldLabels[fieldId]} />}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label={FieldLabels[fieldId]}
+                            required={RequiredFields[name].includes(fieldId)}
+                        />
+                    )}
                     autoSelect={fieldId in RequiredFields[name]}
                     options={selectFieldOptions[fieldId]}
                     value={fieldValues[fieldId]}
@@ -140,6 +155,11 @@ const Form: FC<FormProps> = ({
                     onChange={(newValue) =>
                         newValue.isValid() && changeFieldValue(fieldId, newValue.toISOString())
                     }
+                    slotProps={{
+                        textField: {
+                            required: RequiredFields[name].includes(fieldId),
+                        },
+                    }}
                 />
             );
         }

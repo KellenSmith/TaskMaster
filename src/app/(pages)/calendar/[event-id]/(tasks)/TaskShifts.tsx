@@ -1,17 +1,20 @@
 import {
     Accordion,
     AccordionSummary,
+    Button,
     Card,
     CardContent,
     Checkbox,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import GlobalConstants from "../../../../GlobalConstants";
 import { formatDate } from "../../../../ui/utils";
 import TaskMenuOption from "./TaskMenuOption";
-import { ExpandMore } from "@mui/icons-material";
-import { getEarliestStartTime, getLatestEndTime, isTaskSelected } from "../event-utils";
+import { CloseRounded, ExpandMore } from "@mui/icons-material";
+import { getEarliestStartTime, getLatestEndTime, isTaskSelected, sortTasks } from "../event-utils";
+import dayjs from "dayjs";
 
 const TaskShifts = ({
     event,
@@ -26,6 +29,13 @@ const TaskShifts = ({
             if (!isTaskSelected(task, selectedTasks)) return false;
         }
         return true;
+    };
+
+    const isATaskSelected = () => {
+        for (let task of tasks) {
+            if (isTaskSelected(task, selectedTasks)) return true;
+        }
+        return false;
     };
 
     const toggleAllTaskShifts = (checked) => {
@@ -46,23 +56,44 @@ const TaskShifts = ({
         );
     };
 
+    const deleteAllTaskShifts = () =>
+        setTaskOptions((prev) =>
+            prev.filter((task) => task[GlobalConstants.NAME] !== tasks[0][GlobalConstants.NAME]),
+        );
+
     const getTitleComp = () => {
         if (tasks.length > 1)
             return (
-                <Stack direction="row" alignItems="center">
-                    {!readOnly && (
-                        <Checkbox
-                            checked={areAllTaskShiftsSelected()}
-                            onChange={(event) => toggleAllTaskShifts(event.target.checked)}
-                        />
+                <Stack
+                    key={tasks[0][GlobalConstants.NAME]}
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                >
+                    <Stack direction="row" alignItems="center">
+                        {!readOnly && (
+                            <Checkbox
+                                checked={areAllTaskShiftsSelected()}
+                                onChange={(event) => toggleAllTaskShifts(event.target.checked)}
+                            />
+                        )}
+                        <Typography key="title" variant="body1">
+                            {tasks[0][GlobalConstants.NAME] +
+                                "\t" +
+                                formatDate(dayjs(getEarliestStartTime(tasks))) +
+                                " - " +
+                                formatDate(dayjs(getLatestEndTime(tasks)))}
+                        </Typography>
+                    </Stack>
+                    {!readOnly && !isATaskSelected() && (
+                        <Tooltip
+                            title={`Delete all shifts for task "${tasks[0][GlobalConstants.NAME]}"`}
+                        >
+                            <Button onClick={deleteAllTaskShifts}>
+                                <CloseRounded />
+                            </Button>
+                        </Tooltip>
                     )}
-                    <Typography key="title" variant="body1">
-                        {tasks[0][GlobalConstants.NAME] +
-                            "\t" +
-                            formatDate(getEarliestStartTime(tasks)) +
-                            " - " +
-                            formatDate(getLatestEndTime(tasks))}
-                    </Typography>
                 </Stack>
             );
         return (
@@ -79,29 +110,31 @@ const TaskShifts = ({
     };
 
     return (
-        <Card>
-            <CardContent>
-                {getTitleComp()}
-                {tasks?.length > 1 && (
-                    <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMore />}>Shifts</AccordionSummary>
-                        <Stack sx={{ paddingLeft: 2 }}>
-                            {tasks.map((task) => (
-                                <TaskMenuOption
-                                    key={task[GlobalConstants.ID]}
-                                    task={task}
-                                    event={event}
-                                    readOnly={readOnly}
-                                    selectedTasks={selectedTasks}
-                                    setSelectedTasks={setSelectedTasks}
-                                    setTaskOptions={setTaskOptions}
-                                />
-                            ))}
-                        </Stack>
-                    </Accordion>
-                )}
-            </CardContent>
-        </Card>
+        tasks?.length > 0 && (
+            <Card key={tasks[0][GlobalConstants.NAME]}>
+                <CardContent>
+                    {getTitleComp()}
+                    {tasks?.length > 1 && (
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMore />}>Shifts</AccordionSummary>
+                            <Stack key={tasks[0][GlobalConstants.NAME]} sx={{ paddingLeft: 2 }}>
+                                {tasks.sort(sortTasks).map((task) => (
+                                    <TaskMenuOption
+                                        key={task[GlobalConstants.ID]}
+                                        task={task}
+                                        event={event}
+                                        readOnly={readOnly}
+                                        selectedTasks={selectedTasks}
+                                        setSelectedTasks={setSelectedTasks}
+                                        setTaskOptions={setTaskOptions}
+                                    />
+                                ))}
+                            </Stack>
+                        </Accordion>
+                    )}
+                </CardContent>
+            </Card>
+        )
     );
 };
 

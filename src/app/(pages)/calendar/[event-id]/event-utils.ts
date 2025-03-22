@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import GlobalConstants from "../../../GlobalConstants";
 
 export const isEventPublished = (event) =>
@@ -9,40 +9,61 @@ export const isUserParticipant = (user: any, event: any) =>
         .map((participant: any) => participant[GlobalConstants.USER_ID])
         .includes(user[GlobalConstants.ID]);
 
-export const sortTasks = (tasks) =>
-    tasks.sort((taska, taskb) => {
-        if (
-            dayjs(taska[GlobalConstants.END_TIME]).isSame(
-                dayjs(taskb[GlobalConstants.END_TIME]),
-                "minute",
-            )
-        ) {
-            if (
-                dayjs(taska[GlobalConstants.START_TIME]).isSame(
-                    dayjs(taskb[GlobalConstants.START_TIME]),
-                    "minute",
-                )
-            )
-                return taska[GlobalConstants.NAME].localeCompare(taskb[GlobalConstants.NAME]);
-            return dayjs(taska[GlobalConstants.START_TIME]).isBefore(
-                dayjs(taskb[GlobalConstants.START_TIME]),
-            );
-        }
-        return dayjs(taska[GlobalConstants.END_TIME]).isBefore(
-            dayjs(taskb[GlobalConstants.END_TIME]),
-        );
-    });
-
 export const isTaskSelected = (task: any, selectedTasks: any[]) =>
     selectedTasks.map((task) => task[GlobalConstants.ID]).includes(task[GlobalConstants.ID]);
 
 export const getEarliestStartTime = (tasks) =>
     tasks
-        .map((task) => dayjs(task[GlobalConstants.START_TIME]))
-        .sort((start1: Dayjs, start2: Dayjs) => start1.isBefore(start2))[0];
+        .map((task) => task[GlobalConstants.START_TIME])
+        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
+
+export const getEarliestEndTime = (tasks) =>
+    tasks
+        .map((task) => task[GlobalConstants.END_TIME])
+        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
 
 export const getLatestEndTime = (tasks) =>
     tasks
-        .map((task) => dayjs(task[GlobalConstants.END_TIME]))
-        .sort((start1: Dayjs, start2: Dayjs) => start1.isBefore(start2))
+        .map((task) => task[GlobalConstants.END_TIME])
+        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))
         .at(-1);
+
+export const sortTasks = (task1, task2) => {
+    const startTime1 = dayjs(task1[GlobalConstants.START_TIME]);
+    const startTime2 = dayjs(task2[GlobalConstants.START_TIME]);
+    if (Math.abs(startTime2.diff(startTime1, "minute")) > 1)
+        return startTime1.diff(startTime2, "minute");
+
+    const endTime1 = dayjs(task1[GlobalConstants.END_TIME]);
+    const endTime2 = dayjs(task2[GlobalConstants.END_TIME]);
+    if (Math.abs(endTime2.diff(endTime1, "minute")) > 1) return endTime1.diff(endTime2, "minute");
+
+    return task1[GlobalConstants.NAME].localeCompare(task2[GlobalConstants.NAME]);
+};
+
+export const sortGroupedTasks = (groupedTasks) => {
+    return groupedTasks.sort((taskGroup1, taskGroup2) => {
+        const sortTask1 = {
+            [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup1),
+            [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup1),
+            [GlobalConstants.NAME]: taskGroup1[0][GlobalConstants.NAME],
+        };
+        const sortTask2 = {
+            [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup2),
+            [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup2),
+            [GlobalConstants.NAME]: taskGroup2[0][GlobalConstants.NAME],
+        };
+        return sortTasks(sortTask1, sortTask2);
+    });
+};
+
+export const getSortedTaskComps = (taskList, getTaskShiftsComp) => {
+    if (taskList.length < 1) return [];
+    const uniqueTaskNames = [...new Set(taskList.map((task) => task[GlobalConstants.NAME]))];
+    const sortedTasksGroupedByName = sortGroupedTasks(
+        uniqueTaskNames.map((taskName) =>
+            taskList.filter((task) => task[GlobalConstants.NAME] === taskName),
+        ),
+    );
+    return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
+};

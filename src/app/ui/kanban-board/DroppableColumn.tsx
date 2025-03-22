@@ -1,26 +1,34 @@
 import {
     Accordion,
     AccordionSummary,
+    Button,
     Card,
     CircularProgress,
+    Dialog,
     Paper,
     Stack,
     Typography,
     useTheme,
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { updateTaskById } from "../../lib/task-actions";
-import { defaultActionState } from "../form/Form";
-import { startTransition } from "react";
+import { createTask, updateTaskById } from "../../lib/task-actions";
+import Form, { defaultActionState, FormActionState } from "../form/Form";
+import { startTransition, useState } from "react";
 import {
     getEarliestStartTime,
     getLatestEndTime,
+    getSortedTaskComps,
+    sortTasks,
 } from "../../(pages)/calendar/[event-id]/event-utils";
 import DraggableTask from "./DraggableTask";
-import { ExpandMore } from "@mui/icons-material";
+import { Add, ExpandMore } from "@mui/icons-material";
 import { formatDate } from "../utils";
+import { FieldLabels } from "../form/FieldCfg";
+import { Prisma } from "@prisma/client";
+import dayjs from "dayjs";
 
 const DroppableColumn = ({
+    event = null,
     status,
     tasks,
     isTasksPending,
@@ -34,6 +42,7 @@ const DroppableColumn = ({
     setDraggedOverColumn,
 }) => {
     const theme = useTheme();
+    const [addTask, setAddTask] = useState(null);
 
     const updateTaskStatus = async (task, status) => {
         const updateTaskResult = await updateTaskById(
@@ -45,7 +54,7 @@ const DroppableColumn = ({
         setTaskActionState(updateTaskResult);
     };
 
-    const handleDrop = (status) => {
+    const handleDrop = (status: string) => {
         if (draggedTask?.status !== status) {
             updateTaskStatus(draggedTask, status);
         }
@@ -53,22 +62,12 @@ const DroppableColumn = ({
         setDraggedOverColumn(null);
     };
 
-    const getUniqueTaskNames = () => {
-        const uniqueTaskNames = [];
-        for (let task of tasks) {
-            if (!uniqueTaskNames.includes(task[GlobalConstants.NAME]))
-                uniqueTaskNames.push(task[GlobalConstants.NAME]);
-        }
-        return uniqueTaskNames;
-    };
-
-    const getTaskCompsForName = (taskName) => {
-        const tasksWithName = tasks.filter((task) => task[GlobalConstants.NAME] === taskName);
-        if (tasksWithName.length === 1)
+    const getTaskShiftsComp = (taskList: any[]) => {
+        if (taskList.length === 1)
             return (
                 <DraggableTask
-                    key={tasksWithName[0][GlobalConstants.ID]}
-                    task={tasksWithName[0]}
+                    key={taskList[0][GlobalConstants.ID]}
+                    task={taskList[0]}
                     setDraggedTask={setDraggedTask}
                     fetchDbTasks={fetchDbTasks}
                     readOnly={readOnly}
@@ -77,14 +76,14 @@ const DroppableColumn = ({
                 />
             );
         return (
-            <Card key={tasksWithName[0][GlobalConstants.NAME]}>
+            <Card key={taskList[0][GlobalConstants.NAME]}>
                 <Stack
                     paddingLeft={2}
                     paddingTop={2}
                     direction="row"
                     justifyContent="space-between"
                 >
-                    <Typography variant="body1">{tasks[0][GlobalConstants.NAME]}</Typography>
+                    <Typography variant="body1">{taskList[0][GlobalConstants.NAME]}</Typography>
                     <Typography variant="body1">
                         {formatDate(getEarliestStartTime(tasks)) +
                             " - " +
@@ -94,7 +93,7 @@ const DroppableColumn = ({
                 <Accordion>
                     <AccordionSummary expandIcon={<ExpandMore />}>Shifts</AccordionSummary>
                     <Stack paddingLeft={2}>
-                        {tasksWithName.map((task) => (
+                        {taskList.sort(sortTasks).map((task) => (
                             <DraggableTask
                                 key={task[GlobalConstants.ID]}
                                 task={task}
@@ -105,36 +104,105 @@ const DroppableColumn = ({
                                 setTaskActionState={setTaskActionState}
                             />
                         ))}
+                        {!readOnly && (
+                            <Button
+                                onClick={() => {
+                                    const latestEndTime = getLatestEndTime(taskList);
+                                    const newTaskShift = Object.fromEntries(
+                                        Object.entries(taskList[0]).filter(
+                                            // Don't copy id to new task shift
+                                            // eslint-disable-next-line no-unused-vars
+                                            ([key, value]) => key !== GlobalConstants.ID,
+                                        ),
+                                    );
+                                    newTaskShift[GlobalConstants.START_TIME] = latestEndTime;
+                                    newTaskShift[GlobalConstants.END_TIME] = dayjs(latestEndTime)
+                                        .add(2, "hour")
+                                        .toDate();
+                                    openAddTaskDialog(newTaskShift);
+                                }}
+                            >
+                                add shift
+                            </Button>
+                        )}
                     </Stack>
                 </Accordion>
             </Card>
         );
     };
 
+    const openAddTaskDialog = (shiftProps = {}) => {
+        const defaultTask = {
+            ...(event && { [GlobalConstants.EVENT_ID]: event[GlobalConstants.ID] }),
+            [GlobalConstants.STATUS]: status,
+            [GlobalConstants.PHASE]: GlobalConstants.BEFORE,
+            ...shiftProps,
+        };
+        setAddTask(defaultTask);
+    };
+
+    const createNewTask = async (
+        currentActionState: FormActionState,
+        fieldValues: Prisma.TaskCreateInput,
+    ): Promise<FormActionState> => {
+        const createTaskResult = await createTask(taskActionState, { ...addTask, ...fieldValues });
+        setTaskActionState(createTaskResult);
+        startTransition(() => fetchDbTasks());
+        setAddTask(null);
+        return currentActionState;
+    };
+
     return (
-        <Paper
-            elevation={3}
-            onDragOver={(e) => {
-                e.preventDefault();
-                setDraggedOverColumn(status);
-            }}
-            onDrop={() => handleDrop(status)}
-            style={{
-                padding: "16px",
-                ...(draggedOverColumn === status && {
-                    backgroundColor: theme.palette.primary.light,
-                }),
-            }}
-        >
-            <Typography variant="h6">{status.toUpperCase()}</Typography>
-            <Stack spacing={2}>
-                {isTasksPending ? (
-                    <CircularProgress />
-                ) : (
-                    getUniqueTaskNames().map((taskName) => getTaskCompsForName(taskName))
+        <>
+            <Paper
+                elevation={3}
+                onDragOver={(e) => {
+                    e.preventDefault();
+                    setDraggedOverColumn(status);
+                }}
+                onDrop={() => handleDrop(status)}
+                sx={{
+                    height: "100%",
+                    padding: "16px",
+                    ...(draggedOverColumn === status && {
+                        backgroundColor: theme.palette.primary.light,
+                    }),
+                }}
+            >
+                <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="h6">{status.toUpperCase()}</Typography>
+                    {!readOnly && (
+                        <Button onClick={openAddTaskDialog}>
+                            <Add />
+                        </Button>
+                    )}
+                </Stack>
+                <Stack spacing={2}>
+                    {isTasksPending ? (
+                        <CircularProgress />
+                    ) : (
+                        getSortedTaskComps(tasks, getTaskShiftsComp)
+                    )}
+                </Stack>
+            </Paper>
+            <Dialog open={!!addTask} onClose={() => setAddTask(null)}>
+                {!!addTask && (
+                    <>
+                        <Stack padding={1}>
+                            <Typography color="secondary">{`Status: ${FieldLabels[addTask[GlobalConstants.STATUS]]}`}</Typography>
+                        </Stack>
+                        <Form
+                            name={GlobalConstants.TASK}
+                            action={createNewTask}
+                            defaultValues={addTask}
+                            buttonLabel="add task"
+                            readOnly={false}
+                            editable={false}
+                        />
+                    </>
                 )}
-            </Stack>
-        </Paper>
+            </Dialog>
+        </>
     );
 };
 

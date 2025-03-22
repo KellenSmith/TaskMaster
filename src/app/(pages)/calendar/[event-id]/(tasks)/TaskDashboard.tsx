@@ -35,6 +35,7 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
             {(isUserHost(user, event) && isEventPublished(event)) ||
             isUserParticipant(user, event) ? (
                 <KanBanBoard
+                    event={event}
                     tasks={tasksActionState.result}
                     fetchDbTasks={fetchTasksAction}
                     readOnly={readOnly}

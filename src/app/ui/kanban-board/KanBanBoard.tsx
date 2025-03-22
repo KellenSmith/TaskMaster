@@ -19,14 +19,14 @@ import { FieldLabels, selectFieldOptions } from "../form/FieldCfg";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 
-const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
+const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const { user } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultActionState);
 
     const getUniqueFilterOptions = (filterId) => {
-        if (filterId === GlobalConstants.ASSIGNEE_ID) return [user[GlobalConstants.ID]];
+        if (filterId === GlobalConstants.ASSIGNEE_ID) return [user[GlobalConstants.ID], null];
         const existingFilterOptions = [];
         for (let task of tasks) {
             if (Array.isArray(task[filterId]))
@@ -57,6 +57,14 @@ const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) =
             }));
     };
 
+    const getFilterOptionLabel = (filterId, filterOption) => {
+        if (filterId === GlobalConstants.ASSIGNEE_ID) {
+            if (filterOption === null) return "Unassigned";
+            return "My tasks";
+        }
+        return FieldLabels[filterOption] || filterOption;
+    };
+
     const getSwitchGroup = (filterId) => (
         <FormControl key={filterId} component="fieldset" variant="standard">
             <FormLabel component="legend">{FieldLabels[filterId]}</FormLabel>
@@ -73,11 +81,7 @@ const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) =
                                 name={filterOption}
                             />
                         }
-                        label={
-                            filterId === GlobalConstants.ASSIGNEE_ID
-                                ? "My tasks"
-                                : FieldLabels[filterOption] || filterOption
-                        }
+                        label={getFilterOptionLabel(filterId, filterOption)}
                     />
                 ))}
             </FormGroup>
@@ -111,6 +115,7 @@ const KanBanBoard = ({ tasks, fetchDbTasks, isTasksPending, readOnly = true }) =
                 {selectFieldOptions[GlobalConstants.STATUS].map((status) => (
                     <Grid2 size={1} key={status}>
                         <DroppableColumn
+                            event={event}
                             status={status}
                             tasks={filterTasks(tasks, filters).filter(
                                 (task) => task[GlobalConstants.STATUS] === status,

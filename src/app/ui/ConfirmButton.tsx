@@ -1,4 +1,11 @@
-import { Button, Dialog, DialogActions, DialogContentText, DialogTitle } from "@mui/material";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+} from "@mui/material";
 import { useState } from "react";
 
 const ConfirmButton = ({ onClick, children, ...buttonProps }) => {
@@ -10,7 +17,11 @@ const ConfirmButton = ({ onClick, children, ...buttonProps }) => {
             </Button>
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>Please confirm</DialogTitle>
-                <DialogContentText>This action is irreversible. Are you sure?</DialogContentText>
+                <DialogContent>
+                    <DialogContentText>
+                        This action is irreversible. Are you sure?
+                    </DialogContentText>
+                </DialogContent>
                 <DialogActions>
                     <Button onClick={onClick}>yes, proceed</Button>
                     <Button onClick={() => setOpen(false)}> cancel</Button>
