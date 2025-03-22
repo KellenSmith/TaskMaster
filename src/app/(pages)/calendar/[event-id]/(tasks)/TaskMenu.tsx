@@ -41,6 +41,14 @@ const testTaskOptions = [
         description: "test description",
     },
     {
+        id: "11",
+        name: "task 1",
+        phase: GlobalConstants.BEFORE,
+        startTime: dayjs().toISOString(),
+        endTime: dayjs().add(1, "hour").toISOString(),
+        description: "test description",
+    },
+    {
         id: "2",
         name: "task 2",
         phase: GlobalConstants.BEFORE,
@@ -302,8 +310,6 @@ const TaskMenu = ({
         setPaymentHandlerOpen(true);
     };
 
-    console.log(taskActionState);
-
     return (
         <>
             <Stack spacing={2}>
@@ -345,13 +351,22 @@ const TaskMenu = ({
                                     {isTasksPending ? (
                                         <CircularProgress />
                                     ) : (
-                                        getUniqueTaskNames(getSortedTasksForPhase(phase)).map(
-                                            (taskName) =>
-                                                getTaskShiftsComp(
-                                                    getSortedTasksForPhase(phase),
-                                                    taskName,
+                                        <>
+                                            {getUniqueTaskNames(
+                                                selectedTasks.filter(
+                                                    (task) => task[GlobalConstants.PHASE] === phase,
                                                 ),
-                                        )
+                                            ).map((taskName) =>
+                                                getTaskShiftsComp(selectedTasks, taskName),
+                                            )}
+                                            {getUniqueTaskNames(
+                                                taskOptions.filter(
+                                                    (task) => task[GlobalConstants.PHASE] === phase,
+                                                ),
+                                            ).map((taskName) =>
+                                                getTaskShiftsComp(taskOptions, taskName),
+                                            )}
+                                        </>
                                     )}
                                 </FormGroup>
                                 {isUserHost(user, event) && (

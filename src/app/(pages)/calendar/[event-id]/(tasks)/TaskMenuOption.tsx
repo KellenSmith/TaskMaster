@@ -23,10 +23,10 @@ const TaskMenuOption = ({
     setTaskOptions,
 }) => {
     const { user } = useUserContext();
-    const [viewTask, setViewTask] = useState(null);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     const getTaskDefaultValues = () => {
-        const defaultTask = viewTask || {};
+        const defaultTask = { ...task };
         for (let fieldId of RenderedFields[GlobalConstants.TASK]) {
             if (!defaultTask[fieldId]) {
                 if (fieldId === GlobalConstants.PHASE)
@@ -39,54 +39,44 @@ const TaskMenuOption = ({
         return defaultTask;
     };
 
-    const addSelectedTask = async (
-        currentActionState: FormActionState,
-        newTask: Prisma.TaskCreateInput,
-    ) => {
-        const newActionState = { ...currentActionState };
-        setSelectedTasks((prev) => [...prev, newTask]);
-        newActionState.errorMsg = "";
-        newActionState.status = 201;
-        newActionState.result = "Task added";
-        return newActionState;
-    };
-
     const editSelectedTask = async (
         currentActionState: FormActionState,
         newTaskValues: Prisma.TaskCreateInput,
     ) => {
         const newActionState = { ...currentActionState };
+        if (!isTaskSelected(task, selectedTasks)) deleteTaskFromOptions();
         setSelectedTasks((prev) => [
-            ...prev.filter((task) => task[GlobalConstants.NAME] !== viewTask[GlobalConstants.NAME]),
+            ...prev.filter(
+                (selectedTask) => selectedTask[GlobalConstants.ID] !== task[GlobalConstants.ID],
+            ),
             newTaskValues,
         ]);
-        setViewTask(null);
+        setEditDialogOpen(false);
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = "Edited task";
         return newActionState;
     };
 
-    const deleteTaskFromOptions = (task: any) =>
+    const deleteTaskFromOptions = () =>
         setTaskOptions((prev) => [
             ...prev.filter(
                 (taskOption) => taskOption[GlobalConstants.ID] !== task[GlobalConstants.ID],
             ),
         ]);
 
-    const toggleTask = (toggledTask: any) => {
-        if (isTaskSelected(toggledTask, selectedTasks)) {
-            setTaskOptions((prev) => [...prev, toggledTask]);
+    const toggleTask = () => {
+        if (isTaskSelected(task, selectedTasks)) {
+            setTaskOptions((prev) => [...prev, task]);
             setSelectedTasks((prev) => [
                 ...prev.filter(
-                    (selectedTask) =>
-                        selectedTask[GlobalConstants.ID] !== toggledTask[GlobalConstants.ID],
+                    (selectedTask) => selectedTask[GlobalConstants.ID] !== task[GlobalConstants.ID],
                 ),
             ]);
             return;
         }
-        setSelectedTasks((prev) => [...prev, toggledTask]);
-        deleteTaskFromOptions(toggledTask);
+        setSelectedTasks((prev) => [...prev, task]);
+        deleteTaskFromOptions();
     };
 
     return (
@@ -105,7 +95,7 @@ const TaskMenuOption = ({
                                     task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID]
                                 }
                                 checked={isTaskSelected(task, selectedTasks)}
-                                onChange={() => toggleTask(task)}
+                                onChange={toggleTask}
                             />
                         }
                         label={task[GlobalConstants.NAME]}
@@ -113,11 +103,11 @@ const TaskMenuOption = ({
 
                     <Stack direction="row">
                         {!readOnly && !isTaskSelected(task, selectedTasks) && (
-                            <Button onClick={() => deleteTaskFromOptions(task)}>
+                            <Button onClick={deleteTaskFromOptions}>
                                 <CloseRounded />
                             </Button>
                         )}
-                        <Button onClick={() => setViewTask(task)}>
+                        <Button onClick={() => setEditDialogOpen(true)}>
                             <RemoveRedEye />
                         </Button>
                     </Stack>
@@ -126,34 +116,27 @@ const TaskMenuOption = ({
                     <Typography key="start" variant="body2">
                         {formatDate(task[GlobalConstants.START_TIME])}
                     </Typography>
-                    {"-"}
                     <Typography key="end" variant="body2">
                         {formatDate(task[GlobalConstants.END_TIME])}
                     </Typography>
                 </Stack>
             </Stack>
-            <Dialog open={!!viewTask} onClose={() => setViewTask(null)}>
+            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    action={
-                        Object.keys(viewTask || {}).length === 0
-                            ? addSelectedTask
-                            : editSelectedTask
-                    }
+                    action={editSelectedTask}
                     defaultValues={getTaskDefaultValues()}
                     buttonLabel="save task"
                     editable={isUserHost(user, event)}
                 />
-                {viewTask && (
-                    <Button
-                        onClick={() => {
-                            toggleTask(viewTask);
-                            setViewTask(null);
-                        }}
-                    >
-                        {isTaskSelected(viewTask, selectedTasks) ? "unselect" : "select"}
-                    </Button>
-                )}
+                <Button
+                    onClick={() => {
+                        toggleTask();
+                        setEditDialogOpen(false);
+                    }}
+                >
+                    {isTaskSelected(task, selectedTasks) ? "unselect" : "select"}
+                </Button>
             </Dialog>
         </>
     );
