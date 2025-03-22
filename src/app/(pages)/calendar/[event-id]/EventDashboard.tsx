@@ -77,11 +77,12 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                                 publish
                             </Button>
                         )}
-                    {isUserAdmin(user) && (
-                        <ConfirmButton color="error" onClick={deleteEventAndRedirect}>
-                            delete
-                        </ConfirmButton>
-                    )}
+                    {isUserAdmin(user) ||
+                        (isUserHost(user, event) && (
+                            <ConfirmButton color="error" onClick={deleteEventAndRedirect}>
+                                delete
+                            </ConfirmButton>
+                        ))}
                 </>
             )}
             {openTab === tabs.tasks && (
