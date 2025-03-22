@@ -14,6 +14,7 @@ export const FieldLabels = {
     [GlobalConstants.FIRST_NAME]: "First Name",
     [GlobalConstants.SURNAME]: "Surname",
     [GlobalConstants.NICKNAME]: "Nickname",
+    [GlobalConstants.PRONOUN]: "Pronoun",
     [GlobalConstants.EMAIL]: "Email",
     [GlobalConstants.PHONE]: "Phone",
     [GlobalConstants.ROLE]: "Role",
@@ -68,6 +69,7 @@ export const RenderedFields = {
         GlobalConstants.FIRST_NAME,
         GlobalConstants.SURNAME,
         GlobalConstants.NICKNAME,
+        GlobalConstants.PRONOUN,
         GlobalConstants.EMAIL,
         GlobalConstants.PHONE,
         GlobalConstants.CONSENT_TO_NEWSLETTERS,
@@ -118,7 +120,6 @@ export const RequiredFields = {
         GlobalConstants.SURNAME,
         GlobalConstants.NICKNAME,
         GlobalConstants.EMAIL,
-        GlobalConstants.PHONE,
     ],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL, GlobalConstants.PASSWORD],
@@ -139,13 +140,7 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TASK]: [
-        GlobalConstants.PHASE,
-        GlobalConstants.NAME,
-        GlobalConstants.START_TIME,
-        GlobalConstants.END_TIME,
-        GlobalConstants.DESCRIPTION,
-    ],
+    [GlobalConstants.TASK]: [GlobalConstants.NAME],
 };
 // Apply
 RequiredFields[GlobalConstants.APPLY] = [

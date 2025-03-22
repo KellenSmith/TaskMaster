@@ -13,8 +13,9 @@ model User {
     firstName            String
     surName              String
     nickname             String           @unique
+    pronoun              String?          @default("")
     email                String           @unique
-    phone                String           @unique
+    phone                String?          @unique @default("")
     created              DateTime         @default(now())
     membershipRenewed    DateTime? // Membership is invalid if null or expired
     consentToNewsletters Boolean          @default(true)
@@ -49,7 +50,7 @@ model Event {
     location        String
     startTime       DateTime
     endTime         DateTime
-    description     String
+    description     String   @default("")
     maxParticipants Int
     fullTicketPrice Int
     status          String   @default("draft") // draft, published
@@ -98,13 +99,13 @@ model Task {
     Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])
     reporterId String?
 
-    phase       String   @default("before") // before, during, after
+    phase       String    @default("before") // before, during, after
     name        String
-    status      String   @default("to do") // to do, in progress, in review, done
-    tags        String[] @default([])
-    startTime   DateTime
-    endTime     DateTime
-    description String
+    status      String    @default("to do") // to do, in progress, in review, done
+    tags        String[]  @default([])
+    startTime   DateTime?
+    endTime     DateTime?
+    description String    @default("")
 
     @@map("tasks")
 }
