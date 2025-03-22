@@ -35,7 +35,7 @@ import {
     isUserParticipant,
     sortTasks,
 } from "../event-utils";
-import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
+import { membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { getDummyId } from "../../../../ui/utils";
 
@@ -249,7 +249,7 @@ const TaskMenu = ({
                         setSelectedTasks={setSelectedTasks}
                         setTaskOptions={setTaskOptions}
                     />
-                    {isUserHost(user, event) && (
+                    {!readOnly && (
                         <Button
                             fullWidth
                             sx={{
@@ -411,7 +411,7 @@ const TaskMenu = ({
                                         )
                                     )}
                                 </FormGroup>
-                                {isUserHost(user, event) && (
+                                {!readOnly && (
                                     <Button
                                         sx={{ width: "100%" }}
                                         onClick={() => openAddTask(phase)}

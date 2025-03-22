@@ -49,6 +49,26 @@ export const updateTaskById = async (
     return newActionState;
 };
 
+export const createTask = async (
+    currentActionState: FormActionState,
+    fieldValues: Prisma.TaskCreateInput,
+) => {
+    const newActionState = { ...currentActionState };
+    try {
+        await prisma.task.create({
+            data: fieldValues,
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 201;
+        newActionState.result = "Created task";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
 export const updateEventTasks = async (
     eventId: string,
     currentActionState: FormActionState,
