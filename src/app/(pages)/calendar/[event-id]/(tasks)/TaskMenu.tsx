@@ -4,6 +4,7 @@ import {
     Accordion,
     AccordionSummary,
     Button,
+    Card,
     Checkbox,
     CircularProgress,
     Dialog,
@@ -27,9 +28,10 @@ import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../../../lib/org-settings";
-import { isUserParticipant, sortTasks } from "../event-utils";
+import { getEarliestStartTime, getLatestEndTime, isUserParticipant } from "../event-utils";
 import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
+import { getDummyId } from "../../../../ui/utils";
 
 const testTaskOptions = [
     {
@@ -37,7 +39,7 @@ const testTaskOptions = [
         name: "task 1",
         phase: GlobalConstants.BEFORE,
         startTime: dayjs().toISOString(),
-        endTime: dayjs().add(1, "hour").toISOString(),
+        endTime: dayjs().add(3, "hour").toISOString(),
         description: "test description",
     },
     {
@@ -220,36 +222,41 @@ const TaskMenu = ({
         setTaskActionState(saveTasksResult);
     };
 
-    // Sort tasks within each phase by end time, then start time, then name
-    const getSortedTasksForPhase = (phase: string) => {
-        const tasksForPhase = [...selectedTasks, ...taskOptions].filter(
-            (task) => task[GlobalConstants.PHASE] === phase,
-        );
-        return sortTasks(tasksForPhase);
-    };
-
-    const getUniqueTaskNames = (taskList) => {
-        const taskNames = sortTasks(taskList).map((task) => task[GlobalConstants.NAME]);
-        const uniqueTaskNames = [];
-        for (let taskName of taskNames) {
-            if (!uniqueTaskNames.includes(taskName)) uniqueTaskNames.push(taskName);
-        }
-        return uniqueTaskNames;
-    };
-
-    const getTaskShiftsComp = (taskList, taskName) => {
+    const getTaskShiftsComp = (taskList: any[], taskName: string) => {
         const taskShifts = taskList.filter((task) => task[GlobalConstants.NAME] === taskName);
         return (
             taskShifts.length > 0 && (
-                <TaskShifts
+                <Card
                     key={taskName}
-                    event={event}
-                    tasks={taskShifts}
-                    readOnly={readOnly}
-                    selectedTasks={selectedTasks}
-                    setSelectedTasks={setSelectedTasks}
-                    setTaskOptions={setTaskOptions}
-                />
+                    sx={{
+                        padding: 2,
+                        "&:hover": {
+                            backgroundColor: theme.palette.primary.dark,
+                            color: theme.palette.grey[900],
+                        },
+                    }}
+                >
+                    <TaskShifts
+                        event={event}
+                        tasks={taskShifts}
+                        readOnly={readOnly}
+                        selectedTasks={selectedTasks}
+                        setSelectedTasks={setSelectedTasks}
+                        setTaskOptions={setTaskOptions}
+                    />
+                    {isUserHost(user, event) && (
+                        <Button
+                            fullWidth
+                            sx={{
+                                backgroundColor: theme.palette.divider,
+                                color: theme.palette.getContrastText(theme.palette.divider),
+                            }}
+                            onClick={() => addShift(taskShifts)}
+                        >
+                            add shift
+                        </Button>
+                    )}
+                </Card>
             )
         );
     };
@@ -286,14 +293,28 @@ const TaskMenu = ({
     ): Promise<FormActionState> => {
         // Generate unique id for the task for frontend identification
         // (will be overwritten when created in database)
-        const dummyId =
-            getSortedTasksForPhase(fieldValues[GlobalConstants.PHASE])
-                .map((task) => task[GlobalConstants.ID])
-                .sort((id1, id2) => id1.localeCompare(id2))
-                .at(-1) + "+";
-        setSelectedTasks((prev) => [...prev, { [GlobalConstants.ID]: dummyId, ...fieldValues }]);
+        setSelectedTasks((prev) => [
+            ...prev,
+            {
+                [GlobalConstants.ID]: getDummyId([...prev, ...taskOptions]),
+                ...fieldValues,
+            },
+        ]);
         setAddTask(null);
         return currentActionState;
+    };
+
+    const addShift = (taskShifts) => {
+        const latestEndTime = getLatestEndTime(taskShifts);
+        setSelectedTasks((prev) => [
+            ...prev,
+            {
+                ...taskShifts[0],
+                [GlobalConstants.ID]: getDummyId([...prev, ...taskOptions]),
+                [GlobalConstants.START_TIME]: latestEndTime,
+                [GlobalConstants.END_TIME]: dayjs(latestEndTime).add(2, "hour").toISOString(),
+            },
+        ]);
     };
 
     const openTicketDialog = () => {
@@ -302,12 +323,47 @@ const TaskMenu = ({
             const newTaskActionState = { ...taskActionState };
             newTaskActionState.status = 500;
             newTaskActionState.errorMsg =
-                "Your membership expires before the event. Please renew your membership before buying a ticket.";
+                "Your membership expires before the event. Please extend your membership before buying a ticket.";
             newTaskActionState.result = "";
             setTaskActionState(newTaskActionState);
             return;
         }
         setPaymentHandlerOpen(true);
+    };
+
+    const sortGroupedTasks = (groupedTasks) => {
+        return groupedTasks.sort((taskGroup1, taskGroup2) => {
+            const earliestStartTime1 = getEarliestStartTime(taskGroup1);
+            const earliestStartTime2 = getEarliestStartTime(taskGroup2);
+            if (earliestStartTime1 !== earliestStartTime2)
+                return earliestStartTime1.localeCompare(earliestStartTime2);
+
+            const earliestEndTime1 = taskGroup1
+                .map((task) => task[GlobalConstants.END_TIME])
+                .sort((startTime1, startTime2) => startTime1.localeCompare(startTime2))[0];
+            const earliestEndTime2 = taskGroup2
+                .map((task) => task[GlobalConstants.END_TIME])
+                .sort((startTime1, startTime2) => startTime1.localeCompare(startTime2))[0];
+            if (earliestEndTime1 !== earliestEndTime2)
+                return earliestEndTime1.localeCompare(earliestEndTime2);
+
+            return taskGroup1[0][GlobalConstants.NAME].localeCompare(
+                taskGroup2[0][GlobalConstants.NAME],
+            );
+        });
+    };
+
+    const getSortedTaskComps = (taskList) => {
+        if (taskList.length < 1) return [];
+        const uniqueTaskNames = [...new Set(taskList.map((task) => task[GlobalConstants.NAME]))];
+        const sortedTasksGroupedByName = sortGroupedTasks(
+            uniqueTaskNames.map((taskName) =>
+                taskList.filter((task) => task[GlobalConstants.NAME] === taskName),
+            ),
+        );
+        return sortedTasksGroupedByName.map((taskGroup) =>
+            getTaskShiftsComp(taskGroup, taskGroup[0][GlobalConstants.NAME]),
+        );
     };
 
     return (
@@ -347,26 +403,15 @@ const TaskMenu = ({
                                         label="Toggle All"
                                     />
                                 )}
-                                <FormGroup>
+                                <FormGroup key={`shifts-${phase}`}>
                                     {isTasksPending ? (
                                         <CircularProgress />
                                     ) : (
-                                        <>
-                                            {getUniqueTaskNames(
-                                                selectedTasks.filter(
-                                                    (task) => task[GlobalConstants.PHASE] === phase,
-                                                ),
-                                            ).map((taskName) =>
-                                                getTaskShiftsComp(selectedTasks, taskName),
-                                            )}
-                                            {getUniqueTaskNames(
-                                                taskOptions.filter(
-                                                    (task) => task[GlobalConstants.PHASE] === phase,
-                                                ),
-                                            ).map((taskName) =>
-                                                getTaskShiftsComp(taskOptions, taskName),
-                                            )}
-                                        </>
+                                        getSortedTaskComps(
+                                            [...selectedTasks, ...taskOptions].filter(
+                                                (task) => task[GlobalConstants.PHASE] === phase,
+                                            ),
+                                        )
                                     )}
                                 </FormGroup>
                                 {isUserHost(user, event) && (
@@ -385,9 +430,7 @@ const TaskMenu = ({
                             <Typography variant="h6" color={theme.palette.primary.main}>
                                 My tasks
                             </Typography>
-                            {getUniqueTaskNames(selectedTasks).map((taskName) =>
-                                getTaskShiftsComp(selectedTasks, taskName),
-                            )}
+                            {getSortedTaskComps(selectedTasks)}
                             {isUserParticipant(user, event) ? (
                                 <Button onClick={assignSelectedTasks}>assign tasks to me</Button>
                             ) : (
