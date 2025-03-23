@@ -10,11 +10,12 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
-import React, { Dispatch, SetStateAction, useMemo, useRef, useState } from "react";
+import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { SwishConstants } from "../../lib/swish-constants";
 import { useUserContext } from "../../context/UserContext";
+import { apiEndpoints, makeApiRequest } from "../utils";
 
 interface ISwishPaymentHandler {
     title: string;
@@ -38,19 +39,17 @@ const SwishPaymentHandler = ({
     const { user } = useUserContext();
     const [qrCodeUrl, setQrCodeUrl] = useState("");
     const [paymentStatus, setPaymentStatus] = useState(SwishConstants.PENDING);
-    const intervalIdRef = useRef(null);
     const callbackUrl = useMemo(() => {
-        console.log(process.env.NEXT_PUBLIC_API_URL);
-        const url = new URL(`/api/swish/${callbackEndpoint}`, process.env.NEXT_PUBLIC_API_URL);
+        const url = new URL(callbackEndpoint, process.env.NEXT_PUBLIC_API_URL);
         if (callbackParams) url.search = callbackParams;
         return url.toString();
     }, [callbackEndpoint, callbackParams]);
 
     const closeQrCodeDialog = () => {
-        clearInterval(intervalIdRef.current);
-        URL.revokeObjectURL(qrCodeUrl);
         setPaymentStatus(SwishConstants.PENDING);
         setOpen(false);
+        setQrCodeUrl("");
+        URL.revokeObjectURL(qrCodeUrl);
     };
 
     const simulatePaymentCallback = async () => {
@@ -76,13 +75,11 @@ const SwishPaymentHandler = ({
 
     const handleMobilePaymentFlow = async () => {
         // TODO: Check that this works
-        const requestUrl = new URL(
-            "/api/swish/payment-request-token",
-            process.env.NEXT_PUBLIC_API_URL,
-        );
-        requestUrl.searchParams.set(GlobalConstants.ID, user[GlobalConstants.ID]);
         try {
-            const paymentRequestResponse = await axios.get(requestUrl.toString());
+            const paymentRequestResponse = await makeApiRequest({
+                endpoint: apiEndpoints.PAYMENT_REQUEST_TOKEN,
+                searchParams: [[GlobalConstants.ID, user[GlobalConstants.ID]]],
+            });
             if (paymentRequestResponse.data) {
                 const paymentRequest = paymentRequestResponse.data;
                 const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${callbackUrl}`;
@@ -94,21 +91,14 @@ const SwishPaymentHandler = ({
         }
     };
 
-    const finishPayment = async () => {
-        if (await hasPaid()) {
-            setPaymentStatus(SwishConstants.PAID);
-        }
-    };
-
     const handleDesktopPaymentFlow = async () => {
         try {
-            const requestUrl = new URL(
-                "/api/swish/payment-request-qr-code",
-                process.env.NEXT_PUBLIC_API_URL,
-            );
-            requestUrl.searchParams.set(GlobalConstants.ID, user[GlobalConstants.ID]);
-            const swishQrCodeResponse = await axios.get(requestUrl.toString(), {
-                responseType: "arraybuffer",
+            const swishQrCodeResponse = await makeApiRequest({
+                endpoint: apiEndpoints.PAYMENT_REQUEST_QR_CODE,
+                searchParams: [[GlobalConstants.ID, user[GlobalConstants.ID]]],
+                options: {
+                    responseType: "arraybuffer",
+                },
             });
 
             if (swishQrCodeResponse.status === 200) {
@@ -131,6 +121,14 @@ const SwishPaymentHandler = ({
         }
     };
 
+    const finishPayment = async () => {
+        if (await hasPaid()) {
+            setPaymentStatus(SwishConstants.PAID);
+            setQrCodeUrl("");
+            URL.revokeObjectURL(qrCodeUrl);
+        }
+    };
+
     const getPaymentStatusMsg = () => {
         switch (paymentStatus) {
             case SwishConstants.PENDING:
@@ -149,7 +147,7 @@ const SwishPaymentHandler = ({
         <Dialog open={open} onClose={closeQrCodeDialog}>
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>
-                {qrCodeUrl && paymentStatus === SwishConstants.PENDING ? (
+                {qrCodeUrl ? (
                     <Stack>
                         <DialogContentText>
                             {`Scan the QR code to pay ${paymentAmount} SEK`}
@@ -166,7 +164,9 @@ const SwishPaymentHandler = ({
                         <Button onClick={finishPayment}>finish</Button>
                     </Stack>
                 ) : (
-                    <Button onClick={startPaymentProcess}>start swish payment process</Button>
+                    paymentStatus === SwishConstants.PENDING && (
+                        <Button onClick={startPaymentProcess}>start swish payment process</Button>
+                    )
                 )}
 
                 <DialogContentText>{getPaymentStatusMsg()}</DialogContentText>
