@@ -37,7 +37,8 @@ import {
 } from "../event-utils";
 import { membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
-import { getDummyId } from "../../../../ui/utils";
+import { apiEndpoints, getDummyId } from "../../../../ui/utils";
+import { addEventParticipant } from "../../../../lib/event-actions";
 
 const testTaskOptions = [
     {
@@ -322,7 +323,7 @@ const TaskMenu = ({
         ]);
     };
 
-    const openTicketDialog = () => {
+    const openTicketDialog = async () => {
         const membershipExpires = dayjs(membershipExpiresAt(user));
         if (membershipExpires.isBefore(dayjs(event[GlobalConstants.START_TIME]))) {
             const newTaskActionState = { ...taskActionState };
@@ -331,6 +332,27 @@ const TaskMenu = ({
                 "Your membership expires before the event. Please extend your membership before buying a ticket.";
             newTaskActionState.result = "";
             setTaskActionState(newTaskActionState);
+            return;
+        }
+        // If ticker price is zero, don't go through payment flow.
+        if (getReducedTicketPrice() < 1) {
+            const assignTasksResult = await assignTasksToUser(
+                user[GlobalConstants.ID],
+                selectedTasks.map((task) => task[GlobalConstants.ID]),
+                taskActionState,
+            );
+            if (assignTasksResult.status !== 200) {
+                setTaskActionState(assignTasksResult);
+                return;
+            }
+            const addParticipantResult = await addEventParticipant(
+                user[GlobalConstants.ID],
+                event[GlobalConstants.ID],
+                taskActionState,
+            );
+            setTaskActionState(addParticipantResult);
+
+            startTransition(() => fetchEventAction());
             return;
         }
         setPaymentHandlerOpen(true);
@@ -470,7 +492,7 @@ const TaskMenu = ({
                 setOpen={setPaymentHandlerOpen}
                 hasPaid={hasBoughtTicket}
                 paymentAmount={getReducedTicketPrice()}
-                callbackEndpoint="buy-event-ticket"
+                callbackEndpoint={apiEndpoints.BUY_EVENT_TICKET}
                 callbackParams={
                     new URLSearchParams([
                         [GlobalConstants.USER_ID, user[GlobalConstants.ID]],

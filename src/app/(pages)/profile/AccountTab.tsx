@@ -18,7 +18,7 @@ import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
 import { OrgSettings } from "../../lib/org-settings";
 import { Prisma } from "@prisma/client";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { formatDate } from "../../ui/utils";
+import { apiEndpoints, formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
 
 const AccountTab = () => {
@@ -124,7 +124,7 @@ const AccountTab = () => {
                     setOpen={setOpenRenewMembershipDialog}
                     hasPaid={hasRenewedMembership}
                     paymentAmount={OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number}
-                    callbackEndpoint="renew-membership"
+                    callbackEndpoint={apiEndpoints.RENEW_MEMBERSHIP}
                     callbackParams={
                         new URLSearchParams([[GlobalConstants.ID, user[GlobalConstants.ID]]])
                     }
