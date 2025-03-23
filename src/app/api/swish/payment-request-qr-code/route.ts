@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPaymentRequest, ICreatePaymentRequestResponse } from "../swish-utils";
+import {
+    createPaymentRequest,
+    ICreatePaymentRequestResponse,
+    isRequestAuthorized,
+} from "../swish-utils";
 import GlobalConstants from "../../../GlobalConstants";
 import { OrgSettings } from "../../../lib/org-settings";
 import { swish } from "../swish-client";
@@ -38,7 +42,14 @@ const getQrCodeForPaymentRequest = async (
 };
 
 export const GET = async (request: NextRequest): Promise<NextResponse> => {
-    // TODO: verify caller auth
+    if (!isRequestAuthorized(request)) {
+        // Log unauthorized access to api for sleuthing
+        console.warn(`Unauthorized access: ${request.headers.get("referer")}`);
+        return new NextResponse("Unauthorized", {
+            status: 401,
+        });
+    }
+
     const requestUrl = new URL(request.url);
     const userId = requestUrl.searchParams.get(GlobalConstants.ID);
 

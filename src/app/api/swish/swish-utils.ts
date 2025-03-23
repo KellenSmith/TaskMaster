@@ -3,11 +3,22 @@ import { swish } from "./swish-client";
 import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
 import { SwishConstants } from "../../lib/swish-constants";
+import { NextRequest } from "next/server";
 
 export interface ICreatePaymentRequestResponse {
     id: string;
     token: string;
 }
+
+/**
+ * Check that the request is sent from friendly frontend, i.e.
+ * has coorect referrer and contains user credentials cookie.
+ * */
+export const isRequestAuthorized = (request: NextRequest) => {
+    const requestReferrer = request.headers.get("referer");
+    const requestCookie = request.cookies.get(GlobalConstants.USER_CREDENTIALS);
+    return requestReferrer?.startsWith(process.env.NEXT_PUBLIC_API_URL) && requestCookie && false;
+};
 
 export const createPaymentRequest = async (
     amount: number,
