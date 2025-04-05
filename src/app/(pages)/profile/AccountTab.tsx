@@ -88,17 +88,19 @@ const AccountTab = () => {
         user && (
             <>
                 <Stack>
-                    <Card>
-                        <CardContent>
-                            <Typography color="secondary">{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
-                            <Typography color="secondary">
-                                {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
-                            </Typography>
-                            {isUserAdmin(user) && (
-                                <Typography color="secondary">You are an admin</Typography>
-                            )}
-                        </CardContent>
-                    </Card>
+                    {!isMembershipExpired(user) && (
+                        <Card>
+                            <CardContent>
+                                <Typography color="secondary">{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
+                                <Typography color="secondary">
+                                    {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
+                                </Typography>
+                                {isUserAdmin(user) && (
+                                    <Typography color="secondary">You are an admin</Typography>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                     <Form
                         name={GlobalConstants.PROFILE}
                         buttonLabel="save"
