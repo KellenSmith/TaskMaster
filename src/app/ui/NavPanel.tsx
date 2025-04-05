@@ -19,7 +19,7 @@ import { redirect } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { isUserAuthorized, routes, routesToPath } from "../lib/definitions";
-import { ArrowOutward, Article } from "@mui/icons-material";
+import { Article } from "@mui/icons-material";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -89,17 +89,6 @@ const NavPanel = () => {
                     <MenuOpenIcon />
                 </Button>
                 {getLinkGroup(GlobalConstants.PRIVATE)}
-                <ListItem key={"info-bank"}>
-                    <Button
-                        onClick={() => {
-                            setDrawerOpen(false);
-                            window.open("https://www.info-bank.com", "_blank");
-                        }}
-                    >
-                        {"Info bank"}
-                        <ArrowOutward />
-                    </Button>
-                </ListItem>
                 {user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN && (
                     <>
                         <ListSubheader>ADMIN</ListSubheader>
