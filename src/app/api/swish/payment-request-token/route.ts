@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPaymentRequest, isRequestAuthorized } from "../swish-utils";
 import GlobalConstants from "../../../GlobalConstants";
-import { OrgSettings } from "../../../lib/org-settings";
+import { SwishConstants } from "../../../lib/swish-constants";
 
 /**
  * Run this serverless fcn in nodejs env to enable configuring
@@ -22,11 +22,14 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
 
     const requestUrl = new URL(request.url);
     const userId = requestUrl.searchParams.get(GlobalConstants.ID);
+    const amount = parseInt(requestUrl.searchParams.get(SwishConstants.AMOUNT));
+    if (!userId || !amount) {
+        return new NextResponse("Missing parameters", {
+            status: 400,
+        });
+    }
 
-    const paymentRequest = await createPaymentRequest(
-        OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number,
-        userId,
-    );
+    const paymentRequest = await createPaymentRequest(amount, userId);
     if (!paymentRequest)
         return new NextResponse("Payment failed", {
             status: 500,

@@ -78,7 +78,10 @@ const SwishPaymentHandler = ({
         try {
             const paymentRequestResponse = await makeApiRequest({
                 endpoint: apiEndpoints.PAYMENT_REQUEST_TOKEN,
-                searchParams: [[GlobalConstants.ID, user[GlobalConstants.ID]]],
+                searchParams: [
+                    [GlobalConstants.ID, user[GlobalConstants.ID]],
+                    [SwishConstants.AMOUNT, paymentAmount],
+                ],
             });
             if (paymentRequestResponse.data) {
                 const paymentRequest = paymentRequestResponse.data;
@@ -95,7 +98,10 @@ const SwishPaymentHandler = ({
         try {
             const swishQrCodeResponse = await makeApiRequest({
                 endpoint: apiEndpoints.PAYMENT_REQUEST_QR_CODE,
-                searchParams: [[GlobalConstants.ID, user[GlobalConstants.ID]]],
+                searchParams: [
+                    [GlobalConstants.ID, user[GlobalConstants.ID]],
+                    [SwishConstants.AMOUNT, paymentAmount],
+                ],
                 options: {
                     responseType: "arraybuffer",
                 },

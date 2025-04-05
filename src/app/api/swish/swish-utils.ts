@@ -17,7 +17,7 @@ export interface ICreatePaymentRequestResponse {
 export const isRequestAuthorized = (request: NextRequest) => {
     const requestReferrer = request.headers.get("referer");
     const requestCookie = request.cookies.get(GlobalConstants.USER_CREDENTIALS);
-    return requestReferrer?.startsWith(process.env.NEXT_PUBLIC_API_URL) && requestCookie && false;
+    return requestReferrer?.startsWith(process.env.NEXT_PUBLIC_API_URL) && requestCookie;
 };
 
 export const createPaymentRequest = async (
