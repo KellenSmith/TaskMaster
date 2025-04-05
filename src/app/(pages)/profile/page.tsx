@@ -5,9 +5,18 @@ import { useMemo, useState } from "react";
 import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
 import TasksTab from "./TasksTab";
+import { isMembershipExpired } from "../../lib/definitions";
+import { useUserContext } from "../../context/UserContext";
 
 const ProfilePage = () => {
-    const tabs = useMemo(() => ({ account: "Account", events: "Events", tasks: "Tasks" }), []);
+    const { user } = useUserContext();
+    const tabs = useMemo(
+        () => ({
+            account: "Account",
+            ...(!isMembershipExpired(user) && { events: "Events", tasks: "Tasks" }),
+        }),
+        [user],
+    );
     const [openTab, setOpenTab] = useState<string>(tabs.account);
 
     return (
