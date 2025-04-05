@@ -33,7 +33,11 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
         const userToUpdate = userToUpdateResult.result[0];
 
         // Extend the existing membership by the configured membership duration
-        let newRenewDate = dayjs(userToUpdate[GlobalConstants.MEMBERSHIP_RENEWED])
+        let newRenewDate = (
+            userToUpdate[GlobalConstants.MEMBERSHIP_RENEWED]
+                ? dayjs(userToUpdate[GlobalConstants.MEMBERSHIP_RENEWED])
+                : dayjs()
+        )
             .add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d")
             .toISOString();
 
