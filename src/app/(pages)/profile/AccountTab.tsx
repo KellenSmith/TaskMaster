@@ -7,7 +7,7 @@ import { deleteUser, updateUser, updateUserCredentials } from "../../lib/user-ac
 import { login } from "../../lib/auth/auth";
 import { useState } from "react";
 import { defaultActionState } from "../../ui/form/Form";
-import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Button, Card, CardContent, Stack, Typography, useTheme } from "@mui/material";
 import {
     isMembershipExpired,
     isUserAdmin,
@@ -22,6 +22,7 @@ import { apiEndpoints, formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
 
 const AccountTab = () => {
+    const theme = useTheme();
     const { user, updateLoggedInUser, logOut } = useUserContext();
     const [accountActionState, setAccountActionState] = useState(defaultActionState);
     const [openRenewMembershipDialog, setOpenRenewMembershipDialog] = useState(false);
@@ -90,14 +91,12 @@ const AccountTab = () => {
                 <Stack>
                     {!isMembershipExpired(user) && (
                         <Card>
-                            <CardContent>
-                                <Typography color="secondary">{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
-                                <Typography color="secondary">
+                            <CardContent sx={{ color: theme.palette.secondary.main }}>
+                                <Typography>{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
+                                <Typography>
                                     {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
                                 </Typography>
-                                {isUserAdmin(user) && (
-                                    <Typography color="secondary">You are an admin</Typography>
-                                )}
+                                {isUserAdmin(user) && <Typography>You are an admin</Typography>}
                             </CardContent>
                         </Card>
                     )}
