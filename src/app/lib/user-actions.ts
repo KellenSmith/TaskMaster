@@ -5,7 +5,13 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
-import { decryptJWT, encryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
+import {
+    decryptJWT,
+    encryptJWT,
+    generateSalt,
+    generateUserCredentials,
+    getUserByUniqueKey,
+} from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { LoginSchema, ResetCredentialsSchema } from "./definitions";
 
@@ -172,7 +178,18 @@ export const resetUserCredentials = async (
 ) => {
     const newActionState = { ...currentActionState };
     const userEmail = fieldValues.email;
-    const generatedPassword = "123456"; //TODO : await generateSalt();
+
+    // Check if user exists. If not, return ambiguous error message to
+    // prevent revealing if the email is registered or not.
+    newActionState.status = 200;
+    newActionState.errorMsg = "";
+    newActionState.result = "New credentials sent to your email if we have it on record";
+    const user = await getUserByUniqueKey(GlobalConstants.EMAIL, userEmail);
+    if (!user) {
+        return newActionState;
+    }
+
+    const generatedPassword = await generateSalt();
     const generatedUserCredentials = (await getGeneratedUserCredentials(
         userEmail,
         generatedPassword,
@@ -197,9 +214,6 @@ export const resetUserCredentials = async (
         const createCredentialsTransaction =
             createUserCredentialsTransaction(generatedUserCredentials);
         await prisma.$transaction([deleteCredentialsTransaction, createCredentialsTransaction]);
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = "Reset credentials";
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;

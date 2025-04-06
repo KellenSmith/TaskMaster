@@ -7,7 +7,7 @@ import { deleteUser, updateUser, updateUserCredentials } from "../../lib/user-ac
 import { login } from "../../lib/auth/auth";
 import { useState } from "react";
 import { defaultActionState } from "../../ui/form/Form";
-import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Button, Card, CardContent, Stack, Typography, useTheme } from "@mui/material";
 import {
     isMembershipExpired,
     isUserAdmin,
@@ -22,6 +22,7 @@ import { apiEndpoints, formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
 
 const AccountTab = () => {
+    const theme = useTheme();
     const { user, updateLoggedInUser, logOut } = useUserContext();
     const [accountActionState, setAccountActionState] = useState(defaultActionState);
     const [openRenewMembershipDialog, setOpenRenewMembershipDialog] = useState(false);
@@ -88,19 +89,23 @@ const AccountTab = () => {
         user && (
             <>
                 <Stack>
-                    {!isMembershipExpired(user) && (
-                        <Card>
-                            <CardContent>
-                                <Typography color="secondary">{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
-                                <Typography color="secondary">
-                                    {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
-                                </Typography>
-                                {isUserAdmin(user) && (
-                                    <Typography color="secondary">You are an admin</Typography>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
+                    <Card>
+                        <CardContent sx={{ color: theme.palette.secondary.main }}>
+                            {isMembershipExpired(user) ? (
+                                <>
+                                    <Typography>Your membership is expired!</Typography>
+                                </>
+                            ) : (
+                                <>
+                                    <Typography>{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
+                                    <Typography>
+                                        {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
+                                    </Typography>
+                                    {isUserAdmin(user) && <Typography>You are an admin</Typography>}
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
                     <Form
                         name={GlobalConstants.PROFILE}
                         buttonLabel="save"
@@ -114,14 +119,14 @@ const AccountTab = () => {
                     ></Form>
                     {getFormActionMsg(accountActionState)}
                     <Button onClick={() => setOpenRenewMembershipDialog(true)}>
-                        {`${user[GlobalConstants.MEMBERSHIP_RENEWED] ? "extend" : "activate"} membership`}
+                        {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
                     </Button>
                     <ConfirmButton color="error" onClick={deleteMyAccount}>
                         Delete My Account
                     </ConfirmButton>
                 </Stack>
                 <SwishPaymentHandler
-                    title={`${user[GlobalConstants.MEMBERSHIP_RENEWED] ? "Extend" : "Activate"} Membership`}
+                    title={`${isMembershipExpired(user) ? "Activate" : "Extend"} Membership`}
                     open={openRenewMembershipDialog}
                     setOpen={setOpenRenewMembershipDialog}
                     hasPaid={hasRenewedMembership}
