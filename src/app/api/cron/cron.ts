@@ -49,10 +49,6 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
         );
     const latestRenewDate = earliestRenewDate.add(1, "d");
 
-    console.log(
-        `Earliest renew date: ${earliestRenewDate.toISOString()}, latest renew date: ${latestRenewDate.toISOString()}`,
-    );
-
     try {
         const expiringUsers = await prisma.user.findMany({
             where: {
@@ -62,7 +58,6 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
                 },
             },
         });
-        console.log(`Found ${expiringUsers.length} expiring membership(s)`);
         if (expiringUsers.length > 0)
             await remindExpiringMembers(expiringUsers.map((user) => user[GlobalConstants.EMAIL]));
         console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
