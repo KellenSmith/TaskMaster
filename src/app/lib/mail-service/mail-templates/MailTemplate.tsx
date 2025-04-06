@@ -27,7 +27,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children }) => {
                             ...mailTheme.typography.h3,
                         }}
                     >
-                        {process.env.ORG_NAME}
+                        {process.env.NEXT_PUBLIC_ORG_NAME}
                     </Heading>
                     <Container style={{ color: mailTheme.palette.text.primary }}>
                         {children}
