@@ -1,12 +1,11 @@
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../../GlobalConstants";
 import dayjs from "dayjs";
-import { OrgSettings } from "../../lib/org-settings";
 import { remindExpiringMembers } from "../../lib/mail-service/mail-service";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     const latestCreateDateIfNotStale = dayjs().subtract(
-        OrgSettings[GlobalConstants.PURGE_STALE_APPLICATIONS] as number,
+        parseInt(process.env.PURGE_STALE_APPLICATIONS),
         "d",
     );
 
@@ -42,9 +41,9 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
         .minute(0)
         .second(0)
         .add(
-            (OrgSettings[GlobalConstants.MEMBERSHIP_EXPIRES_REMINDER] as number) -
+            parseInt(process.env.MEMBERSHIP_EXPIRES_REMINDER) -
                 1 -
-                (OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number),
+                parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION),
             "d",
         );
     const latestRenewDate = earliestRenewDate.add(1, "d");

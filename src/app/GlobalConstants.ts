@@ -1,23 +1,8 @@
 const GlobalConstants = {
     // Organization settings
     ORG_NAME: "orgName",
-    BASE_URL: "baseUrl",
-    MEMBERSHIP_DURATION: "membershipDuration",
-    MEMBERSHIP_FEE: "membershipFee",
-    COOKIE_LIFESPAN: "cookieLifespan",
-    PURGE_STALE_APPLICATIONS: "purgeStaleSpplications",
-    ORG_NOREPLY_EMAIL: "orgNoreplyEmail",
-    ORG_REPLY_EMAIL: "orgNoreplyEmail",
-    MEMBERSHIP_EXPIRES_REMINDER: "membershipExpiresReminder",
-    NEWSLETTER_FREQUENCY: "newsletterFrequency",
     // Swish
-    SWISH_BASE_URL: "swishBaseUrl",
-    SWISH_MSS_URL: "swishMssUrl",
-    SWISH_CALLBACK_PATH: "callbackPath",
-    SWISH_CALLBACK_URL: "swishCallbackUrl",
-    SWISH_QR_CODE_SIZE: "swishQrCodeSize",
     REQUEST_REFERER: "referer",
-    SWISH_PAYEE_ALIAS: "swishPayeeAlias",
     // Routes
     PUBLIC: "public",
     PRIVATE: "private",
@@ -100,7 +85,6 @@ const GlobalConstants = {
     IN_PROGRESS: "in progress",
     IN_REVIEW: "in review",
     DONE: "done",
-    FULL_EVENT_TASK_BURDEN: "fullEventTaskBurden",
 };
 
 export default GlobalConstants;

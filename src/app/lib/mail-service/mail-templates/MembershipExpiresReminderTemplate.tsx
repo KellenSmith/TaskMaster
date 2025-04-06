@@ -1,13 +1,11 @@
 import { Text } from "@react-email/components";
-import { OrgSettings } from "../../org-settings";
-import GlobalConstants from "../../../GlobalConstants";
 import MailTemplate from "./MailTemplate";
 
 const MembershipExpiresReminderTemplate = async () => {
     return (
         <MailTemplate>
-            <Text>{`Your membership at ${OrgSettings[GlobalConstants.ORG_NAME]} expires in ${
-                OrgSettings[GlobalConstants.MEMBERSHIP_EXPIRES_REMINDER]
+            <Text>{`Your membership at ${process.env.NEXT_PUBLIC_ORG_NAME} expires in ${
+                process.env.MEMBERSHIP_EXPIRES_REMINDER
             } days. Visit your profile to extend it!`}</Text>
         </MailTemplate>
     );

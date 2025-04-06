@@ -27,7 +27,6 @@ import { updateEventTasks, assignTasksToUser } from "../../../../lib/task-action
 import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
-import { OrgSettings } from "../../../../lib/org-settings";
 import {
     getEarliestEndTime,
     getEarliestStartTime,
@@ -196,7 +195,7 @@ const TaskMenu = ({
             (1 -
                 Math.min(
                     1,
-                    nTasks * (1 / (OrgSettings[GlobalConstants.FULL_EVENT_TASK_BURDEN] as number)),
+                    nTasks * (1 / parseInt(process.env.NEXT_PUBLIC_FULL_EVENT_TASK_BURDEN)),
                 )) *
             fullPrice;
         return Math.round(reducedTicketPrice);

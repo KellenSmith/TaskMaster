@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
 import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import axios from "axios";
@@ -162,8 +161,8 @@ const SwishPaymentHandler = ({
                         <Image
                             alt="swish qr code"
                             src={qrCodeUrl}
-                            width={OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE] as number}
-                            height={OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE] as number}
+                            width={parseInt(process.env.NEXT_PUBLIC_SWISH_QR_CODE_SIZE)}
+                            height={parseInt(process.env.NEXT_PUBLIC_SWISH_QR_CODE_SIZE)}
                         />
                         {/* TODO: Remove payment simulation in production */}
                         <Button onClick={simulatePaymentCallback}>simulate pay</Button>

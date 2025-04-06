@@ -5,7 +5,6 @@ import {
     isRequestAuthorized,
 } from "../swish-utils";
 import GlobalConstants from "../../../GlobalConstants";
-import { OrgSettings } from "../../../lib/org-settings";
 import { swish } from "../swish-client";
 import { SwishConstants } from "../../../lib/swish-constants";
 
@@ -22,7 +21,7 @@ const getQrCodeForPaymentRequest = async (
 ): Promise<ArrayBuffer | null> => {
     const data = {
         token: paymentRequest.token,
-        size: OrgSettings[GlobalConstants.SWISH_QR_CODE_SIZE],
+        size: parseInt(process.env.NEXT_PUBLIC_SWISH_QR_CODE_SIZE),
         format: "png",
         border: "0",
     };

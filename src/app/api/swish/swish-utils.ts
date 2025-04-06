@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
 import { swish } from "./swish-client";
-import { OrgSettings } from "../../lib/org-settings";
 import GlobalConstants from "../../GlobalConstants";
 import { SwishConstants } from "../../lib/swish-constants";
 import { NextRequest } from "next/server";
@@ -28,7 +27,7 @@ export const createPaymentRequest = async (
     const instructionUUID = uuidv4().toUpperCase().replaceAll("-", "");
 
     const data = {
-        payeeAlias: OrgSettings[GlobalConstants.SWISH_PAYEE_ALIAS],
+        payeeAlias: process.env.SWISH_PAYEE_ALIAS,
         currency: "SEK",
         callbackUrl: SwishConstants.CALLBACK_URL,
         amount: amount,
@@ -38,7 +37,7 @@ export const createPaymentRequest = async (
 
     try {
         const response = await swish.put(
-            `${OrgSettings[GlobalConstants.SWISH_BASE_URL]}paymentrequests/${instructionUUID}`,
+            `${process.env.SWISH_BASE_URL}paymentrequests/${instructionUUID}`,
             data,
         );
 

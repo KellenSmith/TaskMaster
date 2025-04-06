@@ -1,7 +1,6 @@
 import { JWTPayload } from "jose";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { OrgSettings } from "./org-settings";
 
 // Convention: "path"=`/${route}`
 
@@ -36,7 +35,7 @@ export const isUserAuthorized = (path: string, user: JWTPayload | null): boolean
 
 export const membershipExpiresAt = (user) =>
     dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED])
-        .add((OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number) + 1, "d")
+        .add(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION) + 1, "d")
         .toISOString();
 
 export const isMembershipExpired = (user: any): boolean => {

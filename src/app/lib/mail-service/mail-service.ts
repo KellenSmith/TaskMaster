@@ -1,7 +1,5 @@
 "use server";
 
-import GlobalConstants from "../../GlobalConstants";
-import { OrgSettings } from "../org-settings";
 import { resend } from "./resend-client";
 import Resend from "resend";
 import UserCredentialsTemplate from "./mail-templates/UserCredentialsTemplate";
@@ -20,7 +18,7 @@ const getEmailPayload = (
     subject: string,
     mailContent: ReactNode,
 ): EmailPayload => ({
-    from: OrgSettings[GlobalConstants.ORG_NOREPLY_EMAIL] as string,
+    from: process.env.NOREPLY_EMAIL,
     to: "kellensmith407@gmail.com", // TODO: toEmail,
     subject: subject,
     react: mailContent,
