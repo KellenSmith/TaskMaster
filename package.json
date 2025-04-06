@@ -19,6 +19,7 @@
         "@mui/x-data-grid": "^7.26.0",
         "@mui/x-date-pickers": "^7.26.0",
         "@prisma/client": "^6.3.1",
+        "@react-email/components": "^0.0.36",
         "@types/bcryptjs": "^2.4.6",
         "axios": "^1.7.9",
         "dayjs": "^1.11.13",
@@ -27,6 +28,7 @@
         "prisma": "^6.3.1",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "react-email": "^4.0.4",
         "resend": "^4.1.2",
         "uuid": "^11.0.5",
         "zod": "^3.24.1"
