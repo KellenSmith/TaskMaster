@@ -25,7 +25,7 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
         });
         console.log(`Purged ${deleteStaleResult.count} stale membership application(s)`);
     } catch (error) {
-        console.log(`Error when purging stale memberships: ${error.message}`);
+        console.error(`Error when purging stale memberships: ${error.message}`);
     }
 };
 
@@ -62,6 +62,6 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
             await remindExpiringMembers(expiringUsers.map((user) => user[GlobalConstants.EMAIL]));
         console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
     } catch (error) {
-        console.log(`Error when reminding about expiring memberships: ${error.message}`);
+        console.error(`Error when reminding about expiring memberships: ${error.message}`);
     }
 };

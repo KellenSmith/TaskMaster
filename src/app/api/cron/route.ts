@@ -26,4 +26,7 @@ export async function GET(request: NextRequest) {
     await purgeStaleMembershipApplications();
 
     await remindAboutExpiringMembership();
+    return new NextResponse("OK", {
+        status: 200,
+    });
 }
