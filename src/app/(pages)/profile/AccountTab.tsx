@@ -89,17 +89,23 @@ const AccountTab = () => {
         user && (
             <>
                 <Stack>
-                    {!isMembershipExpired(user) && (
-                        <Card>
-                            <CardContent sx={{ color: theme.palette.secondary.main }}>
-                                <Typography>{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
-                                <Typography>
-                                    {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
-                                </Typography>
-                                {isUserAdmin(user) && <Typography>You are an admin</Typography>}
-                            </CardContent>
-                        </Card>
-                    )}
+                    <Card>
+                        <CardContent sx={{ color: theme.palette.secondary.main }}>
+                            {isMembershipExpired(user) ? (
+                                <>
+                                    <Typography>Your membership is expired!</Typography>
+                                </>
+                            ) : (
+                                <>
+                                    <Typography>{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
+                                    <Typography>
+                                        {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
+                                    </Typography>
+                                    {isUserAdmin(user) && <Typography>You are an admin</Typography>}
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
                     <Form
                         name={GlobalConstants.PROFILE}
                         buttonLabel="save"
@@ -113,14 +119,14 @@ const AccountTab = () => {
                     ></Form>
                     {getFormActionMsg(accountActionState)}
                     <Button onClick={() => setOpenRenewMembershipDialog(true)}>
-                        {`${user[GlobalConstants.MEMBERSHIP_RENEWED] ? "extend" : "activate"} membership`}
+                        {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
                     </Button>
                     <ConfirmButton color="error" onClick={deleteMyAccount}>
                         Delete My Account
                     </ConfirmButton>
                 </Stack>
                 <SwishPaymentHandler
-                    title={`${user[GlobalConstants.MEMBERSHIP_RENEWED] ? "Extend" : "Activate"} Membership`}
+                    title={`${isMembershipExpired(user) ? "Activate" : "Extend"} Membership`}
                     open={openRenewMembershipDialog}
                     setOpen={setOpenRenewMembershipDialog}
                     hasPaid={hasRenewedMembership}

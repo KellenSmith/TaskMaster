@@ -4,21 +4,26 @@ import GlobalConstants from "../../GlobalConstants";
 import { OrgSettings } from "../org-settings";
 import { resend } from "./resend-client";
 import Resend from "resend";
-import { membershipExpiresReminderTemplate, userCredentialsTemplate } from "./templates";
+import UserCredentialsTemplate from "./mail-templates/UserCredentialsTemplate";
+import { ReactNode } from "react";
+import MembershipExpiresReminderTemplate from "./mail-templates/MembershipExpiresReminderTemplate";
 
 interface EmailPayload {
     from: string;
     to: string;
     subject: string;
-    html: string;
+    react: ReactNode;
 }
 
-const getEmailPayload = (toEmail: string, subject: string, htmlTemplate: string): EmailPayload => ({
+const getEmailPayload = (
+    toEmail: string,
+    subject: string,
+    mailContent: ReactNode,
+): EmailPayload => ({
     from: OrgSettings[GlobalConstants.ORG_NOREPLY_EMAIL] as string,
     to: "kellensmith407@gmail.com", // TODO: toEmail,
     subject: subject,
-    html: htmlTemplate,
-    // TODO: react: ...
+    react: mailContent,
 });
 
 /**
@@ -28,27 +33,27 @@ export const sendUserCredentials = async (
     userEmail: string,
     userPassword: string,
 ): Promise<Resend.CreateEmailResponse> => {
+    const mailContent = await UserCredentialsTemplate({
+        userEmail: userEmail,
+        password: userPassword,
+    });
     const mailResponse = await resend.emails.send(
-        getEmailPayload(
-            userEmail,
-            "TaskMaster credentials",
-            userCredentialsTemplate(userEmail, userPassword),
-        ),
+        getEmailPayload(userEmail, "TaskMaster credentials", mailContent),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
     return mailResponse;
 };
 
+/**
+ * @throws Error if email fails
+ */
 export const remindExpiringMembers = async (
     userEmails: string[],
 ): Promise<Resend.CreateBatchResponse> => {
+    const mailContent = await MembershipExpiresReminderTemplate();
     const batchMailResponse = await resend.batch.send(
         userEmails.map((userEmail) =>
-            getEmailPayload(
-                userEmail,
-                "Your membership is about to expire",
-                membershipExpiresReminderTemplate(),
-            ),
+            getEmailPayload(userEmail, "Your membership is about to expire", mailContent),
         ),
     );
     if (batchMailResponse.error) throw new Error(batchMailResponse.error.message);
