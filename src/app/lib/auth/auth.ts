@@ -8,7 +8,6 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { FormActionState } from "../../ui/form/Form";
-import { OrgSettings } from "../org-settings";
 import { LoginSchema } from "../definitions";
 
 // Generate a random string of specified length
@@ -101,9 +100,7 @@ export const login = async (
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
 
 export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
-    const expiresAt = dayjs()
-        .add(OrgSettings[GlobalConstants.COOKIE_LIFESPAN] as number, "d")
-        .toDate();
+    const expiresAt = dayjs().add(parseInt(process.env.COOKIE_LIFESPAN), "d").toDate();
     // Encode the user ID as jwt
     const jwt = await new SignJWT(loggedInUser)
         .setProtectedHeader({

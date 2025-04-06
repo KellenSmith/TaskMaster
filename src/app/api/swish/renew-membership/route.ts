@@ -7,7 +7,6 @@ import { defaultActionState as defaultFormActionState } from "../../../ui/form/F
 import { Prisma } from "@prisma/client";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 import dayjs from "dayjs";
-import { OrgSettings } from "../../../lib/org-settings";
 import { isMembershipExpired } from "../../../lib/definitions";
 
 /**
@@ -38,7 +37,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
                 ? dayjs(userToUpdate[GlobalConstants.MEMBERSHIP_RENEWED])
                 : dayjs()
         )
-            .add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d")
+            .add(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION), "d")
             .toISOString();
 
         if (isMembershipExpired(userToUpdate)) newRenewDate = dayjs().toISOString();

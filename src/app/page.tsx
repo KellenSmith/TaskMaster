@@ -8,7 +8,7 @@ const Home: React.FC = () => {
     return (
         <Stack sx={{ height: "100%" }}>
             <Typography textAlign="center" color={theme.palette.text.primary} variant="h1">
-                Welcome to Task Master
+                {`Welcome to ${process.env.NEXT_PUBLIC_ORG_NAME}`}
             </Typography>
         </Stack>
     );

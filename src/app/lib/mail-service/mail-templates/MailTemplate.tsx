@@ -1,6 +1,5 @@
 import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
-import { OrgSettings } from "../../org-settings";
 import GlobalConstants from "../../../GlobalConstants";
 import mailTheme from "../mail-theme";
 
@@ -28,7 +27,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children }) => {
                             ...mailTheme.typography.h3,
                         }}
                     >
-                        {OrgSettings[GlobalConstants.ORG_NAME]}
+                        {process.env.ORG_NAME}
                     </Heading>
                     <Container style={{ color: mailTheme.palette.text.primary }}>
                         {children}

@@ -15,7 +15,6 @@ import {
     UpdateCredentialsSchema,
 } from "../../lib/definitions";
 import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
-import { OrgSettings } from "../../lib/org-settings";
 import { Prisma } from "@prisma/client";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { apiEndpoints, formatDate } from "../../ui/utils";
@@ -99,7 +98,7 @@ const AccountTab = () => {
                                 <>
                                     <Typography>{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
                                     <Typography>
-                                        {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(OrgSettings[GlobalConstants.MEMBERSHIP_DURATION] as number, "d"))}`}
+                                        {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION), "d"))}`}
                                     </Typography>
                                     {isUserAdmin(user) && <Typography>You are an admin</Typography>}
                                 </>
@@ -130,7 +129,7 @@ const AccountTab = () => {
                     open={openRenewMembershipDialog}
                     setOpen={setOpenRenewMembershipDialog}
                     hasPaid={hasRenewedMembership}
-                    paymentAmount={OrgSettings[GlobalConstants.MEMBERSHIP_FEE] as number}
+                    paymentAmount={parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_FEE)}
                     callbackEndpoint={apiEndpoints.RENEW_MEMBERSHIP}
                     callbackParams={
                         new URLSearchParams([[GlobalConstants.ID, user[GlobalConstants.ID]]])
