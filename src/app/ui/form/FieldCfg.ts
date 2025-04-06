@@ -19,7 +19,7 @@ export const FieldLabels = {
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED]: "Created",
     [GlobalConstants.MEMBERSHIP_RENEWED]: "Membership Renewed",
-    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to recieving ${process.env.NEWSLETTER_FREQUENCY} newsletters from Wish`,
+    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving ${process.env.NEWSLETTER_FREQUENCY} newsletters from Wish`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the Wish member registry",
     [GlobalConstants.PENDING]: "Pending",
     [GlobalConstants.ACTIVE]: "Active",
