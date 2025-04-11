@@ -1,7 +1,8 @@
 import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
+import { FC } from "react";
 
-const MembershipExpiresReminderTemplate = async () => {
+const MembershipExpiresReminderTemplate: FC = () => {
     return (
         <MailTemplate>
             <Text>{`Your membership at ${process.env.NEXT_PUBLIC_ORG_NAME} expires in ${
