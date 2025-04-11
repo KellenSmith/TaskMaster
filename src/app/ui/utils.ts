@@ -40,3 +40,8 @@ export const makeApiRequest = async ({
     if (body) return await axios.post(url.toString(), body, requestConfig);
     return await axios.get(url.toString(), requestConfig);
 };
+
+export const navigateToRoute = (route: string, router) => {
+    console.log(`${process.env.NEXT_PUBLIC_API_URL}${route}`);
+    router.push(`${process.env.NEXT_PUBLIC_API_URL}${route}`);
+};

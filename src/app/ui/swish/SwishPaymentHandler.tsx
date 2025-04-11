@@ -7,14 +7,14 @@ import {
     Stack,
 } from "@mui/material";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import GlobalConstants from "../../GlobalConstants";
 import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { SwishConstants } from "../../lib/swish-constants";
 import { useUserContext } from "../../context/UserContext";
-import { apiEndpoints, makeApiRequest } from "../utils";
+import { apiEndpoints, makeApiRequest, navigateToRoute } from "../utils";
 
 interface ISwishPaymentHandler {
     title: string;
@@ -38,6 +38,7 @@ const SwishPaymentHandler = ({
     const { user } = useUserContext();
     const [qrCodeUrl, setQrCodeUrl] = useState("");
     const [paymentStatus, setPaymentStatus] = useState(SwishConstants.PENDING);
+    const router = useRouter();
     const callbackUrl = useMemo(() => {
         const url = new URL(callbackEndpoint, process.env.NEXT_PUBLIC_API_URL);
         if (callbackParams) url.search = callbackParams;
@@ -86,7 +87,7 @@ const SwishPaymentHandler = ({
                 const paymentRequest = paymentRequestResponse.data;
                 const appUrl = `swish://paymentrequest?token=${paymentRequest.token}&callbackurl=${callbackUrl}`;
                 // Open or redirect the user to the url
-                redirect(appUrl);
+                navigateToRoute(appUrl, router);
             }
         } catch {
             setPaymentStatus(SwishConstants.ERROR);

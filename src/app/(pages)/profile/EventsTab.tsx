@@ -6,13 +6,14 @@ import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
 import { defaultActionState } from "../../ui/Datagrid";
-import { redirect } from "next/navigation";
-import { formatDate } from "../../ui/utils";
+import { useRouter } from "next/navigation";
+import { formatDate, navigateToRoute } from "../../ui/utils";
 import { isUserHost } from "../../lib/definitions";
 import { isEventPublished } from "../calendar/[event-id]/event-utils";
 const EventsTab: React.FC = () => {
     const { user } = useUserContext();
     const [events, setEvents] = useState<any[]>([]);
+    const router = useRouter();
 
     const fetchEvents = async () => {
         const eventsData = await getUserEvents(user[GlobalConstants.ID], defaultActionState);
@@ -57,8 +58,9 @@ const EventsTab: React.FC = () => {
                                     <Button
                                         size="small"
                                         onClick={() =>
-                                            redirect(
+                                            navigateToRoute(
                                                 `${process.env.NEXT_PUBLIC_API_URL}/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]}`,
+                                                router,
                                             )
                                         }
                                     >

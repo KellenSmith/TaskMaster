@@ -15,15 +15,17 @@ import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import { redirect } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { isUserAuthorized, routes, routesToPath } from "../lib/definitions";
 import { Article } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
+import { navigateToRoute } from "./utils";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { user, logOut } = useUserContext();
+    const router = useRouter();
 
     const toggleDrawerOpen = () => {
         setDrawerOpen((prev) => !prev);
@@ -43,7 +45,7 @@ const NavPanel = () => {
                             <Button
                                 onClick={() => {
                                     setDrawerOpen(false);
-                                    redirect(route);
+                                    navigateToRoute(route, router);
                                 }}
                             >
                                 {route.slice(1)}
@@ -66,7 +68,7 @@ const NavPanel = () => {
                     <Typography
                         variant="h6"
                         style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
-                        onClick={() => redirect("/")}
+                        onClick={() => navigateToRoute("/", router)}
                     >
                         LOGO
                     </Typography>
@@ -78,7 +80,9 @@ const NavPanel = () => {
                             <LogoutIcon />
                         </Button>
                     ) : (
-                        <Button onClick={() => redirect(`/${GlobalConstants.LOGIN}`)}>
+                        <Button
+                            onClick={() => navigateToRoute(`/${GlobalConstants.LOGIN}`, router)}
+                        >
                             <LoginIcon />
                         </Button>
                     )}

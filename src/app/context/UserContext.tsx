@@ -12,8 +12,9 @@ import {
 import { getLoggedInUser } from "../lib/user-actions";
 import { deleteUserCookie, login } from "../lib/auth/auth";
 import { defaultActionState, FormActionState } from "../ui/form/Form";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { LoginSchema } from "../lib/definitions";
+import { navigateToRoute } from "../ui/utils";
 
 export const UserContext = createContext(null);
 
@@ -29,6 +30,7 @@ interface UserContextProviderProps {
 
 const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     const [user, setUser] = useState(null);
+    const router = useRouter();
 
     const updateLoggedInUser = async () => {
         const serverResponse = await getLoggedInUser(defaultActionState);
@@ -46,7 +48,7 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
         const logInActionState = await login(currentActionState, fieldValues);
         if (logInActionState.status === 200) {
             setUser(JSON.parse(logInActionState.result));
-            redirect("/");
+            navigateToRoute("/", router);
         }
         return logInActionState;
     };
@@ -56,7 +58,7 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
         startTransition(async () => {
             await deleteUserCookie();
         });
-        redirect("/");
+        navigateToRoute("/", router);
     };
 
     useEffect(() => {

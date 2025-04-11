@@ -11,16 +11,18 @@ import Form, {
     FormActionState,
     getFormActionMsg,
 } from "../../../ui/form/Form";
-import { redirect } from "next/navigation";
 import { deleteEvent, updateEvent } from "../../../lib/event-actions";
 import { Prisma } from "@prisma/client";
 import ConfirmButton from "../../../ui/ConfirmButton";
+import { useRouter } from "next/navigation";
+import { navigateToRoute } from "../../../ui/utils";
 
 export const tabs = { event: "Event", tasks: "Participate" };
 
 const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const { user } = useUserContext();
     const [eventActionState, setEventActionState] = useState(defaultFormActionState);
+    const router = useRouter();
 
     const changeTab = async (newTab) => {
         setOpenTab(newTab);
@@ -51,7 +53,7 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
         const deleteResult = await deleteEvent(event[GlobalConstants.ID], defaultFormActionState);
         if (deleteResult.status !== 200) return setEventActionState(deleteResult);
         // Redirect to calendar when event is deleted
-        redirect(`/${GlobalConstants.CALENDAR}`);
+        navigateToRoute(`/${GlobalConstants.CALENDAR}`, router);
     };
 
     return (

@@ -22,7 +22,8 @@ import Form, { FormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { navigateToRoute } from "../../ui/utils";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
@@ -36,6 +37,7 @@ const CalendarDashboard: FC = () => {
         defaultActionState,
     );
     const [createOpen, setCreateOpen] = useState(false);
+    const router = useRouter();
 
     const createEventWithHost = async (
         currentActionState: FormActionState,
@@ -48,7 +50,7 @@ const CalendarDashboard: FC = () => {
         );
         if (createEventResult.status === 201) {
             const createdEventId = createEventResult.result;
-            redirect(`${GlobalConstants.CALENDAR}/${createdEventId}`);
+            navigateToRoute(`${GlobalConstants.CALENDAR}/${createdEventId}`, router);
         }
         return createEventResult;
     };

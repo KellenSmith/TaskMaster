@@ -5,11 +5,13 @@ import Form from "../../ui/form/Form";
 import { useUserContext } from "../../context/UserContext";
 import { Button, Stack } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { FC } from "react";
+import { navigateToRoute } from "../../ui/utils";
 
 const LoginForm: FC = () => {
     const { login } = useUserContext();
+    const router = useRouter();
 
     return (
         <Stack>
@@ -20,8 +22,10 @@ const LoginForm: FC = () => {
                 readOnly={false}
                 editable={false}
             />
-            <Button onClick={() => redirect(`/${GlobalConstants.RESET}`)}>reset password</Button>
-            <Button onClick={() => redirect(`/${GlobalConstants.APPLY}`)}>
+            <Button onClick={() => navigateToRoute(`/${GlobalConstants.RESET}`, router)}>
+                reset password
+            </Button>
+            <Button onClick={() => navigateToRoute(`/${GlobalConstants.APPLY}`, router)}>
                 {FieldLabels[GlobalConstants.APPLY]}
             </Button>
         </Stack>

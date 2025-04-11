@@ -3,9 +3,10 @@
 import { Card, Tooltip, useTheme } from "@mui/material";
 import { FC } from "react";
 import { useUserContext } from "../../context/UserContext";
-import { usePathname, redirect } from "next/navigation";
+import { usePathname } from "next/navigation";
 import GlobalConstants from "../../GlobalConstants";
-import { formatDate } from "../../ui/utils";
+import { formatDate, navigateToRoute } from "../../ui/utils";
+import { useRouter } from "next/navigation";
 
 export interface ICalendarEvent {
     id: string;
@@ -23,8 +24,9 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     const { user } = useUserContext();
     const theme = useTheme();
     const pathname = usePathname();
+    const router = useRouter();
 
-    const goToEventPage = () => redirect(`${pathname}/${event[GlobalConstants.ID]}`);
+    const goToEventPage = () => navigateToRoute(`${pathname}/${event[GlobalConstants.ID]}`, router);
     return (
         <Tooltip title={`${formatDate(event.startTime)} - ${formatDate(event.endTime)}`}>
             <Card

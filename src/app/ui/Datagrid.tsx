@@ -4,7 +4,7 @@ import { Button, Dialog, Stack } from "@mui/material";
 import { DataGrid, GridColDef, GridRowParams, GridRowsProp, useGridApiRef } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, useState, startTransition } from "react";
 import { datePickerFields, FieldLabels } from "./form/FieldCfg";
-import { redirect, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import Form, {
     FormActionState,
@@ -12,6 +12,7 @@ import Form, {
     getFormActionMsg,
 } from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
+import { navigateToRoute } from "./utils";
 
 export interface DatagridActionState {
     status: number;
@@ -62,6 +63,7 @@ const Datagrid: React.FC<DatagridProps> = ({
     const [fetchedDataState, setFetchedDataState] =
         useState<DatagridActionState>(defaultActionState);
     const [dialogActionState, setDialogActionState] = useState(defaultFormActionState);
+    const router = useRouter();
 
     const updateDatagridData = async () => {
         const newActionState = await fetchData(fetchedDataState);
@@ -159,7 +161,9 @@ const Datagrid: React.FC<DatagridProps> = ({
                 }}
                 autoPageSize
             />
-            <Button onClick={() => redirect(`${pathname}/${GlobalConstants.CREATE}`)}>
+            <Button
+                onClick={() => navigateToRoute(`${pathname}/${GlobalConstants.CREATE}`, router)}
+            >
                 Add New
             </Button>
             <Dialog open={!!clickedRow} onClose={closeDialog}>
