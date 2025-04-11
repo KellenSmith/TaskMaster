@@ -48,6 +48,7 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
         const logInActionState = await login(currentActionState, fieldValues);
         if (logInActionState.status === 200) {
             setUser(JSON.parse(logInActionState.result));
+            logInActionState.result = "Logged in successfully. Wait to be redirected";
             navigateToRoute("/", router);
         }
         return logInActionState;
