@@ -46,8 +46,8 @@ export const sendUserCredentials = async (
  * @throws Error if email fails
  */
 export const remindExpiringMembers = async (userEmails: string[]): Promise<string> => {
-    const mailContent = await MembershipExpiresReminderTemplate();
-    const batchMailResponse = await mailTransport.sendMail(
+    const mailContent = createElement(MembershipExpiresReminderTemplate);
+    const mailResponse = await mailTransport.sendMail(
         userEmails.map(
             async (userEmail) =>
                 await getEmailPayload(
@@ -57,6 +57,6 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
                 ),
         ),
     );
-    if (batchMailResponse.error) throw new Error(batchMailResponse.error.message);
-    return batchMailResponse;
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    return mailResponse;
 };
