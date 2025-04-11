@@ -80,6 +80,8 @@ const getFieldValues = (formName: string, defaultValues: any) => {
                 } else fieldValues[fieldId] = allowSelectMultiple.includes(fieldId) ? [] : "";
             } else if (checkboxFields.includes(fieldId)) {
                 fieldValues[fieldId] = false;
+            } else if (datePickerFields.includes(fieldId)) {
+                fieldValues[fieldId] = null;
             } else fieldValues[fieldId] = "";
         }
     }
@@ -153,12 +155,14 @@ const Form: FC<FormProps> = ({
                             : null
                     }
                     onChange={(newValue) =>
-                        newValue.isValid() && changeFieldValue(fieldId, newValue.toISOString())
+                        dayjs(newValue).isValid() &&
+                        changeFieldValue(fieldId, newValue.toISOString())
                     }
                     slotProps={{
                         textField: {
                             required: RequiredFields[name].includes(fieldId),
                         },
+                        actionBar: { actions: ["clear", "accept"] },
                     }}
                 />
             );
