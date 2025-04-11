@@ -1,7 +1,6 @@
 import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
-import { FC } from "react";
-import { ReactNode } from "react";
+import { FC, ReactElement } from "react";
 
 /**
  * Props for the UserCredentialsTemplate component.
@@ -13,10 +12,10 @@ interface IUserCredentialsTemplateProps {
     password: string;
 }
 
-const UserCredentialsTemplate: FC<IUserCredentialsTemplateProps> = async ({
+const UserCredentialsTemplate: FC<IUserCredentialsTemplateProps> = ({
     userEmail,
     password,
-}): Promise<ReactNode> => {
+}): ReactElement => {
     return (
         <MailTemplate>
             <Text>{`You have a new password for your account at ${process.env.NEXT_PUBLIC_ORG_NAME}!`}</Text>

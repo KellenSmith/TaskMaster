@@ -199,6 +199,7 @@ export const resetUserCredentials = async (
     try {
         await sendUserCredentials(userEmail, generatedPassword);
     } catch (error) {
+        console.log("Error sending email", error);
         newActionState.status = error.statusCode;
         newActionState.result = "";
         newActionState.errorMsg = `Credentials could not be sent to user because:\n${error.message}`;
