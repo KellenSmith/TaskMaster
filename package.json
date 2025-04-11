@@ -21,6 +21,7 @@
         "@mui/x-date-pickers": "^7.26.0",
         "@prisma/client": "^6.3.1",
         "@react-email/components": "^0.0.36",
+        "@react-pdf/renderer": "^4.3.0",
         "@types/bcryptjs": "^2.4.6",
         "axios": "^1.7.9",
         "dayjs": "^1.11.13",
