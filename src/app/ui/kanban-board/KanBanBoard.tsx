@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import {
     Accordion,
     AccordionSummary,
+    Button,
     FormControl,
     FormControlLabel,
     FormGroup,
@@ -18,6 +19,8 @@ import DroppableColumn from "./DroppableColumn";
 import { FieldLabels, selectFieldOptions } from "../form/FieldCfg";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
+import TaskSchedulePDF from "./TaskSchedulePDF";
+import { pdf } from "@react-pdf/renderer";
 
 const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const { user } = useUserContext();
@@ -102,6 +105,14 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
         });
     };
 
+    const printVisibleTasksToPdf = async () => {
+        const taskSchedule = await pdf(
+            <TaskSchedulePDF event={event} tasks={filterTasks(tasks, filters)} />,
+        ).toBlob();
+        const url = URL.createObjectURL(taskSchedule);
+        window.open(url, "_blank");
+    };
+
     return (
         <>
             <Accordion>
@@ -109,6 +120,9 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
                 <Stack direction="row" spacing={2}>
                     {Object.keys(filters).map((filterId) => getSwitchGroup(filterId))}
                 </Stack>
+                <Button fullWidth onClick={printVisibleTasksToPdf}>
+                    print task schedule
+                </Button>
             </Accordion>
             {getFormActionMsg(taskActionState)}
             <Grid2 container spacing={2} columns={4}>

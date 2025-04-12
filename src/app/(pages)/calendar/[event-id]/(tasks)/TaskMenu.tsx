@@ -27,13 +27,7 @@ import { updateEventTasks, assignTasksToUser } from "../../../../lib/task-action
 import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
-import {
-    getEarliestEndTime,
-    getEarliestStartTime,
-    getLatestEndTime,
-    isUserParticipant,
-    sortTasks,
-} from "../event-utils";
+import { getLatestEndTime, isUserParticipant, sortGroupedTasks } from "../event-utils";
 import { membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
@@ -355,22 +349,6 @@ const TaskMenu = ({
             return;
         }
         setPaymentHandlerOpen(true);
-    };
-
-    const sortGroupedTasks = (groupedTasks) => {
-        return groupedTasks.sort((taskGroup1, taskGroup2) => {
-            const sortTask1 = {
-                [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup1),
-                [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup1),
-                [GlobalConstants.NAME]: taskGroup1[0][GlobalConstants.NAME],
-            };
-            const sortTask2 = {
-                [GlobalConstants.START_TIME]: getEarliestStartTime(taskGroup2),
-                [GlobalConstants.END_TIME]: getEarliestEndTime(taskGroup2),
-                [GlobalConstants.NAME]: taskGroup2[0][GlobalConstants.NAME],
-            };
-            return sortTasks(sortTask1, sortTask2);
-        });
     };
 
     const getSortedTaskComps = (taskList) => {
