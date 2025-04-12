@@ -107,7 +107,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
 
     const printVisibleTasksToPdf = async () => {
         const taskSchedule = await pdf(
-            <TaskSchedulePDF tasks={filterTasks(tasks, filters)} />,
+            <TaskSchedulePDF event={event} tasks={filterTasks(tasks, filters)} />,
         ).toBlob();
         const url = URL.createObjectURL(taskSchedule);
         window.open(url, "_blank");
