@@ -7,7 +7,7 @@ const mailTransport =
     createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT),
-        secure: false, // true for port 465, false for other ports
+        secure: parseInt(process.env.SMTP_PORT) === 465, // true for port 465, false for other ports
         auth: {
             user: process.env.EMAIL,
             pass: process.env.EMAIL_PASSWORD,
