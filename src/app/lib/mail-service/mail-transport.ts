@@ -9,8 +9,8 @@ const mailTransport =
         port: process.env.SMTP_PORT,
         secure: false, // true for port 465, false for other ports
         auth: {
-            user: process.env.REPLY_EMAIL,
-            pass: process.env.MAIL_PASSWORD,
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD,
         },
     });
 
