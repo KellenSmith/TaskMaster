@@ -4,7 +4,7 @@ import NavPanel from "./ui/NavPanel";
 import { Stack } from "@mui/material";
 
 export const metadata = {
-    title: "TaskMaster",
+    title: process.env.NEXT_PUBLIC_ORG_NAME,
     description: "Your volunteer task management tool",
 };
 
