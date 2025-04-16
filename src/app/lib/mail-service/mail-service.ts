@@ -18,8 +18,8 @@ const getEmailPayload = async (
     subject: string,
     mailContent: ReactElement,
 ): Promise<EmailPayload> => ({
-    from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.NOREPLY_EMAIL}>`,
-    bcc: "kellensmith407@gmail.com", // TODO: receivers.join(", ")
+    from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
+    bcc: receivers.join(", "),
     subject: subject,
     html: await render(mailContent),
 });
