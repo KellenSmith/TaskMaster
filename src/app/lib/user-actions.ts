@@ -5,13 +5,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
-import {
-    decryptJWT,
-    encryptJWT,
-    generateSalt,
-    generateUserCredentials,
-    getUserByUniqueKey,
-} from "./auth/auth";
+import { decryptJWT, encryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { LoginSchema, ResetCredentialsSchema } from "./definitions";
 
@@ -189,7 +183,7 @@ export const resetUserCredentials = async (
         return newActionState;
     }
 
-    const generatedPassword = await generateSalt();
+    const generatedPassword = "123456"; // await generateSalt();
     const generatedUserCredentials = (await getGeneratedUserCredentials(
         userEmail,
         generatedPassword,
