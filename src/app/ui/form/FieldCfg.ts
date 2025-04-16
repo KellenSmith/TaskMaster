@@ -179,7 +179,7 @@ export const datePickerFields = [
     GlobalConstants.END_TIME,
 ];
 
-export const multiLineFields = [
+export const richTextFields = [
     // Event
     GlobalConstants.DESCRIPTION,
 ];

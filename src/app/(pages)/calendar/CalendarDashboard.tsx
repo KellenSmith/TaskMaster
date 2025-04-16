@@ -50,7 +50,7 @@ const CalendarDashboard: FC = () => {
         );
         if (createEventResult.status === 201) {
             const createdEventId = createEventResult.result;
-            navigateToRoute(`${GlobalConstants.CALENDAR}/${createdEventId}`, router);
+            navigateToRoute(`/${GlobalConstants.CALENDAR}/${createdEventId}`, router);
         }
         return createEventResult;
     };
