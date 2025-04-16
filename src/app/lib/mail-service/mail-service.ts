@@ -36,7 +36,11 @@ export const sendUserCredentials = async (
         password: userPassword,
     });
     const mailResponse = await mailTransport.sendMail(
-        await getEmailPayload([userEmail], "TaskMaster credentials", mailContent),
+        await getEmailPayload(
+            [userEmail],
+            `${process.env.NEXT_PUBLIC_ORG_NAME} credentials`,
+            mailContent,
+        ),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
     return mailResponse;
@@ -52,7 +56,7 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
             async (userEmail) =>
                 await getEmailPayload(
                     [userEmail],
-                    "Your membership is about to expire",
+                    `Your ${process.env.NEXT_PUBLIC_ORG_NAME} membership is about to expire`,
                     mailContent,
                 ),
         ),
