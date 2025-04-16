@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev --turbopack --experimental-https",
-        "build": "pnpm prisma generate --schema=./src/prisma/schema.prisma && next build",
+        "build": "pnpm prisma generate --schema=./src/prisma/schema.prisma && pnpm prisma db push --schema=./src/prisma/schema.prisma && pnpm prisma migrate dev --schema=./src/prisma/schema.prisma && next build",
         "start": "next start",
         "lint": "next lint",
         "prisma-generate": "pnpm prisma generate --schema=./src/prisma/schema.prisma",
