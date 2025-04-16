@@ -7,7 +7,7 @@ import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
 import { decryptJWT, encryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
-import { isMembershipExpired, LoginSchema, ResetCredentialsSchema } from "./definitions";
+import { LoginSchema, ResetCredentialsSchema } from "./definitions";
 
 export const getUserById = async (
     currentState: DatagridActionState,
@@ -179,7 +179,7 @@ export const resetUserCredentials = async (
     newActionState.errorMsg = "";
     newActionState.result = "New credentials sent to your email if we have it on record";
     const user = await getUserByUniqueKey(GlobalConstants.EMAIL, userEmail);
-    if (isMembershipExpired(user)) {
+    if (!user) {
         return newActionState;
     }
 
