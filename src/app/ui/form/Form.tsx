@@ -19,7 +19,7 @@ import {
     selectFieldOptions,
     RequiredFields,
     datePickerFields,
-    multiLineFields,
+    richTextFields,
     allowSelectMultiple,
     checkboxFields,
 } from "./FieldCfg";
@@ -27,6 +27,7 @@ import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
+import RichTextField from "./RichTextField";
 
 export interface FormActionState {
     status: number;
@@ -184,6 +185,17 @@ const Form: FC<FormProps> = ({
                     label={FieldLabels[fieldId]}
                 />
             );
+        if (richTextFields.includes(fieldId)) {
+            return (
+                <RichTextField
+                    key={fieldId}
+                    fieldId={fieldId}
+                    editMode={editMode}
+                    value={fieldValues[fieldId] as string}
+                    changeFieldValue={changeFieldValue}
+                />
+            );
+        }
         return (
             <TextField
                 disabled={!editMode}
@@ -191,7 +203,6 @@ const Form: FC<FormProps> = ({
                 label={FieldLabels[fieldId]}
                 name={fieldId}
                 required={RequiredFields[name].includes(fieldId)}
-                multiline={multiLineFields.includes(fieldId)}
                 value={fieldValues[fieldId]}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => {
                     changeFieldValue(fieldId, event.target.value);
