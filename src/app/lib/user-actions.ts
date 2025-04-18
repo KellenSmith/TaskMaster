@@ -5,9 +5,15 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState } from "../ui/Datagrid";
-import { decryptJWT, encryptJWT, generateUserCredentials, getUserByUniqueKey } from "./auth/auth";
+import {
+    decryptJWT,
+    encryptJWT,
+    generateSalt,
+    generateUserCredentials,
+    getUserByUniqueKey,
+} from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
-import { LoginSchema, ResetCredentialsSchema } from "./definitions";
+import { isMembershipExpired, LoginSchema, ResetCredentialsSchema } from "./definitions";
 
 export const getUserById = async (
     currentState: DatagridActionState,
@@ -179,11 +185,11 @@ export const resetUserCredentials = async (
     newActionState.errorMsg = "";
     newActionState.result = "New credentials sent to your email if we have it on record";
     const user = await getUserByUniqueKey(GlobalConstants.EMAIL, userEmail);
-    if (!user) {
+    if (isMembershipExpired(user)) {
         return newActionState;
     }
 
-    const generatedPassword = "123456"; // await generateSalt();
+    const generatedPassword = await generateSalt();
     const generatedUserCredentials = (await getGeneratedUserCredentials(
         userEmail,
         generatedPassword,
@@ -231,7 +237,7 @@ export const validateUserMembership = async (
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
 
-    const generatedPassword = "123456"; //TODO: await generateSalt();
+    const generatedPassword = await generateSalt();
     const generatedUserCredentials = (await getGeneratedUserCredentials(
         user.email as string,
         generatedPassword,
