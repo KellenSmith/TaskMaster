@@ -31,6 +31,17 @@ export const sendUserCredentials = async (
     userEmail: string,
     userPassword: string,
 ): Promise<string> => {
+    console.error(
+        "SMTP_HOST",
+        process.env.SMTP_HOST,
+        "SMTP_PORT",
+        process.env.SMTP_PORT,
+        "EMAIL",
+        process.env.EMAIL,
+        "EMAIL_PASSWORD",
+        process.env.EMAIL_PASSWORD,
+    );
+
     const mailContent = createElement(UserCredentialsTemplate, {
         userEmail: userEmail,
         password: userPassword,
