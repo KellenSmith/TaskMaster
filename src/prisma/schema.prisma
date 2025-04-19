@@ -15,7 +15,7 @@ model User {
     nickname             String           @default(uuid())
     pronoun              String?          @default("")
     email                String           @unique
-    phone                String?          @unique @default("")
+    phone                String?
     created              DateTime         @default(now())
     membershipRenewed    DateTime? // Membership is invalid if null or expired
     consentToNewsletters Boolean          @default(true)
