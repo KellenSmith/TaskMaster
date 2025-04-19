@@ -5,7 +5,7 @@ import { Stack } from "@mui/material";
 
 export const metadata = {
     title: process.env.NEXT_PUBLIC_ORG_NAME,
-    description: "Your volunteer task management tool",
+    description: process.env.NEXT_PUBLIC_ORG_DESCRIPTION,
 };
 
 interface RootLayoutProps {
