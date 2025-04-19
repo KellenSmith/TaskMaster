@@ -3,7 +3,6 @@ import {
     AccordionSummary,
     Button,
     Card,
-    CircularProgress,
     Dialog,
     Paper,
     Stack,
@@ -31,7 +30,6 @@ const DroppableColumn = ({
     event = null,
     status,
     tasks,
-    isTasksPending,
     fetchDbTasks,
     taskActionState,
     setTaskActionState,
@@ -177,13 +175,7 @@ const DroppableColumn = ({
                         </Button>
                     )}
                 </Stack>
-                <Stack spacing={2}>
-                    {isTasksPending ? (
-                        <CircularProgress />
-                    ) : (
-                        getSortedTaskComps(tasks, getTaskShiftsComp)
-                    )}
-                </Stack>
+                <Stack spacing={2}>{getSortedTaskComps(tasks, getTaskShiftsComp)}</Stack>
             </Paper>
             <Dialog open={!!addTask} onClose={() => setAddTask(null)}>
                 {!!addTask && (

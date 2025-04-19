@@ -5,6 +5,7 @@ import {
     Accordion,
     AccordionSummary,
     Button,
+    CircularProgress,
     FormControl,
     FormControlLabel,
     FormGroup,
@@ -114,7 +115,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
     };
 
     return (
-        <>
+        <Stack spacing={2} justifyContent="center">
             <Accordion>
                 <AccordionSummary expandIcon={<ExpandMore />}>Filters</AccordionSummary>
                 <Stack direction="row" spacing={2}>
@@ -125,29 +126,32 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
                 </Button>
             </Accordion>
             {getFormActionMsg(taskActionState)}
-            <Grid2 container spacing={2} columns={4}>
-                {selectFieldOptions[GlobalConstants.STATUS].map((status) => (
-                    <Grid2 size={1} key={status}>
-                        <DroppableColumn
-                            event={event}
-                            status={status}
-                            tasks={filterTasks(tasks, filters).filter(
-                                (task) => task[GlobalConstants.STATUS] === status,
-                            )}
-                            isTasksPending={isTasksPending}
-                            fetchDbTasks={fetchDbTasks}
-                            taskActionState={taskActionState}
-                            setTaskActionState={setTaskActionState}
-                            readOnly={readOnly}
-                            draggedTask={draggedTask}
-                            setDraggedTask={setDraggedTask}
-                            draggedOverColumn={draggedOverColumn}
-                            setDraggedOverColumn={setDraggedOverColumn}
-                        />
-                    </Grid2>
-                ))}
-            </Grid2>
-        </>
+            {isTasksPending ? (
+                <CircularProgress sx={{ alignSelf: "center", padding: 10 }} />
+            ) : (
+                <Grid2 container spacing={2} columns={4}>
+                    {selectFieldOptions[GlobalConstants.STATUS].map((status) => (
+                        <Grid2 size={1} key={status}>
+                            <DroppableColumn
+                                event={event}
+                                status={status}
+                                tasks={filterTasks(tasks, filters).filter(
+                                    (task) => task[GlobalConstants.STATUS] === status,
+                                )}
+                                fetchDbTasks={fetchDbTasks}
+                                taskActionState={taskActionState}
+                                setTaskActionState={setTaskActionState}
+                                readOnly={readOnly}
+                                draggedTask={draggedTask}
+                                setDraggedTask={setDraggedTask}
+                                draggedOverColumn={draggedOverColumn}
+                                setDraggedOverColumn={setDraggedOverColumn}
+                            />
+                        </Grid2>
+                    ))}
+                </Grid2>
+            )}
+        </Stack>
     );
 };
 

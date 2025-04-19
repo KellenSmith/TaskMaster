@@ -27,10 +27,18 @@ const EventsTab: React.FC = () => {
     }, []);
 
     return (
-        <Stack>
-            {events &&
+        <Stack spacing={2}>
+            {events?.length === 0 ? (
+                <Typography
+                    variant="h5"
+                    color="textSecondary"
+                    sx={{ padding: 10, textAlign: "center" }}
+                >
+                    You are not participating in any events. Check the calendar to get involved!
+                </Typography>
+            ) : (
                 events.map((event) => (
-                    <Card key={event.id} style={{ marginBottom: "16px" }}>
+                    <Card key={event.id}>
                         <CardContent>
                             <Stack direction="row" justifyContent="space-between">
                                 <Stack>
@@ -70,7 +78,8 @@ const EventsTab: React.FC = () => {
                             </Stack>
                         </CardContent>
                     </Card>
-                ))}
+                ))
+            )}
         </Stack>
     );
 };
