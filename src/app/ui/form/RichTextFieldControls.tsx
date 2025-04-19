@@ -1,5 +1,4 @@
 import { useTheme } from "@mui/material";
-import { blueGrey } from "@mui/material/colors";
 import {
     MenuButtonBold,
     MenuButtonBulletedList,
@@ -52,13 +51,13 @@ const RichTextFieldControls = () => {
                     { value: "#ff9900", label: "Orange" },
                     { value: "#ffff00", label: "Yellow" },
                     { value: "#00d000", label: "Green" },
-                    { value: blueGrey[600], label: "GreenGrey" },
+                    { value: theme.palette.primary.main, label: "Primary" },
                 ]}
             />
 
             <MenuButtonHighlightColor
                 swatchColors={[
-                    { value: blueGrey[600], label: "GreenGrey" },
+                    { value: theme.palette.primary.main, label: "Primary" },
                     { value: "#dddddd", label: "Light grey" },
                     { value: "#ffa6a6", label: "Light red" },
                     { value: "#ffd699", label: "Light orange" },
