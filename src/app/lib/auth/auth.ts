@@ -92,7 +92,9 @@ export const login = async (
         authState.result = "";
         return authState;
     }
+    authState.status = 200;
     authState.result = JSON.stringify(loggedInUser);
+    authState.errorMsg = "";
     await createSession(fieldValues);
     return authState;
 };
