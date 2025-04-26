@@ -27,7 +27,7 @@ jobs:
               run: pnpm install
 
             - name: Generate Prisma Types
-              run: pnpm prisma generate
+              run: pnpm prisma-generate
 
             - name: Run tests
               run: pnpm test
@@ -51,7 +51,7 @@ jobs:
               run: pnpm install
 
             - name: Generate Prisma Types
-              run: pnpm prisma generate
+              run: pnpm prisma-generate
 
             - name: Lint
               run: pnpm lint
