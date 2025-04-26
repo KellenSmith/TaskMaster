@@ -7,7 +7,6 @@ import testdata from "../../test/testdata";
 
 beforeEach(() => {
     vi.resetAllMocks();
-    mockContext.prisma = mockContext.prisma;
 });
 
 describe("User Actions", () => {
