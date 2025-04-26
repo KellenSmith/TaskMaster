@@ -14,7 +14,9 @@
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest watch"
+        "test:watch": "vitest watch",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
