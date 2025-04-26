@@ -1,5 +1,6 @@
 import { ReactElement } from "react";
 import { render } from "@testing-library/react";
+import { vi } from "vitest";
 import ThemeContextProvider from "../app/context/ThemeContext";
 import { UserContext } from "../app/context/UserContext";
 
@@ -36,7 +37,7 @@ const AllTheProviders = ({ children, user = mockUser }: WrapperProps) => {
     );
 };
 
-const customRender = (ui: ReactElement, { user, ...options } = {}) =>
+const customRender = (ui: ReactElement, { user, ...options }: { user?: typeof mockUser } = {}) =>
     render(ui, { wrapper: (props) => <AllTheProviders {...props} user={user} />, ...options });
 
 // re-export everything
