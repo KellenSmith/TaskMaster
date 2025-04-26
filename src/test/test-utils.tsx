@@ -1,4 +1,4 @@
-import { ReactElement } from "react";
+import { ReactElement, ReactNode } from "react";
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import ThemeContextProvider from "../app/context/ThemeContext";
@@ -22,7 +22,7 @@ const mockUserContextValue = {
 };
 
 interface WrapperProps {
-    children: React.ReactNode;
+    children: ReactNode;
     user?: typeof mockUser;
 }
 
