@@ -1,13 +1,18 @@
 "use client";
 
 import { Stack } from "@mui/material";
-import { deleteUser, getAllUsers, updateUser, validateUserMembership } from "../lib/user-actions";
-import Datagrid, { RowActionProps } from "../ui/Datagrid";
-import GlobalConstants from "../GlobalConstants";
-import { useUserContext } from "../context/UserContext";
+import {
+    deleteUser,
+    getAllUsers,
+    updateUser,
+    validateUserMembership,
+} from "../../lib/user-actions";
+import Datagrid, { RowActionProps } from "../../ui/Datagrid";
+import GlobalConstants from "../../GlobalConstants";
+import { useUserContext } from "../../context/UserContext";
 import { GridColDef } from "@mui/x-data-grid";
-import { FieldLabels } from "../ui/form/FieldCfg";
-import { isMembershipExpired } from "../lib/definitions";
+import { FieldLabels } from "../../ui/form/FieldCfg";
+import { isMembershipExpired } from "../../lib/definitions";
 
 const MembersPage = () => {
     const { user } = useUserContext();
