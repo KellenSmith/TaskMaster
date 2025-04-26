@@ -3,22 +3,19 @@ import { mockContext } from "../../test/mocks/prismaMock";
 import { getUserById, createUser, getAllUsers, updateUser } from "./user-actions";
 import { defaultActionState as defaultDatagridActionState } from "../ui/Datagrid";
 import { defaultActionState as defaultFormActionState } from "../ui/form/Form";
+import testdata from "../../test/testdata";
 
 describe("User Actions", () => {
     it("should get user by id", async () => {
-        const mockUser = {
-            id: "1",
-            email: "test@example.com",
-            nickname: "Test User",
-        };
+        const mockUser = testdata.user;
 
         mockContext.prisma.user.findUniqueOrThrow.mockResolvedValue(mockUser);
 
-        const result = await getUserById(defaultDatagridActionState, "1");
+        const result = await getUserById(defaultDatagridActionState, mockUser.id);
         expect(result.result[0]).toEqual(mockUser);
         expect(result.status).toBe(200);
         expect(mockContext.prisma.user.findUniqueOrThrow).toHaveBeenCalledWith({
-            where: { id: "1" },
+            where: { id: mockUser.id },
         });
     });
 
@@ -34,26 +31,23 @@ describe("User Actions", () => {
 
 describe("Create User", () => {
     it("should create a new user successfully", async () => {
-        const mockUser = {
-            id: "1",
-            email: "new@example.com",
-            nickname: "New User",
-        };
+        const userToCreate = testdata.createUser;
+        const createdUser = testdata.user;
 
-        mockContext.prisma.user.create.mockResolvedValue(mockUser);
+        mockContext.prisma.user.create.mockResolvedValue(createdUser);
 
-        const result = await createUser(defaultFormActionState, mockUser);
+        const result = await createUser(defaultFormActionState, userToCreate);
         expect(result.status).toBe(201);
         expect(result.result).toContain("created successfully");
         expect(mockContext.prisma.user.create).toHaveBeenCalledWith({
-            data: mockUser,
+            data: userToCreate,
         });
     });
 
     it("should handle create user errors", async () => {
         mockContext.prisma.user.create.mockRejectedValue(new Error("Creation failed"));
 
-        const result = await createUser(defaultFormActionState, { email: "invalid" });
+        const result = await createUser(defaultFormActionState, testdata.createUser);
         expect(result.status).toBe(500);
         expect(result.errorMsg).toBe("Creation failed");
     });
@@ -62,8 +56,8 @@ describe("Create User", () => {
 describe("Get All Users", () => {
     it("should get all users with credentials", async () => {
         const mockUsers = [
-            { id: "1", email: "user1@example.com" },
-            { id: "2", email: "user2@example.com" },
+            { ...testdata.user, id: "1", email: "user1@example.com" },
+            { ...testdata.user, id: "2", email: "user2@example.com" },
         ];
 
         mockContext.prisma.user.findMany.mockResolvedValue(mockUsers);
@@ -92,7 +86,7 @@ describe("Update User", () => {
             nickname: "Updated Name",
         };
 
-        mockContext.prisma.user.update.mockResolvedValue({ id: "1", ...mockUpdate });
+        mockContext.prisma.user.update.mockResolvedValue({ ...testdata.user, ...mockUpdate });
 
         const result = await updateUser("1", defaultFormActionState, mockUpdate);
         expect(result.status).toBe(200);
