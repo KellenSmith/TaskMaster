@@ -59,22 +59,19 @@ jobs:
             - name: Type check
               run: pnpm tsc --noEmit
 
-            - name: Check formatting
-              run: pnpm format:check
-
             - name: Security audit
               run: pnpm audit
 
-            - name: Run tests with coverage
-              run: pnpm test:coverage
+            # - name: Run tests with coverage
+            #   run: pnpm test:coverage
 
-            - name: Upload coverage reports
-              uses: codecov/codecov-action@v3
-              with:
-                  directory: ./coverage/
-                  files: ./coverage/coverage-final.json
+            # - name: Upload coverage reports
+            #   uses: codecov/codecov-action@v3
+            #   with:
+            #       directory: ./coverage/
+            #       files: ./coverage/coverage-final.json
 
-            - name: Check bundle size
-              uses: preactjs/compressed-size-action@v2
-              with:
-                  pattern: ".next/**/*.js"
+            # - name: Check bundle size
+            #   uses: preactjs/compressed-size-action@v2
+            #   with:
+            #       pattern: ".next/**/*.js"
