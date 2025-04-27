@@ -45,6 +45,20 @@ export const createUser = async (
                 ...fieldValues,
             },
         });
+
+        // If this user is the first user, make them an admin and validate their membership
+        const userCount = await prisma.user.count();
+        if (userCount === 1) {
+            const userIdentifier: UserIdentifier = {
+                [GlobalConstants.ID]: createdUser[GlobalConstants.ID],
+            };
+            const fieldValues: Prisma.UserUpdateInput = {
+                role: GlobalConstants.ADMIN,
+            };
+            await updateUserTransaction(fieldValues, userIdentifier);
+            const result = await validateUserMembership(createdUser, newActionState);
+        }
+
         newActionState.errorMsg = "";
         newActionState.status = 201;
         newActionState.result = `User #${createdUser[GlobalConstants.ID]} ${
