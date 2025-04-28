@@ -13,7 +13,6 @@ import {
     MenuButtonUnindent,
     MenuControlsContainer,
     MenuDivider,
-    MenuSelectFontSize,
     MenuSelectHeading,
     MenuSelectTextAlign,
     isTouchDevice,
@@ -24,10 +23,6 @@ const RichTextFieldControls = () => {
     return (
         <MenuControlsContainer>
             <MenuSelectHeading />
-
-            <MenuDivider />
-
-            <MenuSelectFontSize />
 
             <MenuDivider />
 

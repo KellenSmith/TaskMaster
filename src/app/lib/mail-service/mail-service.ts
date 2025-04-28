@@ -74,7 +74,7 @@ export const sendMassEmail = async (
     subject: string,
     mailBody: string,
 ): Promise<string> => {
-    const mailContent = createElement(MailTemplate, { children: mailBody });
+    const mailContent = createElement(MailTemplate, { html: mailBody });
     const mailPayload = await getEmailPayload(userEmails, subject, mailContent);
     const mailResponse = await mailTransport.sendMail(mailPayload);
     if (mailResponse.error) throw new Error(mailResponse.error.message);

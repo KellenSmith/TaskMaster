@@ -21,7 +21,7 @@ import { TextAlign } from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Underline } from "@tiptap/extension-underline";
 import { useMemo } from "react";
-import { FontSize, HeadingWithAnchor, LinkBubbleMenuHandler, ResizableImage } from "mui-tiptap";
+import { HeadingWithAnchor, LinkBubbleMenuHandler, ResizableImage } from "mui-tiptap";
 
 export type UseExtensionsOptions = {
     /** Placeholder hint to show in the text input area before a user types a message. */
@@ -98,7 +98,6 @@ export default function useExtensions({
             }),
             TextStyle,
             Color,
-            FontSize,
             Highlight.configure({ multicolor: true }),
             HorizontalRule,
 

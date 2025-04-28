@@ -2,12 +2,41 @@ import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
 import GlobalConstants from "../../../GlobalConstants";
 import mailTheme from "../mail-theme";
+import DOMPurify from "isomorphic-dompurify";
 
 interface MailTemplateProps {
-    children: ReactNode;
+    children?: ReactNode;
+    html?: string;
 }
 
-const MailTemplate: FC<MailTemplateProps> = ({ children }) => {
+const MailTemplate: FC<MailTemplateProps> = ({ children, html }) => {
+    const sanitizeHtml = (): string => {
+        return DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: [
+                "b",
+                "i",
+                "em",
+                "strong",
+                "a",
+                "p",
+                "br",
+                "ul",
+                "ol",
+                "li",
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+            ],
+            ALLOWED_ATTR: ["href", "target"],
+        });
+    };
+
+    const renderHtml = () => {
+        if (!html) return null;
+        return <div dangerouslySetInnerHTML={{ __html: sanitizeHtml() }} />;
+    };
+
     return (
         <Html>
             <Head />
@@ -31,6 +60,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children }) => {
                     </Heading>
                     <Container style={{ color: mailTheme.palette.text.primary }}>
                         {children}
+                        {renderHtml()}
                     </Container>
                     <Button
                         style={mailTheme.components.button}
