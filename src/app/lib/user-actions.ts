@@ -56,7 +56,7 @@ export const createUser = async (
                 role: GlobalConstants.ADMIN,
             };
             await updateUserTransaction(fieldValues, userIdentifier);
-            const result = await validateUserMembership(createdUser, newActionState);
+            await validateUserMembership(createdUser, newActionState);
         }
 
         newActionState.errorMsg = "";

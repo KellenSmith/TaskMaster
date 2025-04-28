@@ -10,7 +10,7 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/mail-service";
 import Form, { FormActionState } from "../../ui/form/Form";
@@ -26,13 +26,13 @@ const SendoutPage: FC = () => {
     const [sendTo, setSendTo] = useState<string>(sendToOptions.ALL);
     const [recipientCount, setRecipientCount] = useState<number>(0);
 
-    const getRecipientCriteria = () => {
+    const getRecipientCriteria = useCallback(() => {
         const recipientCriteria: Prisma.UserWhereInput = {};
         if (sendTo === sendToOptions.CONSENTING) {
             recipientCriteria[GlobalConstants.CONSENT_TO_NEWSLETTERS] = true;
         }
         return recipientCriteria;
-    };
+    }, [sendTo]);
 
     useEffect(() => {
         const fetchRecipientCount = async () => {
@@ -40,7 +40,7 @@ const SendoutPage: FC = () => {
             setRecipientCount(count);
         };
         fetchRecipientCount();
-    }, [sendTo]);
+    }, [sendTo, getRecipientCriteria]);
 
     const sendMassEmailToRecipientsWithCriteria = async (
         currentActionState: FormActionState,

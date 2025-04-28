@@ -111,7 +111,7 @@ export const sendMassEmail = async (
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
-    } catch (error) {
+    } catch {
         newActionState.status = 500;
         newActionState.errorMsg = "Failed to send mass email";
         newActionState.result = "";
