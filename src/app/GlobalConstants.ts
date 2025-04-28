@@ -15,6 +15,7 @@ const GlobalConstants = {
     MEMBERS: "members",
     CREATE: "create",
     CALENDAR: "calendar",
+    SENDOUT: "sendout",
     // DB
     ID: "id",
     NAME: "name",
@@ -85,6 +86,10 @@ const GlobalConstants = {
     IN_PROGRESS: "in progress",
     IN_REVIEW: "in review",
     DONE: "done",
+    // Sendout
+    SUBJECT: "subject",
+    CONTENT: "content",
+    RECIPIENT_CRITERIA: "recipientCriteria",
 };
 
 export default GlobalConstants;

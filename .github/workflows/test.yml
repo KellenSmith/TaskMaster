@@ -1,0 +1,77 @@
+name: Quality & Tests
+
+on:
+    push:
+        branches: [master, dev]
+    pull_request:
+        branches: [master, dev]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "18.x"
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 8
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Generate Prisma Types
+              run: pnpm prisma-generate
+
+            - name: Run tests
+              run: pnpm test
+
+    quality:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "18.x"
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 8
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Generate Prisma Types
+              run: pnpm prisma-generate
+
+            - name: Lint
+              run: pnpm lint
+
+            - name: Type check
+              run: pnpm tsc --noEmit
+
+            - name: Security audit
+              run: pnpm audit
+
+            # - name: Run tests with coverage
+            #   run: pnpm test:coverage
+
+            # - name: Upload coverage reports
+            #   uses: codecov/codecov-action@v3
+            #   with:
+            #       directory: ./coverage/
+            #       files: ./coverage/coverage-final.json
+
+            # - name: Check bundle size
+            #   uses: preactjs/compressed-size-action@v2
+            #   with:
+            #       pattern: ".next/**/*.js"
