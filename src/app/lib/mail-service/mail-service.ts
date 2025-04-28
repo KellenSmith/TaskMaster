@@ -5,6 +5,11 @@ import UserCredentialsTemplate from "./mail-templates/UserCredentialsTemplate";
 import { createElement, ReactElement } from "react";
 import MembershipExpiresReminderTemplate from "./mail-templates/MembershipExpiresReminderTemplate";
 import { render } from "@react-email/components";
+import MailTemplate from "./mail-templates/MailTemplate";
+import { prisma } from "../../../prisma/prisma-client";
+import { Prisma } from "@prisma/client";
+import { FormActionState } from "../../ui/form/Form";
+import GlobalConstants from "../../GlobalConstants";
 
 interface EmailPayload {
     from: string;
@@ -63,4 +68,53 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
     return mailResponse;
+};
+
+export const getEmailRecipientCount = async (
+    recipientCriteria: Prisma.UserWhereInput,
+): Promise<number> => {
+    try {
+        const recipientCount = await prisma.user.count({
+            where: recipientCriteria,
+        });
+        return recipientCount;
+    } catch {
+        return 0;
+    }
+};
+
+/**
+ * @throws Error if email fails
+ */
+export const sendMassEmail = async (
+    currentActionState: FormActionState,
+    fieldValues: any,
+): Promise<FormActionState> => {
+    const newActionState = { ...currentActionState };
+    try {
+        const recipients = (
+            await prisma.user.findMany({
+                where: fieldValues[GlobalConstants.RECIPIENT_CRITERIA],
+            })
+        ).map((user) => user.email);
+
+        const mailContent = createElement(MailTemplate, {
+            html: fieldValues[GlobalConstants.CONTENT],
+        });
+        const mailPayload = await getEmailPayload(
+            recipients,
+            fieldValues[GlobalConstants.SUBJECT],
+            mailContent,
+        );
+        const mailResponse = await mailTransport.sendMail(mailPayload);
+        if (mailResponse.error) throw new Error(mailResponse.error.message);
+        newActionState.status = 200;
+        newActionState.errorMsg = "";
+        newActionState.result = `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
+    } catch {
+        newActionState.status = 500;
+        newActionState.errorMsg = "Failed to send mass email";
+        newActionState.result = "";
+    }
+    return newActionState;
 };

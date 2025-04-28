@@ -12,6 +12,9 @@ const mailTransport =
             user: process.env.EMAIL,
             pass: process.env.EMAIL_PASSWORD,
         },
+        tls: {
+            rejectUnauthorized: process.env.NODE_ENV === "production",
+        },
     });
 
 export { mailTransport };

@@ -22,6 +22,7 @@ import {
     richTextFields,
     allowSelectMultiple,
     checkboxFields,
+    passwordFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
@@ -207,7 +208,7 @@ const Form: FC<FormProps> = ({
                 onChange={(event: ChangeEvent<HTMLInputElement>) => {
                     changeFieldValue(fieldId, event.target.value);
                 }}
-                {...(fieldId.includes(GlobalConstants.PASSWORD) && {
+                {...(passwordFields.includes(fieldId) && {
                     type: GlobalConstants.PASSWORD,
                 })}
             />
@@ -223,7 +224,7 @@ const Form: FC<FormProps> = ({
                         <Cancel
                             sx={{ padding: 2 }}
                             onClick={() => {
-                                setFieldValues(defaultValues);
+                                setFieldValues(getFieldValues(name, defaultValues));
                                 setEditMode(false);
                             }}
                         />
