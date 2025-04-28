@@ -42,6 +42,5 @@ export const makeApiRequest = async ({
 };
 
 export const navigateToRoute = (route: string, router) => {
-    console.log(`${process.env.NEXT_PUBLIC_API_URL}${route}`);
     router.push(`${process.env.NEXT_PUBLIC_API_URL}${route}`);
 };

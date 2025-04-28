@@ -64,3 +64,18 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
     if (mailResponse.error) throw new Error(mailResponse.error.message);
     return mailResponse;
 };
+
+/**
+ * @throws Error if email fails
+ */
+export const sendMassEmail = async (
+    userEmails: string[],
+    subject: string,
+    mailBody: string,
+): Promise<string> => {
+    const mailContent = createElement(mailBody);
+    const mailPayload = await getEmailPayload(userEmails, subject, mailContent);
+    const mailResponse = await mailTransport.sendMail(mailPayload);
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    return mailResponse;
+};
