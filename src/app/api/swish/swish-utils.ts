@@ -9,6 +9,10 @@ export interface ICreatePaymentRequestResponse {
     token: string;
 }
 
+export const verifySwishCallerId = (requestPayload: IPaymentRequestConfirmed): boolean => {
+    return requestPayload.callbackIdentifier === process.env.SWISH_CALLBACK_IDENTIFIER;
+};
+
 /**
  * Check that the request is sent from friendly frontend, i.e.
  * has coorect referrer and contains user credentials cookie.
@@ -56,6 +60,7 @@ export interface IPaymentRequestConfirmed {
     payeePaymentReference: string;
     paymentReference: string;
     callbackUrl: string;
+    callbackIdentifier: string;
     payerAlias?: string;
     payeeAlias: string;
     amount: number;

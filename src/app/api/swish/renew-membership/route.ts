@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { IPaymentRequestConfirmed } from "../swish-utils";
+import { IPaymentRequestConfirmed, verifySwishCallerId } from "../swish-utils";
 import GlobalConstants from "../../../GlobalConstants";
 import { SwishConstants } from "../../../lib/swish-constants";
 import { getUserById, updateUser } from "../../../lib/user-actions";
@@ -18,9 +18,11 @@ export const config = {
 };
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
-    // TODO: Verify caller ID
     const confirmedPaymentRequest: IPaymentRequestConfirmed = await request.json();
-    // TODO: Verify swish caller ID
+    if (verifySwishCallerId(confirmedPaymentRequest)) {
+        return NextResponse.json("OK)");
+    }
+
     if (confirmedPaymentRequest.status === SwishConstants.PAID) {
         const userId = new URL(request.url).searchParams.get(GlobalConstants.ID);
         // Update user's membership renewed date
