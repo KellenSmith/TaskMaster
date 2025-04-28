@@ -104,7 +104,7 @@ export const getLoggedInUser = async (
             jwtPayload[GlobalConstants.ID] as string,
         );
         // Renew JWT
-        encryptJWT(loggedInUser);
+        await encryptJWT(loggedInUser);
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = JSON.stringify(loggedInUser);
