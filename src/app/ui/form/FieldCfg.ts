@@ -152,6 +152,13 @@ RequiredFields[GlobalConstants.USER] = [
     GlobalConstants.ROLE,
 ];
 
+export const passwordFields = [
+    GlobalConstants.PASSWORD,
+    GlobalConstants.CURRENT_PASSWORD,
+    GlobalConstants.NEW_PASSWORD,
+    GlobalConstants.REPEAT_PASSWORD,
+];
+
 export const selectFieldOptions = {
     // User
     [GlobalConstants.ROLE]: [GlobalConstants.USER, GlobalConstants.ADMIN],
