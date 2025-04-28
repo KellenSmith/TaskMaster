@@ -89,6 +89,7 @@ const GlobalConstants = {
     // Sendout
     SUBJECT: "subject",
     CONTENT: "content",
+    RECIPIENT_CRITERIA: "recipientCriteria",
 };
 
 export default GlobalConstants;

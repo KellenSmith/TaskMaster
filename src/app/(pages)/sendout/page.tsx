@@ -1,41 +1,80 @@
-import { Stack } from "@mui/material";
-import { FC } from "react";
+"use client";
+
+import {
+    Accordion,
+    AccordionSummary,
+    FormControl,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Stack,
+    Typography,
+} from "@mui/material";
+import { FC, useEffect, useState } from "react";
 import GlobalConstants from "../../GlobalConstants";
-import { sendMassEmail } from "../../lib/mail-service/mail-service";
+import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/mail-service";
 import Form, { FormActionState } from "../../ui/form/Form";
+import { Prisma } from "@prisma/client";
+import { ExpandMore } from "@mui/icons-material";
+
+const sendToOptions = {
+    ALL: "All",
+    CONSENTING: "Consenting",
+};
 
 const SendoutPage: FC = () => {
-    const sendMassEmailAction = async (currentActionState: FormActionState, fieldValues) => {
-        "use server";
-        const newActionState = { ...currentActionState };
-        const userEmails = [
-            "kellensmith407@gmail.com",
-            // "n.henriksson91@gmail.com",
-            // "nova.colliander@gmail.com",
-        ];
-        try {
-            const sendoutResult = await sendMassEmail(
-                userEmails,
-                fieldValues[GlobalConstants.SUBJECT],
-                fieldValues[GlobalConstants.CONTENT],
-            );
-            newActionState.status = 200;
-            newActionState.errorMsg = "";
-            newActionState.result = sendoutResult;
-        } catch (error) {
-            newActionState.status = 500;
-            newActionState.errorMsg = "Failed to send mass email";
-            newActionState.result = "";
-        }
+    const [sendTo, setSendTo] = useState<string>(sendToOptions.ALL);
+    const [recipientCount, setRecipientCount] = useState<number>(0);
 
-        return newActionState;
+    const getRecipientCriteria = () => {
+        const recipientCriteria: Prisma.UserWhereInput = {};
+        if (sendTo === sendToOptions.CONSENTING) {
+            recipientCriteria[GlobalConstants.CONSENT_TO_NEWSLETTERS] = true;
+        }
+        return recipientCriteria;
+    };
+
+    useEffect(() => {
+        const fetchRecipientCount = async () => {
+            const count = await getEmailRecipientCount(getRecipientCriteria());
+            setRecipientCount(count);
+        };
+        fetchRecipientCount();
+    }, [sendTo]);
+
+    const sendMassEmailToRecipientsWithCriteria = async (
+        currentActionState: FormActionState,
+        fieldValues,
+    ) => {
+        fieldValues[GlobalConstants.RECIPIENT_CRITERIA] = getRecipientCriteria();
+        const sendState = await sendMassEmail(currentActionState, fieldValues);
+        return sendState;
     };
 
     return (
         <Stack>
+            <Accordion sx={{ padding: 1 }} defaultExpanded={true}>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                    <Typography>{`Send to ${recipientCount} recipients`}</Typography>
+                </AccordionSummary>
+                <Stack spacing={2} padding={1}>
+                    <FormControl>
+                        <RadioGroup value={sendTo} onChange={(e) => setSendTo(e.target.value)}>
+                            {Object.values(sendToOptions).map((option) => (
+                                <FormControlLabel
+                                    key={option}
+                                    value={option}
+                                    control={<Radio />}
+                                    label={option}
+                                />
+                            ))}
+                        </RadioGroup>
+                    </FormControl>
+                </Stack>
+            </Accordion>
             <Form
                 name={GlobalConstants.SENDOUT}
-                action={sendMassEmailAction}
+                action={sendMassEmailToRecipientsWithCriteria}
                 buttonLabel="Send"
                 readOnly={false}
                 editable={false}

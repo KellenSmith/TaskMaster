@@ -19,7 +19,7 @@ export const FieldLabels = {
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED]: "Created",
     [GlobalConstants.MEMBERSHIP_RENEWED]: "Membership Renewed",
-    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving ${process.env.NEXT_PUBLIC_NEWSLETTER_FREQUENCY} newsletters from Wish`,
+    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters from Wish`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the Wish member registry",
     [GlobalConstants.PENDING]: "Pending",
     [GlobalConstants.ACTIVE]: "Active",
@@ -61,6 +61,7 @@ export const FieldLabels = {
     [GlobalConstants.IN_REVIEW]: "In Review",
     [GlobalConstants.DONE]: "Done",
     // Sendout
+    [GlobalConstants.SENDOUT]: "Sendout",
     [GlobalConstants.SUBJECT]: "Subject",
     [GlobalConstants.CONTENT]: "Content",
 };
