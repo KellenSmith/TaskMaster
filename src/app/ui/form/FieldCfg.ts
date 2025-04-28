@@ -60,6 +60,9 @@ export const FieldLabels = {
     [GlobalConstants.IN_PROGRESS]: "In Progress",
     [GlobalConstants.IN_REVIEW]: "In Review",
     [GlobalConstants.DONE]: "Done",
+    // Sendout
+    [GlobalConstants.SUBJECT]: "Subject",
+    [GlobalConstants.CONTENT]: "Content",
 };
 
 export const RenderedFields = {
@@ -100,6 +103,7 @@ export const RenderedFields = {
         GlobalConstants.DESCRIPTION,
         GlobalConstants.TAGS,
     ],
+    [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
 };
 // Apply
 RenderedFields[GlobalConstants.APPLY] = [
@@ -140,6 +144,7 @@ export const RequiredFields = {
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.TASK]: [GlobalConstants.NAME],
+    [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
 };
 // Apply
 RequiredFields[GlobalConstants.APPLY] = [
@@ -189,6 +194,8 @@ export const datePickerFields = [
 export const richTextFields = [
     // Event
     GlobalConstants.DESCRIPTION,
+    // Sendout
+    GlobalConstants.CONTENT,
 ];
 
 export const checkboxFields = [

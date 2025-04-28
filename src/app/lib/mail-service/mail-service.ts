@@ -5,6 +5,7 @@ import UserCredentialsTemplate from "./mail-templates/UserCredentialsTemplate";
 import { createElement, ReactElement } from "react";
 import MembershipExpiresReminderTemplate from "./mail-templates/MembershipExpiresReminderTemplate";
 import { render } from "@react-email/components";
+import MailTemplate from "./mail-templates/MailTemplate";
 
 interface EmailPayload {
     from: string;
@@ -73,9 +74,10 @@ export const sendMassEmail = async (
     subject: string,
     mailBody: string,
 ): Promise<string> => {
-    const mailContent = createElement(mailBody);
+    const mailContent = createElement(MailTemplate, { children: mailBody });
     const mailPayload = await getEmailPayload(userEmails, subject, mailContent);
     const mailResponse = await mailTransport.sendMail(mailPayload);
     if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return mailResponse;
+    const result = `Sendout successful. accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
+    return result;
 };

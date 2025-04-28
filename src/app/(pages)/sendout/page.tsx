@@ -1,16 +1,17 @@
 import { Stack } from "@mui/material";
-import { FC, useActionState } from "react";
+import { FC } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { sendMassEmail } from "../../lib/mail-service/mail-service";
-import Form, { defaultActionState, FormActionState } from "../../ui/form/Form";
+import Form, { FormActionState } from "../../ui/form/Form";
 
 const SendoutPage: FC = () => {
     const sendMassEmailAction = async (currentActionState: FormActionState, fieldValues) => {
+        "use server";
         const newActionState = { ...currentActionState };
         const userEmails = [
             "kellensmith407@gmail.com",
-            "kellensmith407@gmail.com",
-            "kellensmith407@gmail.com",
+            // "n.henriksson91@gmail.com",
+            // "nova.colliander@gmail.com",
         ];
         try {
             const sendoutResult = await sendMassEmail(
@@ -35,6 +36,7 @@ const SendoutPage: FC = () => {
             <Form
                 name={GlobalConstants.SENDOUT}
                 action={sendMassEmailAction}
+                buttonLabel="Send"
                 readOnly={false}
                 editable={false}
             />
