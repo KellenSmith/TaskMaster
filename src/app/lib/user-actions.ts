@@ -13,7 +13,7 @@ import {
     getUserByUniqueKey,
 } from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
-import { isMembershipExpired, LoginSchema, ResetCredentialsSchema } from "./definitions";
+import { LoginSchema, ResetCredentialsSchema } from "./definitions";
 
 export const getUserById = async (
     currentState: DatagridActionState,

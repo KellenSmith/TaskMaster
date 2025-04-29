@@ -1,16 +1,6 @@
 "use client";
 
-import {
-    Accordion,
-    Button,
-    Dialog,
-    Stack,
-    Tab,
-    Tabs,
-    Typography,
-    Paper,
-    AccordionSummary,
-} from "@mui/material";
+import { Accordion, Stack, Tab, Tabs, Typography, Paper, AccordionSummary } from "@mui/material";
 import {
     CalendarMonth,
     LocationOn,
@@ -25,28 +15,25 @@ import { startTransition, Suspense, useEffect, useState } from "react";
 import { isUserHost } from "../../../lib/definitions";
 import { useUserContext } from "../../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
-import Form, {
+import {
     defaultActionState as defaultFormActionState,
     FormActionState,
     getFormActionMsg,
 } from "../../../ui/form/Form";
-import { deleteEvent, deleteEventParticipant, updateEvent } from "../../../lib/event-actions";
-import { Prisma } from "@prisma/client";
-import ConfirmButton from "../../../ui/ConfirmButton";
-import { useRouter } from "next/navigation";
-import { formatDate, navigateToRoute } from "../../../ui/utils";
+import { deleteEventParticipant } from "../../../lib/event-actions";
+import { formatDate } from "../../../ui/utils";
 import RichTextField from "../../../ui/form/RichTextField";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 import { getUserNicknames } from "../../../lib/user-actions";
+import { isEventSoldOut } from "./event-utils";
+import EventActions from "./EventActions";
 
 export const tabs = { event: "Event", details: "Details", tasks: "Participate" };
 
 const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const { user } = useUserContext();
     const [eventActionState, setEventActionState] = useState(defaultFormActionState);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [participantNicknames, setParticipantNicknames] = useState<string[]>([]);
-    const router = useRouter();
 
     useEffect(() => {
         const fetchParticipantNicknames = async () => {
@@ -61,38 +48,6 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
         fetchParticipantNicknames();
     }, [event.participantUsers]);
 
-    const changeTab = async (newTab) => {
-        setOpenTab(newTab);
-    };
-
-    const updateEventById = async (
-        currentActionState: FormActionState,
-        fieldValues: Prisma.EventUpdateInput,
-    ) => {
-        const updateEventResult = await updateEvent(
-            event[GlobalConstants.ID],
-            currentActionState,
-            fieldValues,
-        );
-        startTransition(() => {
-            fetchEventAction();
-        });
-        return updateEventResult;
-    };
-
-    const publishEvent = async () => {
-        const updateData: Prisma.EventUpdateInput = { status: GlobalConstants.PUBLISHED };
-        const publishEventResult = await updateEventById(defaultFormActionState, updateData);
-        setEventActionState(publishEventResult);
-    };
-
-    const deleteEventAndRedirect = async () => {
-        const deleteResult = await deleteEvent(event[GlobalConstants.ID], defaultFormActionState);
-        if (deleteResult.status !== 200) return setEventActionState(deleteResult);
-        // Redirect to calendar when event is deleted
-        navigateToRoute(`/${GlobalConstants.CALENDAR}`, router);
-    };
-
     const getHostNickname = () => {
         const host = participantNicknames.find(
             (user) => user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID],
@@ -100,63 +55,38 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
         return host ? host[GlobalConstants.NICKNAME] : "Unknown";
     };
 
-    const removeUserFromParticipantList = async (userId: string) => {
+    const removeUserFromParticipantList = async (userId: string): Promise<FormActionState> => {
         const deleteParticipantResult = await deleteEventParticipant(
             userId,
             event[GlobalConstants.ID],
             defaultFormActionState,
         );
         setEventActionState(deleteParticipantResult);
-        startTransition(() => {
-            fetchEventAction();
-        });
-    };
-
-    const getActionButtons = () => {
-        const ActionButtons = [];
-        if (isUserHost) {
-            if (event[GlobalConstants.STATUS] === GlobalConstants.DRAFT) {
-                ActionButtons.push(
-                    <Button key="publish" color="success" onClick={publishEvent}>
-                        publish
-                    </Button>,
-                );
-            }
-            ActionButtons.push(
-                <Button key="edit" onClick={() => setEditDialogOpen(true)}>
-                    edit event details
-                </Button>,
-                <ConfirmButton key="delete" color="error" onClick={deleteEventAndRedirect}>
-                    delete
-                </ConfirmButton>,
-            );
-        } else {
-            ActionButtons.push(
-                <ConfirmButton
-                    key="leave"
-                    onClick={async () =>
-                        await removeUserFromParticipantList(user[GlobalConstants.ID])
-                    }
-                >
-                    leave participant list
-                </ConfirmButton>,
-            );
+        if (deleteParticipantResult.status === 200) {
+            startTransition(() => {
+                fetchEventAction();
+            });
         }
-        return ActionButtons;
+        return deleteParticipantResult;
     };
 
     return (
         <Suspense>
             <Typography variant="h4" color="primary" gutterBottom>
-                {event.title}
+                {`${event[GlobalConstants.TITLE]} ${isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
             </Typography>
-            {getFormActionMsg(eventActionState)}
-            <Tabs value={openTab} onChange={(_, newTab) => changeTab(newTab)}>
+            <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
                 {Object.keys(tabs).map((tab) => (
                     <Tab key={tabs[tab]} value={tabs[tab]} label={tabs[tab]} />
                 ))}
             </Tabs>
-            {getActionButtons()}
+            {getFormActionMsg(eventActionState)}
+            <EventActions
+                event={event}
+                fetchEventAction={fetchEventAction}
+                openTab={openTab}
+                setOpenTab={setOpenTab}
+            />
             {openTab === tabs.event && (
                 <RichTextField editMode={false} value={event[GlobalConstants.DESCRIPTION]} />
             )}
@@ -213,7 +143,7 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                                                 justifyContent={"space-between"}
                                                 padding={2}
                                             >
-                                                <Stack direction="row">
+                                                <Stack direction="row" alignItems="center">
                                                     <Person
                                                         color="primary"
                                                         sx={{ marginRight: 2 }}
@@ -247,23 +177,6 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                     </Stack>
                 </Suspense>
             )}
-
-            <Dialog
-                open={editDialogOpen}
-                onClose={() => setEditDialogOpen(false)}
-                fullWidth
-                maxWidth="xl"
-            >
-                <Form
-                    name={GlobalConstants.EVENT}
-                    buttonLabel="save"
-                    readOnly={false}
-                    action={updateEventById}
-                    defaultValues={event}
-                    editable={isUserHost(user, event)}
-                />
-                <Button onClick={() => setEditDialogOpen(false)}>cancel</Button>
-            </Dialog>
         </Suspense>
     );
 };
