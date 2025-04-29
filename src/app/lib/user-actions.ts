@@ -193,13 +193,15 @@ export const resetUserCredentials = async (
     const newActionState = { ...currentActionState };
     const userEmail = fieldValues.email;
 
-    // Check if user exists. If not, return ambiguous error message to
+    // Check if user has existing credentials. If not, return ambiguous error message to
     // prevent revealing if the email is registered or not.
     newActionState.status = 200;
     newActionState.errorMsg = "";
     newActionState.result = "New credentials sent to your email if we have it on record";
-    const user = await getUserByUniqueKey(GlobalConstants.EMAIL, userEmail);
-    if (isMembershipExpired(user)) {
+    const userCredentials = await prisma.userCredentials.findUnique({
+        where: { email: userEmail },
+    });
+    if (!userCredentials) {
         return newActionState;
     }
 
