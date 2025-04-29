@@ -67,7 +67,7 @@ const EventsTab: React.FC = () => {
                                         size="small"
                                         onClick={() =>
                                             navigateToRoute(
-                                                `${process.env.NEXT_PUBLIC_API_URL}/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]}`,
+                                                `/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]}`,
                                                 router,
                                             )
                                         }
