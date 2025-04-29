@@ -9,6 +9,7 @@ import { getFilteredTasks } from "../../../../lib/task-actions";
 import GlobalConstants from "../../../../GlobalConstants";
 import { defaultActionState as defaultDatagridActionState } from "../../../../ui/Datagrid";
 import { startTransition, useActionState, useEffect } from "react";
+import { Typography } from "@mui/material";
 
 const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
     const { user } = useUserContext();
@@ -34,13 +35,18 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
         <>
             {(isUserHost(user, event) && isEventPublished(event)) ||
             isUserParticipant(user, event) ? (
-                <KanBanBoard
-                    event={event}
-                    tasks={tasksActionState.result}
-                    fetchDbTasks={fetchTasksAction}
-                    readOnly={readOnly}
-                    isTasksPending={isTasksPending}
-                />
+                <>
+                    <Typography textAlign="center" variant="h4" color="primary">
+                        Assign yourself to tasks and shifts to help make the event happen
+                    </Typography>
+                    <KanBanBoard
+                        event={event}
+                        tasks={tasksActionState.result}
+                        fetchDbTasks={fetchTasksAction}
+                        readOnly={readOnly}
+                        isTasksPending={isTasksPending}
+                    />
+                </>
             ) : (
                 <TaskMenu
                     event={event}

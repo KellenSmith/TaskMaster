@@ -19,7 +19,7 @@ import { ExpandMore } from "@mui/icons-material";
 
 const sendToOptions = {
     ALL: "All",
-    CONSENTING: "Consenting",
+    CONSENTING: "Consenting to newsletters",
 };
 
 const SendoutPage: FC = () => {

@@ -35,6 +35,7 @@ export const FieldLabels = {
     [GlobalConstants.NEW_PASSWORD]: "New Password",
     [GlobalConstants.REPEAT_PASSWORD]: "Repeat Password",
     //Event
+    [GlobalConstants.EVENT]: "Event",
     [GlobalConstants.TITLE]: "Title",
     [GlobalConstants.LOCATION]: "Location",
     [GlobalConstants.START_TIME]: "Start time",
