@@ -14,7 +14,7 @@ import { FC } from "react";
 interface IAccordionRadioGroup {
     title: string;
     value: string;
-    setValue: (value: string) => void;
+    setValue: Function;
     valueOptions: { [key: string]: string };
 }
 

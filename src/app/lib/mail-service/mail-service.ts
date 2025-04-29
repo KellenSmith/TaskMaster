@@ -8,7 +8,7 @@ import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
-import { defaultActionState, FormActionState } from "../../ui/form/Form";
+import { FormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 
 interface EmailPayload {
