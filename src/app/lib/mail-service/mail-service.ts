@@ -8,7 +8,7 @@ import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
-import { FormActionState } from "../../ui/form/Form";
+import { defaultActionState, FormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 
 interface EmailPayload {
@@ -95,6 +95,9 @@ export const sendMassEmail = async (
         const recipients = (
             await prisma.user.findMany({
                 where: fieldValues[GlobalConstants.RECIPIENT_CRITERIA],
+                select: {
+                    email: true,
+                },
             })
         ).map((user) => user.email);
 

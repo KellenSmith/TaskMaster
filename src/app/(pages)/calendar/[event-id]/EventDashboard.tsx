@@ -1,6 +1,15 @@
 "use client";
 
-import { Accordion, Stack, Tab, Tabs, Typography, Paper, AccordionSummary } from "@mui/material";
+import {
+    Accordion,
+    Stack,
+    Tab,
+    Tabs,
+    Typography,
+    Paper,
+    AccordionSummary,
+    useTheme,
+} from "@mui/material";
 import {
     CalendarMonth,
     LocationOn,
@@ -27,10 +36,12 @@ import { defaultActionState as defaultDatagridActionState } from "../../../ui/Da
 import { getUserNicknames } from "../../../lib/user-actions";
 import { isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
+import ConfirmButton from "../../../ui/ConfirmButton";
 
 export const tabs = { event: "Event", details: "Details", tasks: "Participate" };
 
 const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
+    const theme = useTheme();
     const { user } = useUserContext();
     const [eventActionState, setEventActionState] = useState(defaultFormActionState);
     const [participantNicknames, setParticipantNicknames] = useState<string[]>([]);
@@ -49,10 +60,9 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     }, [event.participantUsers]);
 
     const getHostNickname = () => {
-        const host = participantNicknames.find(
-            (user) => user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID],
-        );
-        return host ? host[GlobalConstants.NICKNAME] : "Unknown";
+        if (!event) return "Pending";
+        const host = event[GlobalConstants.HOST];
+        return host[GlobalConstants.NICKNAME];
     };
 
     const removeUserFromParticipantList = async (userId: string): Promise<FormActionState> => {
@@ -137,29 +147,35 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                                     <Stack spacing={1} sx={{ overflowY: "auto" }}>
                                         {participantNicknames.map((participant) => (
                                             <Stack
-                                                key={participant[GlobalConstants.ID]}
                                                 direction="row"
-                                                alignItems="center"
-                                                justifyContent={"space-between"}
-                                                padding={2}
+                                                key={participant[GlobalConstants.ID]}
+                                                sx={{
+                                                    alignItems: "center",
+                                                    justifyContent: "space-between",
+                                                    paddingLeft: 2,
+                                                    paddingRight: 2,
+                                                    "&:hover": {
+                                                        backgroundColor: theme.palette.divider,
+                                                    },
+                                                }}
                                             >
                                                 <Stack direction="row" alignItems="center">
-                                                    <Person
-                                                        color="primary"
-                                                        sx={{ marginRight: 2 }}
-                                                    />
+                                                    <Person color="primary" />
                                                     {participant[GlobalConstants.NICKNAME]}
                                                 </Stack>
-                                                {isUserHost(participant, event) && (
-                                                    <Cancel
-                                                        sx={{ padding: 2, cursor: "pointer" }}
-                                                        onClick={async () =>
-                                                            removeUserFromParticipantList(
-                                                                participant[GlobalConstants.ID],
-                                                            )
-                                                        }
-                                                    />
-                                                )}
+                                                {isUserHost(user, event) &&
+                                                    !isUserHost(participant, event) && (
+                                                        <ConfirmButton
+                                                            size={"small"}
+                                                            onClick={async () =>
+                                                                removeUserFromParticipantList(
+                                                                    participant[GlobalConstants.ID],
+                                                                )
+                                                            }
+                                                        >
+                                                            delete
+                                                        </ConfirmButton>
+                                                    )}
                                             </Stack>
                                         ))}
                                     </Stack>
