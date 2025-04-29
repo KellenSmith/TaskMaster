@@ -59,21 +59,6 @@ const EventPage = () => {
                                     {"This is an event draft. It is only visible to the host."}
                                 </Typography>
                             )}
-                            <TextField
-                                disabled
-                                label={FieldLabels[GlobalConstants.HOST]}
-                                name={GlobalConstants.HOST}
-                                value={
-                                    getEventResult()[GlobalConstants.HOST][GlobalConstants.NICKNAME]
-                                }
-                            />
-                            {!isEventDraft() && (
-                                <ParticipationSection
-                                    event={getEventResult()}
-                                    fetchEventAction={fetchEventAction}
-                                    setOpenTab={setOpenTab}
-                                />
-                            )}
                             <EventDashboard
                                 event={getEventResult()}
                                 fetchEventAction={fetchEventAction}

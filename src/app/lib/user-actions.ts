@@ -359,3 +359,32 @@ export const getUserEvents = async (
     }
     return newActionState;
 };
+
+export const getUserNicknames = async (
+    userIds: string[],
+    currentActionState: DatagridActionState,
+) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        const userNicknames = await prisma.user.findMany({
+            where: {
+                id: {
+                    in: userIds,
+                },
+            },
+            select: {
+                id: true,
+                nickname: true,
+            },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = userNicknames;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = [];
+    }
+    return newActionState;
+};

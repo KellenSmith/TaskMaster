@@ -202,3 +202,28 @@ export const addEventReserve = async (
     }
     return newActionState;
 };
+
+export const deleteEventParticipant = async (
+    userId: string,
+    eventId: string,
+    currentActionState: FormActionState,
+) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.participantInEvent.deleteMany({
+            where: {
+                AND: [{ userId: userId }, { eventId: eventId }],
+            } as Prisma.ParticipantInEventWhereInput,
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `Removed user ${userId} from event ${eventId} participants`;
+    } catch (error) {
+        console.error(error);
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};

@@ -11,10 +11,10 @@ import { FieldLabels } from "./FieldCfg";
 import { Card } from "@mui/material";
 
 interface RichTextFieldProps {
-    fieldId: string;
+    fieldId?: string;
     editMode: boolean;
     value: string;
-    changeFieldValue: Function;
+    changeFieldValue?: Function;
 }
 
 const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode, value, changeFieldValue }) => {
