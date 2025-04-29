@@ -5,6 +5,8 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 import { createEventSchema } from "./zod-schemas";
+import GlobalConstants from "../GlobalConstants";
+import { informOfCancelledEvent } from "./mail-service/mail-service";
 
 export const createEvent = async (
     hostId: string,
@@ -127,16 +129,47 @@ export const updateEvent = async (
     return newActionState;
 };
 
+export const cancelEvent = async (
+    eventId: string,
+    currentActionState: FormActionState,
+): Promise<FormActionState> => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.event.update({
+            where: { id: eventId },
+            data: { status: GlobalConstants.CANCELLED },
+        });
+        await informOfCancelledEvent(eventId);
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `Cancelled event and informed participants`;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
 export const deleteEvent = async (eventId: string, currentActionState: FormActionState) => {
     const newActionState = { ...currentActionState };
 
     try {
-        await prisma.event.delete({
-            where: { id: eventId } as Prisma.EventWhereUniqueInput,
-        });
+        await prisma.$transaction([
+            prisma.reserveInEvent.deleteMany({
+                where: { eventId },
+            }),
+            prisma.participantInEvent.deleteMany({
+                where: { eventId },
+            }),
+            prisma.event.delete({
+                where: { id: eventId },
+            }),
+        ]);
         newActionState.errorMsg = "";
         newActionState.status = 200;
-        newActionState.result = `Deleted event`;
+        newActionState.result = `Deleted event, participants and reserve list`;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;

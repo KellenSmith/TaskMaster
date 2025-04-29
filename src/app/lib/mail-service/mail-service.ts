@@ -8,8 +8,9 @@ import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
-import { FormActionState } from "../../ui/form/Form";
+import { defaultActionState, FormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
+import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 
 interface EmailPayload {
     from: string;
@@ -68,6 +69,48 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
     return mailResponse;
+};
+
+/**
+ * @throws Error if email fails
+ */
+export const informOfCancelledEvent = async (eventId: string): Promise<string[]> => {
+    const newActionState: FormActionState = { ...defaultActionState };
+    try {
+        const participantEmails = (
+            await prisma.participantInEvent.findMany({
+                where: { eventId },
+                select: {
+                    User: {
+                        select: {
+                            email: true,
+                        },
+                    },
+                },
+            })
+        ).map((participant) => participant.User.email);
+        const event = await prisma.event.findUniqueOrThrow({
+            where: { id: eventId },
+            select: { id: true, title: true, fullTicketPrice: true },
+        });
+        const mailContent = createElement(EventCancelledTemplate, {
+            event: event,
+        });
+
+        const mailPayload = await getEmailPayload(
+            participantEmails,
+            `Event ${event.title} cancelled`,
+            mailContent,
+        );
+        const mailResponse = await mailTransport.sendMail(mailPayload);
+        if (mailResponse.error) throw new Error(mailResponse.error.message);
+        newActionState.status = 200;
+        newActionState.errorMsg = "";
+        newActionState.result = `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
+    } catch (error) {
+        console.error("Failed to fetch participant emails:", error);
+        return [];
+    }
 };
 
 export const getEmailRecipientCount = async (

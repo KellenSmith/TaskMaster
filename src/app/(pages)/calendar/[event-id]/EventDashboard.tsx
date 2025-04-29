@@ -33,7 +33,7 @@ import { formatDate } from "../../../ui/utils";
 import RichTextField from "../../../ui/form/RichTextField";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 import { getUserNicknames } from "../../../lib/user-actions";
-import { isEventSoldOut } from "./event-utils";
+import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
 import ConfirmButton from "../../../ui/ConfirmButton";
 
@@ -81,8 +81,16 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
 
     return (
         <Suspense>
-            <Typography variant="h4" color="primary" gutterBottom>
-                {`${event[GlobalConstants.TITLE]} ${isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
+            <Typography
+                variant="h4"
+                sx={{
+                    color: isEventCancelled(event)
+                        ? theme.palette.error.main
+                        : theme.palette.primary.main,
+                    textDecoration: isEventCancelled(event) ? "line-through" : "none",
+                }}
+            >
+                {`${event[GlobalConstants.TITLE]} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
             </Typography>
             <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
                 {Object.keys(tabs).map((tab) => (

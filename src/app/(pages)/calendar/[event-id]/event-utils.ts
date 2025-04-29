@@ -71,3 +71,6 @@ export const getSortedTaskComps = (taskList, getTaskShiftsComp) => {
 export const isEventSoldOut = (event: any) =>
     event &&
     event[GlobalConstants.PARTICIPANT_USERS]?.length >= event[GlobalConstants.MAX_PARTICIPANTS];
+
+export const isEventCancelled = (event: any) =>
+    event && event[GlobalConstants.STATUS] === GlobalConstants.CANCELLED;
