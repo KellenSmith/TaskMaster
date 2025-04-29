@@ -136,14 +136,14 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
             );
         } else {
             ActionButtons.push(
-                <Button
+                <ConfirmButton
                     key="leave"
                     onClick={async () =>
                         await removeUserFromParticipantList(user[GlobalConstants.ID])
                     }
                 >
                     leave participant list
-                </Button>,
+                </ConfirmButton>,
             );
         }
         return ActionButtons;
