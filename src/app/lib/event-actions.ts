@@ -26,6 +26,12 @@ export const createEvent = async (
                 },
             },
         });
+        await prisma.participantInEvent.create({
+            data: {
+                userId: hostId,
+                eventId: createdEvent.id,
+            },
+        });
         newActionState.errorMsg = "";
         newActionState.status = 201;
         newActionState.result = createdEvent.id;
@@ -190,6 +196,56 @@ export const addEventReserve = async (
         newActionState.status = 200;
         newActionState.result = `Successfully added to reserve list`;
     } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const deleteEventParticipant = async (
+    userId: string,
+    eventId: string,
+    currentActionState: FormActionState,
+) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.participantInEvent.deleteMany({
+            where: {
+                AND: [{ userId: userId }, { eventId: eventId }],
+            } as Prisma.ParticipantInEventWhereInput,
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `Removed user ${userId} from event ${eventId} participants`;
+    } catch (error) {
+        console.error(error);
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const deleteEventReserve = async (
+    userId: string,
+    eventId: string,
+    currentActionState: FormActionState,
+) => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        await prisma.reserveInEvent.deleteMany({
+            where: {
+                AND: [{ userId: userId }, { eventId: eventId }],
+            } as Prisma.ReserveInEventWhereInput,
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = `Removed user ${userId} from event ${eventId} reserves`;
+    } catch (error) {
+        console.error(error);
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
         newActionState.result = "";

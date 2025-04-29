@@ -422,7 +422,7 @@ const TaskMenu = ({
                         ))}
                     </Stack>
                     {readOnly && (
-                        <Stack component={Paper} spacing={2} width="100%">
+                        <Stack component={Paper} spacing={2} padding={2} width="100%">
                             <Typography variant="h6" color={theme.palette.primary.main}>
                                 My tasks
                             </Typography>

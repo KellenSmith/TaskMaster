@@ -67,3 +67,7 @@ export const getSortedTaskComps = (taskList, getTaskShiftsComp) => {
     );
     return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
 };
+
+export const isEventSoldOut = (event: any) =>
+    event &&
+    event[GlobalConstants.PARTICIPANT_USERS]?.length >= event[GlobalConstants.MAX_PARTICIPANTS];
