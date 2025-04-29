@@ -367,62 +367,78 @@ const TaskMenu = ({
             <Stack spacing={2}>
                 <Stack direction="row" spacing={2}>
                     <Stack spacing={2} width="100%">
-                        {[
-                            GlobalConstants.BEFORE,
-                            GlobalConstants.DURING,
-                            GlobalConstants.AFTER,
-                        ].map((phase) => (
-                            <Accordion key={phase}>
-                                <AccordionSummary
-                                    sx={{
-                                        textTransform: "capitalize",
-                                        justifyContent: "space-between",
-                                        "&.MuiAccordionSummary-content": { alignItems: "center" },
-                                    }}
-                                    expandIcon={<ExpandMore />}
-                                >
-                                    <Typography>{phase}</Typography>
-                                </AccordionSummary>
-                                {!readOnly && (
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={
-                                                    taskOptions.filter(
-                                                        (task) =>
-                                                            task[GlobalConstants.PHASE] === phase,
-                                                    ).length < 1
-                                                }
-                                                onChange={() => toggleAllTasksForPhase(phase)}
-                                            />
-                                        }
-                                        label="Toggle All"
-                                    />
-                                )}
-                                <FormGroup key={`shifts-${phase}`}>
-                                    {isTasksPending ? (
-                                        <CircularProgress />
-                                    ) : (
-                                        getSortedTaskComps(
-                                            [...selectedTasks, ...taskOptions].filter(
-                                                (task) => task[GlobalConstants.PHASE] === phase,
-                                            ),
-                                        )
-                                    )}
-                                </FormGroup>
-                                {!readOnly && (
-                                    <Button
-                                        sx={{ width: "100%" }}
-                                        onClick={() => openAddTask(phase)}
+                        {tasks?.length > 0 ? (
+                            [
+                                GlobalConstants.BEFORE,
+                                GlobalConstants.DURING,
+                                GlobalConstants.AFTER,
+                            ].map((phase) => (
+                                <Accordion key={phase}>
+                                    <AccordionSummary
+                                        sx={{
+                                            textTransform: "capitalize",
+                                            justifyContent: "space-between",
+                                            "&.MuiAccordionSummary-content": {
+                                                alignItems: "center",
+                                            },
+                                        }}
+                                        expandIcon={<ExpandMore />}
                                     >
-                                        add task
-                                    </Button>
-                                )}
-                            </Accordion>
-                        ))}
+                                        <Typography>{phase}</Typography>
+                                    </AccordionSummary>
+                                    {!readOnly && (
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={
+                                                        taskOptions.filter(
+                                                            (task) =>
+                                                                task[GlobalConstants.PHASE] ===
+                                                                phase,
+                                                        ).length < 1
+                                                    }
+                                                    onChange={() => toggleAllTasksForPhase(phase)}
+                                                />
+                                            }
+                                            label="Toggle All"
+                                        />
+                                    )}
+                                    <FormGroup key={`shifts-${phase}`}>
+                                        {isTasksPending ? (
+                                            <CircularProgress />
+                                        ) : (
+                                            getSortedTaskComps(
+                                                [...selectedTasks, ...taskOptions].filter(
+                                                    (task) => task[GlobalConstants.PHASE] === phase,
+                                                ),
+                                            )
+                                        )}
+                                    </FormGroup>
+                                    {!readOnly && (
+                                        <Button
+                                            sx={{ width: "100%" }}
+                                            onClick={() => openAddTask(phase)}
+                                        >
+                                            add task
+                                        </Button>
+                                    )}
+                                </Accordion>
+                            ))
+                        ) : (
+                            <Typography
+                                variant="h5"
+                                textAlign="center"
+                                color="primary"
+                                sx={{ paddingTop: 4 }}
+                            >
+                                Sorry, all volunteer shifts are taken for this event.
+                                <br />
+                                You can still buy a ticket at full price.
+                            </Typography>
+                        )}
                     </Stack>
                     {readOnly && (
-                        <Stack component={Paper} spacing={2} width="100%">
+                        <Stack component={Paper} spacing={2} padding={2} width="100%">
                             <Typography variant="h6" color={theme.palette.primary.main}>
                                 My tasks
                             </Typography>

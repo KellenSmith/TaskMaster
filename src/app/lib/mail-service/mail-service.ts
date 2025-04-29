@@ -95,6 +95,9 @@ export const sendMassEmail = async (
         const recipients = (
             await prisma.user.findMany({
                 where: fieldValues[GlobalConstants.RECIPIENT_CRITERIA],
+                select: {
+                    email: true,
+                },
             })
         ).map((user) => user.email);
 

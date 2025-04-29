@@ -47,7 +47,7 @@ const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {
     const getContent = () => {
         if (isUserHost(user, event)) return;
         if (isUserParticipant(user, event))
-            return <Typography color="primary">See you there!</Typography>;
+            return <Typography color="primary">You have a ticket. See you there!</Typography>;
         if (isUserReserve())
             return (
                 <Typography color="primary" maxWidth="25%">

@@ -222,7 +222,7 @@ const Form: FC<FormProps> = ({
                 {editable &&
                     (editMode ? (
                         <Cancel
-                            sx={{ padding: 2 }}
+                            sx={{ padding: 2, cursor: "pointer" }}
                             onClick={() => {
                                 setFieldValues(getFieldValues(name, defaultValues));
                                 setEditMode(false);
