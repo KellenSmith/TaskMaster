@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-const ConfirmButton = ({ onClick, children, ...buttonProps }) => {
+const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) => {
     const [open, setOpen] = useState(false);
     return (
         <>
@@ -19,7 +19,7 @@ const ConfirmButton = ({ onClick, children, ...buttonProps }) => {
                 <DialogTitle>Please confirm</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        This action is irreversible. Are you sure?
+                        {confirmText || "This action is irreversible. Are you sure?"}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
