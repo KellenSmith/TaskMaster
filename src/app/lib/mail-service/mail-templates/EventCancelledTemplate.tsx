@@ -5,9 +5,9 @@ import GlobalConstants from "../../../GlobalConstants";
 
 interface EventCancelledTemplateProps {
     event: {
-        [GlobalConstants.ID]: string;
-        [GlobalConstants.TITLE]: string;
-        [GlobalConstants.FULL_TICKET_PRICE]: number;
+        id: string;
+        title: string;
+        fullTicketPrice: number;
     };
 }
 
