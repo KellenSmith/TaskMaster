@@ -22,6 +22,8 @@ import { navigateToRoute } from "../../../ui/utils";
 import { useRouter } from "next/navigation";
 import { sendMassEmail } from "../../../lib/mail-service/mail-service";
 import AccordionRadioGroup from "../../../ui/AccordionRadioGroup";
+import { pdf } from "@react-pdf/renderer";
+import ParticipantListPDF from "./ParticipantListPDF";
 
 interface IEventActions {
     event: any;
@@ -114,6 +116,12 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
         );
     };
 
+    const printParticipantList = async () => {
+        const taskSchedule = await pdf(<ParticipantListPDF event={event} />).toBlob();
+        const url = URL.createObjectURL(taskSchedule);
+        window.open(url, "_blank");
+    };
+
     const getActionButtons = () => {
         const ActionButtons = [];
         if (isUserHost(user, event)) {
@@ -150,6 +158,9 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                     onClick={() => setDialogOpen(GlobalConstants.SENDOUT)}
                 >
                     send mail to users
+                </Button>,
+                <Button key="print" onClick={printParticipantList}>
+                    print participant list
                 </Button>,
                 <Button key="edit" onClick={() => setDialogOpen(GlobalConstants.EVENT)}>
                     edit event details

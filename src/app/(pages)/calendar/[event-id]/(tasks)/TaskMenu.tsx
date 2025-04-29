@@ -28,7 +28,7 @@ import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { getLatestEndTime, isUserParticipant, sortGroupedTasks } from "../event-utils";
-import { membershipExpiresAt } from "../../../../lib/definitions";
+import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
 import { addEventParticipant } from "../../../../lib/event-actions";
@@ -367,7 +367,7 @@ const TaskMenu = ({
             <Stack spacing={2}>
                 <Stack direction="row" spacing={2}>
                     <Stack spacing={2} width="100%">
-                        {tasks?.length > 0 ? (
+                        {isUserHost(user, event) || tasks?.length > 0 ? (
                             [
                                 GlobalConstants.BEFORE,
                                 GlobalConstants.DURING,

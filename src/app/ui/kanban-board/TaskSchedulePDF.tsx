@@ -1,48 +1,11 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View } from "@react-pdf/renderer";
 import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../utils";
 import { sortGroupedTasks } from "../../(pages)/calendar/[event-id]/event-utils";
-import { blueGrey } from "@mui/material/colors";
 import dayjs from "dayjs";
+import { styles } from "../pdf-styles";
 
-// Define styles for the PDF document
-const styles = StyleSheet.create({
-    page: {
-        padding: 20,
-        fontSize: 10,
-    },
-    table: {
-        width: "auto",
-        borderStyle: "solid",
-        borderWidth: 1,
-        borderColor: "#ddd",
-    },
-    tableRow: {
-        flexDirection: "row",
-    },
-    taskGroup: {
-        borderTop: 2,
-        borderBottom: 2,
-        borderStyle: "solid",
-        borderColor: "#999",
-        paddingTop: 2,
-        paddingBottom: 2,
-        marginBottom: 5,
-    },
-    tableCell: {
-        borderStyle: "solid",
-        borderWidth: 1,
-        borderColor: "#ddd",
-        padding: 5,
-        textAlign: "center",
-        maxWidth: "100%",
-        flexShrink: 1,
-        flexGrow: 0,
-    },
-    headerCell: {
-        fontWeight: "bold",
-        backgroundColor: blueGrey[600],
-    },
+const customStyles = {
     // Add new column-specific styles
     columnTask: {
         width: "35%", // Task name gets more space
@@ -56,40 +19,22 @@ const styles = StyleSheet.create({
         width: "25%", // Assignee
         minHeight: 20,
     },
-    eventHeader: {
-        fontSize: 14,
-        fontWeight: "bold",
-        marginBottom: 10,
-        textAlign: "center",
-    },
-    eventDetails: {
-        marginBottom: 15,
-    },
-    eventDetailRow: {
-        flexDirection: "row",
-        marginBottom: 5,
-        fontSize: 12,
-    },
-    eventDetailLabel: {
-        fontWeight: "bold",
-        width: 100,
-    },
-});
+};
 
 // Create a PDF document component
 const TaskSchedulePDF = ({ event = null, tasks }) => {
     const getTaskRow = (task) => (
         <View style={styles.tableRow} key={task[GlobalConstants.ID]}>
-            <Text wrap={true} style={{ ...styles.tableCell, ...styles.columnTask }}>
+            <Text wrap={true} style={{ ...styles.tableCell, ...customStyles.columnTask }}>
                 {task[GlobalConstants.NAME]}
             </Text>
-            <Text style={{ ...styles.tableCell, ...styles.columnDate }}>
+            <Text style={{ ...styles.tableCell, ...customStyles.columnDate }}>
                 {formatDate(task[GlobalConstants.START_TIME])}
             </Text>
-            <Text style={{ ...styles.tableCell, ...styles.columnDate }}>
+            <Text style={{ ...styles.tableCell, ...customStyles.columnDate }}>
                 {formatDate(task[GlobalConstants.END_TIME])}
             </Text>
-            <Text style={{ ...styles.tableCell, ...styles.columnAssignee }}>
+            <Text style={{ ...styles.tableCell, ...customStyles.columnAssignee }}>
                 {task[GlobalConstants.ASSIGNEE_ID]}
             </Text>
         </View>
@@ -135,43 +80,19 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
                 <View style={styles.table}>
                     {/* Table Header */}
                     <View style={[styles.tableRow, styles.headerCell]}>
-                        <Text
-                            wrap={true}
-                            style={{
-                                ...styles.tableCell,
-                                ...styles.headerCell,
-                                ...styles.columnTask,
-                            }}
-                        >
-                            Task Name
-                        </Text>
-                        <Text
-                            style={{
-                                ...styles.tableCell,
-                                ...styles.headerCell,
-                                ...styles.columnDate,
-                            }}
-                        >
-                            Start Time
-                        </Text>
-                        <Text
-                            style={{
-                                ...styles.tableCell,
-                                ...styles.headerCell,
-                                ...styles.columnDate,
-                            }}
-                        >
-                            End Time
-                        </Text>
-                        <Text
-                            style={{
-                                ...styles.tableCell,
-                                ...styles.headerCell,
-                                ...styles.columnAssignee,
-                            }}
-                        >
-                            Assignee
-                        </Text>
+                        {["Task Name", "Start Time", "End Time", "Assignee"].map((header) => (
+                            <Text
+                                key={header}
+                                wrap={true}
+                                style={{
+                                    ...styles.tableCell,
+                                    ...styles.headerCell,
+                                    ...customStyles.columnTask,
+                                }}
+                            >
+                                {header}
+                            </Text>
+                        ))}
                     </View>
                     {/* Table Body */}
                     {getSortedTaskComps()}

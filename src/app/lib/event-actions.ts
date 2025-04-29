@@ -81,7 +81,13 @@ export const getEventById = async (
                 },
                 participantUsers: {
                     select: {
-                        userId: true,
+                        User: {
+                            select: {
+                                id: true,
+                                nickname: true,
+                                email: true,
+                            },
+                        },
                     },
                 },
                 reserveUsers: {
