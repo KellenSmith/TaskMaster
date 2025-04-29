@@ -26,6 +26,12 @@ export const createEvent = async (
                 },
             },
         });
+        await prisma.participantInEvent.create({
+            data: {
+                userId: hostId,
+                eventId: createdEvent.id,
+            },
+        });
         newActionState.errorMsg = "";
         newActionState.status = 201;
         newActionState.result = createdEvent.id;
