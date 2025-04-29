@@ -4,11 +4,9 @@ import { usePathname } from "next/navigation";
 import { getEventById } from "../../../lib/event-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
-import { CircularProgress, Stack, TextField, Typography, useTheme } from "@mui/material";
+import { CircularProgress, Stack, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../../GlobalConstants";
-import { FieldLabels } from "../../../ui/form/FieldCfg";
 import { useUserContext } from "../../../context/UserContext";
-import ParticipationSection from "./ParticipationSection";
 import EventDashboard, { tabs } from "./EventDashboard";
 
 const EventPage = () => {

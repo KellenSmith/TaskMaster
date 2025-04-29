@@ -8,17 +8,13 @@ import {
     Tab,
     Tabs,
     Typography,
-    Box,
-    Chip,
     Paper,
-    Avatar,
     AccordionSummary,
 } from "@mui/material";
 import {
     CalendarMonth,
     LocationOn,
     Person,
-    Groups,
     AttachMoney,
     ExpandMore,
     Group,
@@ -26,7 +22,7 @@ import {
 } from "@mui/icons-material";
 import GlobalConstants from "../../../GlobalConstants";
 import { startTransition, Suspense, useEffect, useState } from "react";
-import { isUserAdmin, isUserHost } from "../../../lib/definitions";
+import { isUserHost } from "../../../lib/definitions";
 import { useUserContext } from "../../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
 import Form, {
