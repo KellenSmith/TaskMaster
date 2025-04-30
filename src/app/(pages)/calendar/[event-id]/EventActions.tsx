@@ -9,18 +9,21 @@ import { Prisma } from "@prisma/client";
 import Form, { defaultActionState, FormActionState, getFormActionMsg } from "../../../ui/form/Form";
 import {
     addEventReserve,
+    cancelEvent,
     deleteEvent,
     deleteEventParticipant,
     deleteEventReserve,
     updateEvent,
 } from "../../../lib/event-actions";
 import { tabs } from "./EventDashboard";
-import { isEventSoldOut, isUserParticipant } from "./event-utils";
+import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
 import ConfirmButton from "../../../ui/ConfirmButton";
 import { navigateToRoute } from "../../../ui/utils";
 import { useRouter } from "next/navigation";
 import { sendMassEmail } from "../../../lib/mail-service/mail-service";
 import AccordionRadioGroup from "../../../ui/AccordionRadioGroup";
+import { pdf } from "@react-pdf/renderer";
+import ParticipantListPDF from "./ParticipantListPDF";
 
 interface IEventActions {
     event: any;
@@ -58,6 +61,12 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
             updateEvent(event[GlobalConstants.ID], currentActionState, {
                 status: GlobalConstants.PUBLISHED,
             }),
+        defaultActionState,
+    );
+
+    const [cancelActionState, cancelAction, isCancelPending] = useActionState(
+        (currentActionState: FormActionState) =>
+            cancelEvent(event[GlobalConstants.ID], currentActionState),
         defaultActionState,
     );
 
@@ -107,10 +116,20 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
         );
     };
 
+    const printParticipantList = async () => {
+        const taskSchedule = await pdf(<ParticipantListPDF event={event} />).toBlob();
+        const url = URL.createObjectURL(taskSchedule);
+        window.open(url, "_blank");
+    };
+
     const getActionButtons = () => {
         const ActionButtons = [];
         if (isUserHost(user, event)) {
-            if (event[GlobalConstants.STATUS] === GlobalConstants.DRAFT) {
+            if (
+                [GlobalConstants.DRAFT, GlobalConstants.CANCELLED].includes(
+                    event[GlobalConstants.STATUS],
+                )
+            ) {
                 ActionButtons.push(
                     <ConfirmButton
                         key="publish"
@@ -118,11 +137,22 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                         disabled={isPublishPending}
                         onClick={() => actAndUpdateEvent(publishAction)}
                     >
-                        publish
+                        publish event
+                    </ConfirmButton>,
+                );
+            } else {
+                ActionButtons.push(
+                    <ConfirmButton
+                        key="cancel"
+                        color="error"
+                        disabled={isCancelPending}
+                        confirmText={`An info email will be sent to all ${event[GlobalConstants.PARTICIPANT_USERS].length} participants. Are you sure?`}
+                        onClick={() => actAndUpdateEvent(cancelAction)}
+                    >
+                        cancel event
                     </ConfirmButton>,
                 );
             }
-
             ActionButtons.push(
                 <Button
                     key={GlobalConstants.SENDOUT}
@@ -130,18 +160,25 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                 >
                     send mail to users
                 </Button>,
+                <Button key="print" onClick={printParticipantList}>
+                    print participant list
+                </Button>,
                 <Button key="edit" onClick={() => setDialogOpen(GlobalConstants.EVENT)}>
                     edit event details
                 </Button>,
-                <ConfirmButton
-                    key="delete"
-                    color="error"
-                    disabled={isDeletePending}
-                    onClick={() => actAndUpdateEvent(deleteAction)}
-                >
-                    delete
-                </ConfirmButton>,
             );
+            // Only allow deleting events that only the host is participating in
+            if (event[GlobalConstants.PARTICIPANT_USERS]?.length === 1)
+                ActionButtons.push(
+                    <ConfirmButton
+                        key="delete"
+                        color="error"
+                        disabled={isDeletePending}
+                        onClick={() => actAndUpdateEvent(deleteAction)}
+                    >
+                        delete
+                    </ConfirmButton>,
+                );
         } else {
             if (isUserParticipant(user, event))
                 ActionButtons.push(
@@ -153,7 +190,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                         leave participant list
                     </ConfirmButton>,
                 );
-            else {
+            else if (!isEventCancelled(event)) {
                 if (isEventSoldOut(event)) {
                     if (findReserveUserIndexById() > -1)
                         ActionButtons.push(
@@ -249,6 +286,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
             {getFormActionMsg(addReserveActionState)}
             {getFormActionMsg(deleteActionState)}
             {getFormActionMsg(publishActionState)}
+            {getFormActionMsg(cancelActionState)}
             {getFormActionMsg(removeParticipantActionState)}
             {getFormActionMsg(removeReserveActionState)}
             <Dialog open={!!dialogOpen} onClose={() => setDialogOpen("")} fullWidth maxWidth="xl">

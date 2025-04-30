@@ -131,7 +131,6 @@ const DroppableColumn = ({
 
     const openAddTaskDialog = (shiftProps = {}) => {
         const defaultTask = {
-            ...(event && { [GlobalConstants.EVENT_ID]: event[GlobalConstants.ID] }),
             [GlobalConstants.STATUS]: status,
             [GlobalConstants.PHASE]: GlobalConstants.BEFORE,
             ...shiftProps,
@@ -143,6 +142,7 @@ const DroppableColumn = ({
         currentActionState: FormActionState,
         fieldValues: Prisma.TaskCreateInput,
     ): Promise<FormActionState> => {
+        if (event) fieldValues[GlobalConstants.EVENT_ID] = event[GlobalConstants.ID];
         const createTaskResult = await createTask(taskActionState, { ...addTask, ...fieldValues });
         setTaskActionState(createTaskResult);
         startTransition(() => fetchDbTasks());
@@ -170,7 +170,8 @@ const DroppableColumn = ({
                 <Stack direction="row" justifyContent="space-between">
                     <Typography variant="h6">{status.toUpperCase()}</Typography>
                     {!readOnly && (
-                        <Button onClick={openAddTaskDialog}>
+                        // eslint-disable-next-line no-unused-vars
+                        <Button onClick={(_) => openAddTaskDialog()}>
                             <Add />
                         </Button>
                     )}

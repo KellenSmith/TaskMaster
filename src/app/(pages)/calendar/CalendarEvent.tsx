@@ -28,21 +28,30 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
 
     const goToEventPage = () => navigateToRoute(`${pathname}/${event[GlobalConstants.ID]}`, router);
     return (
-        <Tooltip title={`${formatDate(event.startTime)} - ${formatDate(event.endTime)}`}>
+        <Tooltip
+            title={`${formatDate(event[GlobalConstants.START_TIME])} - ${formatDate(event[GlobalConstants.END_TIME])}`}
+        >
             <Card
                 elevation={0}
                 sx={{
                     backgroundColor:
                         event[GlobalConstants.STATUS] === GlobalConstants.DRAFT
                             ? theme.palette.primary.light
-                            : theme.palette.primary.dark,
+                            : event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED
+                              ? theme.palette.primary.dark
+                              : theme.palette.error.dark,
                     ...(user && { cursor: "pointer" }),
+                    textDecoration:
+                        event[GlobalConstants.STATUS] === GlobalConstants.CANCELLED
+                            ? "line-through"
+                            : "none",
+                    paddingLeft: 1,
                 }}
                 {...(user && {
                     onClick: goToEventPage,
                 })}
             >
-                {event.title}
+                {event[GlobalConstants.TITLE]}
             </Card>
         </Tooltip>
     );

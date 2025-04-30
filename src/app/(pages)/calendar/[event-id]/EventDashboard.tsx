@@ -19,7 +19,7 @@ import {
     Group,
 } from "@mui/icons-material";
 import GlobalConstants from "../../../GlobalConstants";
-import { startTransition, Suspense, useEffect, useState } from "react";
+import { startTransition, Suspense, useState } from "react";
 import { isUserHost } from "../../../lib/definitions";
 import { useUserContext } from "../../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
@@ -31,9 +31,7 @@ import {
 import { deleteEventParticipant } from "../../../lib/event-actions";
 import { formatDate } from "../../../ui/utils";
 import RichTextField from "../../../ui/form/RichTextField";
-import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
-import { getUserNicknames } from "../../../lib/user-actions";
-import { isEventSoldOut } from "./event-utils";
+import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
 import ConfirmButton from "../../../ui/ConfirmButton";
 
@@ -43,20 +41,6 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const theme = useTheme();
     const { user } = useUserContext();
     const [eventActionState, setEventActionState] = useState(defaultFormActionState);
-    const [participantNicknames, setParticipantNicknames] = useState<string[]>([]);
-
-    useEffect(() => {
-        const fetchParticipantNicknames = async () => {
-            if (event.participantUsers?.length > 0) {
-                const userIds = event.participantUsers.map((participant) => participant.userId);
-                const nicknameResult = await getUserNicknames(userIds, defaultDatagridActionState);
-                if (nicknameResult.status === 200) {
-                    setParticipantNicknames(nicknameResult.result);
-                }
-            }
-        };
-        fetchParticipantNicknames();
-    }, [event.participantUsers]);
 
     const getHostNickname = () => {
         if (!event) return "Pending";
@@ -81,8 +65,16 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
 
     return (
         <Suspense>
-            <Typography variant="h4" color="primary" gutterBottom>
-                {`${event[GlobalConstants.TITLE]} ${isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
+            <Typography
+                variant="h4"
+                sx={{
+                    color: isEventCancelled(event)
+                        ? theme.palette.error.main
+                        : theme.palette.primary.main,
+                    textDecoration: isEventCancelled(event) ? "line-through" : "none",
+                }}
+            >
+                {`${event[GlobalConstants.TITLE]} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
             </Typography>
             <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
                 {Object.keys(tabs).map((tab) => (
@@ -144,39 +136,43 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                                         <Typography>{`Participants (${event.participantUsers.length})`}</Typography>
                                     </AccordionSummary>
                                     <Stack spacing={1} sx={{ overflowY: "auto" }}>
-                                        {participantNicknames.map((participant) => (
-                                            <Stack
-                                                direction="row"
-                                                key={participant[GlobalConstants.ID]}
-                                                sx={{
-                                                    alignItems: "center",
-                                                    justifyContent: "space-between",
-                                                    paddingLeft: 2,
-                                                    paddingRight: 2,
-                                                    "&:hover": {
-                                                        backgroundColor: theme.palette.divider,
-                                                    },
-                                                }}
-                                            >
-                                                <Stack direction="row" alignItems="center">
-                                                    <Person color="primary" />
-                                                    {participant[GlobalConstants.NICKNAME]}
+                                        {event[GlobalConstants.PARTICIPANT_USERS].map(
+                                            (participant) => (
+                                                <Stack
+                                                    direction="row"
+                                                    key={participant.User[GlobalConstants.ID]}
+                                                    sx={{
+                                                        alignItems: "center",
+                                                        justifyContent: "space-between",
+                                                        paddingLeft: 2,
+                                                        paddingRight: 2,
+                                                        "&:hover": {
+                                                            backgroundColor: theme.palette.divider,
+                                                        },
+                                                    }}
+                                                >
+                                                    <Stack direction="row" alignItems="center">
+                                                        <Person color="primary" />
+                                                        {participant.User[GlobalConstants.NICKNAME]}
+                                                    </Stack>
+                                                    {isUserHost(user, event) &&
+                                                        !isUserHost(participant.User, event) && (
+                                                            <ConfirmButton
+                                                                size={"small"}
+                                                                onClick={async () =>
+                                                                    removeUserFromParticipantList(
+                                                                        participant.User[
+                                                                            GlobalConstants.ID
+                                                                        ],
+                                                                    )
+                                                                }
+                                                            >
+                                                                delete
+                                                            </ConfirmButton>
+                                                        )}
                                                 </Stack>
-                                                {isUserHost(user, event) &&
-                                                    !isUserHost(participant, event) && (
-                                                        <ConfirmButton
-                                                            size={"small"}
-                                                            onClick={async () =>
-                                                                removeUserFromParticipantList(
-                                                                    participant[GlobalConstants.ID],
-                                                                )
-                                                            }
-                                                        >
-                                                            delete
-                                                        </ConfirmButton>
-                                                    )}
-                                            </Stack>
-                                        ))}
+                                            ),
+                                        )}
                                     </Stack>
                                 </Accordion>
                                 {isUserHost(user, event) && (

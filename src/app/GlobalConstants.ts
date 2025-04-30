@@ -65,6 +65,7 @@ const GlobalConstants = {
     STATUS: "status",
     DRAFT: "draft",
     PUBLISHED: "published",
+    CANCELLED: "cancelled",
     HOST: "host",
     HOST_ID: "hostId",
     PARTICIPANT_USERS: "participantUsers",
