@@ -140,7 +140,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                         publish event
                     </ConfirmButton>,
                 );
-            } else
+            } else {
                 ActionButtons.push(
                     <ConfirmButton
                         key="cancel"
@@ -152,6 +152,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                         cancel event
                     </ConfirmButton>,
                 );
+            }
             ActionButtons.push(
                 <Button
                     key={GlobalConstants.SENDOUT}
