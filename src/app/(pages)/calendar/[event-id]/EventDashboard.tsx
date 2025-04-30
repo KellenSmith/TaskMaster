@@ -19,7 +19,7 @@ import {
     Group,
 } from "@mui/icons-material";
 import GlobalConstants from "../../../GlobalConstants";
-import { startTransition, Suspense, useEffect, useState } from "react";
+import { startTransition, Suspense, useState } from "react";
 import { isUserHost } from "../../../lib/definitions";
 import { useUserContext } from "../../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
