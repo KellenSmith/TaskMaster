@@ -170,7 +170,7 @@ const DroppableColumn = ({
                 <Stack direction="row" justifyContent="space-between">
                     <Typography variant="h6">{status.toUpperCase()}</Typography>
                     {!readOnly && (
-                        // eslint-disable-next no-unused-vars
+                        // eslint-disable-next-line no-unused-vars
                         <Button onClick={(_) => openAddTaskDialog()}>
                             <Add />
                         </Button>
