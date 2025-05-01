@@ -77,6 +77,7 @@ const GlobalConstants = {
     STOCK: "stock",
     UNLIMITED_STOCK: "unlimitedStock",
     IMAGE_URL: "imageUrl",
+    MEMBERSHIP_PRODUCT_NAME: "Membership",
     // Task
     TASK: "task",
     TASK_ID: "taskId",
