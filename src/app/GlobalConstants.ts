@@ -71,6 +71,12 @@ const GlobalConstants = {
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueingSince",
+    // Product
+    PRODUCT: "product",
+    PRICE: "price",
+    STOCK: "stock",
+    UNLIMITED_STOCK: "unlimitedStock",
+    IMAGE_URL: "imageUrl",
     // Task
     TASK: "task",
     TASK_ID: "taskId",
