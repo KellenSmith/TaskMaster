@@ -145,7 +145,11 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TASK]: [GlobalConstants.NAME],
+    [GlobalConstants.TASK]: [
+        GlobalConstants.NAME,
+        GlobalConstants.START_TIME,
+        GlobalConstants.END_TIME,
+    ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
 };
 // Apply

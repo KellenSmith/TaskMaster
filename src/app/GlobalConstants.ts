@@ -83,9 +83,9 @@ const GlobalConstants = {
     BEFORE: "before",
     DURING: "during",
     AFTER: "after",
-    TO_DO: "to do",
-    IN_PROGRESS: "in progress",
-    IN_REVIEW: "in review",
+    TO_DO: "toDo",
+    IN_PROGRESS: "inProgress",
+    IN_REVIEW: "inReview",
     DONE: "done",
     // Sendout
     SUBJECT: "subject",

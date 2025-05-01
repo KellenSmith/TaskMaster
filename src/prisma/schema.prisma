@@ -8,26 +8,32 @@ datasource db {
     directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
+enum UserRole {
+    user
+    admin
+}
+
 model User {
     id                   String           @id @default(uuid())
-    firstName            String
-    surName              String
-    nickname             String           @default(uuid())
-    pronoun              String?          @default("")
+    firstName            String           @default("")
+    surName              String           @default("")
+    nickname             String           @default("")
+    pronoun              String?          @default("they/them")
     email                String           @unique
-    phone                String?
+    phone                String?          @default("")
     created              DateTime         @default(now())
     membershipRenewed    DateTime? // Membership is invalid if null or expired
     consentToNewsletters Boolean          @default(true)
-    role                 String           @default("user") // user, admin
+    role                 UserRole         @default(user)
     userCredentials      UserCredentials?
 
     hostingEvents     Event[]
     participantEvents ParticipantInEvent[]
     reserveEvents     ReserveInEvent[]
 
-    assignedTasks Task[] @relation("Assignee")
-    reporterTasks Task[] @relation("Reporter")
+    assignedTasks Task[]  @relation("Assignee")
+    reporterTasks Task[]  @relation("Reporter")
+    Order         Order[]
 
     @@map("users") // Map to table named "users"
 }
@@ -44,16 +50,22 @@ model UserCredentials {
     @@map("user_credentials")
 }
 
+enum EventStatus {
+    draft
+    published
+    cancelled
+}
+
 model Event {
-    id              String   @id @default(uuid())
-    title           String
-    location        String
+    id              String      @id @default(uuid())
+    title           String      @default("")
+    location        String      @default("")
     startTime       DateTime
     endTime         DateTime
-    description     String   @default("")
-    maxParticipants Int
-    fullTicketPrice Int
-    status          String   @default("draft") // draft, published
+    description     String      @default("")
+    maxParticipants Int? // null if unlimited
+    fullTicketPrice Int         @default(0)
+    status          EventStatus @default(draft)
 
     host   User   @relation(fields: [hostId], references: [id])
     hostId String
@@ -90,22 +102,85 @@ model ReserveInEvent {
     @@id([userId, eventId])
 }
 
+enum TaskStatus {
+    toDo
+    inProgress
+    inReview
+    done
+}
+
+enum TaskPhase {
+    before
+    during
+    after
+}
+
 model Task {
     id         String  @id @default(uuid())
     Event      Event?  @relation(fields: [eventId], references: [id])
-    eventId    String? // Tasks without event id are considered defaults
+    eventId    String?
     Assignee   User?   @relation("Assignee", fields: [assigneeId], references: [id])
     assigneeId String?
     Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])
     reporterId String?
 
-    phase       String    @default("before") // before, during, after
-    name        String
-    status      String    @default("to do") // to do, in progress, in review, done
-    tags        String[]  @default([])
+    phase       TaskPhase  @default(before)
+    name        String     @default("")
+    status      TaskStatus @default(toDo)
+    tags        String[]   @default([])
     startTime   DateTime?
     endTime     DateTime?
-    description String    @default("")
+    description String     @default("")
 
     @@map("tasks")
+}
+
+model Product {
+    id             String  @id @default(uuid())
+    name           String  @default("")
+    description    String  @default("")
+    price          Float   @default(0)
+    stock          Int?    @default(0)
+    unlimitedStock Boolean @default(false)
+    imageUrl       String  @default("")
+
+    orderItems OrderItem[]
+
+    @@map("products")
+}
+
+enum OrderStatus {
+    pending
+    paid
+    completed
+    cancelled
+}
+
+model Order {
+    id          String      @id @default(uuid())
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    status      OrderStatus @default(pending)
+    totalAmount Float       @default(0.0)
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String
+
+    orderItems OrderItem[]
+
+    @@map("orders")
+}
+
+model OrderItem {
+    id       String @id @default(uuid())
+    quantity Int    @default(1)
+    price    Float  @default(0)
+
+    order   Order  @relation(fields: [orderId], references: [id])
+    orderId String
+
+    product   Product @relation(fields: [productId], references: [id])
+    productId String
+
+    @@map("order_items")
 }
