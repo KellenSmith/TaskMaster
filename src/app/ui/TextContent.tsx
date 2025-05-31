@@ -8,13 +8,11 @@ import {
     useMemo,
     MouseEvent,
     ChangeEvent,
-    FormEvent,
 } from "react";
 import { getTextContent, updateTextContent } from "../lib/text-content-actions";
 import { defaultActionState, FormActionState } from "./form/Form";
 import {
     CircularProgress,
-    FormControl,
     IconButton,
     Popover,
     Stack,
@@ -81,6 +79,8 @@ const TextContent = ({ id, richText = false }: TextContentProps) => {
         startTransition(() => {
             fetchTextContentAction();
         });
+        // Fetch the text content when the component mounts
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const toggleEditMode = () => {
