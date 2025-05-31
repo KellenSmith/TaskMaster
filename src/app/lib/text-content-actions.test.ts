@@ -53,8 +53,8 @@ describe("Text Content Actions", () => {
     });
 
     describe("getTextContent", () => {
-        it("should get text content successfully", async () => {
-            mockContext.prisma.textContent.findUniqueOrThrow.mockResolvedValue(mockTextContent);
+        it("should get existing text content successfully", async () => {
+            mockContext.prisma.textContent.findUnique.mockResolvedValue(mockTextContent);
 
             const result = await getTextContent(
                 defaultActionState,
@@ -64,18 +64,45 @@ describe("Text Content Actions", () => {
 
             expect(result.status).toBe(200);
             expect(result.result).toBe(mockTextContent.content);
-            expect(mockContext.prisma.textContent.findUniqueOrThrow).toHaveBeenCalledWith({
+            expect(mockContext.prisma.textContent.findUnique).toHaveBeenCalledWith({
                 where: {
-                    id: mockTextContent.id,
-                    language: mockTextContent.language,
+                    id_language: {
+                        id: mockTextContent.id,
+                        language: mockTextContent.language,
+                    },
                 },
                 select: { content: true },
             });
         });
 
-        it("should handle get errors", async () => {
-            mockContext.prisma.textContent.findUniqueOrThrow.mockRejectedValue(
-                new Error("Not found"),
+        it("should create placeholder when text content not found", async () => {
+            mockContext.prisma.textContent.findUnique.mockResolvedValue(null);
+            mockContext.prisma.textContent.create.mockResolvedValue({
+                ...mockTextContent,
+                content: "placeholder",
+                category: "organization",
+            });
+
+            const result = await getTextContent(
+                defaultActionState,
+                mockTextContent.id,
+                mockTextContent.language,
+            );
+
+            expect(result.status).toBe(200);
+            expect(result.result).toBe("placeholder");
+            expect(mockContext.prisma.textContent.create).toHaveBeenCalledWith({
+                data: {
+                    id: mockTextContent.id,
+                    language: mockTextContent.language,
+                    content: "placeholder",
+                },
+            });
+        });
+
+        it("should handle errors", async () => {
+            mockContext.prisma.textContent.findUnique.mockRejectedValue(
+                new Error("Database error"),
             );
 
             const result = await getTextContent(
@@ -85,7 +112,7 @@ describe("Text Content Actions", () => {
             );
 
             expect(result.status).toBe(500);
-            expect(result.errorMsg).toBe("Not found");
+            expect(result.errorMsg).toBe("Database error");
             expect(result.result).toBe("");
         });
     });

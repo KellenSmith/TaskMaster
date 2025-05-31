@@ -1,3 +1,4 @@
+"use server";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { FormActionState } from "../ui/form/Form";
@@ -37,18 +38,30 @@ export const getTextContent = async (
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
-        const textContent = await prisma.textContent.findUniqueOrThrow({
+        let textContent = await prisma.textContent.findUnique({
             where: {
-                id,
-                language,
+                id_language: {
+                    id,
+                    language,
+                },
             },
             select: {
                 content: true,
             },
         });
+
+        if (!textContent) {
+            textContent = await prisma.textContent.create({
+                data: {
+                    id,
+                    language,
+                    content: "placeholder",
+                },
+            });
+        }
+        newActionState.result = textContent.content;
         newActionState.errorMsg = "";
         newActionState.status = 200;
-        newActionState.result = textContent.content;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
