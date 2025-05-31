@@ -21,7 +21,7 @@ export type MockPrisma = {
     };
     textContent: {
         create: any;
-        findUniqueOrThrow: any;
+        findUnique: any;
         update: any;
         delete: any;
     };

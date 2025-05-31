@@ -111,10 +111,10 @@ model Task {
 }
 
 model TextContent {
-    id       String @id
+    id       String  @id
     language String
     content  String
-    category String @default("organization") // ui, email, help, etc.
+    category String? @default("organization") // ui, email, help, etc.
 
     @@unique([id, language])
     @@map("text_contents")
