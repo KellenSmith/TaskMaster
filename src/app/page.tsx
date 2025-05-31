@@ -13,7 +13,7 @@ const Home: React.FC = () => {
             <Typography textAlign="center" color={theme.palette.text.primary} variant="h3">
                 {`Welcome to ${process.env.NEXT_PUBLIC_ORG_NAME}`}
             </Typography>
-            <TextContent id={GlobalConstants.HOME} />
+            <TextContent id={GlobalConstants.HOME} richText={true} />
         </Stack>
     );
 };

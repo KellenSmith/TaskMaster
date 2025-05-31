@@ -115,11 +115,7 @@ const TextContent = ({ id, richText = false }: TextContentProps) => {
                     }}
                 />
             );
-        return (
-            <Typography textAlign="center" color={theme.palette.text.primary} variant="h5">
-                {fetchTextContentState.result}
-            </Typography>
-        );
+        return <Typography>{fetchTextContentState.result}</Typography>;
     };
 
     return (
