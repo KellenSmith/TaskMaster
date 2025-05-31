@@ -109,3 +109,13 @@ model Task {
 
     @@map("tasks")
 }
+
+model TextContent {
+    id       String  @id
+    language String
+    content  String
+    category String? @default("organization") // ui, email, help, etc.
+
+    @@unique([id, language])
+    @@map("text_contents")
+}

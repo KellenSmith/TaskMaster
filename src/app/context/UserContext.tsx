@@ -15,6 +15,7 @@ import { defaultActionState, FormActionState } from "../ui/form/Form";
 import { useRouter } from "next/navigation";
 import { LoginSchema } from "../lib/definitions";
 import { navigateToRoute } from "../ui/utils";
+import GlobalConstants from "../GlobalConstants";
 
 export const UserContext = createContext(null);
 
@@ -30,6 +31,7 @@ interface UserContextProviderProps {
 
 const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
     const router = useRouter();
 
     const updateLoggedInUser = async () => {
@@ -68,7 +70,14 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
 
     return (
         <UserContext.Provider
-            value={{ user, logOut, login: loginAndUpdateUser, updateLoggedInUser }}
+            value={{
+                user,
+                logOut,
+                login: loginAndUpdateUser,
+                updateLoggedInUser,
+                language,
+                setLanguage,
+            }}
         >
             {children}
         </UserContext.Provider>

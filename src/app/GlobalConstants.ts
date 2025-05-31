@@ -91,6 +91,12 @@ const GlobalConstants = {
     SUBJECT: "subject",
     CONTENT: "content",
     RECIPIENT_CRITERIA: "recipientCriteria",
+    // TextContent
+    LANGUAGE: "language",
+    ENGLISH: "english",
+    CATEGORY: "category",
+    ABOUT: "about",
+    CONTACT: "contact",
 };
 
 export default GlobalConstants;

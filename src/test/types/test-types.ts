@@ -19,6 +19,12 @@ export type MockPrisma = {
     event: {
         findMany: any;
     };
+    textContent: {
+        create: any;
+        findUnique: any;
+        update: any;
+        delete: any;
+    };
 };
 
 export type TestContext = {
