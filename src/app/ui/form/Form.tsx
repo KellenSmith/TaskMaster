@@ -63,6 +63,7 @@ interface FormProps {
     buttonLabel?: string;
     action?: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
     defaultValues?: any;
+    customOptions?: Object; // Additional options for Autocomplete field , if needed
     readOnly?: boolean;
     editable?: boolean;
 }
@@ -95,6 +96,7 @@ const Form: FC<FormProps> = ({
     buttonLabel,
     action,
     defaultValues,
+    customOptions = {},
     readOnly = true,
     editable = true,
 }) => {
@@ -132,17 +134,19 @@ const Form: FC<FormProps> = ({
                         <TextField
                             {...params}
                             label={FieldLabels[fieldId]}
-                            required={RequiredFields[name].includes(fieldId)}
+                            required={
+                                name in RequiredFields && RequiredFields[name].includes(fieldId)
+                            }
                         />
                     )}
-                    autoSelect={fieldId in RequiredFields[name]}
-                    options={selectFieldOptions[fieldId]}
+                    autoSelect={name in RequiredFields && RequiredFields[name].includes(fieldId)}
+                    options={customOptions[fieldId] || selectFieldOptions[fieldId]}
                     value={fieldValues[fieldId]}
                     onChange={(_, newValue) =>
                         changeFieldValue(fieldId, newValue as string | string[])
                     }
                     multiple={allowSelectMultiple.includes(fieldId)}
-                ></Autocomplete>
+                />
             );
         }
         if (datePickerFields.includes(fieldId)) {

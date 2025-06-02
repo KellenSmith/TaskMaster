@@ -50,6 +50,7 @@ export const FieldLabels = {
     [GlobalConstants.ASSIGNEE]: "Assignee",
     [GlobalConstants.ASSIGNEE_ID]: "Assignee",
     [GlobalConstants.REPORTER]: "Reporter",
+    [GlobalConstants.REPORTER_ID]: "Reporter",
     [GlobalConstants.PHASE]: "Phase",
     [GlobalConstants.TAGS]: "Tags",
     [GlobalConstants.PHASE]: "Phase",
@@ -100,6 +101,8 @@ export const RenderedFields = {
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
         GlobalConstants.PHASE,
+        GlobalConstants.ASSIGNEE,
+        GlobalConstants.REPORTER,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.DESCRIPTION,
@@ -145,7 +148,7 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TASK]: [GlobalConstants.NAME],
+    [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REPORTER],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
 };
 // Apply
@@ -181,6 +184,8 @@ export const selectFieldOptions = {
         GlobalConstants.DONE,
     ],
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
+    [GlobalConstants.ASSIGNEE]: ["Custom"],
+    [GlobalConstants.REPORTER]: ["Custom"],
 };
 
 export const allowSelectMultiple = [GlobalConstants.TAGS];

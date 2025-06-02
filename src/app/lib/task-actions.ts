@@ -133,6 +133,18 @@ export const getFilteredTasks = async (
     try {
         const tasks = await prisma.task.findMany({
             where: searchParams,
+            include: {
+                Assignee: {
+                    select: {
+                        nickname: true,
+                    },
+                },
+                Reporter: {
+                    select: {
+                        nickname: true,
+                    },
+                },
+            },
         });
         newActionState.status = 200;
         newActionState.errorMsg = "";

@@ -32,6 +32,8 @@ import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
 import { addEventParticipant } from "../../../../lib/event-actions";
+import { getActiveMembersNicknames } from "../../../../lib/user-actions";
+import { defaultActionState } from "../../../../ui/Datagrid";
 
 const testTaskOptions = [
     {
@@ -123,6 +125,15 @@ const TaskMenu = ({
     const [addTask, setAddTask] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
     const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
+    const [activeMemberNicknames, setActiveMemberNicknames] = useState<string[]>(null);
+
+    useEffect(() => {
+        if (!activeMemberNicknames)
+            startTransition(async () => {
+                const result = await getActiveMembersNicknames(defaultActionState);
+                setActiveMemberNicknames(result.result);
+            });
+    }, []);
 
     const taskDefaultTimes = useMemo(
         () => ({

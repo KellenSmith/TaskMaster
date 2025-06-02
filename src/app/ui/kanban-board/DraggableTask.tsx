@@ -14,6 +14,7 @@ const DraggableTask = ({
     readOnly,
     taskActionState,
     setTaskActionState,
+    activeMemberNicknames,
 }) => {
     const { user } = useUserContext();
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -45,6 +46,12 @@ const DraggableTask = ({
         setTaskActionState(assignTasksResult);
     };
 
+    const getTaskDefaultValues = () => {
+        const defaultValues = { ...task };
+
+        return defaultValues;
+    };
+
     return (
         <>
             <Card
@@ -73,7 +80,11 @@ const DraggableTask = ({
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    defaultValues={task}
+                    defaultValues={getTaskDefaultValues()}
+                    customOptions={{
+                        [GlobalConstants.ASSIGNEE]: activeMemberNicknames,
+                        [GlobalConstants.REPORTER]: activeMemberNicknames,
+                    }}
                     action={updateViewTask}
                     buttonLabel="save task"
                     readOnly={true}

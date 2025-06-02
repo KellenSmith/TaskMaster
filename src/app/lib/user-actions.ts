@@ -14,6 +14,7 @@ import {
 } from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { LoginSchema, ResetCredentialsSchema } from "./definitions";
+import dayjs from "dayjs";
 
 export const getUserById = async (
     currentState: DatagridActionState,
@@ -383,6 +384,32 @@ export const getUserNicknames = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = userNicknames;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = [];
+    }
+    return newActionState;
+};
+
+export const getActiveMembersNicknames = async (currentActionState: DatagridActionState) => {
+    const newActionState = { ...currentActionState };
+    try {
+        const activeMembers = await prisma.user.findMany({
+            where: {
+                [GlobalConstants.MEMBERSHIP_RENEWED]: {
+                    gt: dayjs()
+                        .subtract(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION), "d")
+                        .toISOString(),
+                },
+            },
+            select: {
+                nickname: true,
+            },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = activeMembers.map((member) => member.nickname);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;

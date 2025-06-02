@@ -38,6 +38,7 @@ const DroppableColumn = ({
     setDraggedTask,
     draggedOverColumn,
     setDraggedOverColumn,
+    activeMemberNicknames,
 }) => {
     const theme = useTheme();
     const [addTask, setAddTask] = useState(null);
@@ -71,6 +72,7 @@ const DroppableColumn = ({
                     readOnly={readOnly}
                     taskActionState={taskActionState}
                     setTaskActionState={setTaskActionState}
+                    activeMemberNicknames={activeMemberNicknames}
                 />
             );
         return (
@@ -100,6 +102,7 @@ const DroppableColumn = ({
                                 readOnly={readOnly}
                                 taskActionState={taskActionState}
                                 setTaskActionState={setTaskActionState}
+                                activeMemberNicknames={activeMemberNicknames}
                             />
                         ))}
                         {!readOnly && (

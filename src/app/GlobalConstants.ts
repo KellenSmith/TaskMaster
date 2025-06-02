@@ -74,9 +74,9 @@ const GlobalConstants = {
     // Task
     TASK: "task",
     TASK_ID: "taskId",
-    ASSIGNEE: "assignee",
+    ASSIGNEE: "Assignee",
     ASSIGNEE_ID: "assigneeId",
-    REPORTER: "reporter",
+    REPORTER: "Reporter",
     REPORTER_ID: "reporterId",
     TAGS: "tags",
     PHASE: "phase",
