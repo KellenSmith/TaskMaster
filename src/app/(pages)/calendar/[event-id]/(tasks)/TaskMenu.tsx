@@ -189,6 +189,11 @@ const TaskMenu = ({
             .map((task) => ({
                 ...task,
                 ...taskDefaultTimes[task[GlobalConstants.PHASE]],
+                [GlobalConstants.REPORTER_ID]: user[GlobalConstants.ID],
+                [GlobalConstants.REPORTER]: {
+                    [GlobalConstants.ID]: user[GlobalConstants.ID],
+                    [GlobalConstants.NICKNAME]: user[GlobalConstants.NICKNAME],
+                },
             }));
         defaultTasks.length > 0 && setTaskOptions([...taskOptions, ...defaultTasks]);
     };
@@ -293,6 +298,11 @@ const TaskMenu = ({
         const defaultTask = {
             [GlobalConstants.PHASE]: phase,
             ...taskDefaultTimes[phase],
+            [GlobalConstants.REPORTER_ID]: user[GlobalConstants.ID],
+            [GlobalConstants.REPORTER]: {
+                [GlobalConstants.ID]: user[GlobalConstants.ID],
+                [GlobalConstants.NICKNAME]: user[GlobalConstants.NICKNAME],
+            },
         };
         setAddTask(defaultTask);
     };
