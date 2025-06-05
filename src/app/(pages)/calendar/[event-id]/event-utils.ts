@@ -5,9 +5,11 @@ export const isEventPublished = (event) =>
     event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED;
 
 export const isUserParticipant = (user: any, event: any) =>
-    event[GlobalConstants.PARTICIPANT_USERS]
-        .map((participant: any) => participant[GlobalConstants.USER_ID])
-        .includes(user[GlobalConstants.ID]);
+    event
+        ? event[GlobalConstants.PARTICIPANT_USERS]
+              .map((participant: any) => participant.User[GlobalConstants.ID])
+              .includes(user[GlobalConstants.ID])
+        : false;
 
 export const isTaskSelected = (task: any, selectedTasks: any[]) =>
     selectedTasks.map((task) => task[GlobalConstants.ID]).includes(task[GlobalConstants.ID]);
