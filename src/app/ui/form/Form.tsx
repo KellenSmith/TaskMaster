@@ -63,6 +63,8 @@ interface FormProps {
     buttonLabel?: string;
     action?: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
     defaultValues?: any;
+    customOptions?: Object; // Additional options for Autocomplete field , if needed
+    customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
     readOnly?: boolean;
     editable?: boolean;
 }
@@ -95,6 +97,8 @@ const Form: FC<FormProps> = ({
     buttonLabel,
     action,
     defaultValues,
+    customOptions = {},
+    customReadOnlyFields = [],
     readOnly = true,
     editable = true,
 }) => {
@@ -126,29 +130,68 @@ const Form: FC<FormProps> = ({
         if (fieldId in selectFieldOptions) {
             return (
                 <Autocomplete
-                    disabled={!editMode}
+                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
                     renderInput={(params) => (
                         <TextField
                             {...params}
                             label={FieldLabels[fieldId]}
-                            required={RequiredFields[name].includes(fieldId)}
+                            required={
+                                name in RequiredFields && RequiredFields[name].includes(fieldId)
+                            }
                         />
                     )}
-                    autoSelect={fieldId in RequiredFields[name]}
-                    options={selectFieldOptions[fieldId]}
-                    value={fieldValues[fieldId]}
-                    onChange={(_, newValue) =>
-                        changeFieldValue(fieldId, newValue as string | string[])
+                    autoSelect={name in RequiredFields && RequiredFields[name].includes(fieldId)}
+                    options={customOptions[fieldId] || selectFieldOptions[fieldId]}
+                    value={
+                        allowSelectMultiple.includes(fieldId)
+                            ? (customOptions[fieldId] || selectFieldOptions[fieldId]).filter(
+                                  (option) =>
+                                      Array.isArray(fieldValues[fieldId]) &&
+                                      (fieldValues[fieldId] as string[]).includes(
+                                          typeof option === "object" ? option.value : option,
+                                      ),
+                              )
+                            : (customOptions[fieldId] || selectFieldOptions[fieldId]).find(
+                                  (option) =>
+                                      typeof option === "object"
+                                          ? option.value === fieldValues[fieldId]
+                                          : option === fieldValues[fieldId],
+                              )
                     }
+                    onChange={(_, selectedOption) => {
+                        if (Array.isArray(selectedOption)) {
+                            // Handle multiple selection
+                            changeFieldValue(
+                                fieldId,
+                                selectedOption.map((option) =>
+                                    typeof option === "object" ? option.value : option,
+                                ),
+                            );
+                        } else if (selectedOption) {
+                            // Handle single selection
+                            changeFieldValue(
+                                fieldId,
+                                typeof selectedOption === "object"
+                                    ? selectedOption.value
+                                    : selectedOption,
+                            );
+                        } else {
+                            // Handle clearing the selection
+                            changeFieldValue(
+                                fieldId,
+                                allowSelectMultiple.includes(fieldId) ? [] : "",
+                            );
+                        }
+                    }}
                     multiple={allowSelectMultiple.includes(fieldId)}
-                ></Autocomplete>
+                />
             );
         }
         if (datePickerFields.includes(fieldId)) {
             return (
                 <DateTimePicker
-                    disabled={!editMode}
+                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
                     label={FieldLabels[fieldId]}
                     value={
@@ -176,7 +219,7 @@ const Form: FC<FormProps> = ({
                     required={RequiredFields[name].includes(fieldId)}
                     control={
                         <Checkbox
-                            disabled={!editMode}
+                            disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                             checked={fieldValues[fieldId] as boolean}
                             onChange={(event: ChangeEvent<HTMLInputElement>) =>
                                 changeFieldValue(fieldId, event.target.checked)
@@ -191,7 +234,7 @@ const Form: FC<FormProps> = ({
                 <RichTextField
                     key={fieldId}
                     fieldId={fieldId}
-                    editMode={editMode}
+                    editMode={editMode || customReadOnlyFields.includes(fieldId)}
                     value={fieldValues[fieldId] as string}
                     changeFieldValue={changeFieldValue}
                 />
@@ -199,7 +242,7 @@ const Form: FC<FormProps> = ({
         }
         return (
             <TextField
-                disabled={!editMode}
+                disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                 key={fieldId}
                 label={FieldLabels[fieldId]}
                 name={fieldId}

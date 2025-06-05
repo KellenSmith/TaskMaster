@@ -32,6 +32,9 @@ import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
 import { addEventParticipant } from "../../../../lib/event-actions";
+import { getActiveMembers } from "../../../../lib/user-actions";
+import { defaultActionState } from "../../../../ui/Datagrid";
+import { formatAssigneeOptions } from "../../../../ui/form/FieldCfg";
 
 const testTaskOptions = [
     {
@@ -123,6 +126,14 @@ const TaskMenu = ({
     const [addTask, setAddTask] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
     const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
+    const [activeMembers, setActiveMembers] = useState([]);
+
+    useEffect(() => {
+        startTransition(async () => {
+            const result = await getActiveMembers(defaultActionState);
+            setActiveMembers(result.result);
+        });
+    }, []);
 
     const taskDefaultTimes = useMemo(
         () => ({
@@ -178,6 +189,11 @@ const TaskMenu = ({
             .map((task) => ({
                 ...task,
                 ...taskDefaultTimes[task[GlobalConstants.PHASE]],
+                [GlobalConstants.REPORTER_ID]: user[GlobalConstants.ID],
+                [GlobalConstants.REPORTER]: {
+                    [GlobalConstants.ID]: user[GlobalConstants.ID],
+                    [GlobalConstants.NICKNAME]: user[GlobalConstants.NICKNAME],
+                },
             }));
         defaultTasks.length > 0 && setTaskOptions([...taskOptions, ...defaultTasks]);
     };
@@ -242,6 +258,7 @@ const TaskMenu = ({
                         selectedTasks={selectedTasks}
                         setSelectedTasks={setSelectedTasks}
                         setTaskOptions={setTaskOptions}
+                        activeMembers={activeMembers}
                     />
                     {!readOnly && (
                         <Button
@@ -282,6 +299,11 @@ const TaskMenu = ({
         const defaultTask = {
             [GlobalConstants.PHASE]: phase,
             ...taskDefaultTimes[phase],
+            [GlobalConstants.REPORTER_ID]: user[GlobalConstants.ID],
+            [GlobalConstants.REPORTER]: {
+                [GlobalConstants.ID]: user[GlobalConstants.ID],
+                [GlobalConstants.NICKNAME]: user[GlobalConstants.NICKNAME],
+            },
         };
         setAddTask(defaultTask);
     };
@@ -474,6 +496,11 @@ const TaskMenu = ({
                     name={GlobalConstants.TASK}
                     action={addNewTask}
                     defaultValues={addTask}
+                    customOptions={Object.fromEntries(
+                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
+                            (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
+                        ),
+                    )}
                     buttonLabel="add task"
                     readOnly={false}
                     editable={false}

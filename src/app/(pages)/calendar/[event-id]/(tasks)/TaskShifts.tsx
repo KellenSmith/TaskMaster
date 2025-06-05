@@ -23,6 +23,7 @@ const TaskShifts = ({
     selectedTasks,
     setSelectedTasks,
     setTaskOptions,
+    activeMembers,
 }) => {
     const areAllTaskShiftsSelected = () => {
         for (let task of tasks) {
@@ -105,6 +106,7 @@ const TaskShifts = ({
                 selectedTasks={selectedTasks}
                 setSelectedTasks={setSelectedTasks}
                 setTaskOptions={setTaskOptions}
+                activeMembers={activeMembers}
             />
         );
     };
@@ -127,6 +129,7 @@ const TaskShifts = ({
                                         selectedTasks={selectedTasks}
                                         setSelectedTasks={setSelectedTasks}
                                         setTaskOptions={setTaskOptions}
+                                        activeMembers={activeMembers}
                                     />
                                 ))}
                             </Stack>
