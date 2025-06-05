@@ -133,8 +133,6 @@ const TaskMenu = ({
             const result = await getActiveMembers(defaultActionState);
             setActiveMembers(result.result);
         });
-        // Load member nicknames only once
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const taskDefaultTimes = useMemo(

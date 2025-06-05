@@ -99,6 +99,7 @@ export const updateEventTasks = async (
         const tasksToCreate = formattedTaskList
             .filter((task) => !existingTaskIds.includes(task[GlobalConstants.ID]))
             // Remove dummy id before creating in db and ensure eventId is set
+            // eslint-disable-next-line no-unused-vars
             .map(({ id, ...restTask }) => ({
                 ...restTask,
                 eventId: eventId,

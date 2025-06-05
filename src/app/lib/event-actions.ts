@@ -191,7 +191,7 @@ export const addEventParticipant = async (
     const newActionState = { ...currentActionState };
 
     try {
-        const result = await prisma.participantInEvent.create({
+        await prisma.participantInEvent.create({
             data: {
                 userId,
                 eventId,

@@ -37,8 +37,6 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
             const result = await getActiveMembers(defaultDatagridActionState);
             setActiveMembers(result.result);
         });
-        // Fetch active members only once when the component mounts
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const getUniqueFilterOptions = (filterId) => {
