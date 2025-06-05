@@ -85,7 +85,6 @@ export const getEventById = async (
                             select: {
                                 id: true,
                                 nickname: true,
-                                email: true,
                             },
                         },
                     },
@@ -192,14 +191,10 @@ export const addEventParticipant = async (
     const newActionState = { ...currentActionState };
 
     try {
-        await prisma.participantInEvent.create({
+        const result = await prisma.participantInEvent.create({
             data: {
-                userId: userId,
-                eventId: eventId,
-            },
-            include: {
-                Event: true,
-                User: true,
+                userId,
+                eventId,
             },
         });
         newActionState.errorMsg = "";
@@ -225,10 +220,6 @@ export const addEventReserve = async (
             data: {
                 userId: userId,
                 eventId: eventId,
-            },
-            include: {
-                Event: true,
-                User: true,
             },
         });
         newActionState.errorMsg = "";

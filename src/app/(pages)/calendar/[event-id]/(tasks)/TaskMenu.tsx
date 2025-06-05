@@ -32,8 +32,9 @@ import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
 import { addEventParticipant } from "../../../../lib/event-actions";
-import { getActiveMembersNicknames } from "../../../../lib/user-actions";
+import { getActiveMembers } from "../../../../lib/user-actions";
 import { defaultActionState } from "../../../../ui/Datagrid";
+import { formatAssigneeOptions } from "../../../../ui/form/FieldCfg";
 
 const testTaskOptions = [
     {
@@ -125,14 +126,15 @@ const TaskMenu = ({
     const [addTask, setAddTask] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
     const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
-    const [activeMemberNicknames, setActiveMemberNicknames] = useState<string[]>(null);
+    const [activeMembers, setActiveMembers] = useState([]);
 
     useEffect(() => {
-        if (!activeMemberNicknames)
-            startTransition(async () => {
-                const result = await getActiveMembersNicknames(defaultActionState);
-                setActiveMemberNicknames(result.result);
-            });
+        startTransition(async () => {
+            const result = await getActiveMembers(defaultActionState);
+            setActiveMembers(result.result);
+        });
+        // Load member nicknames only once
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const taskDefaultTimes = useMemo(
@@ -258,6 +260,7 @@ const TaskMenu = ({
                         selectedTasks={selectedTasks}
                         setSelectedTasks={setSelectedTasks}
                         setTaskOptions={setTaskOptions}
+                        activeMembers={activeMembers}
                     />
                     {!readOnly && (
                         <Button
@@ -495,6 +498,11 @@ const TaskMenu = ({
                     name={GlobalConstants.TASK}
                     action={addNewTask}
                     defaultValues={addTask}
+                    customOptions={Object.fromEntries(
+                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
+                            (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
+                        ),
+                    )}
                     buttonLabel="add task"
                     readOnly={false}
                     editable={false}

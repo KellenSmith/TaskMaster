@@ -392,7 +392,7 @@ export const getUserNicknames = async (
     return newActionState;
 };
 
-export const getActiveMembersNicknames = async (currentActionState: DatagridActionState) => {
+export const getActiveMembers = async (currentActionState: DatagridActionState) => {
     const newActionState = { ...currentActionState };
     try {
         const activeMembers = await prisma.user.findMany({
@@ -404,12 +404,13 @@ export const getActiveMembersNicknames = async (currentActionState: DatagridActi
                 },
             },
             select: {
+                id: true,
                 nickname: true,
             },
         });
         newActionState.errorMsg = "";
         newActionState.status = 200;
-        newActionState.result = activeMembers.map((member) => member.nickname);
+        newActionState.result = activeMembers;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;

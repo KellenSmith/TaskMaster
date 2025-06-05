@@ -22,7 +22,7 @@ import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
-import { getActiveMembersNicknames } from "../../lib/user-actions";
+import { getActiveMembers } from "../../lib/user-actions";
 import { defaultActionState as defaultDatagridActionState } from "../Datagrid";
 
 const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
@@ -30,14 +30,15 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
-    const [activeMemberNicknames, setActiveMemberNicknames] = useState<string[]>(null);
+    const [activeMembers, setActiveMembers] = useState<string[]>(null);
 
     useEffect(() => {
-        if (!activeMemberNicknames)
-            startTransition(async () => {
-                const result = await getActiveMembersNicknames(defaultDatagridActionState);
-                setActiveMemberNicknames(result.result);
-            });
+        startTransition(async () => {
+            const result = await getActiveMembers(defaultDatagridActionState);
+            setActiveMembers(result.result);
+        });
+        // Fetch active members only once when the component mounts
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const getUniqueFilterOptions = (filterId) => {
@@ -163,7 +164,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
                                 setDraggedTask={setDraggedTask}
                                 draggedOverColumn={draggedOverColumn}
                                 setDraggedOverColumn={setDraggedOverColumn}
-                                activeMemberNicknames={activeMemberNicknames}
+                                activeMembers={activeMembers}
                             />
                         </Grid2>
                     ))}

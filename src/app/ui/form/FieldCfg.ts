@@ -101,8 +101,8 @@ export const RenderedFields = {
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
         GlobalConstants.PHASE,
-        GlobalConstants.ASSIGNEE,
-        GlobalConstants.REPORTER,
+        GlobalConstants.ASSIGNEE_ID,
+        GlobalConstants.REPORTER_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.DESCRIPTION,
@@ -184,8 +184,16 @@ export const selectFieldOptions = {
         GlobalConstants.DONE,
     ],
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
-    [GlobalConstants.ASSIGNEE]: ["Custom"],
-    [GlobalConstants.REPORTER]: ["Custom"],
+    [GlobalConstants.ASSIGNEE_ID]: ["Custom"],
+    [GlobalConstants.REPORTER_ID]: ["Custom"],
+};
+
+export const formatAssigneeOptions = (activeMembers: any[]) => {
+    if (!activeMembers || activeMembers.length < 1) return [];
+    return activeMembers.map((member) => ({
+        value: member[GlobalConstants.ID],
+        label: member[GlobalConstants.NICKNAME],
+    }));
 };
 
 export const allowSelectMultiple = [GlobalConstants.TAGS];
