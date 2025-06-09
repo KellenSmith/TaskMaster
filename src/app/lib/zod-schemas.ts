@@ -46,5 +46,6 @@ export const createProductSchema = z.object({
     [GlobalConstants.DESCRIPTION]: z.string().optional(),
 });
 export const updateProductSchema = createProductSchema.extend({
-    [GlobalConstants.ID]: z.string(),
+    [GlobalConstants.NAME]: z.string().optional(),
+    [GlobalConstants.PRICE]: z.coerce.number().optional(),
 });

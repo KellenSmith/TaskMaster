@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { EventStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
@@ -143,7 +143,7 @@ export const cancelEvent = async (
     try {
         await prisma.event.update({
             where: { id: eventId },
-            data: { status: GlobalConstants.CANCELLED },
+            data: { status: EventStatus.cancelled } as Prisma.EventUpdateInput,
         });
         await informOfCancelledEvent(eventId);
         newActionState.errorMsg = "";
