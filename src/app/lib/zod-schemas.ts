@@ -36,3 +36,16 @@ export const createTaskSchema = updateTaskSchema.omit({
     [GlobalConstants.PHASE]: true,
     [GlobalConstants.TAGS]: true,
 });
+
+export const createProductSchema = z.object({
+    [GlobalConstants.NAME]: z.string(),
+    [GlobalConstants.PRICE]: z.coerce.number(),
+    [GlobalConstants.STOCK]: z.coerce.number().optional(),
+    [GlobalConstants.UNLIMITED_STOCK]: z.boolean().optional(),
+    [GlobalConstants.IMAGE_URL]: z.string().optional(),
+    [GlobalConstants.DESCRIPTION]: z.string().optional(),
+});
+export const updateProductSchema = createProductSchema.extend({
+    [GlobalConstants.NAME]: z.string().optional(),
+    [GlobalConstants.PRICE]: z.coerce.number().optional(),
+});

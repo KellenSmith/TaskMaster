@@ -72,6 +72,21 @@ const testdata = {
         endTime: new Date("2024-06-14T17:00:00Z"),
         description: "Create and organize workshop materials for participants",
     },
+
+    product: {
+        id: "prod-1234-5678",
+        name: "Test Product",
+        description: "A test product for testing",
+        price: 99.99,
+        createdAt: new Date("2024-01-01T00:00:00Z"),
+        updatedAt: new Date("2024-01-01T00:00:00Z"),
+    },
+
+    createProduct: {
+        name: "New Test Product",
+        description: "A new test product",
+        price: 49.99,
+    },
 };
 
 export default testdata;

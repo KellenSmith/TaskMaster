@@ -19,6 +19,14 @@ export type MockPrisma = {
     event: {
         findMany: any;
     };
+    product: {
+        findUniqueOrThrow: any;
+        findMany: any;
+        create: any;
+        update: any;
+        delete: any;
+        count: any;
+    };
     textContent: {
         create: any;
         findUnique: any;

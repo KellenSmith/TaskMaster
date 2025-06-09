@@ -5,7 +5,7 @@ import { isUserHost } from "../../../lib/definitions";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
 import { Button, Dialog, Stack } from "@mui/material";
-import { Prisma } from "@prisma/client";
+import { EventStatus, Prisma } from "@prisma/client";
 import Form, { defaultActionState, FormActionState, getFormActionMsg } from "../../../ui/form/Form";
 import {
     addEventReserve,
@@ -59,7 +59,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
     const [publishActionState, publishAction, isPublishPending] = useActionState(
         (currentActionState: FormActionState) =>
             updateEvent(event[GlobalConstants.ID], currentActionState, {
-                status: GlobalConstants.PUBLISHED,
+                status: EventStatus.published,
             }),
         defaultActionState,
     );

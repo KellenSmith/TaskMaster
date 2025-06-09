@@ -132,13 +132,13 @@ export const getUserByUniqueKey = async (
     return loggedInUser;
 };
 
-export const decryptJWT = async (): Promise<JWTPayload> | undefined => {
+export const decryptJWT = async (): Promise<JWTPayload | null> => {
     try {
         const cookieStore = await cookies();
         const cookie = cookieStore.get(GlobalConstants.USER_CREDENTIALS)?.value;
         const result = await jwtVerify(cookie, getEncryptionKey(), {
             algorithms: ["HS256"],
-        });
+        }); // If this fails, check that AUTH_SECRET exists in .env
         const jwtPayload = result?.payload;
         return jwtPayload;
     } catch {
