@@ -1,13 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { mockContext } from "../../test/mocks/prismaMock";
 import { getUserById, createUser, getAllUsers, updateUser } from "./user-actions";
 import { defaultActionState as defaultDatagridActionState } from "../ui/Datagrid";
 import { defaultActionState as defaultFormActionState } from "../ui/form/Form";
 import testdata from "../../test/testdata";
-
-beforeEach(() => {
-    vi.resetAllMocks();
-});
 
 describe("User Actions", () => {
     it("should get user by id", async () => {

@@ -1,16 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-    AppBar,
-    Toolbar,
-    Typography,
-    Drawer,
-    List,
-    ListItem,
-    Button,
-    ListSubheader,
-} from "@mui/material";
+import { AppBar, Toolbar, Typography, Drawer, List, ListItem, Button } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
@@ -38,7 +29,16 @@ const NavPanel = () => {
     const getLinkGroup = (privacyStatus: string) => {
         return (
             <List>
-                {routesToPath(routes[privacyStatus])
+                {routesToPath(
+                    routes[privacyStatus].filter(
+                        (route) =>
+                            ![
+                                GlobalConstants.LOGIN,
+                                GlobalConstants.RESET,
+                                GlobalConstants.APPLY,
+                            ].includes(route),
+                    ),
+                )
                     .filter((route) => isUserAuthorized(route, user))
                     .map((route) => (
                         <ListItem key={route}>
@@ -60,11 +60,9 @@ const NavPanel = () => {
         <>
             <AppBar position="static">
                 <Toolbar>
-                    {user && (
-                        <Button onClick={toggleDrawerOpen}>
-                            <MenuIcon />
-                        </Button>
-                    )}
+                    <Button onClick={toggleDrawerOpen}>
+                        <MenuIcon />
+                    </Button>
                     <Typography
                         variant="h6"
                         style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
@@ -92,13 +90,9 @@ const NavPanel = () => {
                 <Button onClick={toggleDrawerOpen}>
                     <MenuOpenIcon />
                 </Button>
+                {getLinkGroup(GlobalConstants.PUBLIC)}
                 {getLinkGroup(GlobalConstants.PRIVATE)}
-                {user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN && (
-                    <>
-                        <ListSubheader>ADMIN</ListSubheader>
-                        {getLinkGroup(GlobalConstants.ADMIN)}
-                    </>
-                )}
+                {getLinkGroup(GlobalConstants.ADMIN)}
             </Drawer>
         </>
     );

@@ -12,6 +12,7 @@ export const routes = {
         GlobalConstants.LOGIN,
         GlobalConstants.RESET,
         GlobalConstants.APPLY,
+        GlobalConstants.CONTACT,
     ],
 };
 

@@ -16,6 +16,7 @@ import { Prisma } from "@prisma/client";
 import {
     allowSelectMultiple,
     datePickerFields,
+    formatAssigneeOptions,
     RenderedFields,
 } from "../../../../ui/form/FieldCfg";
 import { isUserHost } from "../../../../lib/definitions";
@@ -29,6 +30,7 @@ const TaskMenuOption = ({
     selectedTasks,
     setSelectedTasks,
     setTaskOptions,
+    activeMembers,
 }) => {
     const { user } = useUserContext();
     const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -136,6 +138,11 @@ const TaskMenuOption = ({
                     name={GlobalConstants.TASK}
                     action={editSelectedTask}
                     defaultValues={getTaskDefaultValues()}
+                    customOptions={Object.fromEntries(
+                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
+                            (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
+                        ),
+                    )}
                     buttonLabel="save task"
                     editable={isUserHost(user, event)}
                 />

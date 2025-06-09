@@ -6,6 +6,7 @@ import Form, { defaultActionState } from "../form/Form";
 import { startTransition, useState } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
+import { formatAssigneeOptions } from "../form/FieldCfg";
 
 const DraggableTask = ({
     task,
@@ -14,6 +15,7 @@ const DraggableTask = ({
     readOnly,
     taskActionState,
     setTaskActionState,
+    activeMembers,
 }) => {
     const { user } = useUserContext();
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -45,6 +47,12 @@ const DraggableTask = ({
         setTaskActionState(assignTasksResult);
     };
 
+    const getTaskDefaultValues = () => {
+        const defaultValues = { ...task };
+
+        return defaultValues;
+    };
+
     return (
         <>
             <Card
@@ -73,7 +81,12 @@ const DraggableTask = ({
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    defaultValues={task}
+                    defaultValues={getTaskDefaultValues()}
+                    customOptions={Object.fromEntries(
+                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
+                            (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
+                        ),
+                    )}
                     action={updateViewTask}
                     buttonLabel="save task"
                     readOnly={true}

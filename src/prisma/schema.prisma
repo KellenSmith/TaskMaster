@@ -17,7 +17,7 @@ model User {
     id                   String           @id @default(uuid())
     firstName            String           @default("")
     surName              String           @default("")
-    nickname             String           @default("")
+    nickname             String           @unique @default(uuid())
     pronoun              String?          @default("they/them")
     email                String           @unique
     phone                String?          @default("")
@@ -183,4 +183,14 @@ model OrderItem {
     productId String
 
     @@map("order_items")
+}
+
+model TextContent {
+    id       String  @id
+    language String
+    content  String
+    category String? @default("organization") // ui, email, help, etc.
+
+    @@unique([id, language])
+    @@map("text_contents")
 }

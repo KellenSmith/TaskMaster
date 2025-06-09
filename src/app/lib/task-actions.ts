@@ -75,39 +75,56 @@ export const updateEventTasks = async (
     taskList: Prisma.TaskCreateInput[],
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
+    const formattedTaskList = taskList.map((task) => {
+        // Extract the IDs from the nested objects if they exist
+        const reporterId = (task.Reporter as any)?.connect?.id || null;
+        const assigneeId = (task.Assignee as any)?.connect?.id || null;
+
+        return {
+            ...task,
+            // Set the relation fields
+            Reporter: reporterId ? { connect: { id: reporterId } } : undefined,
+            Assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
+        };
+    });
 
     try {
         const existingTaskIds = (
             await prisma.task.findMany({
                 where: { eventId: eventId },
+                select: { id: true },
             })
-        ).map((task) => task[GlobalConstants.ID]);
-        const tasksToCreate = taskList
+        ).map((task) => task.id);
+
+        const tasksToCreate = formattedTaskList
             .filter((task) => !existingTaskIds.includes(task[GlobalConstants.ID]))
-            // Remove dummy id before creating in db
+            // Remove dummy id before creating in db and ensure eventId is set
             // eslint-disable-next-line no-unused-vars
             .map(({ id, ...restTask }) => ({
                 ...restTask,
                 eventId: eventId,
             }));
 
-        const updateTasks = taskList
+        const updateTasks = formattedTaskList
             .filter((task) => existingTaskIds.includes(task[GlobalConstants.ID]))
-            .map((task) =>
-                prisma.task.update({
-                    where: { id: task.id },
-                    data: task,
-                }),
-            );
+            .map((task) => {
+                const { id, ...updateData } = task;
+                return prisma.task.update({
+                    where: { id },
+                    data: updateData,
+                });
+            });
 
+        // For deleteMany, only use the simple fields
         const deleteUnSelectedTasks = prisma.task.deleteMany({
             where: {
                 eventId: eventId,
                 id: {
-                    notIn: taskList.map((task) => task[GlobalConstants.ID]),
+                    notIn: formattedTaskList.map((task) => task[GlobalConstants.ID]),
                 },
             },
         });
+
         await prisma.$transaction([
             deleteUnSelectedTasks,
             ...updateTasks,
@@ -133,6 +150,20 @@ export const getFilteredTasks = async (
     try {
         const tasks = await prisma.task.findMany({
             where: searchParams,
+            include: {
+                Assignee: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+                Reporter: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+            },
         });
         newActionState.status = 200;
         newActionState.errorMsg = "";
