@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, PrismaPromise } from "@prisma/client";
+import { Prisma, PrismaPromise, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
@@ -54,7 +54,7 @@ export const createUser = async (
                 [GlobalConstants.ID]: createdUser[GlobalConstants.ID],
             };
             const fieldValues: Prisma.UserUpdateInput = {
-                role: GlobalConstants.ADMIN,
+                role: UserRole.admin,
             };
             await updateUserTransaction(fieldValues, userIdentifier);
             await validateUserMembership(createdUser, newActionState);
@@ -291,7 +291,7 @@ export const deleteUser = async (
     try {
         const adminCount = await prisma.user.count({
             where: {
-                role: GlobalConstants.ADMIN,
+                role: UserRole.admin,
             },
         });
 
