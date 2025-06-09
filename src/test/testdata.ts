@@ -87,6 +87,37 @@ const testdata = {
         description: "A new test product",
         price: 49.99,
     },
+
+    order: {
+        id: "order-1234-5678",
+        createdAt: new Date("2024-01-01T00:00:00Z"),
+        updatedAt: new Date("2024-01-01T00:00:00Z"),
+        status: "pending",
+        totalAmount: 149.98,
+        userId: "1234-5678-9abc-def0",
+        orderItems: [
+            {
+                id: "item-1234-5678",
+                quantity: 2,
+                price: 99.99,
+                orderId: "order-1234-5678",
+                productId: "prod-1234-5678",
+                product: {
+                    id: "prod-1234-5678",
+                    name: "Test Product",
+                    description: "A test product for testing",
+                    price: 99.99,
+                    createdAt: new Date("2024-01-01T00:00:00Z"),
+                    updatedAt: new Date("2024-01-01T00:00:00Z"),
+                },
+            },
+        ],
+    },
+
+    createOrderItems: {
+        "prod-1234-5678": 2,
+        "prod-5678-9abc": 1,
+    },
 };
 
 export default testdata;

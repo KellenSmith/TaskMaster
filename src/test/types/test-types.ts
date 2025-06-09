@@ -33,6 +33,20 @@ export type MockPrisma = {
         update: any;
         delete: any;
     };
+    order: {
+        findUniqueOrThrow: any;
+        findMany: any;
+        create: any;
+        update: any;
+        delete: any;
+    };
+    orderItem: {
+        create: any;
+        findMany: any;
+        update: any;
+        delete: any;
+    };
+    $transaction: any;
 };
 
 export type TestContext = {
