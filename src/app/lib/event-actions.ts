@@ -5,7 +5,6 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 import { createEventSchema } from "./zod-schemas";
-import GlobalConstants from "../GlobalConstants";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 
 export const createEvent = async (
