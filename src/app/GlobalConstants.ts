@@ -16,6 +16,7 @@ const GlobalConstants = {
     CREATE: "create",
     CALENDAR: "calendar",
     SENDOUT: "sendout",
+    PRODUCTS: "products",
     // DB
     ID: "id",
     NAME: "name",

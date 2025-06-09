@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
+import { createProductSchema, updateProductSchema } from "./zod-schemas";
 
 export const getProductById = async (
     currentState: DatagridActionState,
@@ -47,8 +48,9 @@ export const createProduct = async (
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
+        const parsedFieldValues = createProductSchema.parse(fieldValues);
         const createdProduct = await prisma.product.create({
-            data: fieldValues,
+            data: parsedFieldValues,
         });
         newActionState.errorMsg = "";
         newActionState.status = 201;
@@ -68,9 +70,10 @@ export const updateProduct = async (
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
+        const parsedFieldValues = updateProductSchema.parse(fieldValues);
         await prisma.product.update({
             where: { id: productId },
-            data: fieldValues,
+            data: parsedFieldValues,
         });
         newActionState.errorMsg = "";
         newActionState.status = 200;

@@ -66,6 +66,12 @@ export const FieldLabels = {
     [GlobalConstants.SENDOUT]: "Sendout",
     [GlobalConstants.SUBJECT]: "Subject",
     [GlobalConstants.CONTENT]: "Content",
+    // Product
+    [GlobalConstants.PRODUCT]: "Product",
+    [GlobalConstants.PRICE]: "Price",
+    [GlobalConstants.STOCK]: "Stock",
+    [GlobalConstants.UNLIMITED_STOCK]: "Unlimited Stock",
+    [GlobalConstants.IMAGE_URL]: "Image URL",
 };
 
 export const RenderedFields = {
@@ -109,6 +115,15 @@ export const RenderedFields = {
         GlobalConstants.TAGS,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
+    [GlobalConstants.PRODUCT]: [
+        GlobalConstants.NAME,
+
+        GlobalConstants.PRICE,
+        GlobalConstants.STOCK,
+        GlobalConstants.UNLIMITED_STOCK,
+        GlobalConstants.IMAGE_URL,
+        GlobalConstants.DESCRIPTION,
+    ],
 };
 // Apply
 RenderedFields[GlobalConstants.APPLY] = [
@@ -150,6 +165,7 @@ export const RequiredFields = {
     ],
     [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REPORTER],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
+    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.STOCK],
 };
 // Apply
 RequiredFields[GlobalConstants.APPLY] = [
@@ -216,4 +232,5 @@ export const richTextFields = [
 export const checkboxFields = [
     GlobalConstants.CONSENT_TO_NEWSLETTERS,
     GlobalConstants.CONSENT_GDPR,
+    GlobalConstants.UNLIMITED_STOCK,
 ];

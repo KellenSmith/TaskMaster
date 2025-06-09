@@ -54,8 +54,8 @@ const Datagrid: React.FC<DatagridProps> = ({
     fetchData,
     updateAction,
     rowActions,
-    customColumns,
-    hiddenColumns,
+    customColumns = [],
+    hiddenColumns = [],
 }) => {
     const apiRef = useGridApiRef();
     const pathname = usePathname();

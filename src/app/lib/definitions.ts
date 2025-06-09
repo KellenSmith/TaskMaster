@@ -5,7 +5,11 @@ import dayjs from "dayjs";
 // Convention: "path"=`/${route}`
 
 export const routes = {
-    [GlobalConstants.ADMIN]: [GlobalConstants.MEMBERS, GlobalConstants.SENDOUT],
+    [GlobalConstants.ADMIN]: [
+        GlobalConstants.MEMBERS,
+        GlobalConstants.SENDOUT,
+        GlobalConstants.PRODUCTS,
+    ],
     [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
