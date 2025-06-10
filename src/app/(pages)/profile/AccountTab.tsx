@@ -14,17 +14,18 @@ import {
     LoginSchema,
     UpdateCredentialsSchema,
 } from "../../lib/definitions";
-import SwishPaymentHandler from "../../ui/swish/SwishPaymentHandler";
 import { Prisma } from "@prisma/client";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { apiEndpoints, formatDate } from "../../ui/utils";
+import { formatDate, navigateToRoute } from "../../ui/utils";
 import dayjs from "dayjs";
+import { createMembershipOrder } from "../../lib/order-actions";
+import { useRouter } from "next/navigation";
 
 const AccountTab = () => {
     const theme = useTheme();
+    const router = useRouter();
     const { user, updateLoggedInUser, logOut } = useUserContext();
     const [accountActionState, setAccountActionState] = useState(defaultActionState);
-    const [openRenewMembershipDialog, setOpenRenewMembershipDialog] = useState(false);
 
     const updateUserProfile = async (
         currentActionState: FormActionState,
@@ -77,9 +78,14 @@ const AccountTab = () => {
         setAccountActionState(deleteState);
     };
 
-    const hasRenewedMembership = async () => {
-        const updatedUser = await updateLoggedInUser();
-        return !isMembershipExpired(updatedUser);
+    const payMembership = async () => {
+        const createMembershipOrderResult = await createMembershipOrder(defaultActionState);
+        setAccountActionState(createMembershipOrderResult);
+        if (createMembershipOrderResult.status === 200)
+            navigateToRoute(
+                `${GlobalConstants.ORDER}/${createMembershipOrderResult.result}`,
+                router,
+            );
     };
 
     // TODO: Renew access token when membership has been validated
@@ -117,24 +123,13 @@ const AccountTab = () => {
                         action={validateAndUpdateCredentials}
                     ></Form>
                     {getFormActionMsg(accountActionState)}
-                    <Button onClick={() => setOpenRenewMembershipDialog(true)}>
+                    <Button onClick={payMembership}>
                         {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
                     </Button>
                     <ConfirmButton color="error" onClick={deleteMyAccount}>
                         Delete My Account
                     </ConfirmButton>
                 </Stack>
-                <SwishPaymentHandler
-                    title={`${isMembershipExpired(user) ? "Activate" : "Extend"} Membership`}
-                    open={openRenewMembershipDialog}
-                    setOpen={setOpenRenewMembershipDialog}
-                    hasPaid={hasRenewedMembership}
-                    paymentAmount={parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_FEE)}
-                    callbackEndpoint={apiEndpoints.RENEW_MEMBERSHIP}
-                    callbackParams={
-                        new URLSearchParams([[GlobalConstants.ID, user[GlobalConstants.ID]]])
-                    }
-                />
             </>
         )
     );

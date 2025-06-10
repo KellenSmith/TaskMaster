@@ -99,10 +99,10 @@ describe("Order Actions", () => {
                 // Mock the transaction context with required methods
                 const tx = {
                     order: {
-                        create: vi.fn().mockResolvedValue({ ...testdata.order, id: "new-order" }),
+                        create: vi.fn().mockResolvedValue({ ...testdata.order, id: "#new-order" }),
                         update: vi.fn().mockResolvedValue({
                             ...testdata.order,
-                            id: "new-order",
+                            id: "#new-order",
                             totalAmount: expectedTotalAmount,
                         }),
                     },
@@ -116,7 +116,7 @@ describe("Order Actions", () => {
             const result = await createOrder(defaultFormActionState, userId, orderItems);
 
             expect(result.status).toBe(201);
-            expect(result.result).toContain("Order #new-order created successfully");
+            expect(result.result).toContain("#new-order");
             expect(mockContext.prisma.product.findMany).toHaveBeenCalledWith({
                 where: {
                     id: {
@@ -136,6 +136,7 @@ describe("Order Actions", () => {
             );
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Some products not found");
+            expect(result.result).toBe("");
         });
 
         it("should handle database error during transaction", async () => {
@@ -153,6 +154,7 @@ describe("Order Actions", () => {
             );
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Transaction failed");
+            expect(result.result).toBe("");
         });
     });
 
