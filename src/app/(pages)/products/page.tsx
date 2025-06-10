@@ -1,5 +1,3 @@
-"use client";
-
 import { Stack } from "@mui/material";
 import Datagrid, { RowActionProps } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";

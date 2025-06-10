@@ -154,6 +154,12 @@ export const updateOrderStatus = async (
     return newActionState;
 };
 
+export const completeOrder = async (
+    orderId: string,
+    currentActionState: FormActionState,
+): Promise<FormActionState> =>
+    updateOrderStatus(orderId, currentActionState, OrderStatus.completed);
+
 export const deleteOrder = async (
     orderId: string,
     currentActionState: FormActionState,

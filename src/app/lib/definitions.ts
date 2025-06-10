@@ -9,6 +9,7 @@ export const routes = {
         GlobalConstants.MEMBERS,
         GlobalConstants.SENDOUT,
         GlobalConstants.PRODUCTS,
+        GlobalConstants.ORDERS,
     ],
     [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [

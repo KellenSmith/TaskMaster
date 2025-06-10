@@ -39,7 +39,7 @@ export interface RowActionProps {
 interface DatagridProps {
     name: string;
     fetchData: (currentActionState: DatagridActionState) => Promise<DatagridActionState>; // eslint-disable-line no-unused-vars
-    updateAction: (
+    updateAction?: (
         userId: string, // eslint-disable-line no-unused-vars
         currentActionState: FormActionState, // eslint-disable-line no-unused-vars
         fieldValues: any, // eslint-disable-line no-unused-vars
@@ -172,6 +172,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                     buttonLabel="save"
                     action={updateRow}
                     defaultValues={clickedRow}
+                    readOnly={!updateAction}
                 />
                 {getFormActionMsg(dialogActionState)}
                 {!!rowActions &&
