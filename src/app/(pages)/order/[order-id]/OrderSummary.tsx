@@ -23,8 +23,6 @@ interface OrderSummaryProps {
 const OrderSummary = ({ order }: OrderSummaryProps) => {
     const theme = useTheme();
 
-    console.log(order);
-
     return (
         order && (
             <Card>

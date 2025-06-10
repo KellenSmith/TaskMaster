@@ -69,7 +69,7 @@ const OrderPage = () => {
                 ) : (
                     <>
                         <OrderSummary order={getOrderProp()} />
-                        <PaymentHandler orderId={orderId} />
+                        <PaymentHandler order={getOrderProp()} />
                     </>
                 )}
             </CardContent>
