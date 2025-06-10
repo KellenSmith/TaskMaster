@@ -82,6 +82,8 @@ const GlobalConstants = {
     MEMBERSHIP_PRODUCT_NAME: "Membership",
     // Order
     ORDER: "order",
+    TOTAL_AMOUNT: "totalAmount",
+    ORDER_ITEMS: "orderItems",
     // Task
     TASK: "task",
     TASK_ID: "taskId",

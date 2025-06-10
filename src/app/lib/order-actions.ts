@@ -207,7 +207,7 @@ export const createMembershipOrder = async (
             [membershipProductId]: 1, // One membership
         });
 
-        if (orderResult.status !== 201 || !orderResult.orderId) {
+        if (orderResult.status !== 201 || !orderResult.result) {
             throw new Error(orderResult.errorMsg || "Failed to create membership order");
         }
 

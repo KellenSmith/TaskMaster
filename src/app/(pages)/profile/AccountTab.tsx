@@ -80,12 +80,12 @@ const AccountTab = () => {
 
     const payMembership = async () => {
         const createMembershipOrderResult = await createMembershipOrder(defaultActionState);
-        setAccountActionState(createMembershipOrderResult);
-        if (createMembershipOrderResult.status === 200)
+        if (createMembershipOrderResult.status === 201)
             navigateToRoute(
-                `${GlobalConstants.ORDER}/${createMembershipOrderResult.result}`,
+                `/${GlobalConstants.ORDER}/${createMembershipOrderResult.result}`,
                 router,
             );
+        setAccountActionState(createMembershipOrderResult);
     };
 
     // TODO: Renew access token when membership has been validated

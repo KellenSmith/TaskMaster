@@ -11,7 +11,11 @@ export const routes = {
         GlobalConstants.PRODUCTS,
         GlobalConstants.ORDERS,
     ],
-    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
+    [GlobalConstants.PRIVATE]: [
+        GlobalConstants.PROFILE,
+        GlobalConstants.CALENDAR,
+        GlobalConstants.ORDER,
+    ],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
