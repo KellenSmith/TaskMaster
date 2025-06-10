@@ -5,6 +5,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 import { createProductSchema, updateProductSchema } from "./zod-schemas";
+import GlobalConstants from "../GlobalConstants";
 
 export const getProductById = async (
     currentState: DatagridActionState,
@@ -104,4 +105,31 @@ export const deleteProduct = async (
         newActionState.result = "";
     }
     return newActionState;
+};
+
+export const getMembershipProduct = async (): Promise<string> => {
+    try {
+        // Try to find existing membership product
+        const membershipProduct = await prisma.product.findFirst({
+            where: { name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME },
+        });
+
+        if (membershipProduct) {
+            return membershipProduct.id;
+        }
+
+        // If no membership product exists, create it
+        const newMembershipProduct = await prisma.product.create({
+            data: {
+                name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
+                description: "Annual membership",
+                price: parseFloat(process.env.NEXT_PUBLIC_MEMBERSHIP_FEE || "0"),
+                unlimitedStock: true,
+            },
+        });
+
+        return newMembershipProduct.id;
+    } catch (error) {
+        throw new Error(`Failed to get/create membership product: ${error.message}`);
+    }
 };

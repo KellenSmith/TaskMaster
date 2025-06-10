@@ -4,6 +4,8 @@ import { OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
+import { getMembershipProduct } from "./product-actions";
+import { getLoggedInUser } from "./user-actions";
 
 type CreateOrderItemInput = {
     [productId: string]: number; // productId: quantity
@@ -123,7 +125,7 @@ export const createOrder = async (
 
         newActionState.errorMsg = "";
         newActionState.status = 201;
-        newActionState.result = `Order #${order.id} created successfully`;
+        newActionState.result = order.id;
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -185,4 +187,35 @@ export const deleteOrder = async (
         newActionState.result = "";
     }
     return newActionState;
+};
+
+export const createMembershipOrder = async (
+    currentActionState: FormActionState,
+): Promise<FormActionState & { orderId?: string }> => {
+    const newActionState = { ...currentActionState };
+    try {
+        // Get or create the membership product
+        const membershipProductId = await getMembershipProduct();
+        // Get the logged-in user
+        const loggedInUserResult = await getLoggedInUser(currentActionState);
+        if (loggedInUserResult.status !== 200) {
+            throw new Error(loggedInUserResult.errorMsg || "Failed to get logged-in user");
+        }
+        const loggedInUser = JSON.parse(loggedInUserResult.result as string);
+        // Create order using existing createOrder function
+        const orderResult = await createOrder(currentActionState, loggedInUser.id, {
+            [membershipProductId]: 1, // One membership
+        });
+
+        if (orderResult.status !== 201 || !orderResult.orderId) {
+            throw new Error(orderResult.errorMsg || "Failed to create membership order");
+        }
+
+        return orderResult;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+        return newActionState;
+    }
 };
