@@ -4,7 +4,7 @@ import { OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
-import { getMembershipProduct } from "./product-actions";
+import { getMembershipProductId, processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
 
 type CreateOrderItemInput = {
@@ -156,11 +156,48 @@ export const updateOrderStatus = async (
     return newActionState;
 };
 
-export const completeOrder = async (
+export const processOrderItems = async (
     orderId: string,
     currentActionState: FormActionState,
-): Promise<FormActionState> =>
-    updateOrderStatus(orderId, currentActionState, OrderStatus.completed);
+): Promise<FormActionState> => {
+    const newActionState = { ...currentActionState };
+    try {
+        const order = await prisma.order.findUniqueOrThrow({
+            where: { id: orderId },
+            select: {
+                userId: true,
+            },
+        });
+        const orderItems = await prisma.orderItem.findMany({
+            where: { orderId },
+        });
+
+        if (orderItems.length === 0) {
+            throw new Error("No items found for this order");
+        }
+
+        // Process each order item
+        for (const item of orderItems) {
+            // TODO: Here you can implement your logic to process each item
+            // For example, updating inventory, sending notifications, etc.
+            await processOrderedProduct(
+                item.productId,
+                item.quantity,
+                order.userId,
+                currentActionState,
+            );
+        }
+        newActionState.status = 200;
+        newActionState.errorMsg = "";
+        newActionState.result = "Order items processed successfully";
+        return newActionState;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
 
 export const deleteOrder = async (
     orderId: string,
@@ -195,7 +232,7 @@ export const createMembershipOrder = async (
     const newActionState = { ...currentActionState };
     try {
         // Get or create the membership product
-        const membershipProductId = await getMembershipProduct();
+        const membershipProductId = await getMembershipProductId();
         // Get the logged-in user
         const loggedInUserResult = await getLoggedInUser(currentActionState);
         if (loggedInUserResult.status !== 200) {

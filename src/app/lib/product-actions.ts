@@ -6,6 +6,7 @@ import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 import { createProductSchema, updateProductSchema } from "./zod-schemas";
 import GlobalConstants from "../GlobalConstants";
+import { renewUserMembership } from "./user-actions";
 
 export const getProductById = async (
     currentState: DatagridActionState,
@@ -107,7 +108,7 @@ export const deleteProduct = async (
     return newActionState;
 };
 
-export const getMembershipProduct = async (): Promise<string> => {
+export const getMembershipProductId = async (): Promise<string> => {
     try {
         // Try to find existing membership product
         const membershipProduct = await prisma.product.findFirst({
@@ -132,4 +133,33 @@ export const getMembershipProduct = async (): Promise<string> => {
     } catch (error) {
         throw new Error(`Failed to get/create membership product: ${error.message}`);
     }
+};
+
+export const processOrderedProduct = async (
+    productId: string,
+    quantity: number,
+    userId: string,
+    currentActionState: FormActionState,
+) => {
+    const membershipProductId = await getMembershipProductId();
+    const newActionState = { ...currentActionState };
+    const failedProducts: string[] = [];
+    for (let i = 0; i < quantity; i++) {
+        if (membershipProductId === productId) {
+            const renewMembershipResult = await renewUserMembership(userId, currentActionState);
+            if (renewMembershipResult.status !== 200) {
+                failedProducts.push(`Membership renewal failed for user ${userId}`);
+            }
+        }
+    }
+    newActionState.status = 200;
+    newActionState.errorMsg = "";
+    newActionState.result = `Processed ${quantity} of product ${productId} for user ${userId}`;
+    if (failedProducts.length > 0) {
+        newActionState.status = 500;
+        newActionState.errorMsg = failedProducts.join(", ");
+        newActionState.result = "";
+        return newActionState;
+    }
+    return newActionState;
 };

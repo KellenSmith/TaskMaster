@@ -1,20 +1,10 @@
 "use client";
 import { Stack } from "@mui/material";
-import Datagrid, { RowActionProps } from "../../ui/Datagrid";
+import Datagrid from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
-import { completeOrder, getAllOrders } from "../../lib/order-actions";
-import { OrderStatus } from "@prisma/client";
+import { getAllOrders } from "../../lib/order-actions";
 
 const OrdersPage = () => {
-    const rowActions: RowActionProps[] = [
-        {
-            name: OrderStatus.completed,
-            serverAction: completeOrder,
-            available: (clickedRow) => clickedRow && clickedRow.status === OrderStatus.paid,
-            buttonColor: "success",
-        },
-    ];
-
     const hiddenColumns = [
         GlobalConstants.ID,
         GlobalConstants.USER_CREDENTIALS,
@@ -27,7 +17,7 @@ const OrdersPage = () => {
             <Datagrid
                 name={GlobalConstants.USER}
                 fetchData={getAllOrders}
-                rowActions={rowActions}
+                rowActions={[]}
                 hiddenColumns={hiddenColumns}
             />
         </Stack>
