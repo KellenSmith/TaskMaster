@@ -37,15 +37,21 @@ export const createTaskSchema = updateTaskSchema.omit({
     [GlobalConstants.TAGS]: true,
 });
 
-export const createProductSchema = z.object({
+export const createMembershipProductSchema = z.object({
     [GlobalConstants.NAME]: z.string(),
     [GlobalConstants.PRICE]: z.coerce.number(),
     [GlobalConstants.STOCK]: z.coerce.number().optional(),
     [GlobalConstants.UNLIMITED_STOCK]: z.boolean().optional(),
     [GlobalConstants.IMAGE_URL]: z.string().optional(),
     [GlobalConstants.DESCRIPTION]: z.string().optional(),
+    [GlobalConstants.DURATION]: z.coerce.number(),
 });
-export const updateProductSchema = createProductSchema.extend({
+export const createProductSchema = createMembershipProductSchema.omit({ duration: true });
+export const updateMembershipProductSchema = createMembershipProductSchema.extend({
     [GlobalConstants.NAME]: z.string().optional(),
     [GlobalConstants.PRICE]: z.coerce.number().optional(),
+    [GlobalConstants.DURATION]: z.coerce.number().optional(),
+});
+export const updateProductSchema = updateMembershipProductSchema.omit({
+    duration: true,
 });

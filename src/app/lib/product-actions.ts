@@ -4,7 +4,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
-import { createProductSchema, updateProductSchema } from "./zod-schemas";
+import {
+    createMembershipProductSchema,
+    createProductSchema,
+    updateProductSchema,
+} from "./zod-schemas";
 import GlobalConstants from "../GlobalConstants";
 import { renewUserMembership } from "./user-actions";
 
@@ -62,6 +66,35 @@ export const createProduct = async (
         newActionState.errorMsg = error.message;
         newActionState.result = "";
     }
+    return newActionState;
+};
+
+export const createMembershipProduct = async (
+    currentActionState: FormActionState,
+    fieldValues: Prisma.ProductCreateInput,
+): Promise<FormActionState> => {
+    const newActionState = { ...currentActionState };
+    try {
+        const parsedFieldValues = createMembershipProductSchema.parse(fieldValues);
+        const createdMembershipProduct = await prisma.product.create({
+            data: {
+                ...parsedFieldValues,
+                Membership: {
+                    create: {
+                        duration: parsedFieldValues.duration as number,
+                    },
+                },
+            },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 201;
+        newActionState.result = `Membership Product #${createdMembershipProduct.id} ${createdMembershipProduct.name} created successfully`;
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+
     return newActionState;
 };
 
