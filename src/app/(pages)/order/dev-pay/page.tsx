@@ -1,17 +1,17 @@
 "use client";
 
 import { Button, Stack } from "@mui/material";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import axios from "axios";
-import { navigateToRoute } from "../../../../ui/utils";
-import GlobalConstants from "../../../../GlobalConstants";
+import { navigateToRoute } from "../../../ui/utils";
+import GlobalConstants from "../../../GlobalConstants";
 
 // TODO: Eliminate this component when real payment integration is implemented
 const DevPaymentPage = () => {
-    const pathname = usePathname();
     const router = useRouter();
-    const orderId = useMemo(() => pathname.split("/").at(-2), [pathname]);
+    const searchParams = useSearchParams();
+    const orderId = useMemo(() => searchParams.get(GlobalConstants.ORDER_ID), [searchParams]);
 
     const handleAction = async (action: string) => {
         try {
@@ -23,7 +23,7 @@ const DevPaymentPage = () => {
                     number: 12345678,
                 },
             });
-            navigateToRoute(`/${GlobalConstants.ORDER}/${orderId}`, router);
+            navigateToRoute(`/${GlobalConstants.ORDER}?orderId=${orderId}`, router);
         } catch (error) {
             console.error("Payment simulation failed:", error);
         }
@@ -33,9 +33,6 @@ const DevPaymentPage = () => {
         <Stack spacing={2} alignItems="center">
             <Button onClick={() => handleAction("PAID")} color="success">
                 Simulate Payment
-            </Button>
-            <Button onClick={() => handleAction("CANCELLED")} color="error">
-                Cancel Order
             </Button>
         </Stack>
     );

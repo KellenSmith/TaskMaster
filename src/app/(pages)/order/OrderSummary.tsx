@@ -14,7 +14,7 @@ import {
     TableRow,
     useTheme,
 } from "@mui/material";
-import GlobalConstants from "../../../GlobalConstants";
+import GlobalConstants from "../../GlobalConstants";
 
 interface OrderSummaryProps {
     order: any[];

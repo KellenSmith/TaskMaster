@@ -85,6 +85,7 @@ const GlobalConstants = {
     DURATION: "duration",
     // Order
     ORDER: "order",
+    ORDER_ID: "orderId",
     TOTAL_AMOUNT: "totalAmount",
     ORDER_ITEMS: "orderItems",
     // Task

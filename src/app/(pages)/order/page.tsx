@@ -1,23 +1,14 @@
 "use client";
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CircularProgress,
-    Stack,
-    Typography,
-} from "@mui/material";
+import { Card, CardContent, CircularProgress } from "@mui/material";
 import React, { startTransition, useActionState, useEffect, useMemo, useState } from "react";
-import { OrderStatus } from "@prisma/client";
-import { usePathname, useRouter } from "next/navigation";
-import { useUserContext } from "../../../context/UserContext";
-import { DatagridActionState, defaultActionState } from "../../../ui/Datagrid";
-import { getOrderById } from "../../../lib/order-actions";
-import GlobalConstants from "../../../GlobalConstants";
-import { navigateToRoute } from "../../../ui/utils";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useUserContext } from "../../context/UserContext";
+import { DatagridActionState, defaultActionState } from "../../ui/Datagrid";
+import { getOrderById } from "../../lib/order-actions";
+import GlobalConstants from "../../GlobalConstants";
+import { navigateToRoute } from "../../ui/utils";
 import OrderSummary from "./OrderSummary";
-import PaymentHandler from "../../../ui/payment/PaymentHandler";
+import PaymentHandler from "../../ui/payment/PaymentHandler";
 
 const OrderPage = () => {
     const paymentMethods = useMemo<{
@@ -30,8 +21,9 @@ const OrderPage = () => {
     );
     const { user } = useUserContext();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const router = useRouter();
-    const orderId = useMemo(() => pathname.split("/").at(-1), [pathname]);
+    const orderId = useMemo(() => searchParams.get(GlobalConstants.ORDER_ID), [pathname]);
     const [chosenPaymentMethod, setChosenPaymentMethod] = useState<string | null>(null);
 
     const getOrderProp = (orderProp?: string) => {

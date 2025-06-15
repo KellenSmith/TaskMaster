@@ -20,6 +20,7 @@ import { formatDate, navigateToRoute } from "../../ui/utils";
 import dayjs from "dayjs";
 import { createMembershipOrder } from "../../lib/order-actions";
 import { useRouter } from "next/navigation";
+import { NextURL } from "next/dist/server/web/next-url";
 
 const AccountTab = () => {
     const theme = useTheme();
@@ -80,9 +81,8 @@ const AccountTab = () => {
 
     const payMembership = async () => {
         const createMembershipOrderResult = await createMembershipOrder(defaultActionState);
-        console.log("createMembershipOrderResult", createMembershipOrderResult);
         if (createMembershipOrderResult.status === 201) {
-            const orderUrl = new URL("/order", window.location.origin);
+            const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, window.location.origin);
             orderUrl.searchParams.set(GlobalConstants.ORDER_ID, createMembershipOrderResult.result);
             router.push(orderUrl.toString());
         }

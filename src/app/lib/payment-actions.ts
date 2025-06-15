@@ -112,7 +112,7 @@ const mockedPaymentRequestResponse = (orderId: string) => ({
     operations: [
         {
             method: "GET",
-            href: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/dev-pay`,
+            href: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/dev-pay?orderId=${orderId}`,
             rel: "redirect-checkout",
             contentType: "text/html",
         },
