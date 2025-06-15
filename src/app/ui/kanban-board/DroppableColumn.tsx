@@ -18,7 +18,7 @@ import {
     getLatestEndTime,
     getSortedTaskComps,
     sortTasks,
-} from "../../(pages)/calendar/[event-id]/event-utils";
+} from "../../(pages)/calendar/event/event-utils";
 import DraggableTask from "./DraggableTask";
 import { Add, ExpandMore } from "@mui/icons-material";
 import { formatDate } from "../utils";

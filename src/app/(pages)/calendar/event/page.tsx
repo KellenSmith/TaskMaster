@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { getEventById } from "../../../lib/event-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
@@ -12,8 +12,8 @@ import EventDashboard, { tabs } from "./EventDashboard";
 const EventPage = () => {
     const theme = useTheme();
     const { user } = useUserContext();
-    const pathname = usePathname();
-    const eventId = useMemo(() => pathname.split("/").at(-1), [pathname]);
+    const searchParams = useSearchParams();
+    const eventId = useMemo(() => searchParams.get(GlobalConstants.EVENT_ID), [searchParams]);
     const [openTab, setOpenTab] = useState(tabs.event);
 
     const getEvent = async () => {
