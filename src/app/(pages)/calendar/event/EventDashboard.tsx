@@ -37,10 +37,11 @@ import ConfirmButton from "../../../ui/ConfirmButton";
 
 export const tabs = { event: "Event", details: "Details", tasks: "Participate" };
 
-const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
+const EventDashboard = ({ event, fetchEventAction }) => {
     const theme = useTheme();
     const { user } = useUserContext();
     const [eventActionState, setEventActionState] = useState(defaultFormActionState);
+    const [openTab, setOpenTab] = useState(tabs.event);
 
     const getHostNickname = () => {
         if (!event) return "Pending";

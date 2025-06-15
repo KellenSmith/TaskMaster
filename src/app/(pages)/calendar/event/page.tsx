@@ -7,14 +7,13 @@ import { startTransition, useActionState, useEffect, useMemo, useState } from "r
 import { CircularProgress, Stack, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
-import EventDashboard, { tabs } from "./EventDashboard";
+import EventDashboard from "./EventDashboard";
 
 const EventPage = () => {
     const theme = useTheme();
     const { user } = useUserContext();
     const searchParams = useSearchParams();
     const eventId = useMemo(() => searchParams.get(GlobalConstants.EVENT_ID), [searchParams]);
-    const [openTab, setOpenTab] = useState(tabs.event);
 
     const getEvent = async () => {
         return getEventById(eventId, fetchEventState);
@@ -60,8 +59,6 @@ const EventPage = () => {
                             <EventDashboard
                                 event={getEventResult()}
                                 fetchEventAction={fetchEventAction}
-                                openTab={openTab}
-                                setOpenTab={setOpenTab}
                             />
                         </Stack>
                     </>
