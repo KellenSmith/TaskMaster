@@ -81,6 +81,7 @@ const GlobalConstants = {
     IMAGE_URL: "imageUrl",
     MEMBERSHIP_PRODUCT_NAME: "Membership",
     // Membership
+    MEMBERSHIP: "membership",
     DURATION: "duration",
     // Order
     ORDER: "order",

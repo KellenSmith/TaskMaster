@@ -48,6 +48,28 @@ export const getAllProducts = async (
     return newActionState;
 };
 
+export const getAllMembershipProducts = async (
+    currentActionState: DatagridActionState,
+): Promise<DatagridActionState> => {
+    const newActionState = { ...currentActionState };
+    try {
+        const membershipProducts = await prisma.product.findMany({
+            where: { Membership: { isNot: null } },
+            include: {
+                Membership: true, // Include membership details
+            },
+        });
+        newActionState.status = 200;
+        newActionState.result = membershipProducts;
+        newActionState.errorMsg = "";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = [];
+    }
+    return newActionState;
+};
+
 export const createProduct = async (
     currentActionState: FormActionState,
     fieldValues: Prisma.ProductCreateInput,
@@ -121,6 +143,36 @@ export const updateProduct = async (
     return newActionState;
 };
 
+export const updateMembershipProduct = async (
+    productId: string,
+    currentActionState: FormActionState,
+    fieldValues: Prisma.ProductUpdateInput,
+): Promise<FormActionState> => {
+    const newActionState = { ...currentActionState };
+    try {
+        const parsedFieldValues = updateProductSchema.parse(fieldValues);
+        await prisma.product.update({
+            where: { id: productId },
+            data: {
+                ...parsedFieldValues,
+                Membership: {
+                    update: {
+                        duration: parsedFieldValues.duration as number,
+                    },
+                },
+            },
+        });
+        newActionState.errorMsg = "";
+        newActionState.status = 200;
+        newActionState.result = "Membership updated successfully";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+    }
+    return newActionState;
+};
+
 export const deleteProduct = async (
     productId: string,
     currentActionState: FormActionState,
@@ -144,12 +196,14 @@ export const deleteProduct = async (
 export const getMembershipProductId = async (): Promise<string> => {
     try {
         // Try to find existing membership product
-        const membershipProduct = await prisma.product.findFirst({
-            where: { name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME },
+        const membershipProduct = await prisma.membership.findFirst({
+            select: {
+                productId: true,
+            },
         });
 
         if (membershipProduct) {
-            return membershipProduct.id;
+            return membershipProduct.productId;
         }
 
         // If no membership product exists, create it
@@ -159,6 +213,11 @@ export const getMembershipProductId = async (): Promise<string> => {
                 description: "Annual membership",
                 price: parseFloat(process.env.NEXT_PUBLIC_MEMBERSHIP_FEE || "0"),
                 unlimitedStock: true,
+                Membership: {
+                    create: {
+                        duration: 365,
+                    },
+                },
             },
         });
 

@@ -80,6 +80,7 @@ const AccountTab = () => {
 
     const payMembership = async () => {
         const createMembershipOrderResult = await createMembershipOrder(defaultActionState);
+        console.log("createMembershipOrderResult", createMembershipOrderResult);
         if (createMembershipOrderResult.status === 201)
             navigateToRoute(
                 `/${GlobalConstants.ORDER}/${createMembershipOrderResult.result}`,

@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 export const routes = {
     [GlobalConstants.ADMIN]: [
         GlobalConstants.MEMBERS,
+        GlobalConstants.MEMBERSHIP,
         GlobalConstants.SENDOUT,
         GlobalConstants.PRODUCTS,
         GlobalConstants.ORDERS,
