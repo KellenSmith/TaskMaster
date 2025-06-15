@@ -64,7 +64,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children, html }) => {
                     </Container>
                     <Button
                         style={mailTheme.components.button}
-                        href={`${process.env.NEXT_PUBLIC_API_URL}/${GlobalConstants.LOGIN}`}
+                        href={`${process.env.VERCEL_URL}/${GlobalConstants.LOGIN}`}
                     >
                         visit us
                     </Button>

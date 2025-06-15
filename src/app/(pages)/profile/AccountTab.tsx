@@ -81,11 +81,12 @@ const AccountTab = () => {
     const payMembership = async () => {
         const createMembershipOrderResult = await createMembershipOrder(defaultActionState);
         console.log("createMembershipOrderResult", createMembershipOrderResult);
-        if (createMembershipOrderResult.status === 201)
-            navigateToRoute(
-                `/${GlobalConstants.ORDER}/${createMembershipOrderResult.result}`,
-                router,
-            );
+        if (createMembershipOrderResult.status === 201) {
+            const orderUrl = new URL("/order", window.location.origin);
+            orderUrl.searchParams.set(GlobalConstants.ORDER_ID, createMembershipOrderResult.result);
+            router.push(orderUrl.toString());
+        }
+
         setAccountActionState(createMembershipOrderResult);
     };
 

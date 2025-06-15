@@ -34,7 +34,7 @@ export const makeApiRequest = async ({
 }: RequestProps): Promise<AxiosResponse> => {
     const requestConfig = { withCredentials: true, ...options };
 
-    const url = new URL(endpoint, process.env.NEXT_PUBLIC_API_URL);
+    const url = new URL(endpoint, window.location.origin);
     for (const [key, value] of searchParams) {
         url.searchParams.set(key, value);
     }
@@ -43,5 +43,5 @@ export const makeApiRequest = async ({
 };
 
 export const navigateToRoute = (route: string, router: AppRouterInstance) => {
-    router.push(`${process.env.NEXT_PUBLIC_API_URL}${route}`);
+    router.push(`${window.location.origin}${route}`);
 };

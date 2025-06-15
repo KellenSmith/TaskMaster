@@ -15,7 +15,7 @@ const DevPaymentPage = () => {
 
     const handleAction = async (action: string) => {
         try {
-            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/payment-callback`, {
+            await axios.post(`${window.location.origin}/api/payment-callback`, {
                 orderReference: orderId,
                 paymentOrder: {
                     id: "/psp/paymentorders/7e6cdfc3-1276-44e9-9992-7cf4419750e1",
