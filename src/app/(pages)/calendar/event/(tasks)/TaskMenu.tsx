@@ -340,7 +340,7 @@ const TaskMenu = ({
 
     const openTicketDialog = async () => {
         const membershipExpires = dayjs(membershipExpiresAt(user));
-        if (membershipExpires.isBefore(dayjs(event[GlobalConstants.START_TIME]))) {
+        if (membershipExpires.isBefore(dayjs(event[GlobalConstants.END_TIME]))) {
             const newTaskActionState = { ...taskActionState };
             newTaskActionState.status = 500;
             newTaskActionState.errorMsg =
@@ -349,7 +349,7 @@ const TaskMenu = ({
             setTaskActionState(newTaskActionState);
             return;
         }
-        // If ticker price is zero, don't go through payment flow.
+        // If ticket price is zero, don't go through payment flow.
         if (getReducedTicketPrice() < 1) {
             const assignTasksResult = await assignTasksToUser(
                 user[GlobalConstants.ID],
