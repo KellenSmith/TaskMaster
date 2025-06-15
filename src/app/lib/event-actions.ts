@@ -6,15 +6,21 @@ import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 import { createEventSchema } from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
+import { getLoggedInUser } from "./user-actions";
+import GlobalConstants from "../GlobalConstants";
 
 export const createEvent = async (
-    hostId: string,
     currentActionState: FormActionState,
     fieldValues: Prisma.EventCreateInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
 
     try {
+        const loggedInUserResult = await getLoggedInUser(currentActionState);
+        if (loggedInUserResult.status !== 200) {
+            throw new Error("You must be logged in to create an event");
+        }
+        const loggedInUserId = JSON.parse(loggedInUserResult.result)[GlobalConstants.ID];
         const parsedFieldValues = createEventSchema.parse(fieldValues) as Prisma.EventCreateInput;
 
         const createdEvent = await prisma.event.create({
@@ -22,15 +28,38 @@ export const createEvent = async (
                 ...parsedFieldValues,
                 host: {
                     connect: {
-                        id: hostId,
+                        id: loggedInUserId,
+                    },
+                },
+                tickets: {
+                    create: {
+                        Product: {
+                            create: {
+                                name: `Ticket for ${parsedFieldValues.title}`,
+                                description: "Admittance for one person",
+                                price: 0,
+                                unlimitedStock: true,
+                            },
+                        },
+                    },
+                },
+            },
+            include: {
+                tickets: {
+                    select: {
+                        id: true,
                     },
                 },
             },
         });
+        if (!createdEvent.tickets || createdEvent.tickets.length === 0) {
+            throw new Error("Failed to create event ticket");
+        }
         await prisma.participantInEvent.create({
             data: {
-                userId: hostId,
+                userId: loggedInUserId,
                 eventId: createdEvent.id,
+                ticketId: createdEvent.tickets[0].id,
             },
         });
         newActionState.errorMsg = "";
