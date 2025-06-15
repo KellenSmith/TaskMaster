@@ -164,8 +164,15 @@ model Membership {
     @@map("memberships")
 }
 
+enum TicketType {
+    earlyBird
+    volunteer
+    standard
+}
+
 model Ticket {
     id                 String               @id @default(uuid())
+    type               TicketType           @default(standard)
     Product            Product              @relation(fields: [productId], references: [id])
     productId          String               @unique
     Event              Event                @relation(fields: [eventId], references: [id])
