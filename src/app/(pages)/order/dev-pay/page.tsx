@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Stack } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import axios from "axios";
 import { navigateToRoute } from "../../../ui/utils";
@@ -13,7 +13,7 @@ const DevPaymentPage = () => {
     const searchParams = useSearchParams();
     const orderId = useMemo(() => searchParams.get(GlobalConstants.ORDER_ID), [searchParams]);
 
-    const handleAction = async (action: string) => {
+    const handleAction = async () => {
         try {
             await axios.post(`${window.location.origin}/api/payment-callback`, {
                 orderReference: orderId,
@@ -31,7 +31,7 @@ const DevPaymentPage = () => {
 
     return (
         <Stack spacing={2} alignItems="center">
-            <Button onClick={() => handleAction("PAID")} color="success">
+            <Button onClick={() => handleAction()} color="success">
                 Simulate Payment
             </Button>
         </Stack>

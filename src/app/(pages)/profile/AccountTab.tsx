@@ -16,7 +16,7 @@ import {
 } from "../../lib/definitions";
 import { Prisma } from "@prisma/client";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { formatDate, navigateToRoute } from "../../ui/utils";
+import { formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
 import { createMembershipOrder } from "../../lib/order-actions";
 import { useRouter } from "next/navigation";

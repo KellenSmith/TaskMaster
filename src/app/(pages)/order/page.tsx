@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent, CircularProgress } from "@mui/material";
-import React, { startTransition, useActionState, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { startTransition, useActionState, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUserContext } from "../../context/UserContext";
 import { DatagridActionState, defaultActionState } from "../../ui/Datagrid";
 import { getOrderById } from "../../lib/order-actions";
@@ -11,20 +11,10 @@ import OrderSummary from "./OrderSummary";
 import PaymentHandler from "../../ui/payment/PaymentHandler";
 
 const OrderPage = () => {
-    const paymentMethods = useMemo<{
-        [key: string]: string;
-    }>(
-        () => ({
-            SWISH: "Swish",
-        }),
-        [],
-    );
     const { user } = useUserContext();
-    const pathname = usePathname();
     const searchParams = useSearchParams();
     const router = useRouter();
-    const orderId = useMemo(() => searchParams.get(GlobalConstants.ORDER_ID), [pathname]);
-    const [chosenPaymentMethod, setChosenPaymentMethod] = useState<string | null>(null);
+    const orderId = useMemo(() => searchParams.get(GlobalConstants.ORDER_ID), [searchParams]);
 
     const getOrderProp = (orderProp?: string) => {
         if (getOrderActionState.status === 200 && getOrderActionState.result.length > 0) {
@@ -51,6 +41,8 @@ const OrderPage = () => {
         startTransition(() => {
             getOrderAction();
         });
+        // Load order when component mounts
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

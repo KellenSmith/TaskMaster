@@ -33,6 +33,8 @@ const TicketShop = ({ event, selectedTasks }: TicketShopProps) => {
 
     useEffect(() => {
         startTransition(() => fetchTicketsAction());
+        // Fetch tickets when selected tasks change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedTasks]);
 
     const createTicketOrder = async (product: Product) => {

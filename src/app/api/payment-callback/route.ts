@@ -14,38 +14,41 @@ interface PaymentCallbackRequest {
     paymentOrder: IPaymentOrder;
 }
 
-// Validate that the request comes from an allowed IP address
-const isAllowedIp = (request: NextRequest): boolean => {
-    // Get client IP address
-    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0];
-    if (!clientIp) return false;
-    // Convert IP range to numeric for comparison
-    const ipToNumber = (ip: string): number => {
-        const parts = ip.split(".");
-        return (
-            ((parseInt(parts[0]) << 24) |
-                (parseInt(parts[1]) << 16) |
-                (parseInt(parts[2]) << 8) |
-                parseInt(parts[3])) >>>
-            0
-        );
-    };
+// TODO: Validate that the request comes from an allowed IP address
+// const isAllowedIp = (request: NextRequest): boolean => {
+//     // Get client IP address
+//     const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0];
+//     if (!clientIp) return false;
+//     // Convert IP range to numeric for comparison
+//     const ipToNumber = (ip: string): number => {
+//         const parts = ip.split(".");
+//         return (
+//             ((parseInt(parts[0]) << 24) |
+//                 (parseInt(parts[1]) << 16) |
+//                 (parseInt(parts[2]) << 8) |
+//                 parseInt(parts[3])) >>>
+//             0
+//         );
+//     };
 
-    const start = ipToNumber("20.91.170.120");
-    const end = ipToNumber("20.91.170.127"); // 120 + 7 for /29
-    const client = ipToNumber(clientIp);
+//     const start = ipToNumber("20.91.170.120");
+//     const end = ipToNumber("20.91.170.127"); // 120 + 7 for /29
+//     const client = ipToNumber(clientIp);
 
-    return client >= start && client <= end;
+//     return client >= start && client <= end;
+// };
+
+const PaymentState = {
+    INITIALIZED: "Initialized",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
+    FAILED: "Failed",
+    ABORTED: "Aborted",
 };
 
-enum PaymentState {
-    INITIALIZED = "Initialized",
-    COMPLETED = "Completed",
-    CANCELLED = "Cancelled",
-    FAILED = "Failed",
-    ABORTED = "Aborted",
-}
-const getNewOrderStatus = (paymentState: PaymentState) => {
+type PaymentStateType = (typeof PaymentState)[keyof typeof PaymentState];
+
+const getNewOrderStatus = (paymentState: PaymentStateType) => {
     switch (paymentState) {
         case PaymentState.COMPLETED:
             return OrderStatus.paid;
@@ -110,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // Update order by reference (id)
         const orderId = body.orderReference;
         const newOrderStatus = getNewOrderStatus(
-            mockedPaymentResource.authorization.transaction.state as PaymentState,
+            mockedPaymentResource.authorization.transaction.state as PaymentStateType,
         );
         const updateOrderStatusResult = await updateOrderStatus(
             orderId,

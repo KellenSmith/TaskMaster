@@ -28,17 +28,12 @@ interface Product {
 
 interface ProductCardProps {
     product: Product;
-    onAddToCart?: (product: Product) => void;
+    onAddToCart?: Function;
 }
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
     const [isOpen, setIsOpen] = useState(false);
     const defaultImage = "/images/product-placeholder.svg";
-
-    const handleAddToCart = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onAddToCart(product);
-    };
 
     const getStockChipLabel = () => {
         if (product.unlimitedStock) {
@@ -151,7 +146,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
                 <DialogActions>
                     <Button onClick={() => setIsOpen(false)}>Close</Button>
                     <Button
-                        onClick={handleAddToCart}
+                        onClick={() => onAddToCart(product)}
                         disabled={!product.unlimitedStock && product.stock === 0}
                     >
                         buy

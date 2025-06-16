@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { getEventById } from "../../../lib/event-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
-import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
+import { startTransition, useActionState, useEffect, useMemo } from "react";
 import { CircularProgress, Stack, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";

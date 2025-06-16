@@ -29,18 +29,11 @@ import { MoreHoriz } from "@mui/icons-material";
 interface IEventActions {
     event: any;
     fetchEventAction: Function;
-    setEventActionState: Function;
     openTab: string;
     setOpenTab: Function;
 }
 
-const EventActions: FC<IEventActions> = ({
-    event,
-    fetchEventAction,
-    setEventActionState,
-    openTab,
-    setOpenTab,
-}) => {
+const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const { user } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState("");

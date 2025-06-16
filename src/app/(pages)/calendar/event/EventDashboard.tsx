@@ -45,7 +45,6 @@ const EventDashboard = ({ event, fetchEventAction }) => {
                 <EventActions
                     event={event}
                     fetchEventAction={fetchEventAction}
-                    setEventActionState={setEventActionState}
                     openTab={openTab}
                     setOpenTab={setOpenTab}
                 />

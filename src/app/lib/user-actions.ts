@@ -18,7 +18,6 @@ import {
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { isMembershipExpired, LoginSchema, ResetCredentialsSchema } from "./definitions";
 import dayjs from "dayjs";
-import { error } from "console";
 
 export const getUserById = async (
     currentState: DatagridActionState,

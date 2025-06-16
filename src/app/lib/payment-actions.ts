@@ -1,46 +1,43 @@
 "use server";
-import { headers } from "next/headers";
-import { defaultActionState } from "../ui/Datagrid";
 import { FormActionState } from "../ui/form/Form";
-import { getOrderById } from "./order-actions";
 import GlobalConstants from "../GlobalConstants";
 
-const getSwedbankPaymentRequestPayload = async (orderId) => {
-    // Find order by ID
-    const orderResult = await getOrderById(defaultActionState, orderId);
-    if (orderResult.status !== 200 || !orderResult.result || orderResult.result.length === 0) {
-        throw new Error("Order not found");
-    }
-    const order = orderResult.result[0];
-    const headersList = await headers();
-    const userAgent = headersList.get("user-agent") || "Unknown";
+// const getSwedbankPaymentRequestPayload = async (orderId) => {
+//     // Find order by ID
+//     const orderResult = await getOrderById(defaultActionState, orderId);
+//     if (orderResult.status !== 200 || !orderResult.result || orderResult.result.length === 0) {
+//         throw new Error("Order not found");
+//     }
+//     const order = orderResult.result[0];
+//     const headersList = await headers();
+//     const userAgent = headersList.get("user-agent") || "Unknown";
 
-    return {
-        paymentorder: {
-            operation: "Purchase",
-            currency: "SEK",
-            amount: order.totalAmount,
-            vatAmount: 0,
-            description: "Purchase of order " + order.id,
-            userAgent: userAgent,
-            language: "en-US",
-            urls: {
-                hostUrls: [process.env.VERCEL_URL],
-                cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/cancel`,
-                callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
-                // logoUrl: "https://example.com/logo.png",
-                // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
-            },
-            // TODO: Configure payee info
-            payeeInfo: {
-                payeeId: "5cabf558-5283-482f-b252-4d58e06f6f3b",
-                payeeReference: "AB832",
-                payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
-                orderReference: orderId,
-            },
-        },
-    };
-};
+//     return {
+//         paymentorder: {
+//             operation: "Purchase",
+//             currency: "SEK",
+//             amount: order.totalAmount,
+//             vatAmount: 0,
+//             description: "Purchase of order " + order.id,
+//             userAgent: userAgent,
+//             language: "en-US",
+//             urls: {
+//                 hostUrls: [process.env.VERCEL_URL],
+//                 cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/cancel`,
+//                 callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
+//                 // logoUrl: "https://example.com/logo.png",
+//                 // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
+//             },
+//             // TODO: Configure payee info
+//             payeeInfo: {
+//                 payeeId: "5cabf558-5283-482f-b252-4d58e06f6f3b",
+//                 payeeReference: "AB832",
+//                 payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
+//                 orderReference: orderId,
+//             },
+//         },
+//     };
+// };
 
 const mockedPaymentRequestResponse = (orderId: string) => ({
     paymentorder: {
@@ -149,7 +146,7 @@ export const getPaymentRedirectUrl = async (
 ): Promise<FormActionState> => {
     const newActionState: FormActionState = { ...currentActionState };
     try {
-        const requestBody = await getSwedbankPaymentRequestPayload(orderId);
+        // const requestBody = await getSwedbankPaymentRequestPayload(orderId);
         // TODO: Create payment request with payment provider
         // const response = await fetch(`/api/payments/create?orderId=${orderId}`, {
         //     method: "POST",
