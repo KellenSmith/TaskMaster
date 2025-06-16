@@ -67,7 +67,7 @@ const EventsTab: React.FC = () => {
                                         size="small"
                                         onClick={() =>
                                             navigateToRoute(
-                                                `/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]}`,
+                                                `/${GlobalConstants.CALENDAR}/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${event[GlobalConstants.ID]}`,
                                                 router,
                                             )
                                         }

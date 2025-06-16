@@ -21,7 +21,7 @@ import Form, {
     FormActionState,
 } from "../../../../ui/form/Form";
 import GlobalConstants from "../../../../GlobalConstants";
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
 import { ExpandMore } from "@mui/icons-material";
 import { updateEventTasks, assignTasksToUser } from "../../../../lib/task-actions";
 import dayjs from "dayjs";
@@ -33,8 +33,9 @@ import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
 import { addEventParticipant } from "../../../../lib/event-actions";
 import { getActiveMembers } from "../../../../lib/user-actions";
-import { defaultActionState } from "../../../../ui/Datagrid";
+import { defaultActionState as defaultDatagridActionState } from "../../../../ui/Datagrid";
 import { formatAssigneeOptions } from "../../../../ui/form/FieldCfg";
+import TicketShop from "./TicketShop";
 
 const testTaskOptions = [
     {
@@ -130,7 +131,7 @@ const TaskMenu = ({
 
     useEffect(() => {
         startTransition(async () => {
-            const result = await getActiveMembers(defaultActionState);
+            const result = await getActiveMembers(defaultDatagridActionState);
             setActiveMembers(result.result);
         });
     }, []);
@@ -477,6 +478,7 @@ const TaskMenu = ({
                                     <Button onClick={openTicketDialog}>
                                         {"buy ticket: " + getReducedTicketPrice() + " SEK"}
                                     </Button>
+                                    <TicketShop event={event} selectedTasks={selectedTasks} />
                                 </>
                             )}
                         </Stack>

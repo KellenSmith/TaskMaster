@@ -113,7 +113,7 @@ describe("Order Actions", () => {
                 return callback(tx);
             });
 
-            const result = await createOrder(defaultFormActionState, userId, orderItems);
+            const result = await createOrder(defaultFormActionState, orderItems);
 
             expect(result.status).toBe(201);
             expect(result.result).toContain("#new-order");
@@ -131,7 +131,6 @@ describe("Order Actions", () => {
 
             const result = await createOrder(
                 defaultFormActionState,
-                testdata.user.id,
                 testdata.createOrderItems,
             );
             expect(result.status).toBe(500);
@@ -149,7 +148,6 @@ describe("Order Actions", () => {
 
             const result = await createOrder(
                 defaultFormActionState,
-                testdata.user.id,
                 testdata.createOrderItems,
             );
             expect(result.status).toBe(500);

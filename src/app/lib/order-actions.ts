@@ -65,7 +65,6 @@ export const getAllOrders = async (
 
 export const createOrder = async (
     currentActionState: FormActionState,
-    userId: string,
     orderItems: CreateOrderItemInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
@@ -87,12 +86,19 @@ export const createOrder = async (
             throw new Error("Some products not found");
         }
 
+        // Get the logged-in user
+        const loggedInUserResult = await getLoggedInUser(currentActionState);
+        if (loggedInUserResult.status !== 200) {
+            throw new Error(loggedInUserResult.errorMsg || "Failed to get logged-in user");
+        }
+        const loggedInUser = JSON.parse(loggedInUserResult.result as string);
+
         // Create the order with items in a transaction
         const order = await prisma.$transaction(async (tx) => {
             // Create the order first
             const order = await tx.order.create({
                 data: {
-                    userId,
+                    userId: loggedInUser.id,
                     status: "pending",
                     totalAmount: 0, // We'll update this after creating items
                 },
@@ -187,6 +193,10 @@ export const processOrderItems = async (
                 currentActionState,
             );
         }
+        await prisma.order.update({
+            where: { id: orderId },
+            data: { status: OrderStatus.completed }, // Update order status to completed
+        });
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = "Order items processed successfully";
@@ -233,14 +243,9 @@ export const createMembershipOrder = async (
     try {
         // Get or create the membership product
         const membershipProductId = await getMembershipProductId();
-        // Get the logged-in user
-        const loggedInUserResult = await getLoggedInUser(currentActionState);
-        if (loggedInUserResult.status !== 200) {
-            throw new Error(loggedInUserResult.errorMsg || "Failed to get logged-in user");
-        }
-        const loggedInUser = JSON.parse(loggedInUserResult.result as string);
+
         // Create order using existing createOrder function
-        const orderResult = await createOrder(currentActionState, loggedInUser.id, {
+        const orderResult = await createOrder(currentActionState, {
             [membershipProductId]: 1, // One membership
         });
 

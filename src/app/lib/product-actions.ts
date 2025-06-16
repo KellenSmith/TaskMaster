@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, TicketType } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
@@ -11,6 +11,7 @@ import {
 } from "./zod-schemas";
 import GlobalConstants from "../GlobalConstants";
 import { renewUserMembership } from "./user-actions";
+import dayjs from "dayjs";
 
 export const getProductById = async (
     currentState: DatagridActionState,
@@ -233,14 +234,37 @@ export const processOrderedProduct = async (
     userId: string,
     currentActionState: FormActionState,
 ) => {
-    const membershipProductId = await getMembershipProductId();
     const newActionState = { ...currentActionState };
+    const product = await prisma.product.findUniqueOrThrow({
+        where: { id: productId },
+        include: { Membership: true, Ticket: true },
+    });
     const failedProducts: string[] = [];
     for (let i = 0; i < quantity; i++) {
-        if (membershipProductId === productId) {
-            const renewMembershipResult = await renewUserMembership(userId, currentActionState);
+        if (product.Membership) {
+            const renewMembershipResult = await renewUserMembership(
+                userId,
+                product.Membership,
+                currentActionState,
+            );
             if (renewMembershipResult.status !== 200) {
                 failedProducts.push(`Membership renewal failed for user ${userId}`);
+            }
+        } else if (product.Ticket) {
+            // Add user as participant for the ticket
+            try {
+                await prisma.participantInEvent.create({
+                    data: {
+                        userId,
+                        eventId: product.Ticket.eventId,
+                        ticketId: product.Ticket.id,
+                    },
+                });
+            } catch (error) {
+                console.log(error.message);
+                failedProducts.push(
+                    `Failed to create participant for user ${userId} in event ${product.Ticket.eventId}: ${error.message}`,
+                );
             }
         }
     }
@@ -252,6 +276,40 @@ export const processOrderedProduct = async (
         newActionState.errorMsg = failedProducts.join(", ");
         newActionState.result = "";
         return newActionState;
+    }
+    return newActionState;
+};
+
+export const getEventTickets = async (
+    eventId: string,
+    selectedTaskIds: string[],
+    currentActionState: DatagridActionState,
+): Promise<DatagridActionState> => {
+    const newActionState = { ...currentActionState };
+    try {
+        const eligibleTicketTypes: TicketType[] = [TicketType.standard];
+        if (selectedTaskIds.length > 0) eligibleTicketTypes.push(TicketType.volunteer);
+        const event = await prisma.event.findUniqueOrThrow({
+            where: { id: eventId },
+            select: { startTime: true },
+        });
+        const eventStartTime = event.startTime;
+        if (dayjs(eventStartTime).subtract(14, "d").isAfter(dayjs()))
+            eligibleTicketTypes.push(TicketType.earlyBird);
+
+        const tickets = await prisma.ticket.findMany({
+            where: { eventId, type: { in: eligibleTicketTypes } },
+            include: {
+                Product: true,
+            },
+        });
+        newActionState.status = 200;
+        newActionState.result = tickets;
+        newActionState.errorMsg = "";
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = [];
     }
     return newActionState;
 };

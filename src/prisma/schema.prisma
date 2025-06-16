@@ -89,7 +89,7 @@ model ParticipantInEvent {
     ticket   Ticket @relation(fields: [ticketId], references: [id])
     ticketId String // All participants must have a ticket
 
-    @@id([userId, eventId])
+    @@id([userId, eventId, ticketId])
 }
 
 // Many-to-many relation btw users and events

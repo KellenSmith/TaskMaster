@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, PrismaPromise, UserRole } from "@prisma/client";
+import { Membership, Prisma, PrismaPromise, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { defaultActionState as defaultFormActionState, FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
@@ -289,6 +289,7 @@ export const validateUserMembership = async (
 
 export const renewUserMembership = async (
     userId: string,
+    membership: Membership,
     currentActionState: FormActionState,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
@@ -305,7 +306,7 @@ export const renewUserMembership = async (
                 ? dayjs(userToUpdate[GlobalConstants.MEMBERSHIP_RENEWED])
                 : dayjs()
         )
-            .add(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION), "d")
+            .add(membership.duration, "d")
             .toISOString();
 
         if (isMembershipExpired(userToUpdate)) newRenewDate = dayjs().toISOString();
