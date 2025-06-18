@@ -31,7 +31,6 @@ import { getLatestEndTime, isUserParticipant, sortGroupedTasks } from "../event-
 import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
-import { addEventParticipant } from "../../../../lib/event-actions";
 import { getActiveMembers } from "../../../../lib/user-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../../../ui/Datagrid";
 import { formatAssigneeOptions } from "../../../../ui/form/FieldCfg";
@@ -339,41 +338,6 @@ const TaskMenu = ({
         ]);
     };
 
-    const openTicketDialog = async () => {
-        const membershipExpires = dayjs(membershipExpiresAt(user));
-        if (membershipExpires.isBefore(dayjs(event[GlobalConstants.END_TIME]))) {
-            const newTaskActionState = { ...taskActionState };
-            newTaskActionState.status = 500;
-            newTaskActionState.errorMsg =
-                "Your membership expires before the event. Please extend your membership before buying a ticket.";
-            newTaskActionState.result = "";
-            setTaskActionState(newTaskActionState);
-            return;
-        }
-        // If ticket price is zero, don't go through payment flow.
-        if (getReducedTicketPrice() < 1) {
-            const assignTasksResult = await assignTasksToUser(
-                user[GlobalConstants.ID],
-                selectedTasks.map((task) => task[GlobalConstants.ID]),
-                taskActionState,
-            );
-            if (assignTasksResult.status !== 200) {
-                setTaskActionState(assignTasksResult);
-                return;
-            }
-            const addParticipantResult = await addEventParticipant(
-                user[GlobalConstants.ID],
-                event[GlobalConstants.ID],
-                taskActionState,
-            );
-            setTaskActionState(addParticipantResult);
-
-            startTransition(() => fetchEventAction());
-            return;
-        }
-        setPaymentHandlerOpen(true);
-    };
-
     const getSortedTaskComps = (taskList) => {
         if (taskList.length < 1) return [];
         const uniqueTaskNames = [...new Set(taskList.map((task) => task[GlobalConstants.NAME]))];
@@ -389,95 +353,101 @@ const TaskMenu = ({
         <>
             <Stack spacing={2}>
                 <Stack direction="row" spacing={2}>
-                    <Stack spacing={2} width="100%">
-                        {isUserHost(user, event) || tasks?.length > 0 ? (
-                            [
-                                GlobalConstants.BEFORE,
-                                GlobalConstants.DURING,
-                                GlobalConstants.AFTER,
-                            ].map((phase) => (
-                                <Accordion key={phase}>
-                                    <AccordionSummary
-                                        sx={{
-                                            textTransform: "capitalize",
-                                            justifyContent: "space-between",
-                                            "&.MuiAccordionSummary-content": {
-                                                alignItems: "center",
-                                            },
-                                        }}
-                                        expandIcon={<ExpandMore />}
-                                    >
-                                        <Typography>{phase}</Typography>
-                                    </AccordionSummary>
-                                    {!readOnly && (
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={
-                                                        taskOptions.filter(
-                                                            (task) =>
-                                                                task[GlobalConstants.PHASE] ===
-                                                                phase,
-                                                        ).length < 1
-                                                    }
-                                                    onChange={() => toggleAllTasksForPhase(phase)}
-                                                />
-                                            }
-                                            label="Toggle All"
-                                        />
-                                    )}
-                                    <FormGroup key={`shifts-${phase}`}>
-                                        {isTasksPending ? (
-                                            <CircularProgress />
-                                        ) : (
-                                            getSortedTaskComps(
-                                                [...selectedTasks, ...taskOptions].filter(
-                                                    (task) => task[GlobalConstants.PHASE] === phase,
-                                                ),
-                                            )
-                                        )}
-                                    </FormGroup>
-                                    {!readOnly && (
-                                        <Button
-                                            sx={{ width: "100%" }}
-                                            onClick={() => openAddTask(phase)}
+                    {(selectedTasks.length > 0 || taskOptions.length > 0) && (
+                        <Stack spacing={2} width="100%">
+                            {isUserHost(user, event) || tasks?.length > 0 ? (
+                                [
+                                    GlobalConstants.BEFORE,
+                                    GlobalConstants.DURING,
+                                    GlobalConstants.AFTER,
+                                ].map((phase) => (
+                                    <Accordion key={phase}>
+                                        <AccordionSummary
+                                            sx={{
+                                                textTransform: "capitalize",
+                                                justifyContent: "space-between",
+                                                "&.MuiAccordionSummary-content": {
+                                                    alignItems: "center",
+                                                },
+                                            }}
+                                            expandIcon={<ExpandMore />}
                                         >
-                                            add task
-                                        </Button>
-                                    )}
-                                </Accordion>
-                            ))
-                        ) : (
-                            <Typography
-                                variant="h5"
-                                textAlign="center"
-                                color="primary"
-                                sx={{ paddingTop: 4 }}
-                            >
-                                Sorry, all volunteer shifts are taken for this event.
-                                <br />
-                                You can still buy a ticket at full price.
-                            </Typography>
-                        )}
-                    </Stack>
+                                            <Typography>{phase}</Typography>
+                                        </AccordionSummary>
+                                        {!readOnly && (
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={
+                                                            taskOptions.filter(
+                                                                (task) =>
+                                                                    task[GlobalConstants.PHASE] ===
+                                                                    phase,
+                                                            ).length < 1
+                                                        }
+                                                        onChange={() =>
+                                                            toggleAllTasksForPhase(phase)
+                                                        }
+                                                    />
+                                                }
+                                                label="Toggle All"
+                                            />
+                                        )}
+                                        <FormGroup key={`shifts-${phase}`}>
+                                            {isTasksPending ? (
+                                                <CircularProgress />
+                                            ) : (
+                                                getSortedTaskComps(
+                                                    [...selectedTasks, ...taskOptions].filter(
+                                                        (task) =>
+                                                            task[GlobalConstants.PHASE] === phase,
+                                                    ),
+                                                )
+                                            )}
+                                        </FormGroup>
+                                        {!readOnly && (
+                                            <Button
+                                                sx={{ width: "100%" }}
+                                                onClick={() => openAddTask(phase)}
+                                            >
+                                                add task
+                                            </Button>
+                                        )}
+                                    </Accordion>
+                                ))
+                            ) : (
+                                <Typography
+                                    variant="h5"
+                                    textAlign="center"
+                                    color="primary"
+                                    sx={{ paddingTop: 4 }}
+                                >
+                                    Sorry, all volunteer shifts are taken for this event.
+                                    <br />
+                                    You can still buy a ticket at full price.
+                                </Typography>
+                            )}
+                        </Stack>
+                    )}
                     {readOnly && (
                         <Stack component={Paper} spacing={2} padding={2} width="100%">
-                            <Typography variant="h6" color={theme.palette.primary.main}>
-                                My tasks
-                            </Typography>
+                            {(selectedTasks.length > 0 || taskOptions.length > 0) && (
+                                <Typography variant="h6" color={theme.palette.primary.main}>
+                                    My tasks
+                                </Typography>
+                            )}
                             {getSortedTaskComps(selectedTasks)}
                             {isUserParticipant(user, event) ? (
                                 <Button onClick={assignSelectedTasks}>assign tasks to me</Button>
                             ) : (
                                 <>
                                     <Typography>
-                                        {selectedTasks.length < 1
-                                            ? "Sign up for tasks or volunteer shifts to reduce your ticket price!"
-                                            : `Thanks for helping out!`}
+                                        {selectedTasks.length > 0
+                                            ? `You unlocked the volunteer ticket!`
+                                            : taskOptions.length > 0
+                                              ? "Sign up for tasks or volunteer shifts to unlock the volunteer ticket!"
+                                              : ""}
                                     </Typography>
-                                    <Button onClick={openTicketDialog}>
-                                        {"buy ticket: " + getReducedTicketPrice() + " SEK"}
-                                    </Button>
                                     <TicketShop event={event} selectedTasks={selectedTasks} />
                                 </>
                             )}

@@ -6,7 +6,7 @@ import {
 } from "../../../../ui/Datagrid";
 import { getEventTickets } from "../../../../lib/product-actions";
 import GlobalConstants from "../../../../GlobalConstants";
-import { CircularProgress, Stack, Typography } from "@mui/material";
+import { CircularProgress, Stack, Typography, useTheme } from "@mui/material";
 import ProductCard from "../../../../ui/shop/Product";
 import { createOrder } from "../../../../lib/order-actions";
 import { defaultActionState as defaultFormActionState } from "../../../../ui/form/Form";
@@ -20,6 +20,7 @@ interface TicketShopProps {
 }
 
 const TicketShop = ({ event, selectedTasks }: TicketShopProps) => {
+    const theme = useTheme();
     const router = useRouter();
 
     const fetchEventTickets = (currentActionState: DatagridActionState) => {
@@ -52,17 +53,22 @@ const TicketShop = ({ event, selectedTasks }: TicketShopProps) => {
     return isTicketsPending ? (
         <CircularProgress />
     ) : (
-        <Stack direction="row" flexWrap="wrap" gap={2}>
-            {fetchTicketsActionState.result.map((ticket) => (
-                <ProductCard
-                    key={ticket.id}
-                    product={ticket.Product}
-                    onAddToCart={createTicketOrder}
-                />
-            ))}
-            {fetchTicketsActionState.result.length === 0 && (
-                <Typography>No tickets available for this event.</Typography>
-            )}
+        <Stack spacing={2} sx={{ padding: 2 }}>
+            <Typography variant="h6" color={theme.palette.primary.main}>
+                Tickets
+            </Typography>
+            <Stack direction="row" flexWrap="wrap" gap={2}>
+                {fetchTicketsActionState.result.map((ticket) => (
+                    <ProductCard
+                        key={ticket.id}
+                        product={ticket.Product}
+                        onAddToCart={createTicketOrder}
+                    />
+                ))}
+                {fetchTicketsActionState.result.length === 0 && (
+                    <Typography>No tickets available for this event.</Typography>
+                )}
+            </Stack>
         </Stack>
     );
 };
