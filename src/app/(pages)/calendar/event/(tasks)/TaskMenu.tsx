@@ -28,7 +28,7 @@ import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
 import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { getLatestEndTime, isUserParticipant, sortGroupedTasks } from "../event-utils";
-import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
+import { isUserHost } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
 import { getActiveMembers } from "../../../../lib/user-actions";
