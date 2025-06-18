@@ -40,7 +40,7 @@ const SwishPaymentHandler = ({
     const [paymentStatus, setPaymentStatus] = useState(SwishConstants.PENDING);
     const router = useRouter();
     const callbackUrl = useMemo(() => {
-        const url = new URL(callbackEndpoint, process.env.NEXT_PUBLIC_API_URL);
+        const url = new URL(callbackEndpoint, window.location.origin);
         if (callbackParams) url.search = callbackParams;
         return url.toString();
     }, [callbackEndpoint, callbackParams]);

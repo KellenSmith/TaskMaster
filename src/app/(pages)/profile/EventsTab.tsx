@@ -9,7 +9,7 @@ import { defaultActionState } from "../../ui/Datagrid";
 import { useRouter } from "next/navigation";
 import { formatDate, navigateToRoute } from "../../ui/utils";
 import { isUserHost } from "../../lib/definitions";
-import { isEventPublished } from "../calendar/[event-id]/event-utils";
+import { isEventPublished } from "../calendar/event/event-utils";
 const EventsTab: React.FC = () => {
     const { user } = useUserContext();
     const [events, setEvents] = useState<any[]>([]);
@@ -67,7 +67,7 @@ const EventsTab: React.FC = () => {
                                         size="small"
                                         onClick={() =>
                                             navigateToRoute(
-                                                `/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]}`,
+                                                `/${GlobalConstants.CALENDAR}/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${event[GlobalConstants.ID]}`,
                                                 router,
                                             )
                                         }

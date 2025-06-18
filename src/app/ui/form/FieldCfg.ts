@@ -117,7 +117,6 @@ export const RenderedFields = {
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
     [GlobalConstants.PRODUCT]: [
         GlobalConstants.NAME,
-
         GlobalConstants.PRICE,
         GlobalConstants.STOCK,
         GlobalConstants.UNLIMITED_STOCK,
@@ -125,6 +124,10 @@ export const RenderedFields = {
         GlobalConstants.DESCRIPTION,
     ],
 };
+RenderedFields[GlobalConstants.MEMBERSHIP] = [
+    ...RenderedFields[GlobalConstants.PRODUCT],
+    GlobalConstants.DURATION,
+];
 // Apply
 RenderedFields[GlobalConstants.APPLY] = [
     ...RenderedFields[GlobalConstants.PROFILE],
@@ -176,6 +179,10 @@ RequiredFields[GlobalConstants.APPLY] = [
 RequiredFields[GlobalConstants.USER] = [
     ...RequiredFields[GlobalConstants.PROFILE],
     GlobalConstants.ROLE,
+];
+RequiredFields[GlobalConstants.MEMBERSHIP] = [
+    ...RequiredFields[GlobalConstants.PRODUCT],
+    GlobalConstants.DURATION,
 ];
 
 export const passwordFields = [

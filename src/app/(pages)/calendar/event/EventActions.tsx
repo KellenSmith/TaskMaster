@@ -4,7 +4,7 @@ import { FC, startTransition, useActionState, useMemo, useState } from "react";
 import { isUserHost } from "../../../lib/definitions";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
-import { Button, Dialog, Stack } from "@mui/material";
+import { Button, Dialog, Menu, Stack } from "@mui/material";
 import { EventStatus, Prisma } from "@prisma/client";
 import Form, { defaultActionState, FormActionState, getFormActionMsg } from "../../../ui/form/Form";
 import {
@@ -24,6 +24,7 @@ import { sendMassEmail } from "../../../lib/mail-service/mail-service";
 import AccordionRadioGroup from "../../../ui/AccordionRadioGroup";
 import { pdf } from "@react-pdf/renderer";
 import ParticipantListPDF from "./ParticipantListPDF";
+import { MoreHoriz } from "@mui/icons-material";
 
 interface IEventActions {
     event: any;
@@ -34,6 +35,7 @@ interface IEventActions {
 
 const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, setOpenTab }) => {
     const { user } = useUserContext();
+    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState("");
     const sendoutToOptions = useMemo(
         () => ({
@@ -103,6 +105,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
     );
 
     const actAndUpdateEvent = (action: Function) => {
+        closeActionMenu();
         startTransition(() => {
             action();
             fetchEventAction();
@@ -117,6 +120,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
     };
 
     const printParticipantList = async () => {
+        closeActionMenu();
         const taskSchedule = await pdf(<ParticipantListPDF event={event} />).toBlob();
         const url = URL.createObjectURL(taskSchedule);
         window.open(url, "_blank");
@@ -156,14 +160,23 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
             ActionButtons.push(
                 <Button
                     key={GlobalConstants.SENDOUT}
-                    onClick={() => setDialogOpen(GlobalConstants.SENDOUT)}
+                    onClick={() => {
+                        closeActionMenu();
+                        setDialogOpen(GlobalConstants.SENDOUT);
+                    }}
                 >
                     send mail to users
                 </Button>,
                 <Button key="print" onClick={printParticipantList}>
                     print participant list
                 </Button>,
-                <Button key="edit" onClick={() => setDialogOpen(GlobalConstants.EVENT)}>
+                <Button
+                    key="edit"
+                    onClick={() => {
+                        closeActionMenu();
+                        setDialogOpen(GlobalConstants.EVENT);
+                    }}
+                >
                     edit event details
                 </Button>,
             );
@@ -212,7 +225,13 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                         );
                 } else if (openTab !== tabs.tasks) {
                     ActionButtons.push(
-                        <Button key="participate" onClick={() => setOpenTab(tabs.tasks)}>
+                        <Button
+                            key="participate"
+                            onClick={() => {
+                                closeActionMenu();
+                                setOpenTab(tabs.tasks);
+                            }}
+                        >
                             participate
                         </Button>,
                     );
@@ -280,9 +299,30 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
         );
     };
 
+    const closeActionMenu = () => {
+        setActionMenuAnchorEl(null);
+    };
+
     return (
         <>
-            <Stack>{getActionButtons()}</Stack>
+            <Button
+                aria-controls="simple-menu"
+                aria-haspopup="true"
+                onClick={(event) => {
+                    setActionMenuAnchorEl(event.currentTarget);
+                }}
+            >
+                <MoreHoriz />
+            </Button>
+            <Menu
+                id="simple-menu"
+                anchorEl={actionMenuAnchorEl}
+                keepMounted
+                open={Boolean(actionMenuAnchorEl)}
+                onClose={closeActionMenu}
+            >
+                <Stack>{getActionButtons()}</Stack>
+            </Menu>
             {getFormActionMsg(addReserveActionState)}
             {getFormActionMsg(deleteActionState)}
             {getFormActionMsg(publishActionState)}

@@ -87,6 +87,9 @@ const testdata = {
         description: "A new test product",
         price: 49.99,
     },
+    createMembership: {
+        duration: 365,
+    },
 
     order: {
         id: "order-1234-5678",

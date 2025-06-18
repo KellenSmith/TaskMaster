@@ -1,20 +1,19 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { getEventById } from "../../../lib/event-actions";
 import { defaultActionState as defaultDatagridActionState } from "../../../ui/Datagrid";
-import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
+import { startTransition, useActionState, useEffect, useMemo } from "react";
 import { CircularProgress, Stack, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
-import EventDashboard, { tabs } from "./EventDashboard";
+import EventDashboard from "./EventDashboard";
 
 const EventPage = () => {
     const theme = useTheme();
     const { user } = useUserContext();
-    const pathname = usePathname();
-    const eventId = useMemo(() => pathname.split("/").at(-1), [pathname]);
-    const [openTab, setOpenTab] = useState(tabs.event);
+    const searchParams = useSearchParams();
+    const eventId = useMemo(() => searchParams.get(GlobalConstants.EVENT_ID), [searchParams]);
 
     const getEvent = async () => {
         return getEventById(eventId, fetchEventState);
@@ -60,8 +59,6 @@ const EventPage = () => {
                             <EventDashboard
                                 event={getEventResult()}
                                 fetchEventAction={fetchEventAction}
-                                openTab={openTab}
-                                setOpenTab={setOpenTab}
                             />
                         </Stack>
                     </>

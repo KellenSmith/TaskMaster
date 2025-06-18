@@ -11,6 +11,17 @@ import { defaultActionState as defaultDatagridActionState } from "../ui/Datagrid
 import { defaultActionState as defaultFormActionState } from "../ui/form/Form";
 import testdata from "../../test/testdata";
 
+// Mock user-actions module
+vi.mock("./user-actions", () => ({
+    getLoggedInUser: vi.fn(() =>
+        Promise.resolve({
+            status: 200,
+            errorMsg: "",
+            result: JSON.stringify(testdata.user),
+        }),
+    ),
+}));
+
 beforeEach(() => {
     vi.resetAllMocks();
 });
@@ -99,11 +110,14 @@ describe("Order Actions", () => {
                 // Mock the transaction context with required methods
                 const tx = {
                     order: {
-                        create: vi.fn().mockResolvedValue({ ...testdata.order, id: "new-order" }),
+                        create: vi
+                            .fn()
+                            .mockResolvedValue({ ...testdata.order, id: "#new-order", userId }),
                         update: vi.fn().mockResolvedValue({
                             ...testdata.order,
-                            id: "new-order",
+                            id: "#new-order",
                             totalAmount: expectedTotalAmount,
+                            userId,
                         }),
                     },
                     orderItem: {
@@ -113,10 +127,10 @@ describe("Order Actions", () => {
                 return callback(tx);
             });
 
-            const result = await createOrder(defaultFormActionState, userId, orderItems);
+            const result = await createOrder(defaultFormActionState, orderItems);
 
             expect(result.status).toBe(201);
-            expect(result.result).toContain("Order #new-order created successfully");
+            expect(result.result).toContain("#new-order");
             expect(mockContext.prisma.product.findMany).toHaveBeenCalledWith({
                 where: {
                     id: {
@@ -129,13 +143,10 @@ describe("Order Actions", () => {
         it("should handle create order error when products not found", async () => {
             mockContext.prisma.product.findMany.mockResolvedValue([testdata.product]); // Only one product found
 
-            const result = await createOrder(
-                defaultFormActionState,
-                testdata.user.id,
-                testdata.createOrderItems,
-            );
+            const result = await createOrder(defaultFormActionState, testdata.createOrderItems);
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Some products not found");
+            expect(result.result).toBe("");
         });
 
         it("should handle database error during transaction", async () => {
@@ -146,13 +157,35 @@ describe("Order Actions", () => {
 
             mockContext.prisma.$transaction.mockRejectedValue(new Error("Transaction failed"));
 
-            const result = await createOrder(
-                defaultFormActionState,
-                testdata.user.id,
-                testdata.createOrderItems,
-            );
+            const result = await createOrder(defaultFormActionState, testdata.createOrderItems);
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Transaction failed");
+            expect(result.result).toBe("");
+        });
+
+        it("should handle error when getting logged in user fails", async () => {
+            // Mock getLoggedInUser to return an error
+            const userActionsModule = await import("./user-actions");
+            vi.mocked(userActionsModule.getLoggedInUser).mockResolvedValueOnce({
+                status: 404,
+                errorMsg: "User not found",
+                result: "",
+            });
+
+            const orderItems = testdata.createOrderItems;
+            const products = [
+                testdata.product,
+                { ...testdata.product, id: "prod-5678-9abc", price: 49.99 },
+            ];
+
+            // Mock finding products
+            mockContext.prisma.product.findMany.mockResolvedValue(products);
+
+            const result = await createOrder(defaultFormActionState, orderItems);
+            expect(result.status).toBe(500);
+            expect(result.errorMsg).toBe("User not found");
+            expect(result.result).toBe("");
+            expect(mockContext.prisma.$transaction).not.toHaveBeenCalled();
         });
     });
 

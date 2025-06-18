@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
 import GlobalConstants from "../GlobalConstants";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export const formatDate = (date: string | Date | Dayjs): string => dayjs(date).format("L HH:mm");
 
@@ -33,7 +34,7 @@ export const makeApiRequest = async ({
 }: RequestProps): Promise<AxiosResponse> => {
     const requestConfig = { withCredentials: true, ...options };
 
-    const url = new URL(endpoint, process.env.NEXT_PUBLIC_API_URL);
+    const url = new URL(endpoint, window.location.origin);
     for (const [key, value] of searchParams) {
         url.searchParams.set(key, value);
     }
@@ -41,6 +42,6 @@ export const makeApiRequest = async ({
     return await axios.get(url.toString(), requestConfig);
 };
 
-export const navigateToRoute = (route: string, router) => {
-    router.push(`${process.env.NEXT_PUBLIC_API_URL}${route}`);
+export const navigateToRoute = (route: string, router: AppRouterInstance) => {
+    router.push(`${window.location.origin}${route}`);
 };

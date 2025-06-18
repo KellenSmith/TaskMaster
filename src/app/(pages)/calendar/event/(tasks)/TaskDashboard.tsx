@@ -31,10 +31,27 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    console.log(
+        "iseventpublished",
+        isEventPublished(event),
+        "isuserhost",
+        isUserHost(user, event),
+        (isUserHost(user, event) && isEventPublished(event)) || isUserParticipant(user, event),
+    );
+
     return (
         <>
-            {(isUserHost(user, event) && isEventPublished(event)) ||
-            isUserParticipant(user, event) ? (
+            {(isUserHost(user, event) && !isEventPublished(event)) ||
+            !isUserParticipant(user, event) ? (
+                <TaskMenu
+                    event={event}
+                    fetchEventAction={fetchEventAction}
+                    readOnly={readOnly}
+                    tasks={tasksActionState.result}
+                    fetchTasksAction={fetchTasksAction}
+                    isTasksPending={isTasksPending}
+                />
+            ) : (
                 <>
                     <Typography textAlign="center" variant="h4" color="primary">
                         Assign yourself to tasks and shifts to help make the event happen
@@ -47,15 +64,6 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
                         isTasksPending={isTasksPending}
                     />
                 </>
-            ) : (
-                <TaskMenu
-                    event={event}
-                    fetchEventAction={fetchEventAction}
-                    readOnly={readOnly}
-                    tasks={tasksActionState.result}
-                    fetchTasksAction={fetchTasksAction}
-                    isTasksPending={isTasksPending}
-                />
             )}
         </>
     );

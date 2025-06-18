@@ -6,6 +6,7 @@ import {
     createProduct,
     updateProduct,
     deleteProduct,
+    createMembershipProduct,
 } from "./product-actions";
 import { defaultActionState as defaultDatagridActionState } from "../ui/Datagrid";
 import { defaultActionState as defaultFormActionState } from "../ui/form/Form";
@@ -138,6 +139,50 @@ describe("Product Actions", () => {
             const result = await deleteProduct("1", defaultFormActionState);
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Delete failed");
+        });
+    });
+
+    describe("createMembershipProduct", () => {
+        it("should create a new membership product successfully", async () => {
+            const testFieldValues = {
+                ...testdata.createProduct,
+                ...testdata.createMembership,
+            };
+            const createdProduct = {
+                ...testdata.product,
+                Membership: {
+                    duration: 365,
+                },
+            };
+
+            mockContext.prisma.product.create.mockResolvedValue(createdProduct);
+
+            const result = await createMembershipProduct(defaultFormActionState, testFieldValues);
+            expect(result.status).toBe(201);
+            expect(result.result).toContain("Membership Product");
+            expect(result.result).toContain("created successfully");
+            expect(mockContext.prisma.product.create).toHaveBeenCalledWith({
+                data: {
+                    ...testFieldValues,
+                    Membership: {
+                        create: {
+                            duration: 365,
+                        },
+                    },
+                },
+            });
+        });
+
+        it("should handle create membership product errors", async () => {
+            const productToCreate = {
+                ...testdata.createProduct,
+                duration: 365,
+            };
+            mockContext.prisma.product.create.mockRejectedValue(new Error("Creation failed"));
+
+            const result = await createMembershipProduct(defaultFormActionState, productToCreate);
+            expect(result.status).toBe(500);
+            expect(result.errorMsg).toBe("Creation failed");
         });
     });
 });

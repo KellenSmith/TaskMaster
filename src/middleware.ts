@@ -15,6 +15,7 @@ export default async function middleware(req: NextRequest) {
     const reqPath = req.nextUrl.pathname;
     const redirectUrl = new NextURL(req.nextUrl);
     redirectUrl.pathname = `/${GlobalConstants.HOME}`;
+    redirectUrl.search = new URLSearchParams().toString();
     const loggedInUser = await decryptJWT();
 
     if (
