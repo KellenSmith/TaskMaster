@@ -85,106 +85,106 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     };
 };
 
-const mockedPaymentRequestResponse = (orderId: string) => ({
-    paymentorder: {
-        id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-        created: "2020-06-22T10:56:56.2927632Z",
-        updated: "2020-06-22T10:56:56.4035291Z",
-        operation: "Purchase",
-        status: "Initialized",
-        currency: "SEK",
-        vatAmount: 375,
-        amount: 1500,
-        description: "Test Purchase",
-        initiatingSystemUserAgent: "swedbankpay-sdk-dotnet/3.0.1",
-        language: "sv-SE",
-        availableInstruments: [
-            "CreditCard",
-            "Invoice-PayExFinancingSe",
-            "Invoice-PayMonthlyInvoiceSe",
-            "Swish",
-            "CreditAccount",
-            "Trustly",
-        ],
-        implementation: "PaymentsOnly",
-        instrumentMode: false,
-        guestMode: false,
-        orderItems: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/orderitems",
-        },
-        urls: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/urls",
-        },
-        payeeInfo: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/payeeinfo",
-        },
-        payer: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/payers",
-        },
-        history: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/history",
-        },
-        failed: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failed",
-        },
-        aborted: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/aborted",
-        },
-        paid: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/paid",
-        },
-        cancelled: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/cancelled",
-        },
-        reversed: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/reversed",
-        },
-        financialTransactions: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/financialtransactions",
-        },
-        failedAttempts: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failedattempts",
-        },
-        postPurchaseFailedAttempts: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failedattempts",
-        },
-        metadata: {
-            id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/metadata",
-        },
-    },
-    operations: [
-        {
-            method: "GET",
-            href: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/dev-pay?orderId=${orderId}`,
-            rel: "redirect-checkout",
-            contentType: "text/html",
-        },
-        {
-            method: "GET",
-            href: "https://ecom.externalintegration.payex.com/payment/core/js/px.payment.client.js?token=5a17c24e-d459-4567-bbad-aa0f17a76119&culture=nb-NO&_tc_tid=30f2168171e142d38bcd4af2c3721959",
-            rel: "view-checkout",
-            contentType: "application/javascript",
-        },
-        {
-            href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-            rel: "update-order",
-            method: "PATCH",
-            contentType: "application/json",
-        },
-        {
-            href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-            rel: "abort",
-            method: "PATCH",
-            contentType: "application/json",
-        },
-        {
-            href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-            rel: "abort-paymentattempt",
-            method: "PATCH",
-            contentType: "application/json",
-        },
-    ],
-});
+// const mockedPaymentRequestResponse = (orderId: string) => ({
+//     paymentorder: {
+//         id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
+//         created: "2020-06-22T10:56:56.2927632Z",
+//         updated: "2020-06-22T10:56:56.4035291Z",
+//         operation: "Purchase",
+//         status: "Initialized",
+//         currency: "SEK",
+//         vatAmount: 375,
+//         amount: 1500,
+//         description: "Test Purchase",
+//         initiatingSystemUserAgent: "swedbankpay-sdk-dotnet/3.0.1",
+//         language: "sv-SE",
+//         availableInstruments: [
+//             "CreditCard",
+//             "Invoice-PayExFinancingSe",
+//             "Invoice-PayMonthlyInvoiceSe",
+//             "Swish",
+//             "CreditAccount",
+//             "Trustly",
+//         ],
+//         implementation: "PaymentsOnly",
+//         instrumentMode: false,
+//         guestMode: false,
+//         orderItems: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/orderitems",
+//         },
+//         urls: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/urls",
+//         },
+//         payeeInfo: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/payeeinfo",
+//         },
+//         payer: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/payers",
+//         },
+//         history: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/history",
+//         },
+//         failed: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failed",
+//         },
+//         aborted: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/aborted",
+//         },
+//         paid: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/paid",
+//         },
+//         cancelled: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/cancelled",
+//         },
+//         reversed: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/reversed",
+//         },
+//         financialTransactions: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/financialtransactions",
+//         },
+//         failedAttempts: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failedattempts",
+//         },
+//         postPurchaseFailedAttempts: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failedattempts",
+//         },
+//         metadata: {
+//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/metadata",
+//         },
+//     },
+//     operations: [
+//         {
+//             method: "GET",
+//             href: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/dev-pay?orderId=${orderId}`,
+//             rel: "redirect-checkout",
+//             contentType: "text/html",
+//         },
+//         {
+//             method: "GET",
+//             href: "https://ecom.externalintegration.payex.com/payment/core/js/px.payment.client.js?token=5a17c24e-d459-4567-bbad-aa0f17a76119&culture=nb-NO&_tc_tid=30f2168171e142d38bcd4af2c3721959",
+//             rel: "view-checkout",
+//             contentType: "application/javascript",
+//         },
+//         {
+//             href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
+//             rel: "update-order",
+//             method: "PATCH",
+//             contentType: "application/json",
+//         },
+//         {
+//             href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
+//             rel: "abort",
+//             method: "PATCH",
+//             contentType: "application/json",
+//         },
+//         {
+//             href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
+//             rel: "abort-paymentattempt",
+//             method: "PATCH",
+//             contentType: "application/json",
+//         },
+//     ],
+// });
 
 export const getPaymentRedirectUrl = async (
     currentActionState: FormActionState,
