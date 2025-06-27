@@ -1,43 +1,89 @@
 "use server";
 import { FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
+import { headers } from "next/headers";
+import { getOrderById } from "./order-actions";
+import { defaultActionState } from "../ui/Datagrid";
 
-// const getSwedbankPaymentRequestPayload = async (orderId) => {
-//     // Find order by ID
-//     const orderResult = await getOrderById(defaultActionState, orderId);
-//     if (orderResult.status !== 200 || !orderResult.result || orderResult.result.length === 0) {
-//         throw new Error("Order not found");
-//     }
-//     const order = orderResult.result[0];
-//     const headersList = await headers();
-//     const userAgent = headersList.get("user-agent") || "Unknown";
+type PaymentOperation = {
+    method: string;
+    href: string;
+    rel: string;
+    contentType: string;
+};
 
-//     return {
-//         paymentorder: {
-//             operation: "Purchase",
-//             currency: "SEK",
-//             amount: order.totalAmount,
-//             vatAmount: 0,
-//             description: "Purchase of order " + order.id,
-//             userAgent: userAgent,
-//             language: "en-US",
-//             urls: {
-//                 hostUrls: [process.env.VERCEL_URL],
-//                 cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/cancel`,
-//                 callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
-//                 // logoUrl: "https://example.com/logo.png",
-//                 // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
-//             },
-//             // TODO: Configure payee info
-//             payeeInfo: {
-//                 payeeId: "5cabf558-5283-482f-b252-4d58e06f6f3b",
-//                 payeeReference: "AB832",
-//                 payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
-//                 orderReference: orderId,
-//             },
-//         },
-//     };
-// };
+type PaymentOrderResponse = {
+    paymentorder: {
+        id: string;
+        created: string;
+        updated: string;
+        operation: string;
+        status: string;
+        currency: string;
+        vatAmount: number;
+        amount: number;
+        description: string;
+        initiatingSystemUserAgent: string;
+        language: string;
+        availableInstruments: string[];
+        implementation: string;
+        instrumentMode: boolean;
+        guestMode: boolean;
+        orderItems: { id: string };
+        urls: { id: string };
+        payeeInfo: { id: string };
+        payer: { id: string };
+        history: { id: string };
+        failed: { id: string };
+        aborted: { id: string };
+        paid: { id: string };
+        cancelled: { id: string };
+        reversed: { id: string };
+        financialTransactions: { id: string };
+        failedAttempts: { id: string };
+        postPurchaseFailedAttempts: { id: string };
+        metadata: { id: string };
+    };
+    operations: PaymentOperation[];
+};
+
+const getSwedbankPaymentRequestPayload = async (orderId: string) => {
+    // Find order by ID
+    const orderResult = await getOrderById(defaultActionState, orderId);
+    if (orderResult.status !== 200 || !orderResult.result || orderResult.result.length === 0) {
+        throw new Error("Order not found");
+    }
+    const order = orderResult.result[0];
+    const headersList = await headers();
+    const userAgent = headersList.get("user-agent") || "Unknown";
+
+    return {
+        paymentorder: {
+            operation: "Purchase",
+            currency: "SEK",
+            amount: order.totalPrice,
+            vatAmount: 0,
+            description: `Purchase of ${process.env.NEXT_PUBLIC_ORG_NAME} order #${orderId}`,
+            userAgent: userAgent,
+            language: "en-US",
+            // TODO: Configure host urls
+            urls: {
+                hostUrls: ["https://example.com/"],
+                cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/cancel`,
+                callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
+                // logoUrl: "https://example.com/logo.png",
+                // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
+            },
+            // TODO: Configure payee info
+            payeeInfo: {
+                payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
+                payeeReference: "AB832",
+                payeeName: "Kulturföreningen Wish",
+                orderReference: orderId,
+            },
+        },
+    };
+};
 
 const mockedPaymentRequestResponse = (orderId: string) => ({
     paymentorder: {
@@ -146,25 +192,25 @@ export const getPaymentRedirectUrl = async (
 ): Promise<FormActionState> => {
     const newActionState: FormActionState = { ...currentActionState };
     try {
-        // const requestBody = await getSwedbankPaymentRequestPayload(orderId);
-        // TODO: Create payment request with payment provider
-        // const response = await fetch(`/api/payments/create?orderId=${orderId}`, {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(requestBody),
-        // });
+        const requestBody = await getSwedbankPaymentRequestPayload(orderId);
+        if (!requestBody) throw new Error("Failed to create payment request");
+        const response = await fetch(
+            `http://api.externalintegration.payex.com/psp/paymentorders`, // /api/payments/create?orderId=${orderId}
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json;version=3.1",
+                    Authorization: `Bearer ${process.env.SWEDBANK_PAY_ACCESS_TOKEN}`,
+                },
+                body: JSON.stringify(requestBody),
+            },
+        );
 
-        // if (!response.ok) {
-        //     throw new Error("Failed to create payment request");
-        // }
-        // const data = await response.json();
+        if (!response.ok) {
+            throw new Error("Failed to create payment request");
+        }
 
-        /// Mocked response for testing purposes
-        const responseData = mockedPaymentRequestResponse(orderId);
-        ///
-
+        const responseData: PaymentOrderResponse = await response.json();
         const redirectOperation = responseData.operations.find(
             (op) => op.rel === "redirect-checkout",
         );
@@ -173,6 +219,7 @@ export const getPaymentRedirectUrl = async (
         newActionState.result = redirectOperation.href;
         newActionState.errorMsg = "";
     } catch (error) {
+        console.log(error);
         newActionState.status = 500;
         newActionState.errorMsg =
             error instanceof Error ? error.message : "An unexpected error occurred";
