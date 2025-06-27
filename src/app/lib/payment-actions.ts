@@ -68,7 +68,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             language: "en-US",
             // TODO: Configure host urls
             urls: {
-                hostUrls: ["https://example.com/"],
+                hostUrls: ["https://task-master-micc0fl4w-kellen-smiths-projects.vercel.app/"],
                 cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/cancel`,
                 callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
                 // logoUrl: "https://example.com/logo.png",
