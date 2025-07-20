@@ -85,8 +85,8 @@ const AccountTab = () => {
             const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, window.location.origin);
             orderUrl.searchParams.set(GlobalConstants.ORDER_ID, createMembershipOrderResult.result);
             router.push(orderUrl.toString());
+            createMembershipOrderResult.result = "Redirecting to payment...";
         }
-
         setAccountActionState(createMembershipOrderResult);
     };
 
