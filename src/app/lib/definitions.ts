@@ -20,7 +20,6 @@ export const routes = {
         GlobalConstants.APPLY,
         GlobalConstants.CONTACT,
         GlobalConstants.ORDER,
-        "order/dev-pay", // TODO: Eliminate temporary route for development payment testing
     ],
 };
 
