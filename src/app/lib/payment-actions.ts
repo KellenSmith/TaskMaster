@@ -4,6 +4,7 @@ import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById } from "./order-actions";
 import { defaultActionState } from "../ui/Datagrid";
+import { Order } from "@prisma/client";
 
 type PaymentOperation = {
     method: string;
@@ -53,138 +54,40 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     if (orderResult.status !== 200 || !orderResult.result || orderResult.result.length === 0) {
         throw new Error("Order not found");
     }
-    const order = orderResult.result[0];
+    const order: Order = orderResult.result[0];
     const headersList = await headers();
-    const userAgent = headersList.get("user-agent") || "Unknown";
+    const userAgent = headersList.get("user-agent") || "Unknown"; // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
+    const cleanOrderId = orderId.replace(/[^a-zA-Z0-9]/g, ""); // Remove hyphens and non-alphanumeric
+    const timestamp = Date.now().toString().slice(-10); // Last 10 digits for good precision
+    const payeeRef = `PAY${cleanOrderId.slice(0, 16)}${timestamp}`; // 3+16+10=29 chars
 
     return {
         paymentorder: {
             operation: "Purchase",
             currency: "SEK",
-            amount: order.totalPrice,
+            amount: order.totalAmount * 100, // Convert to smallest currency unit (öre)
             vatAmount: 0,
-            description: `Purchase of ${process.env.NEXT_PUBLIC_ORG_NAME} order #${orderId}`,
-            userAgent: userAgent,
+            description: `Purchase`,
+            userAgent,
             language: "en-US",
-            // TODO: Configure host urls
             urls: {
-                hostUrls: ["https://task-master-micc0fl4w-kellen-smiths-projects.vercel.app/"],
+                hostUrls: [`${process.env.VERCEL_URL}`],
+                completeUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}`,
                 cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/cancel`,
                 callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
+                // TODO
                 // logoUrl: "https://example.com/logo.png",
                 // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
             },
-            // TODO: Configure payee info
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
-                payeeReference: "AB832",
+                payeeReference: payeeRef, // Compliant: alphanumeric, max 30 chars, unique
                 payeeName: "Kulturföreningen Wish",
-                orderReference: orderId,
+                orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
         },
     };
 };
-
-// const mockedPaymentRequestResponse = (orderId: string) => ({
-//     paymentorder: {
-//         id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-//         created: "2020-06-22T10:56:56.2927632Z",
-//         updated: "2020-06-22T10:56:56.4035291Z",
-//         operation: "Purchase",
-//         status: "Initialized",
-//         currency: "SEK",
-//         vatAmount: 375,
-//         amount: 1500,
-//         description: "Test Purchase",
-//         initiatingSystemUserAgent: "swedbankpay-sdk-dotnet/3.0.1",
-//         language: "sv-SE",
-//         availableInstruments: [
-//             "CreditCard",
-//             "Invoice-PayExFinancingSe",
-//             "Invoice-PayMonthlyInvoiceSe",
-//             "Swish",
-//             "CreditAccount",
-//             "Trustly",
-//         ],
-//         implementation: "PaymentsOnly",
-//         instrumentMode: false,
-//         guestMode: false,
-//         orderItems: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/orderitems",
-//         },
-//         urls: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/urls",
-//         },
-//         payeeInfo: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/payeeinfo",
-//         },
-//         payer: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/payers",
-//         },
-//         history: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/history",
-//         },
-//         failed: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failed",
-//         },
-//         aborted: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/aborted",
-//         },
-//         paid: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/paid",
-//         },
-//         cancelled: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/cancelled",
-//         },
-//         reversed: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/reversed",
-//         },
-//         financialTransactions: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/financialtransactions",
-//         },
-//         failedAttempts: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failedattempts",
-//         },
-//         postPurchaseFailedAttempts: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/failedattempts",
-//         },
-//         metadata: {
-//             id: "/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce/metadata",
-//         },
-//     },
-//     operations: [
-//         {
-//             method: "GET",
-//             href: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/dev-pay?orderId=${orderId}`,
-//             rel: "redirect-checkout",
-//             contentType: "text/html",
-//         },
-//         {
-//             method: "GET",
-//             href: "https://ecom.externalintegration.payex.com/payment/core/js/px.payment.client.js?token=5a17c24e-d459-4567-bbad-aa0f17a76119&culture=nb-NO&_tc_tid=30f2168171e142d38bcd4af2c3721959",
-//             rel: "view-checkout",
-//             contentType: "application/javascript",
-//         },
-//         {
-//             href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-//             rel: "update-order",
-//             method: "PATCH",
-//             contentType: "application/json",
-//         },
-//         {
-//             href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-//             rel: "abort",
-//             method: "PATCH",
-//             contentType: "application/json",
-//         },
-//         {
-//             href: "https://api.payex.com/psp/paymentorders/09ccd29a-7c4f-4752-9396-12100cbfecce",
-//             rel: "abort-paymentattempt",
-//             method: "PATCH",
-//             contentType: "application/json",
-//         },
-//     ],
-// });
 
 export const getPaymentRedirectUrl = async (
     currentActionState: FormActionState,
@@ -194,8 +97,9 @@ export const getPaymentRedirectUrl = async (
     try {
         const requestBody = await getSwedbankPaymentRequestPayload(orderId);
         if (!requestBody) throw new Error("Failed to create payment request");
+
         const response = await fetch(
-            `http://api.externalintegration.payex.com/psp/paymentorders`, // /api/payments/create?orderId=${orderId}
+            `https://api.externalintegration.payex.com/psp/paymentorders`, // /api/payments/create?orderId=${orderId}
             {
                 method: "POST",
                 headers: {
