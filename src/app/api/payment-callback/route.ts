@@ -14,29 +14,24 @@ interface PaymentCallbackRequest {
     paymentOrder: IPaymentOrder;
 }
 
-// TODO: Validate that the request comes from an allowed IP address
-// const isAllowedIp = (request: NextRequest): boolean => {
-//     // Get client IP address
-//     const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0];
-//     if (!clientIp) return false;
-//     // Convert IP range to numeric for comparison
-//     const ipToNumber = (ip: string): number => {
-//         const parts = ip.split(".");
-//         return (
-//             ((parseInt(parts[0]) << 24) |
-//                 (parseInt(parts[1]) << 16) |
-//                 (parseInt(parts[2]) << 8) |
-//                 parseInt(parts[3])) >>>
-//             0
-//         );
-//     };
+const isAllowedIp = (request: NextRequest): boolean => {
+    // Get client IP address
+    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0];
+    if (!clientIp) return false;
 
-//     const start = ipToNumber("20.91.170.120");
-//     const end = ipToNumber("20.91.170.127"); // 120 + 7 for /29
-//     const client = ipToNumber(clientIp);
+    const allowedIps = [
+        "20.91.170.120",
+        "20.91.170.121",
+        "20.91.170.122",
+        "20.91.170.123",
+        "20.91.170.124",
+        "20.91.170.125",
+        "20.91.170.126",
+        "20.91.170.127",
+    ];
 
-//     return client >= start && client <= end;
-// };
+    return allowedIps.includes(clientIp);
+};
 
 const PaymentState = {
     INITIALIZED: "Initialized",
@@ -62,15 +57,17 @@ const getNewOrderStatus = (paymentState: PaymentStateType) => {
 };
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-    // TODO: Validate IP address
-    // if (!isAllowedIp(request)) {
-    //     console.warn(`Unauthorized access attempt from IP: ${request.ip}`);
-    //     return new NextResponse("Unauthorized", { status: 401 });
-    // }
+    if (!isAllowedIp(request)) {
+        console.warn(`Unauthorized access attempt from referrer: ${request.referrer}`);
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
 
+    console.log("Payment callback received");
     try {
         // TODO: Accept real request body
         const body: PaymentCallbackRequest = await request.json();
+
+        console.log("Payment callback body:", body);
 
         // TODO: Find payment resource by ID
         const mockedPaymentResource = {
