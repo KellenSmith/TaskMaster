@@ -15,11 +15,12 @@ const PaymentHandler = ({ order }) => {
     const redirectToPayment = async () => {
         const orderId = order[GlobalConstants.ID];
         const redirectUrlResult = await getPaymentRedirectUrl(defaultActionState, orderId);
-        setPaymentActionState(redirectUrlResult);
         if (redirectUrlResult.status === 200 && redirectUrlResult.result) {
             const redirectUrl = redirectUrlResult.result;
             router.push(redirectUrl);
+            redirectUrlResult.result = `Redirecting to payment...`;
         }
+        setPaymentActionState(redirectUrlResult);
     };
 
     const [processOrderActionState, setProcessOrderActionState] = useState(defaultActionState);
