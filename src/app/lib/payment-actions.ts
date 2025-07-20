@@ -56,7 +56,9 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     }
     const order: Order = orderResult.result[0];
     const headersList = await headers();
-    const userAgent = headersList.get("user-agent") || "Unknown"; // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
+    const userAgent = headersList.get("user-agent") || "Unknown";
+
+    // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
     const cleanOrderId = orderId.replace(/[^a-zA-Z0-9]/g, ""); // Remove hyphens and non-alphanumeric
     const timestamp = Date.now().toString().slice(-10); // Last 10 digits for good precision
     const payeeRef = `PAY${cleanOrderId.slice(0, 16)}${timestamp}`; // 3+16+10=29 chars
@@ -65,15 +67,15 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
         paymentorder: {
             operation: "Purchase",
             currency: "SEK",
-            amount: order.totalAmount * 100, // Convert to smallest currency unit (öre)
+            amount: order.totalAmount * 100, // Convert to smallest currency unit
             vatAmount: 0,
             description: `Purchase`,
             userAgent,
             language: "en-US",
             urls: {
                 hostUrls: [`${process.env.VERCEL_URL}`],
-                completeUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}`,
-                cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/${orderId}/cancel`,
+                completeUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`,
+                cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`,
                 callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
                 // TODO
                 // logoUrl: "https://example.com/logo.png",
@@ -82,7 +84,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
                 payeeReference: payeeRef, // Compliant: alphanumeric, max 30 chars, unique
-                payeeName: "Kulturföreningen Wish",
+                payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
                 orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
         },
