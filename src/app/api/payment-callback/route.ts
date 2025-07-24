@@ -3,21 +3,57 @@ import { updateOrderStatus } from "../../lib/order-actions";
 import { getNewOrderStatus, PaymentStateType } from "../../lib/payment-utils";
 import { defaultFormActionState } from "../../lib/definitions";
 
-interface IPaymentOrder {
-    id: string;
-    instrument: string;
-    number: number;
+interface PaymentCallbackRequestBody {
+    paymentorder: string;
+    authorization: {
+        id: string;
+        itemDescriptions: {
+            id: string;
+        };
+        transaction: {
+            id: string;
+            created: string;
+            updated: string;
+            type: string;
+            state: PaymentStateType;
+            number: number;
+            amount: number;
+            vatAmount: number;
+            description: string;
+            payeeReference: string;
+            isOperational: boolean;
+            problem?: {
+                type: string;
+                title: string;
+                status: number;
+                detail: string;
+                problems: unknown[];
+                operations: Array<{
+                    href: string;
+                    rel: string;
+                    method: string;
+                }>;
+            };
+        };
+    };
 }
 
-interface PaymentCallbackRequest {
-    orderReference: string;
-    paymentOrder: IPaymentOrder;
-}
+const getClientIp = (request: NextRequest): string | null => {
+    // Try multiple headers for better IP detection
+    const xForwardedFor = request.headers.get("x-forwarded-for");
+    const xRealIp = request.headers.get("x-real-ip");
+    const cfConnectingIp = request.headers.get("cf-connecting-ip");
+
+    // Use the first available IP, preferring Cloudflare's header
+    return cfConnectingIp || xRealIp || xForwardedFor?.split(",")[0]?.trim() || null;
+};
 
 const isAllowedIp = (request: NextRequest): boolean => {
-    // Get client IP address
-    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0];
-    if (!clientIp) return false;
+    const clientIp = getClientIp(request);
+    if (!clientIp) {
+        console.warn("No client IP found in headers");
+        return false;
+    }
 
     const allowedIps = [
         "20.91.170.120",
@@ -30,75 +66,60 @@ const isAllowedIp = (request: NextRequest): boolean => {
         "20.91.170.127",
     ];
 
-    return allowedIps.includes(clientIp);
+    const isAllowed = allowedIps.includes(clientIp);
+    if (!isAllowed) {
+        console.warn(`Blocked request from IP: ${clientIp}`);
+    }
+
+    return isAllowed;
 };
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+    const clientIp = getClientIp(request);
+
     if (!isAllowedIp(request)) {
-        console.warn(`Unauthorized access attempt from referrer: ${request.referrer}`);
+        console.error(
+            `Unauthorized payment callback attempt from IP: ${clientIp}, Referrer: ${request.headers.get("referer")}`,
+        );
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    console.log("Payment callback received");
+    // TODO: Verify webhook signature here
+    // const signature = request.headers.get('x-swedbank-signature') || request.headers.get('authorization');
+    // if (!signature || !verifyWebhookSignature(JSON.stringify(requestBody), signature, process.env.SWEDBANK_WEBHOOK_SECRET)) {
+    //     console.error(`Invalid webhook signature from IP: ${clientIp}`);
+    //     return new NextResponse("Invalid signature", { status: 401 });
+    // }        // Validate required fields in payload
+
     try {
-        // TODO: Accept real request body
-        const body: PaymentCallbackRequest = await request.json();
+        const requestBody: PaymentCallbackRequestBody = await request.json();
 
-        console.log("Payment callback body:", body);
+        const orderId = request.nextUrl.searchParams.get("orderId");
+        if (!orderId || !requestBody.authorization?.transaction?.state) {
+            console.warn(`Invalid payload structure from IP: ${clientIp}`);
+            return new NextResponse("Bad Request: Missing required fields", { status: 400 });
+        }
 
-        // TODO: Find payment resource by ID
-        const mockedPaymentResource = {
-            paymentorder: "/psp/paymentorders/7e6cdfc3-1276-44e9-9992-7cf4419750e1",
-            authorization: {
-                id: "/psp/paymentorders/7e6cdfc3-1276-44e9-9992-7cf4419750e1/currentpayment/ec2a9b09-601a-42ae-8e33-a5737e1cf177",
-                itemDescriptions: {
-                    id: "/psp/paymentorders/7e6cdfc3-1276-44e9-9992-7cf4419750e1/currentpayment/ec2a9b09-601a-42ae-8e33-a5737e1cf177/itemDescriptions",
-                },
-                transaction: {
-                    id: "/psp/paymentorders/7e6cdfc3-1276-44e9-9992-7cf4419750e1/currentpayment/ec2a9b09-601a-42ae-8e33-a5737e1cf177",
-                    created: "2016-09-14T01:01:01.01Z",
-                    updated: "2016-09-14T01:01:01.03Z",
-                    type: "Authorization",
-                    state: "Completed",
-                    number: 1234567890,
-                    amount: 1000,
-                    vatAmount: 250,
-                    description: "Test transaction",
-                    payeeReference: "ABC123",
-                    isOperational: false,
-                    problem: {
-                        type: "https://api.payex.com/psp/errordetail/paymentorders/3DSECUREERROR",
-                        title: "Error when complete authorization",
-                        status: 400,
-                        detail: "Unable to complete 3DSecure verification!",
-                        problems: [],
-                        operations: [
-                            {
-                                href: "/psp/paymentorders/7e6cdfc3-1276-44e9-9992-7cf4419750e1/currentpayment/ec2a9b09-601a-42ae-8e33-a5737e1cf177",
-                                rel: "edit-authorization",
-                                method: "PATCH",
-                            },
-                        ],
-                    },
-                },
-            },
-        };
+        // Update order by id
+        const transactionState = requestBody.authorization.transaction.state;
+        const newOrderStatus = getNewOrderStatus(transactionState);
 
-        // Update order by reference (id)
-        const orderId = body.orderReference;
-        const newOrderStatus = getNewOrderStatus(
-            mockedPaymentResource.authorization.transaction.state as unknown as PaymentStateType,
-        );
         const updateOrderStatusResult = await updateOrderStatus(
             orderId,
             defaultFormActionState,
             newOrderStatus,
         );
+
         if (updateOrderStatusResult.status !== 200) {
+            console.error(`Failed to update order ${orderId}: ${updateOrderStatusResult.errorMsg}`);
             throw new Error(updateOrderStatusResult.errorMsg || "Failed to update order status");
         }
+
+        return new NextResponse("OK", { status: 200 });
     } catch (error) {
-        console.error("Payment callback error:", error);
+        console.error(`Payment callback error from IP ${clientIp}:`, error);
+
+        // Don't expose internal error details to external callers
+        return new NextResponse("Internal Server Error", { status: 500 });
     }
-    return new NextResponse("OK", { status: 200 });
 }
