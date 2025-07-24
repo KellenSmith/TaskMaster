@@ -246,7 +246,7 @@ export const updateOrderStatus = async (
             newActionState.result = `Order updated to ${status}`;
         }
     } catch (error) {
-        newActionState.status = 404;
+        newActionState.status = 500;
         newActionState.errorMsg = error.message;
         newActionState.result = "";
         return newActionState;

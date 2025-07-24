@@ -1,3 +1,4 @@
+import { Mock } from "node:test";
 import { DeepMockProxy } from "vitest-mock-extended";
 
 // Create a simpler mock type that doesn't include the problematic circular references
@@ -49,6 +50,14 @@ export type MockPrisma = {
     $transaction: any;
 };
 
+export type MockOrderStatus = {
+    paid: string;
+    pending: string;
+    cancelled: string;
+    completed: string;
+};
+
 export type TestContext = {
     prisma: DeepMockProxy<MockPrisma>;
+    OrderStatus: DeepMockProxy<MockOrderStatus>;
 };

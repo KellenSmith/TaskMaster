@@ -8,15 +8,17 @@ import { mockContext } from "./mocks/prismaMock";
 expect.extend(matchers as any);
 
 beforeEach(() => {
-    vi.resetAllMocks();
-
-    // Mock the Prisma module
+    vi.resetAllMocks(); // Mock the Prisma module
     vi.mock("@prisma/client", () => ({
         PrismaClient: vi.fn(() => mockContext.prisma),
+        OrderStatus: mockContext.OrderStatus,
+    })); // Mock your lib/prisma file
+    vi.mock("../lib/prisma", () => ({
+        prisma: mockContext.prisma,
     }));
 
-    // Mock your lib/prisma file
-    vi.mock("../lib/prisma", () => ({
+    // Mock the prisma-client file used in the app
+    vi.mock("../prisma/prisma-client", () => ({
         prisma: mockContext.prisma,
     }));
 });

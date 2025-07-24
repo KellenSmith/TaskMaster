@@ -80,6 +80,10 @@ export const getPaymentRedirectUrl = async (
             (op) => op.rel === "redirect-checkout",
         );
 
+        if (!redirectOperation || !redirectOperation.href) {
+            throw new Error("Redirect URL not found in payment response");
+        }
+
         // Save payment order ID to the order to check status later
         try {
             await prisma.order.update({
@@ -116,9 +120,16 @@ export const checkPaymentStatus = async (
         newActionState.errorMsg = "Payment request ID not found for this order";
         return newActionState;
     }
-
     const order = orderResult.result[0];
     const paymentRequestId = order.paymentRequestId;
+
+    if (!paymentRequestId) {
+        newActionState.status = 400;
+        newActionState.result = "";
+        newActionState.errorMsg = "Payment request ID not found for this order";
+        return newActionState;
+    }
+
     const paymentStatusResponse = await fetch(
         `https://api.externalintegration.payex.com${paymentRequestId}?$expand=paid`,
         {

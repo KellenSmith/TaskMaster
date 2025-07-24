@@ -19,6 +19,13 @@ vi.mock("./user-actions", () => ({
             result: JSON.stringify(testdata.user),
         }),
     ),
+    renewUserMembership: vi.fn(() =>
+        Promise.resolve({
+            status: 200,
+            errorMsg: "",
+            result: "Membership renewed successfully",
+        }),
+    ),
 }));
 
 beforeEach(() => {
@@ -190,14 +197,20 @@ describe("Order Actions", () => {
 
     describe("updateOrderStatus", () => {
         it("should update order status successfully", async () => {
+            mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testdata.order);
+            mockContext.prisma.orderItem.findMany.mockResolvedValue(testdata.order.orderItems);
+            mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue(
+                testdata.order.orderItems[0].product,
+            );
             mockContext.prisma.order.update.mockResolvedValue({
                 ...testdata.order,
                 status: "paid",
             });
 
             const result = await updateOrderStatus("1", defaultFormActionState, "paid");
+            console.log(result);
             expect(result.status).toBe(200);
-            expect(result.result).toBe("Order status updated successfully");
+            expect(result.result).toBe("Order completed");
             expect(mockContext.prisma.order.update).toHaveBeenCalledWith({
                 where: { id: "1" },
                 data: { status: "paid" },
@@ -205,6 +218,7 @@ describe("Order Actions", () => {
         });
 
         it("should handle update order status error", async () => {
+            mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testdata.order);
             mockContext.prisma.order.update.mockRejectedValue(new Error("Update failed"));
 
             const result = await updateOrderStatus("1", defaultFormActionState, "paid");
