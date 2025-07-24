@@ -1,7 +1,7 @@
-import { OrderStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { processOrderItems, updateOrderStatus } from "../../lib/order-actions";
+import { updateOrderStatus } from "../../lib/order-actions";
 import { defaultActionState } from "../../ui/form/Form";
+import { getNewOrderStatus, PaymentStateType } from "../../lib/payment-utils";
 
 interface IPaymentOrder {
     id: string;
@@ -31,29 +31,6 @@ const isAllowedIp = (request: NextRequest): boolean => {
     ];
 
     return allowedIps.includes(clientIp);
-};
-
-const PaymentState = {
-    INITIALIZED: "Initialized",
-    COMPLETED: "Completed",
-    CANCELLED: "Cancelled",
-    FAILED: "Failed",
-    ABORTED: "Aborted",
-};
-
-type PaymentStateType = (typeof PaymentState)[keyof typeof PaymentState];
-
-const getNewOrderStatus = (paymentState: PaymentStateType) => {
-    switch (paymentState) {
-        case PaymentState.COMPLETED:
-            return OrderStatus.paid;
-        case PaymentState.CANCELLED:
-        case PaymentState.FAILED:
-        case PaymentState.ABORTED:
-            return OrderStatus.cancelled;
-        default:
-            return OrderStatus.pending;
-    }
 };
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -110,23 +87,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // Update order by reference (id)
         const orderId = body.orderReference;
         const newOrderStatus = getNewOrderStatus(
-            mockedPaymentResource.authorization.transaction.state as PaymentStateType,
+            mockedPaymentResource.authorization.transaction.state as unknown as PaymentStateType,
         );
         const updateOrderStatusResult = await updateOrderStatus(
             orderId,
             defaultActionState,
             newOrderStatus,
         );
-        if (updateOrderStatusResult.status === 200) {
-            // Process order products, update inventory, etc.
-            await processOrderItems(orderId, defaultActionState);
+        if (updateOrderStatusResult.status !== 200) {
+            throw new Error(updateOrderStatusResult.errorMsg || "Failed to update order status");
         }
-
-        return new NextResponse("OK", { status: 200 });
     } catch (error) {
         console.error("Payment callback error:", error);
-        return new NextResponse(error instanceof Error ? error.message : "Internal server error", {
-            status: 500,
-        });
     }
+    return new NextResponse("OK", { status: 200 });
 }

@@ -1,56 +1,16 @@
 "use server";
-import { FormActionState } from "../ui/form/Form";
+import { defaultActionState, FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
-import { getOrderById } from "./order-actions";
-import { defaultActionState } from "../ui/Datagrid";
-import { Order } from "@prisma/client";
-
-type PaymentOperation = {
-    method: string;
-    href: string;
-    rel: string;
-    contentType: string;
-};
-
-type PaymentOrderResponse = {
-    paymentorder: {
-        id: string;
-        created: string;
-        updated: string;
-        operation: string;
-        status: string;
-        currency: string;
-        vatAmount: number;
-        amount: number;
-        description: string;
-        initiatingSystemUserAgent: string;
-        language: string;
-        availableInstruments: string[];
-        implementation: string;
-        instrumentMode: boolean;
-        guestMode: boolean;
-        orderItems: { id: string };
-        urls: { id: string };
-        payeeInfo: { id: string };
-        payer: { id: string };
-        history: { id: string };
-        failed: { id: string };
-        aborted: { id: string };
-        paid: { id: string };
-        cancelled: { id: string };
-        reversed: { id: string };
-        financialTransactions: { id: string };
-        failedAttempts: { id: string };
-        postPurchaseFailedAttempts: { id: string };
-        metadata: { id: string };
-    };
-    operations: PaymentOperation[];
-};
+import { getOrderById, updateOrderStatus } from "./order-actions";
+import { defaultActionState as defaultDatagridActionState } from "../ui/Datagrid";
+import { Order, OrderStatus } from "@prisma/client";
+import { prisma } from "../../prisma/prisma-client";
+import { getNewOrderStatus, PaymentOrderResponse } from "./payment-utils";
 
 const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     // Find order by ID
-    const orderResult = await getOrderById(defaultActionState, orderId);
+    const orderResult = await getOrderById(defaultDatagridActionState, orderId);
     if (orderResult.status !== 200 || !orderResult.result || orderResult.result.length === 0) {
         throw new Error("Order not found");
     }
@@ -101,7 +61,7 @@ export const getPaymentRedirectUrl = async (
         if (!requestBody) throw new Error("Failed to create payment request");
 
         const response = await fetch(
-            `https://api.externalintegration.payex.com/psp/paymentorders`, // /api/payments/create?orderId=${orderId}
+            `https://api.externalintegration.payex.com/psp/paymentorders`,
             {
                 method: "POST",
                 headers: {
@@ -117,19 +77,72 @@ export const getPaymentRedirectUrl = async (
         }
 
         const responseData: PaymentOrderResponse = await response.json();
+        console.log(responseData);
         const redirectOperation = responseData.operations.find(
             (op) => op.rel === "redirect-checkout",
         );
+
+        // Save payment order ID to the order to check status later
+        try {
+            await prisma.order.update({
+                where: { id: orderId },
+                data: {
+                    paymentRequestId: responseData.paymentOrder.id,
+                },
+            });
+        } catch (error) {
+            throw new Error("Failed to update order with payment request ID: " + error.message);
+        }
 
         newActionState.status = 200;
         newActionState.result = redirectOperation.href;
         newActionState.errorMsg = "";
     } catch (error) {
-        console.log(error);
         newActionState.status = 500;
         newActionState.errorMsg =
             error instanceof Error ? error.message : "An unexpected error occurred";
         newActionState.result = "";
     }
     return newActionState;
+};
+
+export const checkPaymentStatus = async (
+    orderId: string,
+    currentActionState: FormActionState,
+): Promise<FormActionState> => {
+    const newActionState: FormActionState = { ...currentActionState };
+    const orderResult = await getOrderById(defaultDatagridActionState, orderId);
+    if (orderResult.status !== 200 || !orderResult.result || orderResult.result.length === 0) {
+        newActionState.status = 400;
+        newActionState.result = "";
+        newActionState.errorMsg = "Payment request ID not found for this order";
+        return newActionState;
+    }
+
+    const order = orderResult.result[0];
+    const paymentRequestId = order.paymentRequestId;
+    const paymentStatusResponse = await fetch(
+        `https://api.externalintegration.payex.com${paymentRequestId}?$expand=paid`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json;version=3.1",
+                Authorization: `Bearer ${process.env.SWEDBANK_PAY_ACCESS_TOKEN}`,
+            },
+        },
+    );
+    if (!paymentStatusResponse.ok) {
+        newActionState.status = paymentStatusResponse.status;
+        newActionState.result = "";
+        newActionState.errorMsg = "Failed to check payment status";
+        return newActionState;
+    }
+
+    const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
+    const paymentStatus = paymentStatusData.paymentOrder.status;
+    const newOrderStatus = getNewOrderStatus(paymentStatus);
+    if (order.status !== OrderStatus.completed && order.status !== newOrderStatus)
+        return await updateOrderStatus(orderId, defaultActionState, newOrderStatus);
+
+    return defaultActionState;
 };

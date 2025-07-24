@@ -6,7 +6,7 @@ import { getPaymentRedirectUrl } from "../../lib/payment-actions";
 import { defaultActionState, getFormActionMsg } from "../form/Form";
 import { useRouter } from "next/navigation";
 import { OrderStatus } from "@prisma/client";
-import { processOrderItems } from "../../lib/order-actions";
+import { updateOrderStatus } from "../../lib/order-actions";
 
 const PaymentHandler = ({ order }) => {
     const router = useRouter();
@@ -31,10 +31,12 @@ const PaymentHandler = ({ order }) => {
             <Stack spacing={2} alignItems="center">
                 {order[GlobalConstants.TOTAL_AMOUNT] === 0 ? (
                     <Button
+                        fullWidth
                         onClick={async () => {
-                            const processOrderResult = await processOrderItems(
+                            const processOrderResult = await updateOrderStatus(
                                 order.id,
                                 defaultActionState,
+                                OrderStatus.paid,
                             );
                             setProcessOrderActionState(processOrderResult);
                             router.refresh();
@@ -43,7 +45,9 @@ const PaymentHandler = ({ order }) => {
                         confirm
                     </Button>
                 ) : (
-                    <Button onClick={redirectToPayment}>pay</Button>
+                    <Button fullWidth onClick={redirectToPayment}>
+                        pay
+                    </Button>
                 )}
                 {getFormActionMsg(paymentActionState)}
                 {getFormActionMsg(processOrderActionState)}

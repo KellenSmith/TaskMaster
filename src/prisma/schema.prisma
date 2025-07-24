@@ -190,11 +190,12 @@ enum OrderStatus {
 }
 
 model Order {
-    id          String      @id @default(uuid())
-    createdAt   DateTime    @default(now())
-    updatedAt   DateTime    @updatedAt
-    status      OrderStatus @default(pending)
-    totalAmount Float       @default(0.0)
+    id               String      @id @default(uuid())
+    createdAt        DateTime    @default(now())
+    updatedAt        DateTime    @updatedAt
+    status           OrderStatus @default(pending)
+    totalAmount      Float       @default(0.0)
+    paymentRequestId String?     @unique
 
     user   User   @relation(fields: [userId], references: [id])
     userId String
