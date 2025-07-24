@@ -2,10 +2,9 @@
 
 import { OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { DatagridActionState } from "../ui/Datagrid";
 import { getMembershipProductId, processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
-import { FormActionState } from "./definitions";
+import { DatagridActionState, FormActionState } from "./definitions";
 
 type CreateOrderItemInput = {
     [productId: string]: number; // productId: quantity
@@ -240,7 +239,7 @@ export const updateOrderStatus = async (
         }
     } catch (error) {
         newActionState.status = 404;
-        newActionState.errorMsg = "Order not found";
+        newActionState.errorMsg = error.message;
         newActionState.result = "";
         return newActionState;
     }

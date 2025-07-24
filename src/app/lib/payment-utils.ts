@@ -1,10 +1,10 @@
 import { OrderStatus } from "@prisma/client";
 
 export enum PaymentState {
-    Paid = "Paid",
-    Failed = "Failed",
-    Cancelled = "Cancelled",
-    Aborted = "Aborted",
+    Paid = "Paid", // eslint-disable-line no-unused-vars
+    Failed = "Failed", // eslint-disable-line no-unused-vars
+    Cancelled = "Cancelled", // eslint-disable-line no-unused-vars
+    Aborted = "Aborted", // eslint-disable-line no-unused-vars
 }
 
 export type PaymentStateType = `${PaymentState}`;

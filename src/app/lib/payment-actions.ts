@@ -136,12 +136,19 @@ export const checkPaymentStatus = async (
         newActionState.errorMsg = "Failed to check payment status";
         return newActionState;
     }
-
     const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
     const paymentStatus = paymentStatusData.paymentOrder.status;
     const newOrderStatus = getNewOrderStatus(paymentStatus);
-    if (order.status !== OrderStatus.completed && order.status !== newOrderStatus)
-        return await updateOrderStatus(orderId, defaultFormActionState, newOrderStatus);
 
-    return defaultFormActionState;
+    // Don't update from completed status to any other status
+    if (order.status === OrderStatus.completed) {
+        return defaultFormActionState;
+    }
+
+    // Don't update if the new status is the same as the current status
+    if (order.status === newOrderStatus) {
+        return defaultFormActionState;
+    }
+
+    return await updateOrderStatus(orderId, defaultFormActionState, newOrderStatus);
 };

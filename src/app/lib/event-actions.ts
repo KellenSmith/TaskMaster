@@ -2,12 +2,11 @@
 
 import { EventStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { DatagridActionState } from "../ui/Datagrid";
 import { createEventSchema } from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
-import { FormActionState } from "./definitions";
+import { DatagridActionState, FormActionState } from "./definitions";
 
 export const createEvent = async (
     currentActionState: FormActionState,
