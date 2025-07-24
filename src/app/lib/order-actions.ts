@@ -199,10 +199,18 @@ export const updateOrderStatus = async (
             },
         });
 
+        // Don't update from completed status to any other status
+        if (order.status === OrderStatus.completed) {
+            newActionState.status = 200;
+            newActionState.result = `Order is already completed and cannot be updated`;
+            newActionState.errorMsg = "";
+            return newActionState;
+        }
+
         if (order.status === status) {
-            newActionState.status = 400;
-            newActionState.errorMsg = `Order is already in status: ${status}`;
-            newActionState.result = "";
+            newActionState.status = 200;
+            newActionState.result = `Order is already in status: ${status}`;
+            newActionState.errorMsg = "";
             return newActionState;
         }
 

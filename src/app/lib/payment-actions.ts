@@ -76,7 +76,6 @@ export const getPaymentRedirectUrl = async (
         }
 
         const responseData: PaymentOrderResponse = await response.json();
-        console.log(responseData);
         const redirectOperation = responseData.operations.find(
             (op) => op.rel === "redirect-checkout",
         );
@@ -139,16 +138,6 @@ export const checkPaymentStatus = async (
     const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
     const paymentStatus = paymentStatusData.paymentOrder.status;
     const newOrderStatus = getNewOrderStatus(paymentStatus);
-
-    // Don't update from completed status to any other status
-    if (order.status === OrderStatus.completed) {
-        return defaultFormActionState;
-    }
-
-    // Don't update if the new status is the same as the current status
-    if (order.status === newOrderStatus) {
-        return defaultFormActionState;
-    }
 
     return await updateOrderStatus(orderId, defaultFormActionState, newOrderStatus);
 };
