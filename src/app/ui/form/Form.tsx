@@ -29,18 +29,7 @@ import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
-
-export interface FormActionState {
-    status: number;
-    errorMsg: string;
-    result: string;
-}
-
-export const defaultActionState: FormActionState = {
-    status: 200,
-    errorMsg: "",
-    result: "",
-};
+import { defaultFormActionState, FormActionState } from "../../lib/definitions";
 
 export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
     (formActionState.errorMsg || formActionState.result) && (
@@ -106,7 +95,7 @@ const Form: FC<FormProps> = ({
         getFieldValues(name, defaultValues),
     );
     const [loading, setLoading] = useState(false);
-    const [actionState, setActionState] = useState(defaultActionState);
+    const [actionState, setActionState] = useState(defaultFormActionState);
     const [editMode, setEditMode] = useState(!readOnly);
 
     useEffect(() => {

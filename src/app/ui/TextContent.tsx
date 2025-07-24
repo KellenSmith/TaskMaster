@@ -10,7 +10,6 @@ import {
     ChangeEvent,
 } from "react";
 import { getTextContent, updateTextContent } from "../lib/text-content-actions";
-import { defaultActionState, FormActionState } from "./form/Form";
 import {
     CircularProgress,
     IconButton,
@@ -22,7 +21,7 @@ import {
 } from "@mui/material";
 import { useUserContext } from "../context/UserContext";
 import RichTextField from "./form/RichTextField";
-import { isUserAdmin } from "../lib/definitions";
+import { defaultFormActionState, FormActionState, isUserAdmin } from "../lib/definitions";
 import { Cancel, Check, Edit } from "@mui/icons-material";
 
 interface TextContentProps {
@@ -45,12 +44,12 @@ const TextContent = ({ id, richText = false }: TextContentProps) => {
     ): Promise<FormActionState> => getTextContent(currentActionState, id, language);
     const [fetchTextContentState, fetchTextContentAction, isTextContentLoading] = useActionState(
         fetchTextContent,
-        defaultActionState,
+        defaultFormActionState,
     );
     const updateTextContentAction = () => {
         startTransition(async () => {
             const result = await updateTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 id,
                 language,
                 editedTextContent,

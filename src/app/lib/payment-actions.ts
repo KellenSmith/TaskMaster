@@ -1,12 +1,11 @@
 "use server";
-import { defaultActionState, FormActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById, updateOrderStatus } from "./order-actions";
-import { defaultActionState as defaultDatagridActionState } from "../ui/Datagrid";
 import { Order, OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse } from "./payment-utils";
+import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
 
 const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     // Find order by ID
@@ -142,7 +141,7 @@ export const checkPaymentStatus = async (
     const paymentStatus = paymentStatusData.paymentOrder.status;
     const newOrderStatus = getNewOrderStatus(paymentStatus);
     if (order.status !== OrderStatus.completed && order.status !== newOrderStatus)
-        return await updateOrderStatus(orderId, defaultActionState, newOrderStatus);
+        return await updateOrderStatus(orderId, defaultFormActionState, newOrderStatus);
 
-    return defaultActionState;
+    return defaultFormActionState;
 };

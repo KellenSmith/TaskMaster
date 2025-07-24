@@ -1,14 +1,15 @@
 "use client";
 
 import GlobalConstants from "../../GlobalConstants";
-import Form, { FormActionState, getFormActionMsg } from "../../ui/form/Form";
+import Form, { getFormActionMsg } from "../../ui/form/Form";
 import { useUserContext } from "../../context/UserContext";
 import { deleteUser, updateUser, updateUserCredentials } from "../../lib/user-actions";
 import { login } from "../../lib/auth/auth";
 import { useState } from "react";
-import { defaultActionState } from "../../ui/form/Form";
 import { Button, Card, CardContent, Stack, Typography, useTheme } from "@mui/material";
 import {
+    defaultFormActionState,
+    FormActionState,
     isMembershipExpired,
     isUserAdmin,
     LoginSchema,
@@ -26,7 +27,7 @@ const AccountTab = () => {
     const theme = useTheme();
     const router = useRouter();
     const { user, updateLoggedInUser, logOut } = useUserContext();
-    const [accountActionState, setAccountActionState] = useState(defaultActionState);
+    const [accountActionState, setAccountActionState] = useState(defaultFormActionState);
 
     const updateUserProfile = async (
         currentActionState: FormActionState,
@@ -74,13 +75,13 @@ const AccountTab = () => {
     };
 
     const deleteMyAccount = async () => {
-        const deleteState = await deleteUser(user, defaultActionState);
+        const deleteState = await deleteUser(user, defaultFormActionState);
         if (deleteState.status === 200) logOut();
         setAccountActionState(deleteState);
     };
 
     const payMembership = async () => {
-        const createMembershipOrderResult = await createMembershipOrder(defaultActionState);
+        const createMembershipOrderResult = await createMembershipOrder(defaultFormActionState);
         if (createMembershipOrderResult.status === 201) {
             const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, window.location.origin);
             orderUrl.searchParams.set(GlobalConstants.ORDER_ID, createMembershipOrderResult.result);

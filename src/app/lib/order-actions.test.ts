@@ -7,9 +7,8 @@ import {
     updateOrderStatus,
     deleteOrder,
 } from "./order-actions";
-import { defaultActionState as defaultDatagridActionState } from "../ui/Datagrid";
-import { defaultActionState as defaultFormActionState } from "../ui/form/Form";
 import testdata from "../../test/testdata";
+import { defaultDatagridActionState, defaultFormActionState } from "./definitions";
 
 // Mock user-actions module
 vi.mock("./user-actions", () => ({

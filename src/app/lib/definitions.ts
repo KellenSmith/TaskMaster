@@ -72,3 +72,27 @@ export interface UpdateCredentialsSchema {
     newPassword: string;
     repeatPassword: string;
 }
+
+export interface FormActionState {
+    status: number;
+    errorMsg: string;
+    result: string;
+}
+
+export const defaultFormActionState: FormActionState = {
+    status: 200,
+    errorMsg: "",
+    result: "",
+};
+
+export interface DatagridActionState {
+    status: number;
+    errorMsg: string;
+    result: any[];
+}
+
+export const defaultDatagridActionState: DatagridActionState = {
+    status: 200,
+    errorMsg: "",
+    result: [],
+};

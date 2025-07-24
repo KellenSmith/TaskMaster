@@ -1,12 +1,12 @@
 "use client";
 
 import { FC, startTransition, useActionState, useMemo, useState } from "react";
-import { isUserHost } from "../../../lib/definitions";
+import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
 import { Button, Dialog, Menu, Stack } from "@mui/material";
 import { EventStatus, Prisma } from "@prisma/client";
-import Form, { defaultActionState, FormActionState, getFormActionMsg } from "../../../ui/form/Form";
+import Form, { getFormActionMsg } from "../../../ui/form/Form";
 import {
     addEventReserve,
     cancelEvent,
@@ -55,7 +55,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                 event[GlobalConstants.ID],
                 currentActionState,
             ),
-        defaultActionState,
+        defaultFormActionState,
     );
 
     const [publishActionState, publishAction, isPublishPending] = useActionState(
@@ -63,13 +63,13 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
             updateEvent(event[GlobalConstants.ID], currentActionState, {
                 status: EventStatus.published,
             }),
-        defaultActionState,
+        defaultFormActionState,
     );
 
     const [cancelActionState, cancelAction, isCancelPending] = useActionState(
         (currentActionState: FormActionState) =>
             cancelEvent(event[GlobalConstants.ID], currentActionState),
-        defaultActionState,
+        defaultFormActionState,
     );
 
     const [deleteActionState, deleteAction, isDeletePending] = useActionState(
@@ -80,7 +80,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
             }
             return result;
         },
-        defaultActionState,
+        defaultFormActionState,
     );
 
     const [removeParticipantActionState, removeParticipantAction, isRemoveParticipantPending] =
@@ -91,7 +91,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                     event[GlobalConstants.ID],
                     currentActionState,
                 ),
-            defaultActionState,
+            defaultFormActionState,
         );
 
     const [removeReserveActionState, removeReserveAction, isRemoveReservePending] = useActionState(
@@ -101,7 +101,7 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                 event[GlobalConstants.ID],
                 currentActionState,
             ),
-        defaultActionState,
+        defaultFormActionState,
     );
 
     const actAndUpdateEvent = (action: Function) => {

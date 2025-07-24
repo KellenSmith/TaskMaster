@@ -10,13 +10,9 @@ import { Accordion, AccordionSummary, Paper, Stack, Typography, useTheme } from 
 import { startTransition, Suspense } from "react";
 import { formatDate } from "../../../ui/utils";
 import GlobalConstants from "../../../GlobalConstants";
-import { isUserHost } from "../../../lib/definitions";
+import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
 import RichTextField from "../../../ui/form/RichTextField";
 import { useUserContext } from "../../../context/UserContext";
-import {
-    defaultActionState as defaultFormActionState,
-    FormActionState,
-} from "../../../ui/form/Form";
 import ConfirmButton from "../../../ui/ConfirmButton";
 import { deleteEventParticipant } from "../../../lib/event-actions";
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateOrderStatus } from "../../lib/order-actions";
-import { defaultActionState } from "../../ui/form/Form";
 import { getNewOrderStatus, PaymentStateType } from "../../lib/payment-utils";
+import { defaultFormActionState } from "../../lib/definitions";
 
 interface IPaymentOrder {
     id: string;
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         );
         const updateOrderStatusResult = await updateOrderStatus(
             orderId,
-            defaultActionState,
+            defaultFormActionState,
             newOrderStatus,
         );
         if (updateOrderStatusResult.status !== 200) {

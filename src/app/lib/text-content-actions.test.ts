@@ -6,8 +6,8 @@ import {
     updateTextContent,
     deleteTextContent,
 } from "./text-content-actions";
-import { defaultActionState } from "../ui/form/Form";
 import GlobalConstants from "../GlobalConstants";
+import { defaultFormActionState } from "./definitions";
 
 const mockTextContent = {
     id: "test-content-id",
@@ -22,7 +22,7 @@ describe("Text Content Actions", () => {
             mockContext.prisma.textContent.create.mockResolvedValue(mockTextContent);
 
             const result = await createTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
                 mockTextContent.content,
@@ -40,7 +40,7 @@ describe("Text Content Actions", () => {
             mockContext.prisma.textContent.create.mockRejectedValue(new Error("Creation failed"));
 
             const result = await createTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
                 mockTextContent.content,
@@ -57,7 +57,7 @@ describe("Text Content Actions", () => {
             mockContext.prisma.textContent.findUnique.mockResolvedValue(mockTextContent);
 
             const result = await getTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
             );
@@ -84,7 +84,7 @@ describe("Text Content Actions", () => {
             });
 
             const result = await getTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
             );
@@ -106,7 +106,7 @@ describe("Text Content Actions", () => {
             );
 
             const result = await getTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
             );
@@ -122,7 +122,7 @@ describe("Text Content Actions", () => {
             mockContext.prisma.textContent.update.mockResolvedValue(mockTextContent);
 
             const result = await updateTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
                 mockTextContent.content,
@@ -149,7 +149,7 @@ describe("Text Content Actions", () => {
             mockContext.prisma.textContent.update.mockRejectedValue(new Error("Update failed"));
 
             const result = await updateTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
                 mockTextContent.content,
@@ -166,7 +166,7 @@ describe("Text Content Actions", () => {
             mockContext.prisma.textContent.delete.mockResolvedValue(mockTextContent);
 
             const result = await deleteTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
             );
@@ -187,7 +187,7 @@ describe("Text Content Actions", () => {
             mockContext.prisma.textContent.delete.mockRejectedValue(new Error("Delete failed"));
 
             const result = await deleteTextContent(
-                defaultActionState,
+                defaultFormActionState,
                 mockTextContent.id,
                 mockTextContent.language,
             );

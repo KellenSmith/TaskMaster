@@ -14,16 +14,16 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
-import { defaultActionState } from "../../ui/Datagrid";
 import { createEvent, getAllEvents } from "../../lib/event-actions";
 import localeData from "dayjs/plugin/localeData";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
-import Form, { FormActionState } from "../../ui/form/Form";
+import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { navigateToRoute } from "../../ui/utils";
+import { defaultDatagridActionState, FormActionState } from "../../lib/definitions";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
@@ -34,7 +34,7 @@ const CalendarDashboard: FC = () => {
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
     const [fetchEventsState, fetchEventsAction, isEventsPending] = useActionState(
         getAllEvents,
-        defaultActionState,
+        defaultDatagridActionState,
     );
     const [createOpen, setCreateOpen] = useState(false);
     const router = useRouter();

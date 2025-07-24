@@ -1,18 +1,18 @@
 "use client";
 import { startTransition, useActionState, useEffect } from "react";
-import {
-    DatagridActionState,
-    defaultActionState as defaultDatagridActionState,
-} from "../../../../ui/Datagrid";
 import { getEventTickets } from "../../../../lib/product-actions";
 import GlobalConstants from "../../../../GlobalConstants";
 import { CircularProgress, Stack, Typography, useTheme } from "@mui/material";
 import ProductCard from "../../../../ui/shop/Product";
 import { createOrder } from "../../../../lib/order-actions";
-import { defaultActionState as defaultFormActionState } from "../../../../ui/form/Form";
 import { NextURL } from "next/dist/server/web/next-url";
 import { useRouter } from "next/navigation";
 import { Product, Event } from "@prisma/client";
+import {
+    DatagridActionState,
+    defaultDatagridActionState,
+    defaultFormActionState,
+} from "../../../../lib/definitions";
 
 interface TicketShopProps {
     event: Event;

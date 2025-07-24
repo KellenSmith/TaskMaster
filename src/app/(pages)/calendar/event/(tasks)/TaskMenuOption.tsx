@@ -11,7 +11,7 @@ import GlobalConstants from "../../../../GlobalConstants";
 import { CloseRounded, RemoveRedEye } from "@mui/icons-material";
 import { formatDate } from "../../../../ui/utils";
 import { useUserContext } from "../../../../context/UserContext";
-import Form, { FormActionState } from "../../../../ui/form/Form";
+import Form from "../../../../ui/form/Form";
 import { Prisma } from "@prisma/client";
 import {
     allowSelectMultiple,
@@ -19,7 +19,7 @@ import {
     formatAssigneeOptions,
     RenderedFields,
 } from "../../../../ui/form/FieldCfg";
-import { isUserHost } from "../../../../lib/definitions";
+import { FormActionState, isUserHost } from "../../../../lib/definitions";
 import { useState } from "react";
 import { isTaskSelected } from "../event-utils";
 

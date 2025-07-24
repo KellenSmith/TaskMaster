@@ -2,7 +2,8 @@ import { Prisma } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import { createUser } from "../../lib/user-actions";
 import { FieldLabels } from "../../ui/form/FieldCfg";
-import Form, { FormActionState } from "../../ui/form/Form";
+import Form from "../../ui/form/Form";
+import { FormActionState } from "../../lib/definitions";
 
 const ApplyPage = () => {
     const submitApplication = async (currentActionState: FormActionState, fieldValues: any) => {

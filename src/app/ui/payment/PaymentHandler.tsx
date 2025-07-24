@@ -3,18 +3,19 @@ import { Button, Stack } from "@mui/material";
 import React, { useState } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { getPaymentRedirectUrl } from "../../lib/payment-actions";
-import { defaultActionState, getFormActionMsg } from "../form/Form";
+import { getFormActionMsg } from "../form/Form";
 import { useRouter } from "next/navigation";
 import { OrderStatus } from "@prisma/client";
 import { updateOrderStatus } from "../../lib/order-actions";
+import { defaultFormActionState } from "../../lib/definitions";
 
 const PaymentHandler = ({ order }) => {
     const router = useRouter();
-    const [paymentActionState, setPaymentActionState] = useState(defaultActionState);
+    const [paymentActionState, setPaymentActionState] = useState(defaultFormActionState);
 
     const redirectToPayment = async () => {
         const orderId = order[GlobalConstants.ID];
-        const redirectUrlResult = await getPaymentRedirectUrl(defaultActionState, orderId);
+        const redirectUrlResult = await getPaymentRedirectUrl(defaultFormActionState, orderId);
         if (redirectUrlResult.status === 200 && redirectUrlResult.result) {
             const redirectUrl = redirectUrlResult.result;
             router.push(redirectUrl);
@@ -23,7 +24,7 @@ const PaymentHandler = ({ order }) => {
         setPaymentActionState(redirectUrlResult);
     };
 
-    const [processOrderActionState, setProcessOrderActionState] = useState(defaultActionState);
+    const [processOrderActionState, setProcessOrderActionState] = useState(defaultFormActionState);
 
     return (
         order &&
@@ -35,7 +36,7 @@ const PaymentHandler = ({ order }) => {
                         onClick={async () => {
                             const processOrderResult = await updateOrderStatus(
                                 order.id,
-                                defaultActionState,
+                                defaultFormActionState,
                                 OrderStatus.paid,
                             );
                             setProcessOrderActionState(processOrderResult);

@@ -5,17 +5,15 @@ import { useSearchParams } from "next/navigation";
 import { Container, Typography, Stack, CircularProgress, useTheme } from "@mui/material";
 import { checkPaymentStatus } from "../../../lib/payment-actions";
 import { getOrderById } from "../../../lib/order-actions";
-import {
-    defaultActionState as defaultFormActionState,
-    FormActionState,
-} from "../../../ui/form/Form";
-import {
-    DatagridActionState,
-    defaultActionState as defaultDatagridActionState,
-} from "../../../ui/Datagrid";
 import OrderSummary from "../OrderSummary";
 import GlobalConstants from "../../../GlobalConstants";
 import { OrderStatus } from "@prisma/client";
+import {
+    DatagridActionState,
+    defaultDatagridActionState,
+    defaultFormActionState,
+    FormActionState,
+} from "../../../lib/definitions";
 
 const OrderCompletePage = () => {
     const theme = useTheme();

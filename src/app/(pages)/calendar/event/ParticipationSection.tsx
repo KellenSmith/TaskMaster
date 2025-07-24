@@ -3,8 +3,8 @@ import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
 import { addEventReserve } from "../../../lib/event-actions";
 import { startTransition, useActionState } from "react";
-import { defaultActionState, FormActionState, getFormActionMsg } from "../../../ui/form/Form";
-import { isUserHost } from "../../../lib/definitions";
+import { getFormActionMsg } from "../../../ui/form/Form";
+import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
 import { tabs } from "./EventDashboard";
 import { isUserParticipant } from "./event-utils";
 
@@ -25,7 +25,7 @@ const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {
 
     const [reserveActionState, reserveAction, isReservePending] = useActionState(
         appendUserEventData(addEventReserve),
-        defaultActionState,
+        defaultFormActionState,
     );
 
     const findReserveUserIndexById = () => {

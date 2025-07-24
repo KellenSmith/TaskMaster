@@ -2,10 +2,10 @@
 
 import { OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 import { getMembershipProductId, processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
+import { FormActionState } from "./definitions";
 
 type CreateOrderItemInput = {
     [productId: string]: number; // productId: quantity

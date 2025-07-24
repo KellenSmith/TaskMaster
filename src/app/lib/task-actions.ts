@@ -2,9 +2,9 @@
 
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "../ui/form/Form";
 import { DatagridActionState } from "../ui/Datagrid";
 import GlobalConstants from "../GlobalConstants";
+import { FormActionState } from "./definitions";
 
 export const deleteTask = async (taskId: string, currentActionState: FormActionState) => {
     const newActionState = { ...currentActionState };

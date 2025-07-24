@@ -1,7 +1,7 @@
 "use server";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { FormActionState } from "../ui/form/Form";
+import { FormActionState } from "./definitions";
 
 export const createTextContent = async (
     currentActionState: FormActionState,

@@ -3,12 +3,12 @@ import { Card, CardContent, CircularProgress } from "@mui/material";
 import React, { startTransition, useActionState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUserContext } from "../../context/UserContext";
-import { DatagridActionState, defaultActionState } from "../../ui/Datagrid";
 import { getOrderById } from "../../lib/order-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { navigateToRoute } from "../../ui/utils";
 import OrderSummary from "./OrderSummary";
 import PaymentHandler from "../../ui/payment/PaymentHandler";
+import { DatagridActionState, defaultDatagridActionState } from "../../lib/definitions";
 
 const OrderPage = () => {
     const { user } = useUserContext();
@@ -34,7 +34,7 @@ const OrderPage = () => {
 
     const [getOrderActionState, getOrderAction, isOrderLoading] = useActionState(
         getOrder,
-        defaultActionState,
+        defaultDatagridActionState,
     );
 
     useEffect(() => {

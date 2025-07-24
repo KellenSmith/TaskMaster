@@ -7,8 +7,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
-import { FormActionState } from "../../ui/form/Form";
-import { LoginSchema } from "../definitions";
+import { FormActionState, LoginSchema } from "../definitions";
 
 // Generate a random string of specified length
 export const generateSalt = async (): Promise<string> => {

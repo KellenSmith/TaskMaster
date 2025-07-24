@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
-import Form, { defaultActionState, FormActionState } from "../form/Form";
+import Form from "../form/Form";
 import { startTransition, useState } from "react";
 import {
     getEarliestStartTime,
@@ -25,6 +25,7 @@ import { formatDate } from "../utils";
 import { FieldLabels } from "../form/FieldCfg";
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
+import { defaultFormActionState, FormActionState } from "../../lib/definitions";
 
 const DroppableColumn = ({
     event = null,
@@ -46,7 +47,7 @@ const DroppableColumn = ({
     const updateTaskStatus = async (task, status) => {
         const updateTaskResult = await updateTaskById(
             task[GlobalConstants.ID],
-            defaultActionState,
+            defaultFormActionState,
             { [GlobalConstants.STATUS]: status },
         );
         startTransition(() => fetchDbTasks());
