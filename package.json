@@ -2,6 +2,7 @@
     "name": "task-master",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "dev": "next dev --turbopack --experimental-https",
         "build": "pnpm prisma generate --schema=./src/prisma/schema.prisma && next build",
