@@ -208,7 +208,6 @@ describe("Order Actions", () => {
             });
 
             const result = await updateOrderStatus("1", defaultFormActionState, "paid");
-            console.log(result);
             expect(result.status).toBe(200);
             expect(result.result).toBe("Order completed");
             expect(mockContext.prisma.order.update).toHaveBeenCalledWith({

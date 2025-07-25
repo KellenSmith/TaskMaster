@@ -30,14 +30,6 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    console.log(
-        "iseventpublished",
-        isEventPublished(event),
-        "isuserhost",
-        isUserHost(user, event),
-        (isUserHost(user, event) && isEventPublished(event)) || isUserParticipant(user, event),
-    );
-
     return (
         <>
             {(isUserHost(user, event) && !isEventPublished(event)) ||

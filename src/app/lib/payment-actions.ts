@@ -2,7 +2,7 @@
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById, updateOrderStatus } from "./order-actions";
-import { Order, OrderStatus } from "@prisma/client";
+import { Order } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse } from "./payment-utils";
 import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";

@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockContext } from "../../test/mocks/prismaMock";
 import { getPaymentRedirectUrl, checkPaymentStatus } from "./payment-actions";
-import { defaultFormActionState, defaultDatagridActionState } from "./definitions";
+import { defaultFormActionState } from "./definitions";
 import testdata from "../../test/testdata";
 import { PaymentState } from "./payment-utils";
-
-// Import OrderStatus from mockContext since it's already mocked in setup
-const { OrderStatus } = mockContext;
 
 // Mock Next.js headers
 vi.mock("next/headers", () => ({

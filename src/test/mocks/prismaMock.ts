@@ -1,5 +1,5 @@
 import { mockDeep } from "vitest-mock-extended";
-import { MockOrderStatus, MockPrisma, TestContext } from "../types/test-types";
+import { MockPrisma, TestContext } from "../types/test-types";
 
 export const createMockContext = (): TestContext => ({
     prisma: mockDeep<MockPrisma>(),

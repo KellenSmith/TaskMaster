@@ -1,4 +1,3 @@
-import { Mock } from "node:test";
 import { DeepMockProxy } from "vitest-mock-extended";
 
 // Create a simpler mock type that doesn't include the problematic circular references
