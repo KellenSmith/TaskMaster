@@ -5,6 +5,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { getMembershipProductId, processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
 import { DatagridActionState, FormActionState } from "./definitions";
+import { sendOrderConfirmation } from "./mail-service/mail-service";
 
 type CreateOrderItemInput = {
     [productId: string]: number; // productId: quantity
@@ -229,6 +230,9 @@ export const updateOrderStatus = async (
                     where: { id: orderId },
                     data: { status: OrderStatus.completed },
                 });
+
+                await sendOrderConfirmation(orderId);
+
                 newActionState.errorMsg = "";
                 newActionState.status = 200;
                 newActionState.result = "Order completed";
