@@ -2,10 +2,9 @@
 
 import { OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "../ui/form/Form";
-import { DatagridActionState } from "../ui/Datagrid";
 import { getMembershipProductId, processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
+import { DatagridActionState, FormActionState } from "./definitions";
 
 type CreateOrderItemInput = {
     [productId: string]: number; // productId: quantity
@@ -140,29 +139,7 @@ export const createOrder = async (
     return newActionState;
 };
 
-export const updateOrderStatus = async (
-    orderId: string,
-    currentActionState: FormActionState,
-    status: OrderStatus,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        await prisma.order.update({
-            where: { id: orderId },
-            data: { status },
-        });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Order status updated successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-export const processOrderItems = async (
+const processOrderItems = async (
     orderId: string,
     currentActionState: FormActionState,
 ): Promise<FormActionState> => {
@@ -184,8 +161,6 @@ export const processOrderItems = async (
 
         // Process each order item
         for (const item of orderItems) {
-            // TODO: Here you can implement your logic to process each item
-            // For example, updating inventory, sending notifications, etc.
             await processOrderedProduct(
                 item.productId,
                 item.quantity,
@@ -205,6 +180,76 @@ export const processOrderItems = async (
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
         newActionState.result = "";
+    }
+    return newActionState;
+};
+
+export const updateOrderStatus = async (
+    orderId: string,
+    currentActionState: FormActionState,
+    status: OrderStatus,
+): Promise<FormActionState> => {
+    const newActionState = { ...currentActionState };
+
+    try {
+        const order = await prisma.order.findUniqueOrThrow({
+            where: { id: orderId },
+            select: {
+                status: true,
+            },
+        });
+
+        // Don't update from completed status to any other status
+        if (order.status === OrderStatus.completed) {
+            newActionState.status = 200;
+            newActionState.result = `Order is already completed and cannot be updated`;
+            newActionState.errorMsg = "";
+            return newActionState;
+        }
+
+        if (order.status === status) {
+            newActionState.status = 200;
+            newActionState.result = `Order is already in status: ${status}`;
+            newActionState.errorMsg = "";
+            return newActionState;
+        }
+
+        // Always update the order to the requested status first
+        await prisma.order.update({
+            where: { id: orderId },
+            data: { status },
+        });
+
+        // If status is paid, attempt to process order items
+        if (status === OrderStatus.paid) {
+            const processedItemsResult = await processOrderItems(orderId, currentActionState);
+            if (processedItemsResult.status === 200) {
+                // Processing succeeded - update to completed
+                await prisma.order.update({
+                    where: { id: orderId },
+                    data: { status: OrderStatus.completed },
+                });
+                newActionState.errorMsg = "";
+                newActionState.status = 200;
+                newActionState.result = "Order completed";
+            } else {
+                // Processing failed - order remains as paid, return processing error
+                newActionState.status = processedItemsResult.status;
+                newActionState.errorMsg = processedItemsResult.errorMsg;
+                newActionState.result = "";
+                return newActionState;
+            }
+        } else {
+            // For any other status, just confirm the update
+            newActionState.status = 200;
+            newActionState.errorMsg = "";
+            newActionState.result = `Order updated to ${status}`;
+        }
+    } catch (error) {
+        newActionState.status = 500;
+        newActionState.errorMsg = error.message;
+        newActionState.result = "";
+        return newActionState;
     }
     return newActionState;
 };

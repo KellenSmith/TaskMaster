@@ -8,9 +8,9 @@ import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
-import { defaultActionState, FormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
+import { defaultFormActionState, FormActionState } from "../definitions";
 
 interface EmailPayload {
     from: string;
@@ -75,7 +75,7 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
  * @throws Error if email fails
  */
 export const informOfCancelledEvent = async (eventId: string): Promise<string[]> => {
-    const newActionState: FormActionState = { ...defaultActionState };
+    const newActionState: FormActionState = { ...defaultFormActionState };
     try {
         const participantEmails = (
             await prisma.participantInEvent.findMany({

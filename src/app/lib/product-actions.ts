@@ -2,8 +2,6 @@
 
 import { Prisma, TicketType } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "../ui/form/Form";
-import { DatagridActionState } from "../ui/Datagrid";
 import {
     createMembershipProductSchema,
     createProductSchema,
@@ -12,6 +10,7 @@ import {
 import GlobalConstants from "../GlobalConstants";
 import { renewUserMembership } from "./user-actions";
 import dayjs from "dayjs";
+import { DatagridActionState, FormActionState } from "./definitions";
 
 export const getProductById = async (
     currentState: DatagridActionState,

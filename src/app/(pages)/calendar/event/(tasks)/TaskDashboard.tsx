@@ -1,13 +1,12 @@
 "use client";
 
 import TaskMenu from "./TaskMenu";
-import { isUserHost } from "../../../../lib/definitions";
+import { defaultDatagridActionState, isUserHost } from "../../../../lib/definitions";
 import { isEventPublished, isUserParticipant } from "../event-utils";
 import { useUserContext } from "../../../../context/UserContext";
 import KanBanBoard from "../../../../ui/kanban-board/KanBanBoard";
 import { getFilteredTasks } from "../../../../lib/task-actions";
 import GlobalConstants from "../../../../GlobalConstants";
-import { defaultActionState as defaultDatagridActionState } from "../../../../ui/Datagrid";
 import { startTransition, useActionState, useEffect } from "react";
 import { Typography } from "@mui/material";
 
@@ -30,14 +29,6 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
         // Fetch tasks in first render
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    console.log(
-        "iseventpublished",
-        isEventPublished(event),
-        "isuserhost",
-        isUserHost(user, event),
-        (isUserHost(user, event) && isEventPublished(event)) || isUserParticipant(user, event),
-    );
 
     return (
         <>

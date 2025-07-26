@@ -2,8 +2,8 @@ import { startTransition, useActionState, useEffect } from "react";
 import { getFilteredTasks } from "../../lib/task-actions";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
-import { defaultActionState as defaultDatagridActionState } from "../../ui/Datagrid";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
+import { defaultDatagridActionState } from "../../lib/definitions";
 
 const TasksTab = () => {
     const { user } = useUserContext();

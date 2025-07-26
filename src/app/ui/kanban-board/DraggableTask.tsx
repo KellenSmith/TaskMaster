@@ -2,11 +2,12 @@ import { Button, Card, Dialog, Stack, Typography } from "@mui/material";
 import { formatDate } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
 import { assignTasksToUser, deleteTask, updateTaskById } from "../../lib/task-actions";
-import Form, { defaultActionState } from "../form/Form";
+import Form from "../form/Form";
 import { startTransition, useState } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
 import { formatAssigneeOptions } from "../form/FieldCfg";
+import { defaultFormActionState } from "../../lib/definitions";
 
 const DraggableTask = ({
     task,
@@ -41,7 +42,7 @@ const DraggableTask = ({
         const assignTasksResult = await assignTasksToUser(
             user[GlobalConstants.ID],
             [task[GlobalConstants.ID]],
-            defaultActionState,
+            defaultFormActionState,
         );
         startTransition(() => fetchDbTasks());
         setTaskActionState(assignTasksResult);

@@ -3,13 +3,10 @@
 import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../../GlobalConstants";
 import { Suspense, useState } from "react";
-import { isUserHost } from "../../../lib/definitions";
+import { defaultFormActionState, isUserHost } from "../../../lib/definitions";
 import { useUserContext } from "../../../context/UserContext";
 import TaskDashboard from "./(tasks)/TaskDashboard";
-import {
-    defaultActionState as defaultFormActionState,
-    getFormActionMsg,
-} from "../../../ui/form/Form";
+import { getFormActionMsg } from "../../../ui/form/Form";
 import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
 import EventDetails from "./EventDetails";

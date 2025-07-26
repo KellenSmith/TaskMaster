@@ -49,6 +49,14 @@ export type MockPrisma = {
     $transaction: any;
 };
 
+export type MockOrderStatus = {
+    paid: string;
+    pending: string;
+    cancelled: string;
+    completed: string;
+};
+
 export type TestContext = {
     prisma: DeepMockProxy<MockPrisma>;
+    OrderStatus: DeepMockProxy<MockOrderStatus>;
 };

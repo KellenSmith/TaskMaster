@@ -5,10 +5,9 @@ import React, { useEffect, useState } from "react";
 import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
-import { defaultActionState } from "../../ui/Datagrid";
 import { useRouter } from "next/navigation";
 import { formatDate, navigateToRoute } from "../../ui/utils";
-import { isUserHost } from "../../lib/definitions";
+import { defaultDatagridActionState, isUserHost } from "../../lib/definitions";
 import { isEventPublished } from "../calendar/event/event-utils";
 const EventsTab: React.FC = () => {
     const { user } = useUserContext();
@@ -16,7 +15,10 @@ const EventsTab: React.FC = () => {
     const router = useRouter();
 
     const fetchEvents = async () => {
-        const eventsData = await getUserEvents(user[GlobalConstants.ID], defaultActionState);
+        const eventsData = await getUserEvents(
+            user[GlobalConstants.ID],
+            defaultDatagridActionState,
+        );
         setEvents(eventsData.result);
     };
 

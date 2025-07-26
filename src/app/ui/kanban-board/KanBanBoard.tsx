@@ -15,7 +15,7 @@ import {
     Switch,
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { defaultActionState as defaultFormActionState, getFormActionMsg } from "../form/Form";
+import { getFormActionMsg } from "../form/Form";
 import DroppableColumn from "./DroppableColumn";
 import { FieldLabels, selectFieldOptions } from "../form/FieldCfg";
 import { ExpandMore } from "@mui/icons-material";
@@ -23,7 +23,7 @@ import { useUserContext } from "../../context/UserContext";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { getActiveMembers } from "../../lib/user-actions";
-import { defaultActionState as defaultDatagridActionState } from "../Datagrid";
+import { defaultDatagridActionState, defaultFormActionState } from "../../lib/definitions";
 
 const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const { user } = useUserContext();
