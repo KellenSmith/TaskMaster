@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { SwishConstants } from "../../lib/swish-constants";
 import { useUserContext } from "../../context/UserContext";
 import { apiEndpoints, makeApiRequest, navigateToRoute } from "../utils";
+import { formatCurrency } from "../../lib/currency-utils";
 
 interface ISwishPaymentHandler {
     title: string;
@@ -156,7 +157,7 @@ const SwishPaymentHandler = ({
                 {qrCodeUrl ? (
                     <Stack>
                         <DialogContentText>
-                            {`Scan the QR code to pay ${paymentAmount} SEK`}
+                            {`Scan the QR code to pay ${formatCurrency(paymentAmount)}`}
                         </DialogContentText>
 
                         <Image

@@ -34,6 +34,7 @@ import RichTextField from "../../../ui/form/RichTextField";
 import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
 import ConfirmButton from "../../../ui/ConfirmButton";
+import { formatCurrency } from "../../../lib/currency-utils";
 
 export const tabs = { event: "Event", details: "Details", tasks: "Participate" };
 
@@ -127,7 +128,7 @@ const EventDashboard = ({ event, fetchEventAction, openTab, setOpenTab }) => {
                                 <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                     <AttachMoney color="primary" />
                                     <Typography>
-                                        Ticket Price: {event.fullTicketPrice} SEK
+                                        Ticket Price: {formatCurrency(event.fullTicketPrice)}
                                     </Typography>
                                 </Stack>
                                 <Accordion>

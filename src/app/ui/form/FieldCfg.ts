@@ -204,3 +204,7 @@ export const checkboxFields = [
     GlobalConstants.CONSENT_TO_NEWSLETTERS,
     GlobalConstants.CONSENT_GDPR,
 ];
+
+export const currencyFields = [
+    GlobalConstants.FULL_TICKET_PRICE,
+];

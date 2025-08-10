@@ -23,12 +23,14 @@ import {
     allowSelectMultiple,
     checkboxFields,
     passwordFields,
+    currencyFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
+import { centsToWholeCurrency, wholeCurrencyToCents, parseUserCurrencyInput } from "../../lib/currency-utils";
 
 export interface FormActionState {
     status: number;
@@ -70,9 +72,14 @@ interface FormProps {
 const getFieldValues = (formName: string, defaultValues: any) => {
     const fieldValues = {};
     for (let fieldId of RenderedFields[formName]) {
-        if (defaultValues && fieldId in defaultValues)
-            fieldValues[fieldId] = defaultValues[fieldId];
-        else {
+        if (defaultValues && fieldId in defaultValues) {
+            // Convert currency fields from cents to whole currency for display
+            if (currencyFields.includes(fieldId)) {
+                fieldValues[fieldId] = centsToWholeCurrency(defaultValues[fieldId]);
+            } else {
+                fieldValues[fieldId] = defaultValues[fieldId];
+            }
+        } else {
             if (fieldId in selectFieldOptions) {
                 if (RequiredFields[formName].includes(fieldId)) {
                     const defaultOption = selectFieldOptions[fieldId][0];
@@ -116,7 +123,18 @@ const Form: FC<FormProps> = ({
     const submitForm = async (event) => {
         event.preventDefault();
         setLoading(true);
-        const newActionState = await action(actionState, fieldValues);
+        
+        // Convert currency fields from whole currency to cents for storage
+        const processedFieldValues = { ...fieldValues };
+        for (let fieldId of Object.keys(processedFieldValues)) {
+            if (currencyFields.includes(fieldId)) {
+                const userInput = processedFieldValues[fieldId];
+                const centsValue = parseUserCurrencyInput(userInput as string | number);
+                processedFieldValues[fieldId] = centsValue !== null ? centsValue : 0;
+            }
+        }
+        
+        const newActionState = await action(actionState, processedFieldValues);
         setActionState(newActionState);
         setLoading(false);
         editable && newActionState.status === 200 && setEditMode(false);
@@ -194,6 +212,24 @@ const Form: FC<FormProps> = ({
                     editMode={editMode}
                     value={fieldValues[fieldId] as string}
                     changeFieldValue={changeFieldValue}
+                />
+            );
+        }
+        if (currencyFields.includes(fieldId)) {
+            return (
+                <TextField
+                    disabled={!editMode}
+                    key={fieldId}
+                    label={`${FieldLabels[fieldId]} (SEK)`}
+                    name={fieldId}
+                    type="number"
+                    required={RequiredFields[name].includes(fieldId)}
+                    value={fieldValues[fieldId]}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        changeFieldValue(fieldId, event.target.value);
+                    }}
+                    inputProps={{ min: 0, step: 0.01 }}
+                    helperText="Enter amount in whole SEK (e.g., 25.50)"
                 />
             );
         }
