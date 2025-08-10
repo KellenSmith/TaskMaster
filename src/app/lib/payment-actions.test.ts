@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockContext } from "../../test/mocks/prismaMock";
-import { getPaymentRedirectUrl, checkPaymentStatus } from "./payment-actions";
+import { getPaymentRedirectUrl, checkPaymentStatus, capturePaymentFunds } from "./payment-actions";
 import { defaultFormActionState } from "./definitions";
 import testdata from "../../test/testdata";
 import { PaymentState } from "./payment-utils";
+import { OrderStatus } from "@prisma/client";
 
 // Mock Next.js headers
 vi.mock("next/headers", () => ({
@@ -424,6 +425,89 @@ describe("Payment Actions", () => {
             await expect(
                 checkPaymentStatus(mockOrderWithPaymentId.id, defaultFormActionState),
             ).rejects.toThrow("Invalid JSON");
+        });
+    });
+
+    describe("capturePaymentFunds", () => {
+        const mockOrder = {
+            ...testdata.order,
+            paymentRequestId: "/psp/paymentorders/payment-order-id-123",
+            payeeRef: "PAYorder111122222531200000", // Add the required payeeRef field
+        };
+
+        const mockPaymentResponse = {
+            paymentOrder: {
+                id: "/psp/paymentorders/payment-order-id-123",
+                status: "Ready",
+            },
+            operations: [
+                {
+                    method: "GET",
+                    href: "https://ecom.externalintegration.payex.com/checkout/checkout-url-123",
+                    rel: "redirect-checkout",
+                    contentType: "text/html",
+                },
+            ],
+        };
+
+        beforeEach(() => {
+            mockFetch.mockResolvedValue({
+                ok: true,
+                text: () => Promise.resolve("Capture successful"),
+            });
+        });
+
+        it("should generate unique payeeReference for capture operation", async () => {
+            await capturePaymentFunds(mockOrder);
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                `https://api.externalintegration.payex.com${mockOrder.paymentRequestId}/captures`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json;version=3.1",
+                        Authorization: `Bearer ${mockEnv.SWEDBANK_PAY_ACCESS_TOKEN}`,
+                    },
+                    body: expect.stringContaining('"payeeReference":"CAP'),
+                },
+            );
+
+            const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+            expect(requestBody.transaction.payeeReference).toMatch(/^CAP[a-zA-Z0-9]{26}$/);
+            expect(requestBody.transaction.payeeReference).toContain("CAP");
+        });
+
+        it("should use different payeeReference than authorization", async () => {
+            // First call getPaymentRedirectUrl to simulate authorization
+            mockGetOrderById.mockResolvedValue({
+                status: 200,
+                result: [mockOrder],
+                errorMsg: "",
+            });
+
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(mockPaymentResponse),
+            });
+
+            await getPaymentRedirectUrl(defaultFormActionState, mockOrder.id);
+            const authPayeeRef = JSON.parse(mockFetch.mock.calls[0][1].body).paymentorder.payeeInfo
+                .payeeReference;
+
+            // Reset fetch mock for capture call
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                text: () => Promise.resolve("Capture successful"),
+            });
+
+            // Now call capture
+            await capturePaymentFunds(mockOrder);
+            const capturePayeeRef = JSON.parse(mockFetch.mock.calls[1][1].body).transaction
+                .payeeReference;
+
+            expect(authPayeeRef).toMatch(/^PAY/);
+            expect(capturePayeeRef).toMatch(/^CAP/);
+            expect(authPayeeRef).not.toBe(capturePayeeRef);
         });
     });
 });

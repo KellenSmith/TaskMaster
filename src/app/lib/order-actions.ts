@@ -6,6 +6,7 @@ import { getMembershipProductId, processOrderedProduct } from "./product-actions
 import { getLoggedInUser } from "./user-actions";
 import { DatagridActionState, FormActionState } from "./definitions";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
+import { capturePaymentFunds } from "./payment-actions";
 
 type CreateOrderItemInput = {
     [productId: string]: number; // productId: quantity

@@ -89,5 +89,10 @@
         "react-email": "^4.2.4",
         "vitest": "^3.2.4",
         "vitest-mock-extended": "^3.1.0"
+    },
+    "pnpm": {
+        "overrides": {
+            "prettier": "3.6.2"
+        }
     }
 }
