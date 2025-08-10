@@ -59,6 +59,20 @@ This is a Next.js 15 TypeScript application for event and task management with t
 - Optimize database queries with appropriate includes/selects
 - Use React Server Components where possible for better performance
 
+## Development Workflow & Branching Strategy
+
+### Branch Management
+- **Base Branch**: Always create new feature branches from the `dev` branch, NOT from `master`/`main`
+- **Feature Branches**: Use descriptive names like `feature/user-authentication` or `bugfix/payment-validation`
+- **Pull Requests**: Target the `dev` branch for all feature and bugfix pull requests
+- **Development Flow**: `dev` → `staging` → `master`/`main` for production releases
+
+### Git Best Practices
+- Keep commits atomic and focused on a single change
+- Write clear, descriptive commit messages
+- Run tests locally before pushing changes
+- Ensure your feature branch is up-to-date with `dev` before creating pull requests
+
 ## Domain-Specific Guidelines
 
 ### User Management
