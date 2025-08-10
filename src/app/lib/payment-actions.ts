@@ -4,12 +4,7 @@ import { headers } from "next/headers";
 import { getOrderById, updateOrderStatus } from "./order-actions";
 import { Order, OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import {
-    getNewOrderStatus,
-    PaymentOrderResponse,
-    PaymentState,
-    TransactionType,
-} from "./payment-utils";
+import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
@@ -90,7 +85,6 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 },
             };
         } catch (error) {
-            console.error(`Failed to store fallback payeeReference for order ${orderId}:`, error);
             throw new Error(
                 "Failed to update order with fallback payee reference: " + error.message,
             );
@@ -104,7 +98,9 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             data: { payeeRef },
         });
     } catch (error) {
-        throw new Error("Failed to update order with payee reference: " + error.message);
+        throw new Error(
+            `Failed to update order with payee reference ${payeeRef}: ` + error.message,
+        );
     }
 
     return {
@@ -191,9 +187,6 @@ export const capturePaymentFunds = async (order: Order) => {
     // This maintains the connection between authorization and capture operations
 
     if (!order.payeeRef) {
-        console.error(
-            `CRITICAL: Order ${order.id} has no payeeRef stored! This will cause conflicts.`,
-        );
         throw new Error(`Order ${order.id} is missing payeeRef - cannot capture payment safely`);
     }
 
@@ -221,14 +214,6 @@ export const capturePaymentFunds = async (order: Order) => {
             capturePaymentResponse.statusText,
             errorText,
         );
-
-        // If we get a conflict error, it might be a duplicate capture attempt
-        if (capturePaymentResponse.status === 409) {
-            console.warn(
-                `Conflict detected for order ${order.id} - this may be a duplicate capture attempt`,
-            );
-        }
-
         throw new Error(
             `Payment capture failed: ${capturePaymentResponse.status} ${capturePaymentResponse.statusText}`,
         );
@@ -305,7 +290,6 @@ export const checkPaymentStatus = async (
                 try {
                     await capturePaymentFunds(order);
                 } catch (error) {
-                    console.error(`Failed to capture payment for order ${orderId}:`, error);
                     // Don't throw the error here - the payment was successful, capture can be retried later
                     // The order processing will continue normally
                 }

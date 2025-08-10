@@ -3,8 +3,8 @@ import { mockContext } from "../../test/mocks/prismaMock";
 import { getPaymentRedirectUrl, checkPaymentStatus, capturePaymentFunds } from "./payment-actions";
 import { defaultFormActionState } from "./definitions";
 import testdata from "../../test/testdata";
-import { PaymentState } from "./payment-utils";
-import { OrderStatus } from "@prisma/client";
+import { PaymentOrderResponse, PaymentState } from "./payment-utils";
+import { Order } from "@prisma/client";
 
 // Mock Next.js headers
 vi.mock("next/headers", () => ({
@@ -41,10 +41,12 @@ global.fetch = mockFetch;
 
 // Mock Date.now for consistent payeeReference generation
 const mockDateNow = vi.spyOn(Date, "now");
+const mockMathRandom = vi.spyOn(Math, "random");
 
 beforeEach(() => {
     vi.resetAllMocks();
     mockDateNow.mockReturnValue(1672531200000); // Fixed timestamp: 2023-01-01T00:00:00.000Z
+    mockMathRandom.mockReturnValue(0); // Fixed random value to ensure deterministic output
 });
 
 describe("Payment Actions", () => {
@@ -204,8 +206,8 @@ describe("Payment Actions", () => {
 
             expect(result.status).toBe(500);
             expect(result.result).toBe("");
-            expect(result.errorMsg).toBe(
-                "Failed to update order with payment request ID: Database connection failed",
+            expect(result.errorMsg).toMatch(
+                /Failed to update order with payee reference PAY[a-zA-Z0-9]{23}: Database connection failed/,
             );
         });
 
@@ -256,6 +258,9 @@ describe("Payment Actions", () => {
             paymentOrder: {
                 id: "/psp/paymentorders/payment-order-id-123",
                 status: PaymentState.Paid,
+                paid: {
+                    transactionType: "Authorization",
+                },
             },
         };
 
@@ -380,7 +385,7 @@ describe("Payment Actions", () => {
                                 ...mockPaymentStatusResponse.paymentOrder,
                                 status: testCase.paymentStatus,
                             },
-                        }),
+                        } as PaymentOrderResponse),
                 });
 
                 await checkPaymentStatus(mockOrderWithPaymentId.id, defaultFormActionState);
@@ -433,7 +438,7 @@ describe("Payment Actions", () => {
             ...testdata.order,
             paymentRequestId: "/psp/paymentorders/payment-order-id-123",
             payeeRef: "PAYorder111122222531200000", // Add the required payeeRef field
-        };
+        } as Order;
 
         const mockPaymentResponse = {
             paymentOrder: {
@@ -468,12 +473,12 @@ describe("Payment Actions", () => {
                         "Content-Type": "application/json;version=3.1",
                         Authorization: `Bearer ${mockEnv.SWEDBANK_PAY_ACCESS_TOKEN}`,
                     },
-                    body: expect.stringContaining('"payeeReference":"CAP'),
+                    body: expect.stringContaining('CAP"'),
                 },
             );
 
             const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-            expect(requestBody.transaction.payeeReference).toMatch(/^CAP[a-zA-Z0-9]{26}$/);
+            expect(requestBody.transaction.payeeReference).toMatch(/^PAY[a-zA-Z0-9]{23}CAP$/);
             expect(requestBody.transaction.payeeReference).toContain("CAP");
         });
 
@@ -506,7 +511,7 @@ describe("Payment Actions", () => {
                 .payeeReference;
 
             expect(authPayeeRef).toMatch(/^PAY/);
-            expect(capturePayeeRef).toMatch(/^CAP/);
+            expect(capturePayeeRef).toMatch(/CAP$/);
             expect(authPayeeRef).not.toBe(capturePayeeRef);
         });
     });
