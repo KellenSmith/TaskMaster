@@ -289,7 +289,7 @@ export const checkPaymentStatus = async (
             ) {
                 try {
                     await capturePaymentFunds(order);
-                } catch (error) {
+                } catch {
                     // Don't throw the error here - the payment was successful, capture can be retried later
                     // The order processing will continue normally
                 }
