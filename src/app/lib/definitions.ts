@@ -45,7 +45,7 @@ export const isMembershipExpired = (user: any): boolean => {
 };
 
 export const isUserAdmin = (user: any): boolean =>
-    user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
+    !!user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
 
 export const isUserHost = (user: any, event: any): boolean =>
     user && user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
