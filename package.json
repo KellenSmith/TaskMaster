@@ -26,7 +26,7 @@
         "@mui/material": "^6.5.0",
         "@mui/x-data-grid": "^7.29.8",
         "@mui/x-date-pickers": "^7.29.4",
-        "@prisma/client": "^6.12.0",
+        "@prisma/client": "^6.13.0",
         "@react-email/components": "^0.0.36",
         "@react-pdf/renderer": "^4.3.0",
         "@tiptap/core": "^2.26.1",
@@ -60,7 +60,6 @@
         "mui-tiptap": "^1.22.0",
         "next": "15.3.3",
         "nodemailer": "^6.10.1",
-        "prisma": "^6.12.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "uuid": "^11.1.0",
@@ -86,8 +85,14 @@
         "eslint-config-next": "15.1.6",
         "jsdom": "^26.1.0",
         "prettier": "^3.6.2",
+        "prisma": "^6.13.0",
         "react-email": "^4.2.4",
         "vitest": "^3.2.4",
         "vitest-mock-extended": "^3.1.0"
+    },
+    "pnpm": {
+        "overrides": {
+            "prettier": "3.6.2"
+        }
     }
 }

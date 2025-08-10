@@ -6,8 +6,13 @@ export enum PaymentState {
     Cancelled = "Cancelled", // eslint-disable-line no-unused-vars
     Aborted = "Aborted", // eslint-disable-line no-unused-vars
 }
-
 export type PaymentStateType = `${PaymentState}`;
+
+export enum TransactionType {
+    Authorization = "Authorization", // eslint-disable-line no-unused-vars
+    Sale = "Sale", // eslint-disable-line no-unused-vars
+}
+export type TransactionTypeType = `${TransactionType}`;
 
 type PaymentOperation = {
     method: string;
@@ -40,7 +45,7 @@ export type PaymentOrderResponse = {
         history: { id: string };
         failed: { id: string };
         aborted: { id: string };
-        paid: { id: string };
+        paid: { id: string; transactionType: TransactionTypeType };
         cancelled: { id: string };
         reversed: { id: string };
         financialTransactions: { id: string };

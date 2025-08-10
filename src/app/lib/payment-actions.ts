@@ -2,10 +2,31 @@
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById, updateOrderStatus } from "./order-actions";
-import { Order } from "@prisma/client";
+import { Order, OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { getNewOrderStatus, PaymentOrderResponse } from "./payment-utils";
+import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
+
+const makeSwedbankApiRequest = async (url: string, body?: any) => {
+    return await fetch(url, {
+        method: body ? "POST" : "GET",
+        headers: {
+            "Content-Type": "application/json;version=3.1",
+            Authorization: `Bearer ${process.env.SWEDBANK_PAY_ACCESS_TOKEN}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+    });
+};
+
+// Helper function to generate unique payee references
+const generatePayeeReference = (orderId: string, prefix: string = "PAY"): string => {
+    const cleanOrderId = orderId.replace(/[^a-zA-Z0-9]/g, "");
+    const timestamp = Date.now().toString().slice(-10);
+    // Add some randomness to prevent collisions in rapid succession
+    const random = Math.random().toString(36).substring(2, 5); // 3 chars
+    const baseRef = `${prefix}${cleanOrderId.slice(0, 13)}${timestamp}${random}`; // 3+13+10+3=29 chars max
+    return baseRef.substring(0, 30); // Ensure max length compliance
+};
 
 const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     // Find order by ID
@@ -18,9 +39,69 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     const userAgent = headersList.get("user-agent") || "Unknown";
 
     // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
-    const cleanOrderId = orderId.replace(/[^a-zA-Z0-9]/g, ""); // Remove hyphens and non-alphanumeric
-    const timestamp = Date.now().toString().slice(-10); // Last 10 digits for good precision
-    const payeeRef = `PAY${cleanOrderId.slice(0, 16)}${timestamp}`; // 3+16+10=29 chars
+    const payeeRef = generatePayeeReference(orderId, "PAY");
+
+    // Check if this payeeRef is already used by another order
+    const existingOrder = await prisma.order.findFirst({
+        where: {
+            payeeRef: payeeRef,
+            id: { not: orderId }, // Exclude the current order
+        },
+    });
+
+    if (existingOrder) {
+        // Generate a new one with additional entropy
+        const fallbackPayeeRef = `${payeeRef}${Math.random().toString(36).substring(2, 5)}`;
+        const finalPayeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
+
+        try {
+            await prisma.order.update({
+                where: { id: orderId },
+                data: { payeeRef: finalPayeeRef },
+            });
+
+            return {
+                // ...existing payment order structure with finalPayeeRef
+                paymentorder: {
+                    operation: "Purchase",
+                    currency: "SEK",
+                    amount: order.totalAmount * 100,
+                    vatAmount: 0,
+                    description: `Purchase`,
+                    userAgent,
+                    language: "en-US",
+                    urls: {
+                        hostUrls: [`${process.env.VERCEL_URL}`],
+                        completeUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`,
+                        cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`,
+                        callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
+                    },
+                    payeeInfo: {
+                        payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
+                        payeeReference: finalPayeeRef,
+                        payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
+                        orderReference: orderId,
+                    },
+                },
+            };
+        } catch (error) {
+            throw new Error(
+                "Failed to update order with fallback payee reference: " + error.message,
+            );
+        }
+    }
+
+    try {
+        // Update order with payeeRef
+        await prisma.order.update({
+            where: { id: orderId },
+            data: { payeeRef },
+        });
+    } catch (error) {
+        throw new Error(
+            `Failed to update order with payee reference ${payeeRef}: ` + error.message,
+        );
+    }
 
     return {
         paymentorder: {
@@ -59,16 +140,9 @@ export const getPaymentRedirectUrl = async (
         const requestBody = await getSwedbankPaymentRequestPayload(orderId);
         if (!requestBody) throw new Error("Failed to create payment request");
 
-        const response = await fetch(
+        const response = await makeSwedbankApiRequest(
             `https://api.externalintegration.payex.com/psp/paymentorders`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json;version=3.1",
-                    Authorization: `Bearer ${process.env.SWEDBANK_PAY_ACCESS_TOKEN}`,
-                },
-                body: JSON.stringify(requestBody),
-            },
+            requestBody,
         );
 
         if (!response.ok) {
@@ -108,6 +182,47 @@ export const getPaymentRedirectUrl = async (
     return newActionState;
 };
 
+export const capturePaymentFunds = async (order: Order) => {
+    // Use the same payeeReference that was used for the original authorization
+    // This maintains the connection between authorization and capture operations
+
+    if (!order.payeeRef) {
+        throw new Error(`Order ${order.id} is missing payeeRef - cannot capture payment safely`);
+    }
+
+    // Create a unique capture reference by appending "CAPTURE" to the original payeeRef
+    // This ensures each capture attempt has a unique reference while maintaining traceability
+    const capturePayeeRef = `${order.payeeRef}CAP`.substring(0, 30);
+
+    const capturePaymentResponse = await makeSwedbankApiRequest(
+        `https://api.externalintegration.payex.com${order.paymentRequestId}/captures`,
+        {
+            transaction: {
+                description: "Capturing authorized payment",
+                amount: order.totalAmount * 100, // Convert to smallest currency unit
+                vatAmount: 0,
+                payeeReference: capturePayeeRef, // Unique reference for capture operation
+            },
+        },
+    );
+
+    if (!capturePaymentResponse.ok) {
+        const errorText = await capturePaymentResponse.text();
+        console.error(
+            `Failed to capture payment funds for order ${order.id}:`,
+            capturePaymentResponse.status,
+            capturePaymentResponse.statusText,
+            errorText,
+        );
+        throw new Error(
+            `Payment capture failed: ${capturePaymentResponse.status} ${capturePaymentResponse.statusText}`,
+        );
+    }
+
+    const responseText = await capturePaymentResponse.text();
+    return responseText;
+};
+
 export const checkPaymentStatus = async (
     orderId: string,
     currentActionState: FormActionState,
@@ -121,6 +236,14 @@ export const checkPaymentStatus = async (
         return newActionState;
     }
     const order = orderResult.result[0];
+
+    if (order.status === OrderStatus.completed) {
+        newActionState.status = 200;
+        newActionState.result = "";
+        newActionState.errorMsg = "Order completed";
+        return newActionState;
+    }
+
     const paymentRequestId = order.paymentRequestId;
 
     if (!paymentRequestId) {
@@ -130,15 +253,8 @@ export const checkPaymentStatus = async (
         return newActionState;
     }
 
-    const paymentStatusResponse = await fetch(
+    const paymentStatusResponse = await makeSwedbankApiRequest(
         `https://api.externalintegration.payex.com${paymentRequestId}?$expand=paid`,
-        {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json;version=3.1",
-                Authorization: `Bearer ${process.env.SWEDBANK_PAY_ACCESS_TOKEN}`,
-            },
-        },
     );
     if (!paymentStatusResponse.ok) {
         newActionState.status = paymentStatusResponse.status;
@@ -150,5 +266,43 @@ export const checkPaymentStatus = async (
     const paymentStatus = paymentStatusData.paymentOrder.status;
     const newOrderStatus = getNewOrderStatus(paymentStatus);
 
-    return await updateOrderStatus(orderId, defaultFormActionState, newOrderStatus);
+    const updateOrderStatusResult = await updateOrderStatus(
+        orderId,
+        defaultFormActionState,
+        newOrderStatus,
+    );
+
+    // Initialize completeOrderResult with the status update result
+    let completeOrderResult = { ...updateOrderStatusResult };
+
+    // If the order was successfully updated to paid status, handle payment capture if needed
+    if (updateOrderStatusResult.status === 200 && newOrderStatus === OrderStatus.paid) {
+        const updatedOrder = await getOrderById(defaultDatagridActionState, orderId);
+
+        if (updatedOrder.status === 200 && updatedOrder.result && updatedOrder.result.length > 0) {
+            const currentOrder = updatedOrder.result[0];
+
+            // Handle payment capture for authorization transactions
+            if (
+                paymentStatusData.paymentOrder.paid.transactionType ===
+                TransactionType.Authorization
+            ) {
+                try {
+                    await capturePaymentFunds(order);
+                } catch {
+                    // Don't throw the error here - the payment was successful, capture can be retried later
+                    // The order processing will continue normally
+                }
+            }
+            if (currentOrder.status === OrderStatus.shipped) {
+                completeOrderResult = await updateOrderStatus(
+                    orderId,
+                    defaultFormActionState,
+                    OrderStatus.completed,
+                );
+            }
+        }
+    }
+
+    return completeOrderResult;
 };

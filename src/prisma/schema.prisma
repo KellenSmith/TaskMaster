@@ -185,8 +185,10 @@ model Ticket {
 enum OrderStatus {
     pending
     paid
+    shipped
     completed
     cancelled
+    error
 }
 
 model Order {
@@ -194,8 +196,9 @@ model Order {
     createdAt        DateTime    @default(now())
     updatedAt        DateTime    @updatedAt
     status           OrderStatus @default(pending)
-    totalAmount      Float       @default(0.0)
+    totalAmount      Float       @default(0.0) // Total amount in the smallest currency unit (e.g., öre)
     paymentRequestId String?     @unique
+    payeeRef         String?     @unique // Reference to the payment provider's transaction
 
     user   User   @relation(fields: [userId], references: [id])
     userId String
