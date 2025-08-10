@@ -30,7 +30,7 @@ import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
-import { centsToWholeCurrency, wholeCurrencyToCents, parseUserCurrencyInput } from "../../lib/currency-utils";
+import { centsToWholeCurrency, parseUserCurrencyInput } from "../../lib/currency-utils";
 
 export interface FormActionState {
     status: number;

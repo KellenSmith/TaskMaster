@@ -32,6 +32,7 @@ import { isUserHost, membershipExpiresAt } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
 import { apiEndpoints, getDummyId } from "../../../../ui/utils";
 import { addEventParticipant } from "../../../../lib/event-actions";
+import { formatCurrency } from "../../../../lib/currency-utils";
 
 const testTaskOptions = [
     {
@@ -453,7 +454,7 @@ const TaskMenu = ({
                                             : `Thanks for helping out!`}
                                     </Typography>
                                     <Button onClick={openTicketDialog}>
-                                        {"buy ticket: " + getReducedTicketPrice() + " SEK"}
+                                        {"buy ticket: " + formatCurrency(getReducedTicketPrice())}
                                     </Button>
                                 </>
                             )}
