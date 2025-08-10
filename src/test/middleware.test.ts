@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import middleware, { config } from "../middleware";
 import { NextRequest } from "next/server";
-import { NextURL } from "next/dist/server/web/next-url";
 import GlobalConstants from "../app/GlobalConstants";
 import dayjs from "dayjs";
 
