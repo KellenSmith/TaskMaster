@@ -13,9 +13,10 @@ import {
 import { FC, useCallback, useEffect, useState } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/mail-service";
-import Form, { FormActionState } from "../../ui/form/Form";
+import Form from "../../ui/form/Form";
 import { Prisma } from "@prisma/client";
 import { ExpandMore } from "@mui/icons-material";
+import { FormActionState } from "../../lib/definitions";
 
 const sendToOptions = {
     ALL: "All",

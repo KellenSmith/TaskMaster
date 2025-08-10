@@ -19,8 +19,44 @@ export type MockPrisma = {
     event: {
         findMany: any;
     };
+    product: {
+        findUniqueOrThrow: any;
+        findMany: any;
+        create: any;
+        update: any;
+        delete: any;
+        count: any;
+    };
+    textContent: {
+        create: any;
+        findUnique: any;
+        update: any;
+        delete: any;
+    };
+    order: {
+        findUniqueOrThrow: any;
+        findMany: any;
+        create: any;
+        update: any;
+        delete: any;
+    };
+    orderItem: {
+        create: any;
+        findMany: any;
+        update: any;
+        delete: any;
+    };
+    $transaction: any;
+};
+
+export type MockOrderStatus = {
+    paid: string;
+    pending: string;
+    cancelled: string;
+    completed: string;
 };
 
 export type TestContext = {
     prisma: DeepMockProxy<MockPrisma>;
+    OrderStatus: DeepMockProxy<MockOrderStatus>;
 };

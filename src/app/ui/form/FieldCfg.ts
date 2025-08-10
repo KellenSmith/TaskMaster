@@ -50,6 +50,7 @@ export const FieldLabels = {
     [GlobalConstants.ASSIGNEE]: "Assignee",
     [GlobalConstants.ASSIGNEE_ID]: "Assignee",
     [GlobalConstants.REPORTER]: "Reporter",
+    [GlobalConstants.REPORTER_ID]: "Reporter",
     [GlobalConstants.PHASE]: "Phase",
     [GlobalConstants.TAGS]: "Tags",
     [GlobalConstants.PHASE]: "Phase",
@@ -65,6 +66,12 @@ export const FieldLabels = {
     [GlobalConstants.SENDOUT]: "Sendout",
     [GlobalConstants.SUBJECT]: "Subject",
     [GlobalConstants.CONTENT]: "Content",
+    // Product
+    [GlobalConstants.PRODUCT]: "Product",
+    [GlobalConstants.PRICE]: "Price",
+    [GlobalConstants.STOCK]: "Stock",
+    [GlobalConstants.UNLIMITED_STOCK]: "Unlimited Stock",
+    [GlobalConstants.IMAGE_URL]: "Image URL",
 };
 
 export const RenderedFields = {
@@ -100,13 +107,27 @@ export const RenderedFields = {
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
         GlobalConstants.PHASE,
+        GlobalConstants.ASSIGNEE_ID,
+        GlobalConstants.REPORTER_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.DESCRIPTION,
         GlobalConstants.TAGS,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
+    [GlobalConstants.PRODUCT]: [
+        GlobalConstants.NAME,
+        GlobalConstants.PRICE,
+        GlobalConstants.STOCK,
+        GlobalConstants.UNLIMITED_STOCK,
+        GlobalConstants.IMAGE_URL,
+        GlobalConstants.DESCRIPTION,
+    ],
 };
+RenderedFields[GlobalConstants.MEMBERSHIP] = [
+    ...RenderedFields[GlobalConstants.PRODUCT],
+    GlobalConstants.DURATION,
+];
 // Apply
 RenderedFields[GlobalConstants.APPLY] = [
     ...RenderedFields[GlobalConstants.PROFILE],
@@ -145,8 +166,9 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TASK]: [GlobalConstants.NAME],
+    [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REPORTER],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
+    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.STOCK],
 };
 // Apply
 RequiredFields[GlobalConstants.APPLY] = [
@@ -157,6 +179,10 @@ RequiredFields[GlobalConstants.APPLY] = [
 RequiredFields[GlobalConstants.USER] = [
     ...RequiredFields[GlobalConstants.PROFILE],
     GlobalConstants.ROLE,
+];
+RequiredFields[GlobalConstants.MEMBERSHIP] = [
+    ...RequiredFields[GlobalConstants.PRODUCT],
+    GlobalConstants.DURATION,
 ];
 
 export const passwordFields = [
@@ -181,6 +207,16 @@ export const selectFieldOptions = {
         GlobalConstants.DONE,
     ],
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
+    [GlobalConstants.ASSIGNEE_ID]: ["Custom"],
+    [GlobalConstants.REPORTER_ID]: ["Custom"],
+};
+
+export const formatAssigneeOptions = (activeMembers: any[]) => {
+    if (!activeMembers || activeMembers.length < 1) return [];
+    return activeMembers.map((member) => ({
+        value: member[GlobalConstants.ID],
+        label: member[GlobalConstants.NICKNAME],
+    }));
 };
 
 export const allowSelectMultiple = [GlobalConstants.TAGS];
@@ -203,4 +239,5 @@ export const richTextFields = [
 export const checkboxFields = [
     GlobalConstants.CONSENT_TO_NEWSLETTERS,
     GlobalConstants.CONSENT_GDPR,
+    GlobalConstants.UNLIMITED_STOCK,
 ];

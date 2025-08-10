@@ -2,10 +2,12 @@ import { Button, Card, Dialog, Stack, Typography } from "@mui/material";
 import { formatDate } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
 import { assignTasksToUser, deleteTask, updateTaskById } from "../../lib/task-actions";
-import Form, { defaultActionState } from "../form/Form";
+import Form from "../form/Form";
 import { startTransition, useState } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
+import { formatAssigneeOptions } from "../form/FieldCfg";
+import { defaultFormActionState } from "../../lib/definitions";
 
 const DraggableTask = ({
     task,
@@ -14,6 +16,7 @@ const DraggableTask = ({
     readOnly,
     taskActionState,
     setTaskActionState,
+    activeMembers,
 }) => {
     const { user } = useUserContext();
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,10 +42,16 @@ const DraggableTask = ({
         const assignTasksResult = await assignTasksToUser(
             user[GlobalConstants.ID],
             [task[GlobalConstants.ID]],
-            defaultActionState,
+            defaultFormActionState,
         );
         startTransition(() => fetchDbTasks());
         setTaskActionState(assignTasksResult);
+    };
+
+    const getTaskDefaultValues = () => {
+        const defaultValues = { ...task };
+
+        return defaultValues;
     };
 
     return (
@@ -73,7 +82,12 @@ const DraggableTask = ({
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    defaultValues={task}
+                    defaultValues={getTaskDefaultValues()}
+                    customOptions={Object.fromEntries(
+                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
+                            (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
+                        ),
+                    )}
                     action={updateViewTask}
                     buttonLabel="save task"
                     readOnly={true}

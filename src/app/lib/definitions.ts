@@ -5,13 +5,21 @@ import dayjs from "dayjs";
 // Convention: "path"=`/${route}`
 
 export const routes = {
-    [GlobalConstants.ADMIN]: [GlobalConstants.MEMBERS, GlobalConstants.SENDOUT],
+    [GlobalConstants.ADMIN]: [
+        GlobalConstants.MEMBERS,
+        GlobalConstants.MEMBERSHIP,
+        GlobalConstants.SENDOUT,
+        GlobalConstants.PRODUCTS,
+        GlobalConstants.ORDERS,
+    ],
     [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         GlobalConstants.RESET,
         GlobalConstants.APPLY,
+        GlobalConstants.CONTACT,
+        GlobalConstants.ORDER,
     ],
 };
 
@@ -64,3 +72,27 @@ export interface UpdateCredentialsSchema {
     newPassword: string;
     repeatPassword: string;
 }
+
+export interface FormActionState {
+    status: number;
+    errorMsg: string;
+    result: string;
+}
+
+export const defaultFormActionState: FormActionState = {
+    status: 200,
+    errorMsg: "",
+    result: "",
+};
+
+export interface DatagridActionState {
+    status: number;
+    errorMsg: string;
+    result: any[];
+}
+
+export const defaultDatagridActionState: DatagridActionState = {
+    status: 200,
+    errorMsg: "",
+    result: [],
+};

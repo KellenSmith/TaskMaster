@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "ReserveInEvent" ADD COLUMN     "queueingSince" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

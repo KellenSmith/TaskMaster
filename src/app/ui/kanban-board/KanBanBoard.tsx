@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { startTransition, useEffect, useState } from "react";
 import {
     Accordion,
     AccordionSummary,
@@ -15,22 +15,33 @@ import {
     Switch,
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { defaultActionState, getFormActionMsg } from "../form/Form";
+import { getFormActionMsg } from "../form/Form";
 import DroppableColumn from "./DroppableColumn";
 import { FieldLabels, selectFieldOptions } from "../form/FieldCfg";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
+import { getActiveMembers } from "../../lib/user-actions";
+import { defaultDatagridActionState, defaultFormActionState } from "../../lib/definitions";
 
 const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
     const { user } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
-    const [taskActionState, setTaskActionState] = useState(defaultActionState);
+    const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
+    const [activeMembers, setActiveMembers] = useState<string[]>(null);
+
+    useEffect(() => {
+        startTransition(async () => {
+            const result = await getActiveMembers(defaultDatagridActionState);
+            setActiveMembers(result.result);
+        });
+    }, []);
 
     const getUniqueFilterOptions = (filterId) => {
         if (filterId === GlobalConstants.ASSIGNEE_ID) return [user[GlobalConstants.ID], null];
+        if (filterId === GlobalConstants.REPORTER_ID) return [user[GlobalConstants.ID]];
         const existingFilterOptions = [];
         for (let task of tasks) {
             if (Array.isArray(task[filterId]))
@@ -45,9 +56,12 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
 
     const [filters, setFilters] = useState(
         Object.fromEntries(
-            [GlobalConstants.ASSIGNEE_ID, GlobalConstants.PHASE, GlobalConstants.TAGS].map(
-                (filterId) => [filterId, []],
-            ),
+            [
+                GlobalConstants.ASSIGNEE_ID,
+                GlobalConstants.REPORTER_ID,
+                GlobalConstants.PHASE,
+                GlobalConstants.TAGS,
+            ].map((filterId) => [filterId, []]),
         ),
     );
 
@@ -64,8 +78,10 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
     const getFilterOptionLabel = (filterId, filterOption) => {
         if (filterId === GlobalConstants.ASSIGNEE_ID) {
             if (filterOption === null) return "Unassigned";
-            return "My tasks";
+            return "Assigned to me";
         }
+        if (filterId === GlobalConstants.REPORTER_ID) return "Reports to me";
+
         return FieldLabels[filterOption] || filterOption;
     };
 
@@ -146,6 +162,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
                                 setDraggedTask={setDraggedTask}
                                 draggedOverColumn={draggedOverColumn}
                                 setDraggedOverColumn={setDraggedOverColumn}
+                                activeMembers={activeMembers}
                             />
                         </Grid2>
                     ))}

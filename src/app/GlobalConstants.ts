@@ -16,6 +16,8 @@ const GlobalConstants = {
     CREATE: "create",
     CALENDAR: "calendar",
     SENDOUT: "sendout",
+    PRODUCTS: "products",
+    ORDERS: "orders",
     // DB
     ID: "id",
     NAME: "name",
@@ -71,26 +73,47 @@ const GlobalConstants = {
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueingSince",
+    // Product
+    PRODUCT: "product",
+    PRICE: "price",
+    STOCK: "stock",
+    UNLIMITED_STOCK: "unlimitedStock",
+    IMAGE_URL: "imageUrl",
+    MEMBERSHIP_PRODUCT_NAME: "Membership",
+    // Membership
+    MEMBERSHIP: "membership",
+    DURATION: "duration",
+    // Order
+    ORDER: "order",
+    ORDER_ID: "orderId",
+    TOTAL_AMOUNT: "totalAmount",
+    ORDER_ITEMS: "orderItems",
     // Task
     TASK: "task",
     TASK_ID: "taskId",
-    ASSIGNEE: "assignee",
+    ASSIGNEE: "Assignee",
     ASSIGNEE_ID: "assigneeId",
-    REPORTER: "reporter",
+    REPORTER: "Reporter",
     REPORTER_ID: "reporterId",
     TAGS: "tags",
     PHASE: "phase",
     BEFORE: "before",
     DURING: "during",
     AFTER: "after",
-    TO_DO: "to do",
-    IN_PROGRESS: "in progress",
-    IN_REVIEW: "in review",
+    TO_DO: "toDo",
+    IN_PROGRESS: "inProgress",
+    IN_REVIEW: "inReview",
     DONE: "done",
     // Sendout
     SUBJECT: "subject",
     CONTENT: "content",
     RECIPIENT_CRITERIA: "recipientCriteria",
+    // TextContent
+    LANGUAGE: "language",
+    ENGLISH: "english",
+    CATEGORY: "category",
+    ABOUT: "about",
+    CONTACT: "contact",
 };
 
 export default GlobalConstants;

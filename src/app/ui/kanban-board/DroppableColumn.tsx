@@ -11,20 +11,21 @@ import {
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
-import Form, { defaultActionState, FormActionState } from "../form/Form";
+import Form from "../form/Form";
 import { startTransition, useState } from "react";
 import {
     getEarliestStartTime,
     getLatestEndTime,
     getSortedTaskComps,
     sortTasks,
-} from "../../(pages)/calendar/[event-id]/event-utils";
+} from "../../(pages)/calendar/event/event-utils";
 import DraggableTask from "./DraggableTask";
 import { Add, ExpandMore } from "@mui/icons-material";
 import { formatDate } from "../utils";
 import { FieldLabels } from "../form/FieldCfg";
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
+import { defaultFormActionState, FormActionState } from "../../lib/definitions";
 
 const DroppableColumn = ({
     event = null,
@@ -38,6 +39,7 @@ const DroppableColumn = ({
     setDraggedTask,
     draggedOverColumn,
     setDraggedOverColumn,
+    activeMembers,
 }) => {
     const theme = useTheme();
     const [addTask, setAddTask] = useState(null);
@@ -45,7 +47,7 @@ const DroppableColumn = ({
     const updateTaskStatus = async (task, status) => {
         const updateTaskResult = await updateTaskById(
             task[GlobalConstants.ID],
-            defaultActionState,
+            defaultFormActionState,
             { [GlobalConstants.STATUS]: status },
         );
         startTransition(() => fetchDbTasks());
@@ -71,6 +73,7 @@ const DroppableColumn = ({
                     readOnly={readOnly}
                     taskActionState={taskActionState}
                     setTaskActionState={setTaskActionState}
+                    activeMembers={activeMembers}
                 />
             );
         return (
@@ -100,6 +103,7 @@ const DroppableColumn = ({
                                 readOnly={readOnly}
                                 taskActionState={taskActionState}
                                 setTaskActionState={setTaskActionState}
+                                activeMembers={activeMembers}
                             />
                         ))}
                         {!readOnly && (

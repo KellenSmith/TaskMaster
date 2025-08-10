@@ -3,6 +3,6 @@ export const SwishConstants = {
     PAID: "PAID",
     EXPIRED: "EXPIRED",
     ERROR: "ERROR",
-    CALLBACK_URL: `${process.env.NEXT_PUBLIC_API_URL}/api/swish`,
+    CALLBACK_URL: `${process.env.VERCEL_URL}/api/swish`,
     AMOUNT: "amount",
 };

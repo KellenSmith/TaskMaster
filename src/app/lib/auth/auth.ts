@@ -7,8 +7,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
-import { FormActionState } from "../../ui/form/Form";
-import { LoginSchema } from "../definitions";
+import { FormActionState, LoginSchema } from "../definitions";
 
 // Generate a random string of specified length
 export const generateSalt = async (): Promise<string> => {
@@ -132,13 +131,13 @@ export const getUserByUniqueKey = async (
     return loggedInUser;
 };
 
-export const decryptJWT = async (): Promise<JWTPayload> | undefined => {
+export const decryptJWT = async (): Promise<JWTPayload | null> => {
     try {
         const cookieStore = await cookies();
         const cookie = cookieStore.get(GlobalConstants.USER_CREDENTIALS)?.value;
         const result = await jwtVerify(cookie, getEncryptionKey(), {
             algorithms: ["HS256"],
-        });
+        }); // If this fails, check that AUTH_SECRET exists in .env
         const jwtPayload = result?.payload;
         return jwtPayload;
     } catch {

@@ -8,9 +8,10 @@ import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
-import { defaultActionState, FormActionState } from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
+import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
+import { defaultFormActionState, FormActionState } from "../definitions";
 
 interface EmailPayload {
     from: string;
@@ -75,7 +76,7 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
  * @throws Error if email fails
  */
 export const informOfCancelledEvent = async (eventId: string): Promise<string[]> => {
-    const newActionState: FormActionState = { ...defaultActionState };
+    const newActionState: FormActionState = { ...defaultFormActionState };
     try {
         const participantEmails = (
             await prisma.participantInEvent.findMany({
@@ -163,4 +164,52 @@ export const sendMassEmail = async (
         newActionState.result = "";
     }
     return newActionState;
+};
+
+/**
+ * @throws Error if email fails
+ */
+export const sendOrderConfirmation = async (orderId: string): Promise<string> => {
+    try {
+        // Fetch order details with items, products, and user email
+        const orderDetails = await prisma.order.findUniqueOrThrow({
+            where: { id: orderId },
+            include: {
+                user: {
+                    select: {
+                        email: true,
+                    },
+                },
+                orderItems: {
+                    include: {
+                        product: {
+                            select: {
+                                name: true,
+                                description: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const mailContent = createElement(OrderConfirmationTemplate, {
+            orderId: orderDetails.id,
+            orderItems: orderDetails.orderItems,
+            totalAmount: orderDetails.totalAmount,
+        });
+
+        const mailResponse = await mailTransport.sendMail(
+            await getEmailPayload(
+                [orderDetails.user.email],
+                `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+                mailContent,
+            ),
+        );
+
+        if (mailResponse.error) throw new Error(mailResponse.error.message);
+        return mailResponse;
+    } catch (error) {
+        console.error(`Failed to send order confirmation email for order ${orderId}: `, error);
+    }
 };

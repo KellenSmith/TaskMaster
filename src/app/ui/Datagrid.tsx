@@ -6,25 +6,15 @@ import React, { useEffect, useMemo, useState, startTransition } from "react";
 import { datePickerFields, FieldLabels } from "./form/FieldCfg";
 import { usePathname, useRouter } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
-import Form, {
-    FormActionState,
-    defaultActionState as defaultFormActionState,
-    getFormActionMsg,
-} from "./form/Form";
+import Form, { getFormActionMsg } from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
 import { navigateToRoute } from "./utils";
-
-export interface DatagridActionState {
-    status: number;
-    errorMsg: string;
-    result: any[];
-}
-
-export const defaultActionState: DatagridActionState = {
-    status: 200,
-    errorMsg: "",
-    result: [],
-};
+import {
+    DatagridActionState,
+    FormActionState,
+    defaultDatagridActionState,
+    defaultFormActionState,
+} from "../lib/definitions";
 
 export interface RowActionProps {
     name: string;
@@ -39,7 +29,7 @@ export interface RowActionProps {
 interface DatagridProps {
     name: string;
     fetchData: (currentActionState: DatagridActionState) => Promise<DatagridActionState>; // eslint-disable-line no-unused-vars
-    updateAction: (
+    updateAction?: (
         userId: string, // eslint-disable-line no-unused-vars
         currentActionState: FormActionState, // eslint-disable-line no-unused-vars
         fieldValues: any, // eslint-disable-line no-unused-vars
@@ -54,14 +44,15 @@ const Datagrid: React.FC<DatagridProps> = ({
     fetchData,
     updateAction,
     rowActions,
-    customColumns,
-    hiddenColumns,
+    customColumns = [],
+    hiddenColumns = [],
 }) => {
     const apiRef = useGridApiRef();
     const pathname = usePathname();
     const [clickedRow, setClickedRow] = useState(null);
-    const [fetchedDataState, setFetchedDataState] =
-        useState<DatagridActionState>(defaultActionState);
+    const [fetchedDataState, setFetchedDataState] = useState<DatagridActionState>(
+        defaultDatagridActionState,
+    );
     const [dialogActionState, setDialogActionState] = useState(defaultFormActionState);
     const router = useRouter();
 
@@ -172,6 +163,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                     buttonLabel="save"
                     action={updateRow}
                     defaultValues={clickedRow}
+                    readOnly={!updateAction}
                 />
                 {getFormActionMsg(dialogActionState)}
                 {!!rowActions &&

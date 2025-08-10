@@ -1,21 +1,25 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { EventStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "../ui/form/Form";
-import { DatagridActionState } from "../ui/Datagrid";
 import { createEventSchema } from "./zod-schemas";
-import GlobalConstants from "../GlobalConstants";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
+import { getLoggedInUser } from "./user-actions";
+import GlobalConstants from "../GlobalConstants";
+import { DatagridActionState, FormActionState } from "./definitions";
 
 export const createEvent = async (
-    hostId: string,
     currentActionState: FormActionState,
     fieldValues: Prisma.EventCreateInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
 
     try {
+        const loggedInUserResult = await getLoggedInUser(currentActionState);
+        if (loggedInUserResult.status !== 200) {
+            throw new Error("You must be logged in to create an event");
+        }
+        const loggedInUserId = JSON.parse(loggedInUserResult.result)[GlobalConstants.ID];
         const parsedFieldValues = createEventSchema.parse(fieldValues) as Prisma.EventCreateInput;
 
         const createdEvent = await prisma.event.create({
@@ -23,15 +27,38 @@ export const createEvent = async (
                 ...parsedFieldValues,
                 host: {
                     connect: {
-                        id: hostId,
+                        id: loggedInUserId,
+                    },
+                },
+                tickets: {
+                    create: {
+                        Product: {
+                            create: {
+                                name: `Ticket for ${parsedFieldValues.title}`,
+                                description: "Admittance for one person",
+                                price: 0,
+                                unlimitedStock: true,
+                            },
+                        },
+                    },
+                },
+            },
+            include: {
+                tickets: {
+                    select: {
+                        id: true,
                     },
                 },
             },
         });
+        if (!createdEvent.tickets || createdEvent.tickets.length === 0) {
+            throw new Error("Failed to create event ticket");
+        }
         await prisma.participantInEvent.create({
             data: {
-                userId: hostId,
+                userId: loggedInUserId,
                 eventId: createdEvent.id,
+                ticketId: createdEvent.tickets[0].id,
             },
         });
         newActionState.errorMsg = "";
@@ -85,7 +112,6 @@ export const getEventById = async (
                             select: {
                                 id: true,
                                 nickname: true,
-                                email: true,
                             },
                         },
                     },
@@ -144,7 +170,7 @@ export const cancelEvent = async (
     try {
         await prisma.event.update({
             where: { id: eventId },
-            data: { status: GlobalConstants.CANCELLED },
+            data: { status: EventStatus.cancelled } as Prisma.EventUpdateInput,
         });
         await informOfCancelledEvent(eventId);
         newActionState.errorMsg = "";
@@ -184,35 +210,6 @@ export const deleteEvent = async (eventId: string, currentActionState: FormActio
     return newActionState;
 };
 
-export const addEventParticipant = async (
-    userId: string,
-    eventId: string,
-    currentActionState: FormActionState,
-) => {
-    const newActionState = { ...currentActionState };
-
-    try {
-        await prisma.participantInEvent.create({
-            data: {
-                userId: userId,
-                eventId: eventId,
-            },
-            include: {
-                Event: true,
-                User: true,
-            },
-        });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `See you there!`;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
 export const addEventReserve = async (
     userId: string,
     eventId: string,
@@ -225,10 +222,6 @@ export const addEventReserve = async (
             data: {
                 userId: userId,
                 eventId: eventId,
-            },
-            include: {
-                Event: true,
-                User: true,
             },
         });
         newActionState.errorMsg = "";
