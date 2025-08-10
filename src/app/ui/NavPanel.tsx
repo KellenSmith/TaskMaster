@@ -36,6 +36,7 @@ const NavPanel = () => {
                                 GlobalConstants.LOGIN,
                                 GlobalConstants.RESET,
                                 GlobalConstants.APPLY,
+                                GlobalConstants.ORDER,
                             ].includes(route),
                     ),
                 )

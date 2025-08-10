@@ -6,20 +6,22 @@ import dayjs from "dayjs";
 
 export const routes = {
     [GlobalConstants.ADMIN]: [
-        GlobalConstants.MEMBERS,
-        GlobalConstants.MEMBERSHIP,
         GlobalConstants.SENDOUT,
+        GlobalConstants.MEMBERS,
         GlobalConstants.PRODUCTS,
         GlobalConstants.ORDERS,
     ],
-    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
+    [GlobalConstants.PRIVATE]: [
+        GlobalConstants.PROFILE,
+        GlobalConstants.CALENDAR,
+        GlobalConstants.ORDER,
+    ],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         GlobalConstants.RESET,
         GlobalConstants.APPLY,
         GlobalConstants.CONTACT,
-        GlobalConstants.ORDER,
     ],
 };
 
