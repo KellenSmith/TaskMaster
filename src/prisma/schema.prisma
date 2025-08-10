@@ -185,8 +185,10 @@ model Ticket {
 enum OrderStatus {
     pending
     paid
+    shipped
     completed
     cancelled
+    error
 }
 
 model Order {

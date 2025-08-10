@@ -46,8 +46,6 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
     const payeeRef = generatePayeeReference(orderId, "PAY");
 
-    console.log(`Generated payeeReference for order ${orderId}: ${payeeRef}`);
-
     // Check if this payeeRef is already used by another order
     const existingOrder = await prisma.order.findFirst({
         where: {
@@ -57,12 +55,8 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     });
 
     if (existingOrder) {
-        console.error(
-            `DUPLICATE PAYEE REFERENCE DETECTED! ${payeeRef} is already used by order ${existingOrder.id}`,
-        );
         // Generate a new one with additional entropy
         const fallbackPayeeRef = `${payeeRef}${Math.random().toString(36).substring(2, 5)}`;
-        console.log(`Using fallback payeeReference: ${fallbackPayeeRef}`);
         const finalPayeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
 
         try {
@@ -70,9 +64,6 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 where: { id: orderId },
                 data: { payeeRef: finalPayeeRef },
             });
-            console.log(
-                `Successfully stored fallback payeeReference ${finalPayeeRef} for order ${orderId}`,
-            );
 
             return {
                 // ...existing payment order structure with finalPayeeRef
@@ -112,9 +103,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             where: { id: orderId },
             data: { payeeRef },
         });
-        console.log(`Successfully stored payeeReference ${payeeRef} for order ${orderId}`);
     } catch (error) {
-        console.error(`Failed to store payeeReference for order ${orderId}:`, error);
         throw new Error("Failed to update order with payee reference: " + error.message);
     }
 
@@ -200,12 +189,6 @@ export const getPaymentRedirectUrl = async (
 export const capturePaymentFunds = async (order: Order) => {
     // Use the same payeeReference that was used for the original authorization
     // This maintains the connection between authorization and capture operations
-    console.log(`Order details for capture:`, {
-        orderId: order.id,
-        payeeRef: order.payeeRef,
-        paymentRequestId: order.paymentRequestId,
-        status: order.status,
-    });
 
     if (!order.payeeRef) {
         console.error(
@@ -217,10 +200,6 @@ export const capturePaymentFunds = async (order: Order) => {
     // Create a unique capture reference by appending "CAPTURE" to the original payeeRef
     // This ensures each capture attempt has a unique reference while maintaining traceability
     const capturePayeeRef = `${order.payeeRef}CAP`.substring(0, 30);
-
-    console.log(
-        `Attempting to capture payment for order ${order.id} with capture payeeReference: ${capturePayeeRef} (original: ${order.payeeRef})`,
-    );
 
     const capturePaymentResponse = await makeSwedbankApiRequest(
         `https://api.externalintegration.payex.com${order.paymentRequestId}/captures`,
@@ -256,7 +235,6 @@ export const capturePaymentFunds = async (order: Order) => {
     }
 
     const responseText = await capturePaymentResponse.text();
-    console.log(`Successfully captured payment for order ${order.id}:`, responseText);
     return responseText;
 };
 
@@ -273,6 +251,14 @@ export const checkPaymentStatus = async (
         return newActionState;
     }
     const order = orderResult.result[0];
+
+    if (order.status === OrderStatus.completed) {
+        newActionState.status = 200;
+        newActionState.result = "";
+        newActionState.errorMsg = "Order completed";
+        return newActionState;
+    }
+
     const paymentRequestId = order.paymentRequestId;
 
     if (!paymentRequestId) {
@@ -301,58 +287,38 @@ export const checkPaymentStatus = async (
         newOrderStatus,
     );
 
-    if (
-        paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization &&
-        newOrderStatus === OrderStatus.paid &&
-        updateOrderStatusResult.status === 200
-    ) {
-        // Capture payment funds immediately while order is in 'paid' status
-        // The updateOrderStatus function will process the order and update it to 'completed'
-        try {
-            console.log(
-                `Order ${orderId} is paid and needs capture. Current status after update: ${newOrderStatus}`,
-            );
-            await capturePaymentFunds(order);
-            console.log(`Successfully captured payment for order ${orderId}`);
-        } catch (error) {
-            console.error(`Failed to capture payment for order ${orderId}:`, error);
-            // Don't throw the error here - the payment was successful, capture can be retried later
-            // The order processing in updateOrderStatus will continue normally
+    // Initialize completeOrderResult with the status update result
+    let completeOrderResult = { ...updateOrderStatusResult };
+
+    // If the order was successfully updated to paid status, handle payment capture if needed
+    if (updateOrderStatusResult.status === 200 && newOrderStatus === OrderStatus.paid) {
+        const updatedOrder = await getOrderById(defaultDatagridActionState, orderId);
+
+        if (updatedOrder.status === 200 && updatedOrder.result && updatedOrder.result.length > 0) {
+            const currentOrder = updatedOrder.result[0];
+
+            // Handle payment capture for authorization transactions
+            if (
+                paymentStatusData.paymentOrder.paid.transactionType ===
+                TransactionType.Authorization
+            ) {
+                try {
+                    await capturePaymentFunds(order);
+                } catch (error) {
+                    console.error(`Failed to capture payment for order ${orderId}:`, error);
+                    // Don't throw the error here - the payment was successful, capture can be retried later
+                    // The order processing will continue normally
+                }
+            }
+            if (currentOrder.status === OrderStatus.shipped) {
+                completeOrderResult = await updateOrderStatus(
+                    orderId,
+                    defaultFormActionState,
+                    OrderStatus.completed,
+                );
+            }
         }
     }
 
-    return updateOrderStatusResult;
-};
-
-// Debugging function to check for duplicate payeeReference values
-export const checkForDuplicatePayeeReferences = async () => {
-    const duplicates = await prisma.order.groupBy({
-        by: ["payeeRef"],
-        having: {
-            payeeRef: {
-                _count: {
-                    gt: 1,
-                },
-            },
-        },
-        _count: {
-            payeeRef: true,
-        },
-    });
-
-    if (duplicates.length > 0) {
-        console.error("DUPLICATE PAYEE REFERENCES FOUND:", duplicates);
-
-        for (const duplicate of duplicates) {
-            const orders = await prisma.order.findMany({
-                where: { payeeRef: duplicate.payeeRef },
-                select: { id: true, payeeRef: true, createdAt: true, status: true },
-            });
-            console.error(`PayeeRef ${duplicate.payeeRef} is used by orders:`, orders);
-        }
-    } else {
-        console.log("No duplicate payeeReference values found");
-    }
-
-    return duplicates;
+    return completeOrderResult;
 };

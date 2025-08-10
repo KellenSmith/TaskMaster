@@ -260,7 +260,6 @@ export const processOrderedProduct = async (
                     },
                 });
             } catch (error) {
-                console.log(error.message);
                 failedProducts.push(
                     `Failed to create participant for user ${userId} in event ${product.Ticket.eventId}: ${error.message}`,
                 );
