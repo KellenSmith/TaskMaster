@@ -32,7 +32,7 @@ const NavPanel = () => {
     };
 
     const openReadme = () => {
-        window.open("/README.pdf", "_blank");
+        window.open("/api/readme-pdf", "_blank");
     };
 
     const getLinkGroup = (privacyStatus: string) => {
