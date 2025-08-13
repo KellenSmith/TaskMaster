@@ -39,7 +39,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     const userAgent = headersList.get("user-agent") || "Unknown";
 
     // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
-    const payeeRef = generatePayeeReference(orderId, "PAY");
+    let payeeRef = generatePayeeReference(orderId, "PAY");
 
     // Check if this payeeRef is already used by another order
     const existingOrder = await prisma.order.findFirst({
@@ -52,43 +52,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     if (existingOrder) {
         // Generate a new one with additional entropy
         const fallbackPayeeRef = `${payeeRef}${Math.random().toString(36).substring(2, 5)}`;
-        const finalPayeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
-
-        try {
-            await prisma.order.update({
-                where: { id: orderId },
-                data: { payeeRef: finalPayeeRef },
-            });
-
-            return {
-                // ...existing payment order structure with finalPayeeRef
-                paymentorder: {
-                    operation: "Purchase",
-                    currency: "SEK",
-                    amount: order.totalAmount * 100,
-                    vatAmount: 0,
-                    description: `Purchase`,
-                    userAgent,
-                    language: "en-US",
-                    urls: {
-                        hostUrls: [`${process.env.VERCEL_URL}`],
-                        completeUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`,
-                        cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`,
-                        callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
-                    },
-                    payeeInfo: {
-                        payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
-                        payeeReference: finalPayeeRef,
-                        payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
-                        orderReference: orderId,
-                    },
-                },
-            };
-        } catch (error) {
-            throw new Error(
-                "Failed to update order with fallback payee reference: " + error.message,
-            );
-        }
+        payeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
     }
 
     try {
