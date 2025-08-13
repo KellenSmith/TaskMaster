@@ -56,11 +56,7 @@ const EventDashboard = ({ event, fetchEventAction }) => {
                 />
             )}
             {openTab === tabs.participate && (
-                <TaskDashboard
-                    readOnly={!isUserHost(user, event)}
-                    event={event}
-                    fetchEventAction={fetchEventAction}
-                />
+                <TaskDashboard readOnly={!isUserHost(user, event)} event={event} />
             )}
         </Suspense>
     );

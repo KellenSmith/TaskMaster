@@ -10,7 +10,7 @@ import GlobalConstants from "../../../../GlobalConstants";
 import { startTransition, useActionState, useEffect } from "react";
 import { Typography } from "@mui/material";
 
-const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
+const TaskDashboard = ({ event, readOnly }) => {
     const { user } = useUserContext();
 
     const fetchEventTasks = async () => {
@@ -36,7 +36,6 @@ const TaskDashboard = ({ event, readOnly, fetchEventAction }) => {
             !isUserParticipant(user, event) ? (
                 <TaskMenu
                     event={event}
-                    fetchEventAction={fetchEventAction}
                     readOnly={readOnly}
                     tasks={tasksActionState.result}
                     fetchTasksAction={fetchTasksAction}
