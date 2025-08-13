@@ -80,6 +80,9 @@ const testdata = {
         price: 99.99,
         createdAt: new Date("2024-01-01T00:00:00Z"),
         updatedAt: new Date("2024-01-01T00:00:00Z"),
+        unlimitedStock: false,
+        stock: 0,
+        imageUrl: "",
     },
 
     createProduct: {
