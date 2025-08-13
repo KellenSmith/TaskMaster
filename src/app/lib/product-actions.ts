@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, TicketType } from "@prisma/client";
+import { Prisma, Product, TicketType } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import {
     createMembershipProductSchema,
@@ -174,13 +174,13 @@ export const updateMembershipProduct = async (
 };
 
 export const deleteProduct = async (
-    productId: string,
+    product: Product,
     currentActionState: FormActionState,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
         await prisma.product.delete({
-            where: { id: productId },
+            where: { id: product.id },
         });
         newActionState.errorMsg = "";
         newActionState.status = 200;

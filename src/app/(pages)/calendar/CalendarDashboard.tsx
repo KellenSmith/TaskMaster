@@ -46,6 +46,7 @@ const CalendarDashboard: FC = () => {
         const createEventResult = await createEvent(currentActionState, fieldValues);
         if (createEventResult.status === 201) {
             const createdEventId = createEventResult.result;
+            createEventResult.result = "Event created successfully";
             navigateToRoute(
                 `/${GlobalConstants.CALENDAR}/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${createdEventId}`,
                 router,

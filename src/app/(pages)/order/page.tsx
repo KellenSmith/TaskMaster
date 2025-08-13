@@ -1,6 +1,6 @@
 "use client";
-import { Card, CardContent, CircularProgress } from "@mui/material";
-import React, { startTransition, useActionState, useEffect, useMemo } from "react";
+import { Card, CardContent, CircularProgress, Typography, Stack } from "@mui/material";
+import React, { useActionState, useEffect, useMemo, startTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUserContext } from "../../context/UserContext";
 import { getOrderById } from "../../lib/order-actions";
@@ -27,8 +27,16 @@ const OrderPage = () => {
 
     const getOrder = async (currentState: DatagridActionState) => {
         const getOrderResult = await getOrderById(currentState, orderId);
-        const orderUserId = getOrderProp(GlobalConstants.USER_ID);
-        if (user && user[GlobalConstants.ID] !== orderUserId) navigateToRoute("/", router);
+
+        // Check authorization using the result directly, not the state
+        if (getOrderResult.status === 200 && getOrderResult.result.length > 0) {
+            const order = getOrderResult.result[0];
+            const orderUserId = order[GlobalConstants.USER_ID];
+            if (user && user[GlobalConstants.ID] !== orderUserId) {
+                navigateToRoute("/", router);
+            }
+        }
+
         return getOrderResult;
     };
 
@@ -38,18 +46,25 @@ const OrderPage = () => {
     );
 
     useEffect(() => {
-        startTransition(() => {
-            getOrderAction();
-        });
-        // Load order when component mounts
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        // Only fetch order when user data is available and orderId exists
+        if (user && orderId) {
+            startTransition(() => {
+                getOrderAction();
+            });
+        }
+    }, [user, getOrderAction, orderId]);
 
     return (
         <Card>
             <CardContent>
                 {isOrderLoading ? (
                     <CircularProgress />
+                ) : getOrderActionState.status !== 200 || !getOrderProp() ? (
+                    <Stack alignItems="center" justifyContent="center" textAlign="center">
+                        <Typography variant="h4" component="h2" gutterBottom>
+                            Order Not Found
+                        </Typography>
+                    </Stack>
                 ) : (
                     <>
                         <OrderSummary order={getOrderProp()} />

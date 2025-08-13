@@ -36,7 +36,7 @@ export const createEvent = async (
                             create: {
                                 name: `Ticket for ${parsedFieldValues.title}`,
                                 description: "Admittance for one person",
-                                price: 0,
+                                price: parsedFieldValues.fullTicketPrice,
                                 unlimitedStock: true,
                             },
                         },

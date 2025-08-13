@@ -6,9 +6,8 @@ import dayjs from "dayjs";
 
 export const routes = {
     [GlobalConstants.ADMIN]: [
-        GlobalConstants.MEMBERS,
-        GlobalConstants.MEMBERSHIP,
         GlobalConstants.SENDOUT,
+        GlobalConstants.MEMBERS,
         GlobalConstants.PRODUCTS,
         GlobalConstants.ORDERS,
     ],
@@ -20,6 +19,7 @@ export const routes = {
         GlobalConstants.APPLY,
         GlobalConstants.CONTACT,
         GlobalConstants.ORDER,
+        "order/complete",
     ],
 };
 

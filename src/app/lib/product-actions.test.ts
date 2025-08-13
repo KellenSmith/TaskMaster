@@ -124,18 +124,18 @@ describe("Product Actions", () => {
         it("should delete product successfully", async () => {
             mockContext.prisma.product.delete.mockResolvedValue(testdata.product);
 
-            const result = await deleteProduct("1", defaultFormActionState);
+            const result = await deleteProduct(testdata.product, defaultFormActionState);
             expect(result.status).toBe(200);
             expect(result.result).toBe("Deleted successfully");
             expect(mockContext.prisma.product.delete).toHaveBeenCalledWith({
-                where: { id: "1" },
+                where: { id: "prod-1234-5678" },
             });
         });
 
         it("should handle delete product error", async () => {
             mockContext.prisma.product.delete.mockRejectedValue(new Error("Delete failed"));
 
-            const result = await deleteProduct("1", defaultFormActionState);
+            const result = await deleteProduct(testdata.product, defaultFormActionState);
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Delete failed");
         });
