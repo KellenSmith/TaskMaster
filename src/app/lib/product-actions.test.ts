@@ -10,7 +10,6 @@ import {
 } from "./product-actions";
 import testdata from "../../test/testdata";
 import { defaultDatagridActionState, defaultFormActionState } from "./definitions";
-import { Product } from "@prisma/client";
 
 beforeEach(() => {
     vi.resetAllMocks();

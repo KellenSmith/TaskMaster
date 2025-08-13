@@ -52,7 +52,7 @@ const OrderPage = () => {
                 getOrderAction();
             });
         }
-    }, [user, orderId]);
+    }, [user, getOrderAction, orderId]);
 
     return (
         <Card>
