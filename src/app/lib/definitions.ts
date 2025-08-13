@@ -11,17 +11,15 @@ export const routes = {
         GlobalConstants.PRODUCTS,
         GlobalConstants.ORDERS,
     ],
-    [GlobalConstants.PRIVATE]: [
-        GlobalConstants.PROFILE,
-        GlobalConstants.CALENDAR,
-        GlobalConstants.ORDER,
-    ],
+    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         GlobalConstants.RESET,
         GlobalConstants.APPLY,
         GlobalConstants.CONTACT,
+        GlobalConstants.ORDER,
+        "order/complete",
     ],
 };
 

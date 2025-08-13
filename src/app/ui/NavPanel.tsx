@@ -37,6 +37,7 @@ const NavPanel = () => {
                                 GlobalConstants.RESET,
                                 GlobalConstants.APPLY,
                                 GlobalConstants.ORDER,
+                                "order/complete",
                             ].includes(route),
                     ),
                 )
