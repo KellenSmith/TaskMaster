@@ -45,10 +45,12 @@ export const generateUserCredentials = async (
 };
 
 export const createSession = async (fieldValues: LoginSchema) => {
-    const loggedInUser = await getUserByUniqueKey(
-        GlobalConstants.EMAIL,
-        fieldValues.email as string,
-    );
+    const loggedInUser = await prisma.user.findUnique({
+        where: { email: fieldValues.email } as any as Prisma.UserWhereUniqueInput,
+        include: {
+            userMembership: true,
+        },
+    });
 
     await encryptJWT(loggedInUser);
 };
@@ -123,19 +125,6 @@ export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
         secure: true,
         expires: expiresAt,
     });
-};
-
-export const getUserByUniqueKey = async (
-    key: string,
-    value: string,
-): Promise<Prisma.UserWhereUniqueInput | null> => {
-    const userFilterParams = {
-        [key]: value,
-    } as unknown;
-    const loggedInUser = await prisma.user.findUnique({
-        where: userFilterParams as Prisma.UserWhereUniqueInput,
-    });
-    return loggedInUser;
 };
 
 export const decryptJWT = async (): Promise<JWTPayload | null> => {

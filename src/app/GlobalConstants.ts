@@ -44,6 +44,7 @@ const GlobalConstants = {
     HOSTING_EVENTS: "hostingEvents",
     PARTICIPANT_EVENTS: "participantEvents",
     RESERVE_EVENTS: "reserveEvents",
+    USER_MEMBERSHIP: "userMembership",
     // Login
     PASSWORD: "password",
     CURRENT_PASSWORD: "currentPassword",

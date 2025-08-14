@@ -207,7 +207,7 @@ export const checkPaymentStatus = async (
         newActionState.errorMsg = "Order completed";
         return newActionState;
     }
-    // If the order is free, mark it as paid
+    // If the order is free, complete it immediately.
     if (order.totalAmount === 0) {
         const updateFreeOrderStatusResult = await updateOrderStatus(
             orderId,

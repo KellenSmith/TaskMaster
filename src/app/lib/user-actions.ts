@@ -3,13 +3,7 @@
 import { Prisma, PrismaPromise, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import {
-    decryptJWT,
-    encryptJWT,
-    generateSalt,
-    generateUserCredentials,
-    getUserByUniqueKey,
-} from "./auth/auth";
+import { decryptJWT, encryptJWT, generateSalt, generateUserCredentials } from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
 import {
     DatagridActionState,
@@ -85,6 +79,7 @@ export const getAllUsers = async (
         const users = await prisma.user.findMany({
             include: {
                 userCredentials: true,
+                userMembership: true,
             },
         });
         newActionState.status = 200;
@@ -104,10 +99,10 @@ export const getLoggedInUser = async (
     const newActionState = { ...currentActionState };
     const jwtPayload = await decryptJWT();
     if (jwtPayload) {
-        const loggedInUser = await getUserByUniqueKey(
-            GlobalConstants.ID as "id",
-            jwtPayload[GlobalConstants.ID] as string,
-        );
+        const loggedInUser = await prisma.user.findUnique({
+            where: { id: jwtPayload[GlobalConstants.ID] as string },
+            include: { userMembership: true },
+        });
         if (!loggedInUser) {
             newActionState.status = 404;
             newActionState.errorMsg = "";

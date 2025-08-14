@@ -12,7 +12,7 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
         const deleteStaleResult = await prisma.user.deleteMany({
             where: {
                 userMembership: null,
-                created: {
+                createdAt: {
                     lt: dayjs()
                         .subtract(parseInt(process.env.PURGE_STALE_APPLICATIONS), "d")
                         .toISOString(),
