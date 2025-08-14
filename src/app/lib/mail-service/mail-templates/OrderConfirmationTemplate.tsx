@@ -19,15 +19,17 @@ interface IOrderConfirmationTemplateProps {
         price: number;
     }>;
     totalAmount: number;
+    organizationName: string;
 }
 
 const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
     orderId,
     orderItems,
     totalAmount,
+    organizationName,
 }) => {
     return (
-        <MailTemplate>
+        <MailTemplate organizationName={organizationName}>
             <Text>{`Your order has been completed successfully!`}</Text>
             <Text>Order ID: {orderId}</Text>
             <Text>Order Details:</Text>
@@ -47,7 +49,7 @@ const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
                 Total: ${(totalAmount / 100).toFixed(2)}
             </Text>
             <Text style={{ marginTop: "20px" }}>
-                Thank you for your purchase with {process.env.NEXT_PUBLIC_ORG_NAME}!
+                Thank you for your purchase with {organizationName}!
             </Text>
         </MailTemplate>
     );

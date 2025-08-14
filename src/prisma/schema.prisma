@@ -8,6 +8,14 @@ datasource db {
     directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
+model OrganizationSettings {
+    remindMembershipExpiresInDays    Int    @default(7)
+    organizationName                 String @unique @default("Task Master")
+    purgeMembersAfterDaysUnvalidated Int    @default(180)
+
+    @@map("organization_settings")
+}
+
 enum UserRole {
     user
     admin

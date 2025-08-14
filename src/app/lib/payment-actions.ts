@@ -6,6 +6,7 @@ import { Order, OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
+import { getOrganizationName } from "./organization-settings-actions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -66,7 +67,6 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             `Failed to update order with payee reference ${payeeRef}: ` + error.message,
         );
     }
-
     return {
         paymentorder: {
             operation: "Purchase",
@@ -88,7 +88,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
                 payeeReference: payeeRef, // Compliant: alphanumeric, max 30 chars, unique
-                payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
+                payeeName: await getOrganizationName(),
                 orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
         },

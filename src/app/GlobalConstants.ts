@@ -1,8 +1,4 @@
 const GlobalConstants = {
-    // Organization settings
-    ORG_NAME: "orgName",
-    // Swish
-    REQUEST_REFERER: "referer",
     // Routes
     PUBLIC: "public",
     PRIVATE: "private",
@@ -13,6 +9,7 @@ const GlobalConstants = {
     PROFILE: "profile",
     RECEIPT: "receipt",
     MEMBERS: "members",
+    ORGANIZATION_SETTINGS: "organization-settings",
     CREATE: "create",
     CALENDAR: "calendar",
     SENDOUT: "sendout",
@@ -25,6 +22,11 @@ const GlobalConstants = {
     DELETE: "delete",
     VALIDATE_MEMBERSHIP: "validateMembership",
     APPLY: "apply",
+    // Org settings
+
+    ORGANIZATION_NAME: "organizationName",
+    REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remindMembershipExpiresInDays",
+    PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purgeMembersAfterDaysUnvalidated",
     // User
     USER: "user",
     USER_ID: "userId",
