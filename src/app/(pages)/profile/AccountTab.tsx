@@ -105,9 +105,9 @@ const AccountTab = () => {
                                 </>
                             ) : (
                                 <>
-                                    <Typography>{`Member since ${formatDate(user[GlobalConstants.CREATED])}`}</Typography>
+                                    <Typography>{`Member since ${formatDate(user.created)}`}</Typography>
                                     <Typography>
-                                        {`Your membership expires ${formatDate(dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED]).add(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION), "d"))}`}
+                                        {`Your membership expires ${formatDate(dayjs(user.userMembership.expiresAt))}`}
                                     </Typography>
                                     {isUserAdmin(user) && <Typography>You are an admin</Typography>}
                                 </>

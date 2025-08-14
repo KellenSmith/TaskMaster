@@ -207,9 +207,18 @@ export const checkPaymentStatus = async (
         newActionState.errorMsg = "Order completed";
         return newActionState;
     }
+    // If the order is free, complete it immediately.
+    if (order.totalAmount === 0) {
+        const updateFreeOrderStatusResult = await updateOrderStatus(
+            orderId,
+            defaultFormActionState,
+            OrderStatus.paid,
+        );
+        if (updateFreeOrderStatusResult.status === 200)
+            return await updateOrderStatus(orderId, defaultFormActionState, OrderStatus.completed);
+    }
 
     const paymentRequestId = order.paymentRequestId;
-
     if (!paymentRequestId) {
         newActionState.status = 400;
         newActionState.result = "";

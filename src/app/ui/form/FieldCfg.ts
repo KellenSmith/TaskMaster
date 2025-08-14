@@ -17,8 +17,7 @@ export const FieldLabels = {
     [GlobalConstants.EMAIL]: "Email",
     [GlobalConstants.PHONE]: "Phone",
     [GlobalConstants.ROLE]: "Role",
-    [GlobalConstants.CREATED]: "Created",
-    [GlobalConstants.MEMBERSHIP_RENEWED]: "Membership Renewed",
+    [GlobalConstants.CREATED_AT]: "Created At",
     [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters from Wish`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the Wish member registry",
     [GlobalConstants.PENDING]: "Pending",
@@ -223,8 +222,7 @@ export const allowSelectMultiple = [GlobalConstants.TAGS];
 
 export const datePickerFields = [
     // User
-    GlobalConstants.CREATED,
-    GlobalConstants.MEMBERSHIP_RENEWED,
+    GlobalConstants.CREATED_AT,
     GlobalConstants.START_TIME,
     GlobalConstants.END_TIME,
 ];

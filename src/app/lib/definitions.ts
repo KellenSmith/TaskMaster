@@ -1,6 +1,6 @@
-import { JWTPayload } from "jose";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
+import { Prisma } from "@prisma/client";
 
 // Convention: "path"=`/${route}`
 
@@ -25,7 +25,7 @@ export const routes = {
 
 export const routesToPath = (routeList: string[]) => routeList.map((route) => `/${route}`);
 
-export const isUserAuthorized = (path: string, user: JWTPayload | null): boolean => {
+export const isUserAuthorized = (path: string, user: any): boolean => {
     // Only allow non-logged in users access to public routes
     if (!user) return routesToPath(routes[GlobalConstants.PUBLIC]).includes(path);
     // Only allow users with expired memberships access to public pages and their own profile
@@ -41,15 +41,13 @@ export const isUserAuthorized = (path: string, user: JWTPayload | null): boolean
     return !adminPaths.some((adminPath) => path.startsWith(adminPath));
 };
 
-export const membershipExpiresAt = (user) =>
-    dayjs(user[GlobalConstants.MEMBERSHIP_RENEWED])
-        .add(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION) + 1, "d")
-        .toISOString();
-
-export const isMembershipExpired = (user: any): boolean => {
-    if (!user || !user[GlobalConstants.MEMBERSHIP_RENEWED]) return true;
-    const expiryDate = membershipExpiresAt(user);
-    return dayjs().isAfter(dayjs(expiryDate));
+export const isMembershipExpired = (
+    user: Prisma.UserGetPayload<{
+        include: { userMembership: true };
+    }> | null,
+): boolean => {
+    const membershipExpiresAt = user?.userMembership?.expiresAt;
+    return !membershipExpiresAt || dayjs(membershipExpiresAt).isBefore(dayjs());
 };
 
 export const isUserAdmin = (user: any): boolean =>

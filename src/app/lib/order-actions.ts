@@ -188,7 +188,7 @@ const processOrderItems = async (
 export const updateOrderStatus = async (
     orderId: string,
     currentActionState: FormActionState,
-    status: OrderStatus,
+    newStatus: OrderStatus,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
 
@@ -199,7 +199,6 @@ export const updateOrderStatus = async (
                 status: true,
             },
         });
-
         // Don't update from completed status to any other status
         if (order.status === OrderStatus.completed) {
             newActionState.status = 200;
@@ -208,9 +207,9 @@ export const updateOrderStatus = async (
             return newActionState;
         }
 
-        if (order.status === status) {
+        if (order.status === newStatus) {
             newActionState.status = 200;
-            newActionState.result = `Order is already in status: ${status}`;
+            newActionState.result = `Order is already in status: ${newStatus}`;
             newActionState.errorMsg = "";
             return newActionState;
         }
@@ -218,11 +217,11 @@ export const updateOrderStatus = async (
         // Always update the order to the requested status first
         await prisma.order.update({
             where: { id: orderId },
-            data: { status },
+            data: { status: newStatus },
         });
 
-        // If status is paid, attempt to process order items
-        if (status === OrderStatus.paid) {
+        // If status is paid and not shipped yet, attempt to process order items
+        if (newStatus === OrderStatus.paid && order.status !== OrderStatus.shipped) {
             const processedItemsResult = await processOrderItems(orderId, currentActionState);
             if (processedItemsResult.status === 200) {
                 // Processing succeeded - update to shipped
@@ -247,7 +246,7 @@ export const updateOrderStatus = async (
             // For any other status, just confirm the update
             newActionState.status = 200;
             newActionState.errorMsg = "";
-            newActionState.result = `Order updated to ${status}`;
+            newActionState.result = `Order updated to ${newStatus}`;
         }
     } catch (error) {
         newActionState.status = 500;

@@ -10,6 +10,7 @@
         "lint": "next lint",
         "prisma-generate": "pnpm prisma generate --schema=./src/prisma/schema.prisma",
         "prisma-migrate": "pnpm prisma migrate dev --schema=./src/prisma/schema.prisma",
+        "prisma-migrate-reset": "pnpm prisma migrate reset --schema=./src/prisma/schema.prisma",
         "prisma-push": "pnpm prisma db push --schema=./src/prisma/schema.prisma",
         "email": "email dev --dir=./src/app/lib/mail-service/mail-templates --port=3001",
         "test": "vitest",

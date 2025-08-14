@@ -55,6 +55,7 @@ const MembersPage = () => {
     const hiddenColumns = [
         GlobalConstants.ID,
         GlobalConstants.USER_CREDENTIALS,
+        GlobalConstants.USER_MEMBERSHIP,
         GlobalConstants.CONSENT_TO_NEWSLETTERS,
     ];
 

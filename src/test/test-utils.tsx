@@ -10,7 +10,6 @@ export const mockUser = {
     nickname: "Test User",
     email: "test@example.com",
     role: "USER",
-    membershipRenewed: new Date().toISOString(),
 };
 
 // Mock UserContext value
