@@ -1,7 +1,6 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { Prisma } from "@prisma/client";
-import { JWTPayload } from "jose";
 
 // Convention: "path"=`/${route}`
 

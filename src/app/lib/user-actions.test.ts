@@ -66,7 +66,7 @@ describe("Get All Users", () => {
         expect(result.status).toBe(200);
         expect(result.result).toEqual(mockUsers);
         expect(mockContext.prisma.user.findMany).toHaveBeenCalledWith({
-            include: { userCredentials: true },
+            include: { userCredentials: true, userMembership: true },
         });
     });
 
