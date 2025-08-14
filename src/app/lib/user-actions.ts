@@ -1,6 +1,6 @@
 "use server";
 
-import { Membership, Prisma, PrismaPromise, UserRole } from "@prisma/client";
+import { Prisma, PrismaPromise, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import {
@@ -13,10 +13,7 @@ import {
 import { sendUserCredentials } from "./mail-service/mail-service";
 import {
     DatagridActionState,
-    defaultDatagridActionState,
-    defaultFormActionState,
     FormActionState,
-    isMembershipExpired,
     LoginSchema,
     ResetCredentialsSchema,
 } from "./definitions";
@@ -30,6 +27,7 @@ export const getUserById = async (
     try {
         const user = await prisma.user.findUniqueOrThrow({
             where: { id: userId },
+            include: { userMembership: true },
         });
         newActionState.status = 200;
         newActionState.result = [user];
@@ -107,9 +105,15 @@ export const getLoggedInUser = async (
     const jwtPayload = await decryptJWT();
     if (jwtPayload) {
         const loggedInUser = await getUserByUniqueKey(
-            GlobalConstants.ID,
+            GlobalConstants.ID as "id",
             jwtPayload[GlobalConstants.ID] as string,
         );
+        if (!loggedInUser) {
+            newActionState.status = 404;
+            newActionState.errorMsg = "";
+            newActionState.result = "";
+            return newActionState;
+        }
         // Renew JWT
         await encryptJWT(loggedInUser);
         newActionState.status = 200;
@@ -291,40 +295,38 @@ export const validateUserMembership = async (
 
 export const renewUserMembership = async (
     userId: string,
-    membership: Membership,
+    membershipId: string,
     currentActionState: FormActionState,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
-        // Update user's membership renewed date
-        const userToUpdateResult = await getUserById(defaultDatagridActionState, userId);
-        if (!(userToUpdateResult.status === 200)) throw new Error(userToUpdateResult.errorMsg);
+        const membership = await prisma.membership.findUniqueOrThrow({
+            where: { id: membershipId },
+        });
+        const userMembership = await prisma.userMembership.findUniqueOrThrow({
+            where: { userId: userId },
+        });
 
-        const userToUpdate = userToUpdateResult.result[0];
-
-        // Extend the existing membership by the configured membership duration
-        let newRenewDate = (
-            userToUpdate[GlobalConstants.MEMBERSHIP_RENEWED]
-                ? dayjs(userToUpdate[GlobalConstants.MEMBERSHIP_RENEWED])
-                : dayjs()
-        )
-            .add(membership.duration, "d")
-            .toISOString();
-
-        if (isMembershipExpired(userToUpdate)) newRenewDate = dayjs().toISOString();
-
-        const updatedMembershipRenewedDate: Prisma.UserUpdateInput = {
-            membershipRenewed: newRenewDate,
-        };
-
-        const updateUserResult = await updateUser(
-            userId,
-            defaultFormActionState,
-            updatedMembershipRenewedDate,
-        );
-        if (updateUserResult.status !== 200) {
-            throw new Error(updateUserResult.errorMsg);
-        }
+        await prisma.userMembership.upsert({
+            where: { userId: userId },
+            update: {
+                membershipId: membershipId,
+                expiresAt:
+                    // If the membership is the same, extend the expiration date
+                    userMembership?.membershipId === membershipId
+                        ? dayjs(userMembership.expiresAt)
+                              .add(membership.duration, "d")
+                              .toISOString()
+                        : // If the membership is different, reset the expiration date
+                          dayjs().add(membership.duration, "d").toISOString(),
+            },
+            // If no membership exists, create a new one
+            create: {
+                userId: userId,
+                membershipId: membershipId,
+                expiresAt: dayjs().add(membership.duration, "d").toISOString(),
+            },
+        });
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -447,10 +449,10 @@ export const getActiveMembers = async (currentActionState: DatagridActionState) 
     try {
         const activeMembers = await prisma.user.findMany({
             where: {
-                [GlobalConstants.MEMBERSHIP_RENEWED]: {
-                    gt: dayjs()
-                        .subtract(parseInt(process.env.NEXT_PUBLIC_MEMBERSHIP_DURATION), "d")
-                        .toISOString(),
+                userMembership: {
+                    expiresAt: {
+                        gt: dayjs().toISOString(),
+                    },
                 },
             },
             select: {

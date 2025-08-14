@@ -243,7 +243,7 @@ export const processOrderedProduct = async (
         if (product.Membership) {
             const renewMembershipResult = await renewUserMembership(
                 userId,
-                product.Membership,
+                product.Membership.id,
                 currentActionState,
             );
             if (renewMembershipResult.status !== 200) {

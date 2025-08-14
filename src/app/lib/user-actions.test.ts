@@ -15,6 +15,7 @@ describe("User Actions", () => {
         expect(result.status).toBe(200);
         expect(mockContext.prisma.user.findUniqueOrThrow).toHaveBeenCalledWith({
             where: { id: mockUser.id },
+            include: { userMembership: true },
         });
     });
 
