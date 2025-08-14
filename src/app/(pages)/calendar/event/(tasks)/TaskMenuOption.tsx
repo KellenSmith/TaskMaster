@@ -139,7 +139,7 @@ const TaskMenuOption = ({
                     action={editSelectedTask}
                     defaultValues={getTaskDefaultValues()}
                     customOptions={Object.fromEntries(
-                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
+                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REVIEWER_ID].map(
                             (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
                         ),
                     )}

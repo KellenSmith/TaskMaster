@@ -23,8 +23,8 @@ export const FieldLabels = {
     [GlobalConstants.PHONE]: "Phone",
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED_AT]: "Created At",
-    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters from Wish`,
-    [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the Wish member registry",
+    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters`,
+    [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the member registry",
     [GlobalConstants.PENDING]: "Pending",
     [GlobalConstants.ACTIVE]: "Active",
     [GlobalConstants.EXPIRED]: "Expired",
@@ -53,8 +53,8 @@ export const FieldLabels = {
     [GlobalConstants.NAME]: "Name",
     [GlobalConstants.ASSIGNEE]: "Assignee",
     [GlobalConstants.ASSIGNEE_ID]: "Assignee",
-    [GlobalConstants.REPORTER]: "Reporter",
-    [GlobalConstants.REPORTER_ID]: "Reporter",
+    [GlobalConstants.REVIEWER]: "Reviewer",
+    [GlobalConstants.REVIEWER_ID]: "Reviewer",
     [GlobalConstants.PHASE]: "Phase",
     [GlobalConstants.TAGS]: "Tags",
     [GlobalConstants.PHASE]: "Phase",
@@ -119,7 +119,7 @@ export const RenderedFields = {
         GlobalConstants.NAME,
         GlobalConstants.PHASE,
         GlobalConstants.ASSIGNEE_ID,
-        GlobalConstants.REPORTER_ID,
+        GlobalConstants.REVIEWER_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.DESCRIPTION,
@@ -184,7 +184,7 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REPORTER],
+    [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REVIEWER],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
     [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.STOCK],
 };
@@ -226,7 +226,7 @@ export const selectFieldOptions = {
     ],
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
     [GlobalConstants.ASSIGNEE_ID]: ["Custom"],
-    [GlobalConstants.REPORTER_ID]: ["Custom"],
+    [GlobalConstants.REVIEWER_ID]: ["Custom"],
 };
 
 export const formatAssigneeOptions = (activeMembers: any[]) => {
@@ -242,6 +242,7 @@ export const allowSelectMultiple = [GlobalConstants.TAGS];
 export const datePickerFields = [
     // User
     GlobalConstants.CREATED_AT,
+    GlobalConstants.UPDATED_AT,
     GlobalConstants.START_TIME,
     GlobalConstants.END_TIME,
 ];

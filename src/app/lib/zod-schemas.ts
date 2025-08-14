@@ -18,7 +18,7 @@ export const updateTaskSchema = z.object({
     [GlobalConstants.ID]: z.string(),
     [GlobalConstants.EVENT_ID]: z.string(),
     [GlobalConstants.ASSIGNEE_ID]: z.string(),
-    [GlobalConstants.REPORTER_ID]: z.string(),
+    [GlobalConstants.REVIEWER_ID]: z.string(),
     [GlobalConstants.STATUS]: z.string(),
     [GlobalConstants.TAGS]: z.array(z.string()),
     [GlobalConstants.NAME]: z.string(),
@@ -31,7 +31,7 @@ export const updateTaskSchema = z.object({
 export const createTaskSchema = updateTaskSchema.omit({
     [GlobalConstants.ID]: true,
     [GlobalConstants.ASSIGNEE_ID]: true,
-    [GlobalConstants.REPORTER_ID]: true,
+    [GlobalConstants.REVIEWER_ID]: true,
     [GlobalConstants.STATUS]: true,
     [GlobalConstants.PHASE]: true,
     [GlobalConstants.TAGS]: true,

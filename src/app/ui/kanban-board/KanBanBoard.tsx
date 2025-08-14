@@ -41,7 +41,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
 
     const getUniqueFilterOptions = (filterId) => {
         if (filterId === GlobalConstants.ASSIGNEE_ID) return [user[GlobalConstants.ID], null];
-        if (filterId === GlobalConstants.REPORTER_ID) return [user[GlobalConstants.ID]];
+        if (filterId === GlobalConstants.REVIEWER_ID) return [user[GlobalConstants.ID]];
         const existingFilterOptions = [];
         for (let task of tasks) {
             if (Array.isArray(task[filterId]))
@@ -58,7 +58,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
         Object.fromEntries(
             [
                 GlobalConstants.ASSIGNEE_ID,
-                GlobalConstants.REPORTER_ID,
+                GlobalConstants.REVIEWER_ID,
                 GlobalConstants.PHASE,
                 GlobalConstants.TAGS,
             ].map((filterId) => [filterId, []]),
@@ -80,7 +80,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
             if (filterOption === null) return "Unassigned";
             return "Assigned to me";
         }
-        if (filterId === GlobalConstants.REPORTER_ID) return "Reports to me";
+        if (filterId === GlobalConstants.REVIEWER_ID) return "For me to review";
 
         return FieldLabels[filterOption] || filterOption;
     };

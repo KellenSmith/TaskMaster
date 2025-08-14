@@ -172,8 +172,8 @@ const TaskMenu = ({ event, readOnly, tasks, fetchTasksAction, isTasksPending }) 
         const defaultTask = {
             [GlobalConstants.PHASE]: phase,
             ...taskDefaultTimes[phase],
-            [GlobalConstants.REPORTER_ID]: user[GlobalConstants.ID],
-            [GlobalConstants.REPORTER]: {
+            [GlobalConstants.REVIEWER_ID]: user[GlobalConstants.ID],
+            [GlobalConstants.REVIEWER]: {
                 [GlobalConstants.ID]: user[GlobalConstants.ID],
                 [GlobalConstants.NICKNAME]: user[GlobalConstants.NICKNAME],
             },
@@ -330,7 +330,7 @@ const TaskMenu = ({ event, readOnly, tasks, fetchTasksAction, isTasksPending }) 
                     action={addNewTask}
                     defaultValues={addTask}
                     customOptions={Object.fromEntries(
-                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
+                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REVIEWER_ID].map(
                             (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
                         ),
                     )}

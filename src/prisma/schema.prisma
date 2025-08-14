@@ -12,7 +12,7 @@ model OrganizationSettings {
     remindMembershipExpiresInDays    Int    @default(7)
     organizationName                 String @unique @default("Task Master")
     purgeMembersAfterDaysUnvalidated Int    @default(180)
-    email                            String @default("email@gmail.com")
+    email                            String @default("kellensmith407@gmail.com")
 
     @@map("organization_settings")
 }
@@ -42,9 +42,10 @@ model User {
     participantEvents ParticipantInEvent[]
     reserveEvents     ReserveInEvent[]
 
-    assignedTasks Task[]  @relation("Assignee")
-    reporterTasks Task[]  @relation("Reporter")
-    Order         Order[]
+    assignedTasks  Task[]  @relation("Assignee")
+    reviewingTasks Task[]  @relation("Reviewer")
+    Order          Order[]
+    Task           Task[]
 
     @@map("users") // Map to table named "users"
 }
@@ -135,8 +136,8 @@ model Task {
     eventId    String?
     Assignee   User?   @relation("Assignee", fields: [assigneeId], references: [id])
     assigneeId String?
-    Reporter   User?   @relation("Reporter", fields: [reporterId], references: [id])
-    reporterId String?
+    Reviewer   User?   @relation("Reviewer", fields: [reviewerId], references: [id])
+    reviewerId String?
 
     phase       TaskPhase  @default(before)
     name        String     @default("")
@@ -145,6 +146,8 @@ model Task {
     startTime   DateTime?
     endTime     DateTime?
     description String     @default("")
+    User        User?      @relation(fields: [userId], references: [id])
+    userId      String?
 
     @@map("tasks")
 }

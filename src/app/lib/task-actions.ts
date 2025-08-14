@@ -76,13 +76,13 @@ export const updateEventTasks = async (
     const newActionState = { ...currentActionState };
     const formattedTaskList = taskList.map((task) => {
         // Extract the IDs from the nested objects if they exist
-        const reporterId = (task.Reporter as any)?.connect?.id || null;
+        const reviewerId = (task.Reviewer as any)?.connect?.id || null;
         const assigneeId = (task.Assignee as any)?.connect?.id || null;
 
         return {
             ...task,
             // Set the relation fields
-            Reporter: reporterId ? { connect: { id: reporterId } } : undefined,
+            Reviewer: reviewerId ? { connect: { id: reviewerId } } : undefined,
             Assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
         };
     });
@@ -156,7 +156,7 @@ export const getFilteredTasks = async (
                         nickname: true,
                     },
                 },
-                Reporter: {
+                Reviewer: {
                     select: {
                         id: true,
                         nickname: true,

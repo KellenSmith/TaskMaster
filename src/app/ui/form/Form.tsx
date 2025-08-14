@@ -169,7 +169,7 @@ const Form: FC<FormProps> = ({
                             // Handle clearing the selection
                             changeFieldValue(
                                 fieldId,
-                                allowSelectMultiple.includes(fieldId) ? [] : "",
+                                allowSelectMultiple.includes(fieldId) ? [] : null,
                             );
                         }
                     }}
