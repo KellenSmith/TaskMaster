@@ -12,6 +12,11 @@ export const getOrganizationSettings = async (): Promise<OrganizationSettings> =
     return orgSettings;
 };
 
+export const getOrganizationName = async (): Promise<string> => {
+    const orgSettings = await getOrganizationSettings();
+    return orgSettings?.organizationName || process.env.NEXT_PUBLIC_ORG_NAME || "Task Master";
+};
+
 export const updateOrganizationSettings = async (
     currentActionState: FormActionState,
     fieldValues: Prisma.UserCreateInput,

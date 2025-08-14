@@ -23,9 +23,11 @@ const mockUserContextValue = {
 
 // Mock OrganizationSettingsContext value
 const mockOrganizationSettingsContextValue = {
-    organizationName: "Test Organization",
-    remindMembershipExpiresInDays: 7,
-    purgeMembersAfterDaysUnvalidated: 180,
+    organizationSettings: {
+        organizationName: "Task Master",
+        remindMembershipExpiresInDays: 7,
+        purgeMembersAfterDaysUnvalidated: 180,
+    },
 };
 
 interface WrapperProps {

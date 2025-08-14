@@ -10,12 +10,13 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
      * a certain timeframe after applying for membership
      */
     try {
+        const orgSettings = await getOrganizationSettings();
         const deleteStaleResult = await prisma.user.deleteMany({
             where: {
                 userMembership: null,
                 createdAt: {
                     lt: dayjs()
-                        .subtract(parseInt(process.env.PURGE_STALE_APPLICATIONS), "d")
+                        .subtract(orgSettings?.purgeMembersAfterDaysUnvalidated || 7, "d")
                         .toISOString(),
                 },
             },

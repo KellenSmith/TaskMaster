@@ -12,7 +12,7 @@ import GlobalConstants from "../../GlobalConstants";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { defaultFormActionState, FormActionState } from "../definitions";
-import { getOrganizationSettings } from "../organization-settings-actions";
+import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
 
 interface EmailPayload {
     from: string;
@@ -26,7 +26,7 @@ const getEmailPayload = async (
     subject: string,
     mailContent: ReactElement,
 ): Promise<EmailPayload> => ({
-    from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
+    from: `${await getOrganizationName()} <${process.env.EMAIL}>`,
     bcc: receivers.join(", "),
     subject: subject,
     html: await render(mailContent),
@@ -42,11 +42,12 @@ export const sendUserCredentials = async (
     const mailContent = createElement(UserCredentialsTemplate, {
         userEmail: userEmail,
         password: userPassword,
+        organizationName: await getOrganizationName(),
     });
     const mailResponse = await mailTransport.sendMail(
         await getEmailPayload(
             [userEmail],
-            `${process.env.NEXT_PUBLIC_ORG_NAME} credentials`,
+            `${await getOrganizationName()} credentials`,
             mailContent,
         ),
     );
@@ -100,6 +101,7 @@ export const informOfCancelledEvent = async (eventId: string): Promise<string[]>
         });
         const mailContent = createElement(EventCancelledTemplate, {
             event: event,
+            organizationName: await getOrganizationName(),
         });
 
         const mailPayload = await getEmailPayload(
@@ -151,6 +153,7 @@ export const sendMassEmail = async (
 
         const mailContent = createElement(MailTemplate, {
             html: fieldValues[GlobalConstants.CONTENT],
+            organizationName: await getOrganizationName(),
         });
         const mailPayload = await getEmailPayload(
             recipients,
@@ -201,12 +204,13 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
             orderId: orderDetails.id,
             orderItems: orderDetails.orderItems,
             totalAmount: orderDetails.totalAmount,
+            organizationName: await getOrganizationName(),
         });
 
         const mailResponse = await mailTransport.sendMail(
             await getEmailPayload(
                 [orderDetails.user.email],
-                `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+                `Order Confirmation - ${await getOrganizationName()}`,
                 mailContent,
             ),
         );
