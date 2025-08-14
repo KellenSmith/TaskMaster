@@ -10,6 +10,7 @@ export const routes = {
         GlobalConstants.MEMBERS,
         GlobalConstants.PRODUCTS,
         GlobalConstants.ORDERS,
+        GlobalConstants.ORGANIZATION_SETTINGS,
     ],
     [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [GlobalConstants.PUBLIC]: [

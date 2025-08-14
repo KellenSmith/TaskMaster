@@ -6,6 +6,10 @@ export const FieldLabels = {
     [GlobalConstants.DELETE]: "Delete",
     [GlobalConstants.VALIDATE_MEMBERSHIP]: "Validate Membership",
     [GlobalConstants.APPLY]: "Apply For Membership",
+    // Organization settings
+    [GlobalConstants.ORGANIZATION_NAME]: "Organization Name",
+    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind Membership Expires In Days",
+    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]: "Purge Members After Days Unvalidated",
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
     // User
@@ -74,6 +78,12 @@ export const FieldLabels = {
 };
 
 export const RenderedFields = {
+    // Org settings
+    [GlobalConstants.ORGANIZATION_SETTINGS]: [
+        GlobalConstants.ORGANIZATION_NAME,
+        GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
+        GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
+    ],
     // Profile
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,
@@ -139,6 +149,12 @@ RenderedFields[GlobalConstants.USER] = [
 ];
 
 export const RequiredFields = {
+    // Org settings
+    [GlobalConstants.ORGANIZATION_SETTINGS]: [
+        GlobalConstants.ORGANIZATION_NAME,
+        GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
+        GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
+    ],
     // Profile
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,

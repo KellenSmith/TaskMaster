@@ -25,6 +25,11 @@ const GlobalConstants = {
     DELETE: "delete",
     VALIDATE_MEMBERSHIP: "validateMembership",
     APPLY: "apply",
+    // Org settings
+    ORGANIZATION_SETTINGS: "orgSettings",
+    ORGANIZATION_NAME: "organizationName",
+    REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remindMembershipExpiresInDays",
+    PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purgeMembersAfterDaysUnvalidated",
     // User
     USER: "user",
     USER_ID: "userId",
