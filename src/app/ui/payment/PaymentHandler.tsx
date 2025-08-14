@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { OrderStatus } from "@prisma/client";
 import { updateOrderStatus } from "../../lib/order-actions";
 import { defaultFormActionState } from "../../lib/definitions";
+import { navigateToRoute } from "../utils";
 
 const PaymentHandler = ({ order }) => {
     const router = useRouter();
@@ -40,7 +41,7 @@ const PaymentHandler = ({ order }) => {
                                 OrderStatus.paid,
                             );
                             setProcessOrderActionState(processOrderResult);
-                            router.refresh();
+                            navigateToRoute(`/order/complete?orderId=${order.id}`, router);
                         }}
                     >
                         confirm

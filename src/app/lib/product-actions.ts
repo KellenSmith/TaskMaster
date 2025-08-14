@@ -211,7 +211,7 @@ export const getMembershipProductId = async (): Promise<string> => {
             data: {
                 name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
                 description: "Annual membership",
-                price: parseFloat(process.env.NEXT_PUBLIC_MEMBERSHIP_FEE || "0"),
+                price: 0,
                 unlimitedStock: true,
                 Membership: {
                     create: {

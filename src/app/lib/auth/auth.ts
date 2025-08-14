@@ -59,7 +59,14 @@ export const login = async (
 ): Promise<FormActionState> => {
     const authState = { ...currentActionState };
 
-    const loggedInUser = await getUserByUniqueKey(GlobalConstants.EMAIL, fieldValues.email);
+    const loggedInUser = await prisma.user.findUnique({
+        where: {
+            email: fieldValues.email,
+        } as any as Prisma.UserWhereUniqueInput,
+        include: {
+            userMembership: true,
+        },
+    });
 
     if (!loggedInUser) {
         authState.status = 404;

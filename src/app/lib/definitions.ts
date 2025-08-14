@@ -1,6 +1,7 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { Prisma } from "@prisma/client";
+import { JWTPayload } from "jose";
 
 // Convention: "path"=`/${route}`
 
@@ -25,7 +26,7 @@ export const routes = {
 
 export const routesToPath = (routeList: string[]) => routeList.map((route) => `/${route}`);
 
-export const isUserAuthorized = (path: string, user: JWTPayload | null): boolean => {
+export const isUserAuthorized = (path: string, user: any): boolean => {
     // Only allow non-logged in users access to public routes
     if (!user) return routesToPath(routes[GlobalConstants.PUBLIC]).includes(path);
     // Only allow users with expired memberships access to public pages and their own profile

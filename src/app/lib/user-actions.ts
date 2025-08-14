@@ -303,7 +303,7 @@ export const renewUserMembership = async (
         const membership = await prisma.membership.findUniqueOrThrow({
             where: { id: membershipId },
         });
-        const userMembership = await prisma.userMembership.findUniqueOrThrow({
+        const userMembership = await prisma.userMembership.findUnique({
             where: { userId: userId },
         });
 
