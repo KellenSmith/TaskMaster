@@ -1,22 +1,9 @@
 "use client";
 
-import {
-    createContext,
-    FC,
-    ReactNode,
-    startTransition,
-    useContext,
-    useEffect,
-    useState,
-} from "react";
-import { getLoggedInUser } from "../lib/user-actions";
-import { deleteUserCookie, login } from "../lib/auth/auth";
-import { useRouter } from "next/navigation";
-import { defaultFormActionState, FormActionState, LoginSchema } from "../lib/definitions";
-import { navigateToRoute } from "../ui/utils";
-import GlobalConstants from "../GlobalConstants";
+import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
 import { OrganizationSettings } from "@prisma/client";
+import { CircularProgress } from "@mui/material";
 
 export const OrganizationSettingsContext = createContext(null);
 
@@ -48,13 +35,11 @@ const OrganizationSettingsProvider: FC<OrganizationSettingsProviderProps> = ({ c
         refreshOrganizationSettings();
     }, []);
 
-    console.log(organizationSettings);
-
     return (
         <OrganizationSettingsContext.Provider
             value={{ organizationSettings, fetchOrganizationSettings: refreshOrganizationSettings }}
         >
-            {children}
+            {organizationSettings ? children : <CircularProgress />}
         </OrganizationSettingsContext.Provider>
     );
 };

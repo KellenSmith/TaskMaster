@@ -7,6 +7,7 @@ export const FieldLabels = {
     [GlobalConstants.VALIDATE_MEMBERSHIP]: "Validate Membership",
     [GlobalConstants.APPLY]: "Apply For Membership",
     // Organization settings
+    [GlobalConstants.ORGANIZATION_SETTINGS]: "Organization Settings",
     [GlobalConstants.ORGANIZATION_NAME]: "Organization Name",
     [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind Membership Expires In Days",
     [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]: "Purge Members After Days Unvalidated",
