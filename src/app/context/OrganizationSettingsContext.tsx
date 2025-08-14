@@ -37,7 +37,7 @@ const OrganizationSettingsProvider: FC<OrganizationSettingsProviderProps> = ({ c
 
     return (
         <OrganizationSettingsContext.Provider
-            value={{ organizationSettings, fetchOrganizationSettings: refreshOrganizationSettings }}
+            value={{ organizationSettings, refreshOrganizationSettings }}
         >
             {organizationSettings ? children : <CircularProgress />}
         </OrganizationSettingsContext.Provider>
