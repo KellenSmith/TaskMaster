@@ -110,7 +110,7 @@ export const login = async (
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
 
 export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
-    const expiresAt = dayjs().add(parseInt(process.env.COOKIE_LIFESPAN), "d").toDate();
+    const expiresAt = dayjs().add(1, "d").toDate();
     // Encode the user ID as jwt
     const jwt = await new SignJWT(loggedInUser)
         .setProtectedHeader({
