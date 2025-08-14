@@ -45,10 +45,12 @@ export const generateUserCredentials = async (
 };
 
 export const createSession = async (fieldValues: LoginSchema) => {
-    const loggedInUser = await getUserByUniqueKey(
-        GlobalConstants.EMAIL,
-        fieldValues.email as string,
-    );
+    const loggedInUser = await prisma.user.findUnique({
+        where: { email: fieldValues.email } as any as Prisma.UserWhereUniqueInput,
+        include: {
+            userMembership: true,
+        },
+    });
 
     await encryptJWT(loggedInUser);
 };
@@ -59,7 +61,14 @@ export const login = async (
 ): Promise<FormActionState> => {
     const authState = { ...currentActionState };
 
-    const loggedInUser = await getUserByUniqueKey(GlobalConstants.EMAIL, fieldValues.email);
+    const loggedInUser = await prisma.user.findUnique({
+        where: {
+            email: fieldValues.email,
+        } as any as Prisma.UserWhereUniqueInput,
+        include: {
+            userMembership: true,
+        },
+    });
 
     if (!loggedInUser) {
         authState.status = 404;
@@ -101,7 +110,7 @@ export const login = async (
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
 
 export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
-    const expiresAt = dayjs().add(parseInt(process.env.COOKIE_LIFESPAN), "d").toDate();
+    const expiresAt = dayjs().add(1, "d").toDate();
     // Encode the user ID as jwt
     const jwt = await new SignJWT(loggedInUser)
         .setProtectedHeader({
@@ -116,19 +125,6 @@ export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
         secure: true,
         expires: expiresAt,
     });
-};
-
-export const getUserByUniqueKey = async (
-    key: string,
-    value: string,
-): Promise<Prisma.UserWhereUniqueInput | null> => {
-    const userFilterParams = {
-        [key]: value,
-    } as unknown;
-    const loggedInUser = await prisma.user.findUnique({
-        where: userFilterParams as Prisma.UserWhereUniqueInput,
-    });
-    return loggedInUser;
 };
 
 export const decryptJWT = async (): Promise<JWTPayload | null> => {

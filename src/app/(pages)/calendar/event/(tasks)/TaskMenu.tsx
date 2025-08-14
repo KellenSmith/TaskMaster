@@ -22,7 +22,6 @@ import { ExpandMore } from "@mui/icons-material";
 import { updateEventTasks, assignTasksToUser } from "../../../../lib/task-actions";
 import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
-import SwishPaymentHandler from "../../../../ui/swish/SwishPaymentHandler";
 import { getLatestEndTime, isUserParticipant, sortGroupedTasks } from "../event-utils";
 import {
     defaultDatagridActionState,
@@ -31,101 +30,19 @@ import {
     isUserHost,
 } from "../../../../lib/definitions";
 import TaskShifts from "./TaskShifts";
-import { apiEndpoints, getDummyId } from "../../../../ui/utils";
+import { getDummyId } from "../../../../ui/utils";
 import { getActiveMembers } from "../../../../lib/user-actions";
 import { formatAssigneeOptions } from "../../../../ui/form/FieldCfg";
 import TicketShop from "./TicketShop";
+import { TaskPhase } from "@prisma/client";
 
-const testTaskOptions = [
-    {
-        id: "1",
-        name: "task 1",
-        phase: GlobalConstants.BEFORE,
-        startTime: dayjs().toISOString(),
-        endTime: dayjs().add(3, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "11",
-        name: "task 1",
-        phase: GlobalConstants.BEFORE,
-        startTime: dayjs().toISOString(),
-        endTime: dayjs().add(1, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "2",
-        name: "task 2",
-        phase: GlobalConstants.BEFORE,
-        startTime: dayjs().toISOString(),
-        endTime: dayjs().add(1, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "3",
-        name: "task 3",
-        phase: GlobalConstants.DURING,
-        startTime: dayjs().toISOString(),
-        endTime: dayjs().add(2, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "7",
-        name: "task 3",
-        phase: GlobalConstants.DURING,
-        startTime: dayjs().add(2, "hour").toISOString(),
-        endTime: dayjs().add(4, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "4",
-        name: "task 4",
-        phase: GlobalConstants.DURING,
-        startTime: dayjs().toISOString(),
-        endTime: dayjs().add(1, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "8",
-        name: "task 4",
-        phase: GlobalConstants.DURING,
-        startTime: dayjs().add(2, "hour").toISOString(),
-        endTime: dayjs().add(4, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "5",
-        name: "task 5",
-        phase: GlobalConstants.AFTER,
-        startTime: dayjs().toISOString(),
-        endTime: dayjs().add(1, "hour").toISOString(),
-        description: "test description",
-    },
-    {
-        id: "6",
-        name: "task 6",
-        phase: GlobalConstants.AFTER,
-        startTime: dayjs().toISOString(),
-        endTime: dayjs().add(1, "hour").toISOString(),
-        description: "test description",
-    },
-];
-
-const TaskMenu = ({
-    event,
-    fetchEventAction,
-    readOnly,
-    tasks,
-    fetchTasksAction,
-    isTasksPending,
-}) => {
+const TaskMenu = ({ event, readOnly, tasks, fetchTasksAction, isTasksPending }) => {
     const theme = useTheme();
     const { user } = useUserContext();
     const [taskOptions, setTaskOptions] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
     const [addTask, setAddTask] = useState(null);
     const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
-    const [paymentHandlerOpen, setPaymentHandlerOpen] = useState(false);
     const [activeMembers, setActiveMembers] = useState([]);
 
     useEffect(() => {
@@ -173,50 +90,6 @@ const TaskMenu = ({
             );
         } else setSelectedTasks(tasks);
     }, [readOnly, tasks, user]);
-
-    const taskAlreadyExists = (newTask: any) =>
-        [...taskOptions, ...selectedTasks]
-            .map((task) => task[GlobalConstants.NAME])
-            .includes(newTask[GlobalConstants.NAME]);
-
-    const loadDefaultTaskOptions = async () => {
-        //const fetchedDefaultTasks = await geteventTasks(null, defaultDatagridActionState);
-        //setTaskOptions(fetchedDefaultTasks.result);
-
-        const defaultTasks = testTaskOptions
-            // Only load unique tasks
-            .filter((task) => !taskAlreadyExists(task))
-            .map((task) => ({
-                ...task,
-                ...taskDefaultTimes[task[GlobalConstants.PHASE]],
-                [GlobalConstants.REPORTER_ID]: user[GlobalConstants.ID],
-                [GlobalConstants.REPORTER]: {
-                    [GlobalConstants.ID]: user[GlobalConstants.ID],
-                    [GlobalConstants.NICKNAME]: user[GlobalConstants.NICKNAME],
-                },
-            }));
-        defaultTasks.length > 0 && setTaskOptions([...taskOptions, ...defaultTasks]);
-    };
-
-    const getReducedTicketPrice = () => {
-        const fullPrice = event[GlobalConstants.FULL_TICKET_PRICE];
-        const nTasks = selectedTasks.length;
-        const reducedTicketPrice =
-            (1 -
-                Math.min(
-                    1,
-                    nTasks * (1 / parseInt(process.env.NEXT_PUBLIC_FULL_EVENT_TASK_BURDEN)),
-                )) *
-            fullPrice;
-        return Math.round(reducedTicketPrice);
-    };
-
-    const hasBoughtTicket = async (): Promise<boolean> => {
-        startTransition(() => {
-            fetchEventAction();
-        });
-        return isUserParticipant(user, event);
-    };
 
     const assignSelectedTasks = async () => {
         const assignResult = await assignTasksToUser(
@@ -349,72 +222,56 @@ const TaskMenu = ({
         return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
     };
 
+    const getAccordionForPhase = (phase: TaskPhase) => {
+        const tasksForPhase = [...selectedTasks, ...taskOptions].filter(
+            (task) => task[GlobalConstants.PHASE] === phase,
+        );
+        return (
+            tasksForPhase?.length > 0 && (
+                <Accordion key={phase} defaultExpanded={true}>
+                    <AccordionSummary
+                        sx={{
+                            textTransform: "capitalize",
+                            justifyContent: "space-between",
+                            "&.MuiAccordionSummary-content": {
+                                alignItems: "center",
+                            },
+                        }}
+                        expandIcon={<ExpandMore />}
+                    >
+                        <Typography>{phase}</Typography>
+                    </AccordionSummary>
+                    {!readOnly && (
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={
+                                        taskOptions.filter(
+                                            (task) => task[GlobalConstants.PHASE] === phase,
+                                        ).length < 1
+                                    }
+                                    onChange={() => toggleAllTasksForPhase(phase)}
+                                />
+                            }
+                            label="Toggle All"
+                        />
+                    )}
+                    <FormGroup key={`shifts-${phase}`}>
+                        {isTasksPending ? <CircularProgress /> : getSortedTaskComps(tasksForPhase)}
+                    </FormGroup>
+                </Accordion>
+            )
+        );
+    };
+
     return (
         <>
             <Stack spacing={2}>
                 <Stack direction="row" spacing={2}>
-                    {(selectedTasks.length > 0 || taskOptions.length > 0) && (
+                    {
                         <Stack spacing={2} width="100%">
                             {isUserHost(user, event) || tasks?.length > 0 ? (
-                                [
-                                    GlobalConstants.BEFORE,
-                                    GlobalConstants.DURING,
-                                    GlobalConstants.AFTER,
-                                ].map((phase) => (
-                                    <Accordion key={phase}>
-                                        <AccordionSummary
-                                            sx={{
-                                                textTransform: "capitalize",
-                                                justifyContent: "space-between",
-                                                "&.MuiAccordionSummary-content": {
-                                                    alignItems: "center",
-                                                },
-                                            }}
-                                            expandIcon={<ExpandMore />}
-                                        >
-                                            <Typography>{phase}</Typography>
-                                        </AccordionSummary>
-                                        {!readOnly && (
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={
-                                                            taskOptions.filter(
-                                                                (task) =>
-                                                                    task[GlobalConstants.PHASE] ===
-                                                                    phase,
-                                                            ).length < 1
-                                                        }
-                                                        onChange={() =>
-                                                            toggleAllTasksForPhase(phase)
-                                                        }
-                                                    />
-                                                }
-                                                label="Toggle All"
-                                            />
-                                        )}
-                                        <FormGroup key={`shifts-${phase}`}>
-                                            {isTasksPending ? (
-                                                <CircularProgress />
-                                            ) : (
-                                                getSortedTaskComps(
-                                                    [...selectedTasks, ...taskOptions].filter(
-                                                        (task) =>
-                                                            task[GlobalConstants.PHASE] === phase,
-                                                    ),
-                                                )
-                                            )}
-                                        </FormGroup>
-                                        {!readOnly && (
-                                            <Button
-                                                sx={{ width: "100%" }}
-                                                onClick={() => openAddTask(phase)}
-                                            >
-                                                add task
-                                            </Button>
-                                        )}
-                                    </Accordion>
-                                ))
+                                Object.values(TaskPhase).map((phase) => getAccordionForPhase(phase))
                             ) : (
                                 <Typography
                                     variant="h5"
@@ -428,7 +285,7 @@ const TaskMenu = ({
                                 </Typography>
                             )}
                         </Stack>
-                    )}
+                    }
                     {readOnly && (
                         <Stack component={Paper} spacing={2} padding={2} width="100%">
                             {(selectedTasks.length > 0 || taskOptions.length > 0) && (
@@ -458,7 +315,11 @@ const TaskMenu = ({
 
                 {!readOnly && (
                     <Stack spacing={2}>
-                        <Button onClick={loadDefaultTaskOptions}>load default tasks</Button>
+                        {!readOnly && (
+                            <Button sx={{ width: "100%" }} onClick={openAddTask}>
+                                add task
+                            </Button>
+                        )}
                         <Button onClick={saveSelectedTasks}>save tasks</Button>
                     </Stack>
                 )}
@@ -478,24 +339,6 @@ const TaskMenu = ({
                     editable={false}
                 />
             </Dialog>
-            <SwishPaymentHandler
-                title="Buy ticket"
-                open={paymentHandlerOpen}
-                setOpen={setPaymentHandlerOpen}
-                hasPaid={hasBoughtTicket}
-                paymentAmount={getReducedTicketPrice()}
-                callbackEndpoint={apiEndpoints.BUY_EVENT_TICKET}
-                callbackParams={
-                    new URLSearchParams([
-                        [GlobalConstants.USER_ID, user[GlobalConstants.ID]],
-                        [GlobalConstants.EVENT_ID, event ? event[GlobalConstants.ID] : ""],
-                        ...selectedTasks.map((task) => [
-                            GlobalConstants.TASK_ID,
-                            task[GlobalConstants.ID],
-                        ]),
-                    ])
-                }
-            />
         </>
     );
 };

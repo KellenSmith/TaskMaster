@@ -63,7 +63,7 @@ const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {
                     get on reserve list
                 </Button>
             );
-        return <Button onClick={() => setOpenTab(tabs.tasks)}>participate</Button>;
+        return <Button onClick={() => setOpenTab(tabs.participate)}>participate</Button>;
     };
 
     return (

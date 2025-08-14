@@ -95,7 +95,7 @@ describe("Text Content Actions", () => {
                 data: {
                     id: mockTextContent.id,
                     language: mockTextContent.language,
-                    content: "placeholder",
+                    content: '<p><span style="color: rgb(255, 255, 255);">placeholder</span></p>',
                 },
             });
         });

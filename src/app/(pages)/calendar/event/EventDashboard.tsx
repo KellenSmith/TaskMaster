@@ -11,7 +11,7 @@ import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
 import EventDetails from "./EventDetails";
 
-export const tabs = { details: "Details", tasks: "Participate" };
+export const tabs = { details: "Details", participate: "Participate" };
 
 const EventDashboard = ({ event, fetchEventAction }) => {
     const theme = useTheme();
@@ -55,12 +55,8 @@ const EventDashboard = ({ event, fetchEventAction }) => {
                     setEventActionState={setEventActionState}
                 />
             )}
-            {openTab === tabs.tasks && (
-                <TaskDashboard
-                    readOnly={!isUserHost(user, event)}
-                    event={event}
-                    fetchEventAction={fetchEventAction}
-                />
+            {openTab === tabs.participate && (
+                <TaskDashboard readOnly={!isUserHost(user, event)} event={event} />
             )}
         </Suspense>
     );

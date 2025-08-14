@@ -223,13 +223,13 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                                 get on reserve list
                             </Button>,
                         );
-                } else if (openTab !== tabs.tasks) {
+                } else if (openTab !== tabs.participate) {
                     ActionButtons.push(
                         <Button
                             key="participate"
                             onClick={() => {
                                 closeActionMenu();
-                                setOpenTab(tabs.tasks);
+                                setOpenTab(tabs.participate);
                             }}
                         >
                             participate

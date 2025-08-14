@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, TicketType } from "@prisma/client";
+import { Prisma, Product, TicketType } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import {
     createMembershipProductSchema,
@@ -174,13 +174,13 @@ export const updateMembershipProduct = async (
 };
 
 export const deleteProduct = async (
-    productId: string,
+    product: Product,
     currentActionState: FormActionState,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
         await prisma.product.delete({
-            where: { id: productId },
+            where: { id: product.id },
         });
         newActionState.errorMsg = "";
         newActionState.status = 200;
@@ -211,7 +211,7 @@ export const getMembershipProductId = async (): Promise<string> => {
             data: {
                 name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
                 description: "Annual membership",
-                price: parseFloat(process.env.NEXT_PUBLIC_MEMBERSHIP_FEE || "0"),
+                price: 0,
                 unlimitedStock: true,
                 Membership: {
                     create: {
@@ -243,7 +243,7 @@ export const processOrderedProduct = async (
         if (product.Membership) {
             const renewMembershipResult = await renewUserMembership(
                 userId,
-                product.Membership,
+                product.Membership.id,
                 currentActionState,
             );
             if (renewMembershipResult.status !== 200) {

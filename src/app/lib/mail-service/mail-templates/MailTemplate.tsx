@@ -7,9 +7,10 @@ import DOMPurify from "isomorphic-dompurify";
 interface MailTemplateProps {
     children?: ReactNode;
     html?: string;
+    organizationName: string;
 }
 
-const MailTemplate: FC<MailTemplateProps> = ({ children, html }) => {
+const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName }) => {
     const sanitizeHtml = (): string => {
         return DOMPurify.sanitize(html, {
             ALLOWED_TAGS: [
@@ -56,7 +57,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children, html }) => {
                             ...mailTheme.typography.h3,
                         }}
                     >
-                        {process.env.NEXT_PUBLIC_ORG_NAME}
+                        {organizationName}
                     </Heading>
                     <Container style={{ color: mailTheme.palette.text.primary }}>
                         {children}

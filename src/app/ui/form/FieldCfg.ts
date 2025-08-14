@@ -6,6 +6,11 @@ export const FieldLabels = {
     [GlobalConstants.DELETE]: "Delete",
     [GlobalConstants.VALIDATE_MEMBERSHIP]: "Validate Membership",
     [GlobalConstants.APPLY]: "Apply For Membership",
+    // Organization settings
+    [GlobalConstants.ORGANIZATION_SETTINGS]: "Settings",
+    [GlobalConstants.ORGANIZATION_NAME]: "Organization Name",
+    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind Membership Expires In Days",
+    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]: "Purge Members After Days Unvalidated",
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
     // User
@@ -17,8 +22,7 @@ export const FieldLabels = {
     [GlobalConstants.EMAIL]: "Email",
     [GlobalConstants.PHONE]: "Phone",
     [GlobalConstants.ROLE]: "Role",
-    [GlobalConstants.CREATED]: "Created",
-    [GlobalConstants.MEMBERSHIP_RENEWED]: "Membership Renewed",
+    [GlobalConstants.CREATED_AT]: "Created At",
     [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters from Wish`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the Wish member registry",
     [GlobalConstants.PENDING]: "Pending",
@@ -75,6 +79,13 @@ export const FieldLabels = {
 };
 
 export const RenderedFields = {
+    // Org settings
+    [GlobalConstants.ORGANIZATION_SETTINGS]: [
+        GlobalConstants.ORGANIZATION_NAME,
+        GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
+        GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
+        GlobalConstants.EMAIL,
+    ],
     // Profile
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,
@@ -140,6 +151,13 @@ RenderedFields[GlobalConstants.USER] = [
 ];
 
 export const RequiredFields = {
+    // Org settings
+    [GlobalConstants.ORGANIZATION_SETTINGS]: [
+        GlobalConstants.ORGANIZATION_NAME,
+        GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
+        GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
+        GlobalConstants.EMAIL,
+    ],
     // Profile
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,
@@ -223,8 +241,7 @@ export const allowSelectMultiple = [GlobalConstants.TAGS];
 
 export const datePickerFields = [
     // User
-    GlobalConstants.CREATED,
-    GlobalConstants.MEMBERSHIP_RENEWED,
+    GlobalConstants.CREATED_AT,
     GlobalConstants.START_TIME,
     GlobalConstants.END_TIME,
 ];

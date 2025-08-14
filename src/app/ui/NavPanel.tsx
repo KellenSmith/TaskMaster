@@ -12,10 +12,12 @@ import { isUserAuthorized, routes, routesToPath } from "../lib/definitions";
 import { Article } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { navigateToRoute } from "./utils";
+import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { user, logOut } = useUserContext();
+    const { organizationSettings } = useOrganizationSettingsContext();
     const router = useRouter();
 
     const toggleDrawerOpen = () => {
@@ -36,6 +38,8 @@ const NavPanel = () => {
                                 GlobalConstants.LOGIN,
                                 GlobalConstants.RESET,
                                 GlobalConstants.APPLY,
+                                GlobalConstants.ORDER,
+                                "order/complete",
                             ].includes(route),
                     ),
                 )
@@ -48,7 +52,7 @@ const NavPanel = () => {
                                     navigateToRoute(route, router);
                                 }}
                             >
-                                {route.slice(1)}
+                                {route.replace(/^\/+/, "").replace(/-/g, " ")}
                             </Button>
                         </ListItem>
                     ))}
@@ -68,7 +72,7 @@ const NavPanel = () => {
                         style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
                         onClick={() => navigateToRoute("/", router)}
                     >
-                        LOGO
+                        {organizationSettings?.organizationName || "Organization Name"}
                     </Typography>
                     <Button onClick={openReadme}>
                         <Article />

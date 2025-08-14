@@ -12,6 +12,7 @@ import GlobalConstants from "../../GlobalConstants";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { defaultFormActionState, FormActionState } from "../definitions";
+import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
 
 interface EmailPayload {
     from: string;
@@ -24,12 +25,15 @@ const getEmailPayload = async (
     receivers: string[],
     subject: string,
     mailContent: ReactElement,
-): Promise<EmailPayload> => ({
-    from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
-    bcc: receivers.join(", "),
-    subject: subject,
-    html: await render(mailContent),
-});
+): Promise<EmailPayload> => {
+    const organizationSettings = await getOrganizationSettings();
+    return {
+        from: `${await getOrganizationName()} <${organizationSettings?.email}>`,
+        bcc: receivers.join(", "),
+        subject: subject,
+        html: await render(mailContent),
+    };
+};
 
 /**
  * @throws Error if email fails
@@ -41,11 +45,12 @@ export const sendUserCredentials = async (
     const mailContent = createElement(UserCredentialsTemplate, {
         userEmail: userEmail,
         password: userPassword,
+        organizationName: await getOrganizationName(),
     });
     const mailResponse = await mailTransport.sendMail(
         await getEmailPayload(
             [userEmail],
-            `${process.env.NEXT_PUBLIC_ORG_NAME} credentials`,
+            `${await getOrganizationName()} credentials`,
             mailContent,
         ),
     );
@@ -57,13 +62,16 @@ export const sendUserCredentials = async (
  * @throws Error if email fails
  */
 export const remindExpiringMembers = async (userEmails: string[]): Promise<string> => {
-    const mailContent = createElement(MembershipExpiresReminderTemplate);
+    const orgSettings = await getOrganizationSettings();
+    const mailContent = createElement(MembershipExpiresReminderTemplate, {
+        organizationSettings: orgSettings,
+    });
     const mailResponse = await mailTransport.sendMail(
         userEmails.map(
             async (userEmail) =>
                 await getEmailPayload(
                     [userEmail],
-                    `Your ${process.env.NEXT_PUBLIC_ORG_NAME} membership is about to expire`,
+                    `Your ${orgSettings?.organizationName || "Task Master"} membership is about to expire`,
                     mailContent,
                 ),
         ),
@@ -96,6 +104,8 @@ export const informOfCancelledEvent = async (eventId: string): Promise<string[]>
         });
         const mailContent = createElement(EventCancelledTemplate, {
             event: event,
+            organizationName: await getOrganizationName(),
+            organizationEmail: (await getOrganizationSettings())?.email || "<email@gmail.com>",
         });
 
         const mailPayload = await getEmailPayload(
@@ -144,16 +154,20 @@ export const sendMassEmail = async (
                 },
             })
         ).map((user) => user.email);
-
+        console.log(recipients);
         const mailContent = createElement(MailTemplate, {
             html: fieldValues[GlobalConstants.CONTENT],
+            organizationName: await getOrganizationName(),
         });
         const mailPayload = await getEmailPayload(
             recipients,
             fieldValues[GlobalConstants.SUBJECT],
             mailContent,
         );
+
+        console.log(mailPayload);
         const mailResponse = await mailTransport.sendMail(mailPayload);
+        console.log(mailResponse);
         if (mailResponse.error) throw new Error(mailResponse.error.message);
         newActionState.status = 200;
         newActionState.errorMsg = "";
@@ -197,12 +211,13 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
             orderId: orderDetails.id,
             orderItems: orderDetails.orderItems,
             totalAmount: orderDetails.totalAmount,
+            organizationName: await getOrganizationName(),
         });
 
         const mailResponse = await mailTransport.sendMail(
             await getEmailPayload(
                 [orderDetails.user.email],
-                `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+                `Order Confirmation - ${await getOrganizationName()}`,
                 mailContent,
             ),
         );

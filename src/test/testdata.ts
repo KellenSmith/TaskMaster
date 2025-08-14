@@ -8,7 +8,6 @@ const testdata = {
         email: "john.doe@example.com",
         phone: "+1-555-123-4567",
         created: new Date("2023-01-01T00:00:00Z"),
-        membershipRenewed: new Date("2024-01-01T00:00:00Z"),
         consentToNewsletters: true,
         role: "user",
         hostingEvents: [],
@@ -80,6 +79,9 @@ const testdata = {
         price: 99.99,
         createdAt: new Date("2024-01-01T00:00:00Z"),
         updatedAt: new Date("2024-01-01T00:00:00Z"),
+        unlimitedStock: false,
+        stock: 0,
+        imageUrl: "",
     },
 
     createProduct: {

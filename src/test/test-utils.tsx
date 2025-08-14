@@ -3,6 +3,7 @@ import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import ThemeContextProvider from "../app/context/ThemeContext";
 import { UserContext } from "../app/context/UserContext";
+import { OrganizationSettingsContext } from "../app/context/OrganizationSettingsContext";
 
 // Mock user data for testing
 export const mockUser = {
@@ -10,7 +11,6 @@ export const mockUser = {
     nickname: "Test User",
     email: "test@example.com",
     role: "USER",
-    membershipRenewed: new Date().toISOString(),
 };
 
 // Mock UserContext value
@@ -19,6 +19,15 @@ const mockUserContextValue = {
     logOut: vi.fn(),
     login: vi.fn(),
     updateLoggedInUser: vi.fn(),
+};
+
+// Mock OrganizationSettingsContext value
+const mockOrganizationSettingsContextValue = {
+    organizationSettings: {
+        organizationName: "Task Master",
+        remindMembershipExpiresInDays: 7,
+        purgeMembersAfterDaysUnvalidated: 180,
+    },
 };
 
 interface WrapperProps {
@@ -31,9 +40,11 @@ const AllTheProviders = ({ children, user = mockUser }: WrapperProps) => {
     const contextValue = { ...mockUserContextValue, user };
 
     return (
-        <ThemeContextProvider>
-            <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
-        </ThemeContextProvider>
+        <OrganizationSettingsContext.Provider value={mockOrganizationSettingsContextValue}>
+            <ThemeContextProvider>
+                <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
+            </ThemeContextProvider>
+        </OrganizationSettingsContext.Provider>
     );
 };
 

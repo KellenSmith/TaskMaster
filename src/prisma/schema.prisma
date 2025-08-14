@@ -8,24 +8,35 @@ datasource db {
     directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
+model OrganizationSettings {
+    remindMembershipExpiresInDays    Int    @default(7)
+    organizationName                 String @unique @default("Task Master")
+    purgeMembersAfterDaysUnvalidated Int    @default(180)
+    email                            String @default("email@gmail.com")
+
+    @@map("organization_settings")
+}
+
 enum UserRole {
     user
     admin
 }
 
 model User {
-    id                   String           @id @default(uuid())
-    firstName            String           @default("")
-    surName              String           @default("")
-    nickname             String           @unique @default(uuid())
-    pronoun              String?          @default("they/them")
-    email                String           @unique
-    phone                String?          @default("")
-    created              DateTime         @default(now())
-    membershipRenewed    DateTime? // Membership is invalid if null or expired
-    consentToNewsletters Boolean          @default(true)
-    role                 UserRole         @default(user)
-    userCredentials      UserCredentials?
+    id                   String   @id @default(uuid())
+    firstName            String   @default("")
+    surName              String   @default("")
+    nickname             String   @unique @default(uuid())
+    pronoun              String?  @default("they/them")
+    email                String   @unique
+    phone                String?  @default("")
+    createdAt            DateTime @default(now())
+    consentToNewsletters Boolean  @default(true)
+    role                 UserRole @default(user)
+
+    userCredentials UserCredentials?
+
+    userMembership UserMembership?
 
     hostingEvents     Event[]
     participantEvents ParticipantInEvent[]
@@ -161,7 +172,21 @@ model Membership {
     productId String  @unique
     duration  Int     @default(365) // in days
 
+    userMemberships UserMembership[]
+
     @@map("memberships")
+}
+
+model UserMembership {
+    id           String     @id @default(uuid())
+    user         User       @relation(fields: [userId], references: [id])
+    userId       String     @unique // One membership per user
+    membership   Membership @relation(fields: [membershipId], references: [id])
+    membershipId String
+
+    expiresAt DateTime
+
+    @@map("user_memberships")
 }
 
 enum TicketType {

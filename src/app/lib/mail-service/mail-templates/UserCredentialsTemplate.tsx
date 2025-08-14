@@ -10,12 +10,17 @@ import { FC } from "react";
 interface IUserCredentialsTemplateProps {
     userEmail: string;
     password: string;
+    organizationName: string;
 }
 
-const UserCredentialsTemplate: FC<IUserCredentialsTemplateProps> = ({ userEmail, password }) => {
+const UserCredentialsTemplate: FC<IUserCredentialsTemplateProps> = ({
+    userEmail,
+    password,
+    organizationName,
+}) => {
     return (
-        <MailTemplate>
-            <Text>{`You have a new password for your account at ${process.env.NEXT_PUBLIC_ORG_NAME}!`}</Text>
+        <MailTemplate organizationName={organizationName}>
+            <Text>{`You have a new password for your account at ${organizationName}!`}</Text>
             <Text> You can now log in with the following credentials:</Text>
             <Text>Email: {userEmail}</Text>
             <Text>Password: {password}</Text>
