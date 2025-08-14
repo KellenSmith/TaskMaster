@@ -1,10 +1,10 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { OrganizationSettings, Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { FormActionState } from "./definitions";
 
-export const getOrganizationSettings = async () => {
+export const getOrganizationSettings = async (): Promise<OrganizationSettings> => {
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
         orgSettings = await prisma.organizationSettings.create({});

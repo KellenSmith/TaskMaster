@@ -2,6 +2,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../../GlobalConstants";
 import dayjs from "dayjs";
 import { remindExpiringMembers } from "../../lib/mail-service/mail-service";
+import { getOrganizationSettings } from "../../lib/organization-settings-actions";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -27,7 +28,8 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
 
 export const remindAboutExpiringMembership = async (): Promise<void> => {
     // Send reminders to members whose membership expires in X days from now
-    const reminderDays = parseInt(process.env.MEMBERSHIP_EXPIRES_REMINDER || "7");
+    const orgSettings = await getOrganizationSettings();
+    const reminderDays = orgSettings?.remindMembershipExpiresInDays || 7;
 
     const earliestExpirationDate = dayjs().add(reminderDays, "d").hour(0).minute(0).second(0);
     const latestExpirationDate = earliestExpirationDate.add(1, "d");

@@ -12,6 +12,7 @@ import GlobalConstants from "../../GlobalConstants";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { defaultFormActionState, FormActionState } from "../definitions";
+import { getOrganizationSettings } from "../organization-settings-actions";
 
 interface EmailPayload {
     from: string;
@@ -57,13 +58,16 @@ export const sendUserCredentials = async (
  * @throws Error if email fails
  */
 export const remindExpiringMembers = async (userEmails: string[]): Promise<string> => {
-    const mailContent = createElement(MembershipExpiresReminderTemplate);
+    const orgSettings = await getOrganizationSettings();
+    const mailContent = createElement(MembershipExpiresReminderTemplate, {
+        organizationSettings: orgSettings,
+    });
     const mailResponse = await mailTransport.sendMail(
         userEmails.map(
             async (userEmail) =>
                 await getEmailPayload(
                     [userEmail],
-                    `Your ${process.env.NEXT_PUBLIC_ORG_NAME} membership is about to expire`,
+                    `Your ${orgSettings?.organizationName || "Task Master"} membership is about to expire`,
                     mailContent,
                 ),
         ),

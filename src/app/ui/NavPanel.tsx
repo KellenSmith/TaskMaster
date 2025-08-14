@@ -52,7 +52,7 @@ const NavPanel = () => {
                                     navigateToRoute(route, router);
                                 }}
                             >
-                                {route.slice(1)}
+                                {route.replace(/^\/+/, "").replace(/-/g, " ")}
                             </Button>
                         </ListItem>
                     ))}
