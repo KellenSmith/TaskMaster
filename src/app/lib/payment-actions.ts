@@ -6,7 +6,7 @@ import { Order, OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
-import { getOrganizationName, getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationName } from "./organization-settings-actions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
