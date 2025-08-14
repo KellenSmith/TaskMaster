@@ -84,6 +84,7 @@ export const RenderedFields = {
         GlobalConstants.ORGANIZATION_NAME,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
+        GlobalConstants.EMAIL,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -155,6 +156,7 @@ export const RequiredFields = {
         GlobalConstants.ORGANIZATION_NAME,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
+        GlobalConstants.EMAIL,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [

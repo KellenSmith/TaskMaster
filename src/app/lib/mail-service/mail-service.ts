@@ -25,12 +25,15 @@ const getEmailPayload = async (
     receivers: string[],
     subject: string,
     mailContent: ReactElement,
-): Promise<EmailPayload> => ({
-    from: `${await getOrganizationName()} <${process.env.EMAIL}>`,
-    bcc: receivers.join(", "),
-    subject: subject,
-    html: await render(mailContent),
-});
+): Promise<EmailPayload> => {
+    const organizationSettings = await getOrganizationSettings();
+    return {
+        from: `${await getOrganizationName()} <${organizationSettings?.email}>`,
+        bcc: receivers.join(", "),
+        subject: subject,
+        html: await render(mailContent),
+    };
+};
 
 /**
  * @throws Error if email fails
@@ -102,6 +105,7 @@ export const informOfCancelledEvent = async (eventId: string): Promise<string[]>
         const mailContent = createElement(EventCancelledTemplate, {
             event: event,
             organizationName: await getOrganizationName(),
+            organizationEmail: (await getOrganizationSettings())?.email || "<email@gmail.com>",
         });
 
         const mailPayload = await getEmailPayload(
@@ -150,7 +154,7 @@ export const sendMassEmail = async (
                 },
             })
         ).map((user) => user.email);
-
+        console.log(recipients);
         const mailContent = createElement(MailTemplate, {
             html: fieldValues[GlobalConstants.CONTENT],
             organizationName: await getOrganizationName(),
@@ -160,7 +164,10 @@ export const sendMassEmail = async (
             fieldValues[GlobalConstants.SUBJECT],
             mailContent,
         );
+
+        console.log(mailPayload);
         const mailResponse = await mailTransport.sendMail(mailPayload);
+        console.log(mailResponse);
         if (mailResponse.error) throw new Error(mailResponse.error.message);
         newActionState.status = 200;
         newActionState.errorMsg = "";
