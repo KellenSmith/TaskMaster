@@ -5,6 +5,7 @@ import React, { useContext } from "react";
 import { ThemeContext } from "./ThemeContext";
 import UserContextProvider from "./UserContext";
 import OrganizationSettingsProvider from "./OrganizationSettingsContext";
+import NotificationContextProvider from "./NotificationContext";
 
 interface ComponentWrapperProps {
     children: React.ReactNode;
@@ -20,11 +21,13 @@ const ComponentWrapper: React.FC<ComponentWrapperProps> = ({ children }) => {
     const { theme } = themeContext;
 
     return (
-        <OrganizationSettingsProvider>
-            <ThemeProvider theme={theme}>
-                <UserContextProvider>{children}</UserContextProvider>
-            </ThemeProvider>
-        </OrganizationSettingsProvider>
+        <NotificationContextProvider>
+            <OrganizationSettingsProvider>
+                <ThemeProvider theme={theme}>
+                    <UserContextProvider>{children}</UserContextProvider>
+                </ThemeProvider>
+            </OrganizationSettingsProvider>
+        </NotificationContextProvider>
     );
 };
 
