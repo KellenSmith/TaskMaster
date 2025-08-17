@@ -7,6 +7,7 @@ import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState, FormActionState } from "./definitions";
+import { revalidatePath } from "next/cache";
 
 export const createEvent = async (
     currentActionState: FormActionState,
@@ -153,6 +154,7 @@ export const updateEvent = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Updated successfully`;
+        revalidatePath(`/calendar/event`);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -176,6 +178,7 @@ export const cancelEvent = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Cancelled event and informed participants`;
+        revalidatePath(`/calendar/event`);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -227,6 +230,7 @@ export const addEventReserve = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Successfully added to reserve list`;
+        revalidatePath(`/calendar/event`);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -251,6 +255,7 @@ export const deleteEventParticipant = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Removed user ${userId} from event ${eventId} participants`;
+        revalidatePath(`/calendar/event`);
     } catch (error) {
         console.error(error);
         newActionState.status = 500;
@@ -276,6 +281,7 @@ export const deleteEventReserve = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Removed user ${userId} from event ${eventId} reserves`;
+        revalidatePath(`/calendar/event`);
     } catch (error) {
         console.error(error);
         newActionState.status = 500;

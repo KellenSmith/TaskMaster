@@ -1,12 +1,12 @@
 "use client";
 
-import { FC, startTransition, useActionState, useMemo, useState } from "react";
+import { FC, startTransition, useMemo, useState } from "react";
 import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
 import { Button, Dialog, Menu, Stack } from "@mui/material";
 import { EventStatus, Prisma } from "@prisma/client";
-import Form, { getFormActionMsg } from "../../../ui/form/Form";
+import Form from "../../../ui/form/Form";
 import {
     addEventReserve,
     cancelEvent,
@@ -25,6 +25,7 @@ import AccordionRadioGroup from "../../../ui/AccordionRadioGroup";
 import { pdf } from "@react-pdf/renderer";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { MoreHoriz } from "@mui/icons-material";
+import { useNotificationContext } from "../../../context/NotificationContext";
 
 interface IEventActions {
     event: any;
@@ -37,6 +38,8 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
     const { user } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState("");
+    const { addNotification } = useNotificationContext();
+    const [loading, setLoading] = useState(false);
     const sendoutToOptions = useMemo(
         () => ({
             ALL: "All",
@@ -48,67 +51,66 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
     const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.ALL);
     const router = useRouter();
 
-    const [addReserveActionState, addReserveAction, isAddReservePending] = useActionState(
-        (currentActionState: FormActionState) =>
+    const addUserAsEventReserve = () => {
+        performEventAction(() =>
             addEventReserve(
                 user[GlobalConstants.ID],
                 event[GlobalConstants.ID],
-                currentActionState,
+                defaultFormActionState,
             ),
-        defaultFormActionState,
-    );
+        );
+    };
 
-    const [publishActionState, publishAction, isPublishPending] = useActionState(
-        (currentActionState: FormActionState) =>
-            updateEvent(event[GlobalConstants.ID], currentActionState, {
+    const publishEvent = () => {
+        performEventAction(() =>
+            updateEvent(event[GlobalConstants.ID], defaultFormActionState, {
                 status: EventStatus.published,
             }),
-        defaultFormActionState,
-    );
+        );
+    };
 
-    const [cancelActionState, cancelAction, isCancelPending] = useActionState(
-        (currentActionState: FormActionState) =>
-            cancelEvent(event[GlobalConstants.ID], currentActionState),
-        defaultFormActionState,
-    );
+    const cancelThisEvent = () =>
+        performEventAction(() => cancelEvent(event[GlobalConstants.ID], defaultFormActionState));
 
-    const [deleteActionState, deleteAction, isDeletePending] = useActionState(
-        async (currentActionState: FormActionState) => {
-            const result = await deleteEvent(event[GlobalConstants.ID], currentActionState);
+    const deleteThisEvent = () =>
+        performEventAction(async () => {
+            const result = await deleteEvent(event[GlobalConstants.ID], defaultFormActionState);
             if (result.status === 200) {
                 navigateToRoute(`/${GlobalConstants.CALENDAR}`, router);
             }
-            return result;
-        },
-        defaultFormActionState,
-    );
+        });
 
-    const [removeParticipantActionState, removeParticipantAction, isRemoveParticipantPending] =
-        useActionState(
-            (currentActionState: FormActionState) =>
-                deleteEventParticipant(
-                    user[GlobalConstants.ID],
-                    event[GlobalConstants.ID],
-                    currentActionState,
-                ),
-            defaultFormActionState,
+    const removeUserFromParticipantList = () =>
+        performEventAction(() =>
+            deleteEventParticipant(
+                user[GlobalConstants.ID],
+                event[GlobalConstants.ID],
+                defaultFormActionState,
+            ),
         );
 
-    const [removeReserveActionState, removeReserveAction, isRemoveReservePending] = useActionState(
-        (currentActionState: FormActionState) =>
+    const removeUserFromReserveList = () =>
+        performEventAction(() =>
             deleteEventReserve(
                 user[GlobalConstants.ID],
                 event[GlobalConstants.ID],
-                currentActionState,
+                defaultFormActionState,
             ),
-        defaultFormActionState,
-    );
+        );
 
-    const actAndUpdateEvent = (action: Function) => {
-        closeActionMenu();
-        startTransition(() => {
-            action();
-            fetchEventAction();
+    const performEventAction = (action: Function) => {
+        startTransition(async () => {
+            setLoading(true);
+            const actionResult = await action();
+            console.log(action, actionResult);
+            if (actionResult.status === 200) {
+                addNotification(actionResult.result, "success");
+                fetchEventAction();
+                closeActionMenu();
+            } else {
+                addNotification(actionResult.errorMsg, "error");
+            }
+            setLoading(false);
         });
     };
 
@@ -138,8 +140,8 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                     <ConfirmButton
                         key="publish"
                         color="success"
-                        disabled={isPublishPending}
-                        onClick={() => actAndUpdateEvent(publishAction)}
+                        disabled={loading}
+                        onClick={publishEvent}
                     >
                         publish event
                     </ConfirmButton>,
@@ -149,9 +151,9 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                     <ConfirmButton
                         key="cancel"
                         color="error"
-                        disabled={isCancelPending}
+                        disabled={loading}
                         confirmText={`An info email will be sent to all ${event[GlobalConstants.PARTICIPANT_USERS].length} participants. Are you sure?`}
-                        onClick={() => actAndUpdateEvent(cancelAction)}
+                        onClick={cancelThisEvent}
                     >
                         cancel event
                     </ConfirmButton>,
@@ -186,8 +188,8 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                     <ConfirmButton
                         key="delete"
                         color="error"
-                        disabled={isDeletePending}
-                        onClick={() => actAndUpdateEvent(deleteAction)}
+                        disabled={loading}
+                        onClick={deleteThisEvent}
                     >
                         delete
                     </ConfirmButton>,
@@ -197,8 +199,8 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                 ActionButtons.push(
                     <ConfirmButton
                         key="leave participant"
-                        onClick={() => actAndUpdateEvent(removeParticipantAction)}
-                        disabled={isRemoveParticipantPending}
+                        onClick={removeUserFromParticipantList}
+                        disabled={loading}
                     >
                         leave participant list
                     </ConfirmButton>,
@@ -209,16 +211,16 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                         ActionButtons.push(
                             <ConfirmButton
                                 key="leave reserve"
-                                onClick={() => actAndUpdateEvent(removeReserveAction)}
-                                disabled={isRemoveReservePending}
+                                onClick={removeUserFromReserveList}
+                                disabled={loading}
                             >{`leave reserve list (you are #${findReserveUserIndexById() + 1})`}</ConfirmButton>,
                         );
                     else
                         ActionButtons.push(
                             <Button
                                 key="add reserve"
-                                disabled={isAddReservePending}
-                                onClick={() => actAndUpdateEvent(addReserveAction)}
+                                disabled={loading}
+                                onClick={addUserAsEventReserve}
                             >
                                 get on reserve list
                             </Button>,
@@ -323,12 +325,6 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
             >
                 <Stack>{getActionButtons()}</Stack>
             </Menu>
-            {getFormActionMsg(addReserveActionState)}
-            {getFormActionMsg(deleteActionState)}
-            {getFormActionMsg(publishActionState)}
-            {getFormActionMsg(cancelActionState)}
-            {getFormActionMsg(removeParticipantActionState)}
-            {getFormActionMsg(removeReserveActionState)}
             <Dialog open={!!dialogOpen} onClose={() => setDialogOpen("")} fullWidth maxWidth="xl">
                 {getDialogForm()}
                 <Button onClick={() => setDialogOpen("")}>cancel</Button>
