@@ -102,10 +102,9 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
         startTransition(async () => {
             setLoading(true);
             const actionResult = await action();
-            console.log(action, actionResult);
             if (actionResult.status === 200) {
                 addNotification(actionResult.result, "success");
-                fetchEventAction();
+                await fetchEventAction();
                 closeActionMenu();
             } else {
                 addNotification(actionResult.errorMsg, "error");

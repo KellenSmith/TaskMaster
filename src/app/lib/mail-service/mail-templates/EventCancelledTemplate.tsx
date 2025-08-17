@@ -20,7 +20,7 @@ const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({
 }) => {
     return (
         <MailTemplate organizationName={organizationName}>
-            <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Visit ${process.env.VERCEL_URL}/${GlobalConstants.CALENDAR}/${event[GlobalConstants.ID]} for more details.`}</Text>
+            <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Visit ${process.env.VERCEL_URL}/${GlobalConstants.CALENDAR}event?eventId=${event[GlobalConstants.ID]} for more details.`}</Text>
             {(event[GlobalConstants.FULL_TICKET_PRICE] as number) > 0 && (
                 <Text>{`If you paid for your ticket, please contact ${organizationEmail} for a refund.`}</Text>
             )}
