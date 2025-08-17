@@ -30,6 +30,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
 import { defaultFormActionState, FormActionState } from "../../lib/definitions";
+import { useNotificationContext } from "../../context/NotificationContext";
 
 export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
     (formActionState.errorMsg || formActionState.result) && (
@@ -97,6 +98,7 @@ const Form: FC<FormProps> = ({
     const [loading, setLoading] = useState(false);
     const [actionState, setActionState] = useState(defaultFormActionState);
     const [editMode, setEditMode] = useState(!readOnly);
+    const { addNotification } = useNotificationContext();
 
     useEffect(() => {
         setEditMode(!readOnly);
@@ -111,8 +113,13 @@ const Form: FC<FormProps> = ({
         setLoading(true);
         const newActionState = await action(actionState, fieldValues);
         setActionState(newActionState);
+
+        if ([200, 201].includes(newActionState.status)) {
+            editable && setEditMode(false);
+            addNotification(newActionState.result, "success");
+        } else addNotification(newActionState.errorMsg, "error");
+
         setLoading(false);
-        editable && newActionState.status === 200 && setEditMode(false);
     };
 
     const getFieldComp = (fieldId: string) => {
@@ -269,7 +276,6 @@ const Form: FC<FormProps> = ({
                 <Stack spacing={2}>
                     {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
                 </Stack>
-                {getFormActionMsg(actionState)}
                 {editMode && (
                     <Button type="submit" variant="contained" disabled={loading}>
                         {buttonLabel}
