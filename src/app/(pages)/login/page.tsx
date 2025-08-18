@@ -1,24 +1,30 @@
 "use client";
-
 import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
-import { useUserContext } from "../../context/UserContext";
 import { Button, Stack } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
+import z from "zod";
+import { login } from "../../lib/auth/auth";
 import { navigateToRoute } from "../../ui/utils";
+import { LoginSchema } from "../../lib/zod-schemas";
 
-const LoginForm: FC = () => {
-    const { login } = useUserContext();
+const LoginPage: FC = () => {
     const router = useRouter();
+
+    const handleLogin = async (parsedFieldValues: typeof LoginSchema.shape) => {
+        await login(parsedFieldValues);
+        return "Logged in successfully. Redirecting...";
+    };
 
     return (
         <Stack>
             <Form
                 name={GlobalConstants.LOGIN}
                 buttonLabel={GlobalConstants.LOGIN}
-                action={login}
+                validationSchema={LoginSchema}
+                action={handleLogin}
                 readOnly={false}
                 editable={false}
             />
@@ -32,4 +38,4 @@ const LoginForm: FC = () => {
     );
 };
 
-export default LoginForm;
+export default LoginPage;

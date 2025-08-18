@@ -12,7 +12,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, FC, ChangeEvent, ReactElement, useEffect } from "react";
+import { useState, FC, ReactElement, useEffect, useTransition } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -25,12 +25,13 @@ import {
     passwordFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
-import { defaultFormActionState, FormActionState } from "../../lib/definitions";
+import { FormActionState } from "../../lib/definitions";
 import { useNotificationContext } from "../../context/NotificationContext";
+import { ZodType, ZodError } from "zod";
+import dayjs from "dayjs";
 
 export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
     (formActionState.errorMsg || formActionState.result) && (
@@ -51,7 +52,8 @@ export const getFormActionMsg = (formActionState: FormActionState): ReactElement
 interface FormProps {
     name: string;
     buttonLabel?: string;
-    action?: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
+    action?: (fieldValues: any) => Promise<string>;
+    validationSchema?: ZodType<any>;
     defaultValues?: any;
     customOptions?: Object; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
@@ -59,44 +61,19 @@ interface FormProps {
     editable?: boolean;
 }
 
-const getFieldValues = (formName: string, defaultValues: any) => {
-    const fieldValues = {};
-    for (let fieldId of RenderedFields[formName]) {
-        if (defaultValues && fieldId in defaultValues)
-            fieldValues[fieldId] = defaultValues[fieldId];
-        else {
-            if (fieldId in selectFieldOptions) {
-                if (RequiredFields[formName].includes(fieldId)) {
-                    const defaultOption = selectFieldOptions[fieldId][0];
-                    fieldValues[fieldId] = allowSelectMultiple.includes(fieldId)
-                        ? [defaultOption]
-                        : defaultOption;
-                } else fieldValues[fieldId] = allowSelectMultiple.includes(fieldId) ? [] : "";
-            } else if (checkboxFields.includes(fieldId)) {
-                fieldValues[fieldId] = false;
-            } else if (datePickerFields.includes(fieldId)) {
-                fieldValues[fieldId] = null;
-            } else fieldValues[fieldId] = "";
-        }
-    }
-    return fieldValues;
-};
-
 const Form: FC<FormProps> = ({
     name,
     buttonLabel,
     action,
+    validationSchema,
     defaultValues,
     customOptions = {},
     customReadOnlyFields = [],
     readOnly = true,
     editable = true,
 }) => {
-    const [fieldValues, setFieldValues] = useState<{ [key: string]: string | string[] | boolean }>(
-        getFieldValues(name, defaultValues),
-    );
-    const [loading, setLoading] = useState(false);
-    const [actionState, setActionState] = useState(defaultFormActionState);
+    const [validationError, setValidationError] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
     const [editMode, setEditMode] = useState(!readOnly);
     const { addNotification } = useNotificationContext();
 
@@ -104,22 +81,41 @@ const Form: FC<FormProps> = ({
         setEditMode(!readOnly);
     }, [readOnly]);
 
-    const changeFieldValue = (fieldId: string, value: string | string[] | boolean) => {
-        setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
+    const validateFormData = (formData: FormData) => {
+        const formDataObject = Object.fromEntries(formData);
+        if (!validationSchema) return formDataObject;
+        try {
+            const parsedFieldValues = validationSchema.parse(formDataObject);
+            setValidationError(null);
+            return parsedFieldValues;
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const zodIssues = error.issues;
+                if (zodIssues.length > 0) {
+                    const errorField = zodIssues[0]?.path[0];
+                    const errorMessage = error.issues[0]?.message;
+                    setValidationError(`Error in field '${errorField as string}': ${errorMessage}`);
+                } else setValidationError("Unknown validation error");
+            }
+            return null;
+        }
     };
 
-    const submitForm = async (event) => {
+    const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setLoading(true);
-        const newActionState = await action(actionState, fieldValues);
-        setActionState(newActionState);
-
-        if ([200, 201].includes(newActionState.status)) {
-            editable && setEditMode(false);
-            addNotification(newActionState.result, "success");
-        } else addNotification(newActionState.errorMsg, "error");
-
-        setLoading(false);
+        const formData = new FormData(event.currentTarget);
+        console.log("FormData entries:", Object.fromEntries(formData));
+        const parsedFieldValues = validateFormData(formData);
+        console.log("Parsed field values:", parsedFieldValues);
+        if (parsedFieldValues)
+            startTransition(async () => {
+                try {
+                    const submitResult = await action(parsedFieldValues);
+                    addNotification(submitResult, "success");
+                } catch (error) {
+                    addNotification(error.message, "error");
+                }
+            });
     };
 
     const getFieldComp = (fieldId: string) => {
@@ -128,9 +124,13 @@ const Form: FC<FormProps> = ({
                 <Autocomplete
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
+                    defaultValue={
+                        defaultValues?.[fieldId] || allowSelectMultiple.includes(fieldId) ? [] : ""
+                    }
                     renderInput={(params) => (
                         <TextField
                             {...params}
+                            name={fieldId}
                             label={FieldLabels[fieldId]}
                             required={
                                 name in RequiredFields && RequiredFields[name].includes(fieldId)
@@ -139,47 +139,6 @@ const Form: FC<FormProps> = ({
                     )}
                     autoSelect={name in RequiredFields && RequiredFields[name].includes(fieldId)}
                     options={customOptions[fieldId] || selectFieldOptions[fieldId]}
-                    value={
-                        allowSelectMultiple.includes(fieldId)
-                            ? (customOptions[fieldId] || selectFieldOptions[fieldId]).filter(
-                                  (option) =>
-                                      Array.isArray(fieldValues[fieldId]) &&
-                                      (fieldValues[fieldId] as string[]).includes(
-                                          typeof option === "object" ? option.value : option,
-                                      ),
-                              )
-                            : (customOptions[fieldId] || selectFieldOptions[fieldId]).find(
-                                  (option) =>
-                                      typeof option === "object"
-                                          ? option.value === fieldValues[fieldId]
-                                          : option === fieldValues[fieldId],
-                              )
-                    }
-                    onChange={(_, selectedOption) => {
-                        if (Array.isArray(selectedOption)) {
-                            // Handle multiple selection
-                            changeFieldValue(
-                                fieldId,
-                                selectedOption.map((option) =>
-                                    typeof option === "object" ? option.value : option,
-                                ),
-                            );
-                        } else if (selectedOption) {
-                            // Handle single selection
-                            changeFieldValue(
-                                fieldId,
-                                typeof selectedOption === "object"
-                                    ? selectedOption.value
-                                    : selectedOption,
-                            );
-                        } else {
-                            // Handle clearing the selection
-                            changeFieldValue(
-                                fieldId,
-                                allowSelectMultiple.includes(fieldId) ? [] : "",
-                            );
-                        }
-                    }}
                     multiple={allowSelectMultiple.includes(fieldId)}
                 />
             );
@@ -189,18 +148,12 @@ const Form: FC<FormProps> = ({
                 <DateTimePicker
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
+                    name={fieldId}
                     label={FieldLabels[fieldId]}
-                    value={
-                        dayjs(fieldValues[fieldId] as string).isValid()
-                            ? dayjs(fieldValues[fieldId] as string)
-                            : null
-                    }
-                    onChange={(newValue) =>
-                        dayjs(newValue).isValid() &&
-                        changeFieldValue(fieldId, newValue.toISOString())
-                    }
+                    defaultValue={defaultValues?.[fieldId] || dayjs().toISOString()}
                     slotProps={{
                         textField: {
+                            name: fieldId,
                             required: RequiredFields[name].includes(fieldId),
                         },
                         actionBar: { actions: ["clear", "accept"] },
@@ -215,13 +168,11 @@ const Form: FC<FormProps> = ({
                     required={RequiredFields[name].includes(fieldId)}
                     control={
                         <Checkbox
+                            name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                            checked={fieldValues[fieldId] as boolean}
-                            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                                changeFieldValue(fieldId, event.target.checked)
-                            }
                         />
                     }
+                    defaultValue={defaultValues?.[fieldId] || false}
                     label={FieldLabels[fieldId]}
                 />
             );
@@ -231,8 +182,7 @@ const Form: FC<FormProps> = ({
                     key={fieldId}
                     fieldId={fieldId}
                     editMode={editMode || customReadOnlyFields.includes(fieldId)}
-                    value={fieldValues[fieldId] as string}
-                    changeFieldValue={changeFieldValue}
+                    defaultValue={defaultValues?.[fieldId] || ""}
                 />
             );
         }
@@ -242,11 +192,8 @@ const Form: FC<FormProps> = ({
                 key={fieldId}
                 label={FieldLabels[fieldId]}
                 name={fieldId}
+                defaultValue={defaultValues?.[fieldId] || ""}
                 required={RequiredFields[name].includes(fieldId)}
-                value={fieldValues[fieldId]}
-                onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    changeFieldValue(fieldId, event.target.value);
-                }}
                 {...(passwordFields.includes(fieldId) && {
                     type: GlobalConstants.PASSWORD,
                 })}
@@ -262,10 +209,7 @@ const Form: FC<FormProps> = ({
                     (editMode ? (
                         <Cancel
                             sx={{ padding: 2, cursor: "pointer" }}
-                            onClick={() => {
-                                setFieldValues(getFieldValues(name, defaultValues));
-                                setEditMode(false);
-                            }}
+                            onClick={() => setEditMode(false)}
                         />
                     ) : (
                         <Edit sx={{ padding: 2 }} onClick={() => setEditMode(true)} />
@@ -275,9 +219,10 @@ const Form: FC<FormProps> = ({
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
                     {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
+                    {validationError && <Typography color="error">{validationError}</Typography>}
                 </Stack>
                 {editMode && (
-                    <Button type="submit" variant="contained" disabled={loading}>
+                    <Button type="submit" variant="contained" disabled={isPending}>
                         {buttonLabel}
                     </Button>
                 )}

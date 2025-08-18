@@ -57,11 +57,6 @@ export const isUserAdmin = (user: any): boolean =>
 export const isUserHost = (user: any, event: Event): boolean =>
     user && user[GlobalConstants.ID] === event.hostId;
 
-export interface LoginSchema {
-    email: string;
-    password: string;
-}
-
 export interface ResetCredentialsSchema {
     email: string;
 }

@@ -7,7 +7,9 @@ import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
-import { FormActionState, LoginSchema } from "../definitions";
+import { revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
+import { LoginSchema } from "../zod-schemas";
 
 // Generate a random string of specified length
 export const generateSalt = async (): Promise<string> => {
@@ -36,75 +38,43 @@ export const generateUserCredentials = async (
     password: string,
 ): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
     const salt = await generateSalt();
-    const hashedPassword = await hashPassword(password, salt);
-    const newUserCredentials = {
-        [GlobalConstants.SALT]: salt,
-        [GlobalConstants.HASHED_PASSWORD]: hashedPassword,
-    } as Prisma.UserCredentialsCreateWithoutUserInput;
-    return newUserCredentials;
+    return {
+        salt,
+        hashedPassword: await hashPassword(password, salt),
+    };
 };
 
-export const createSession = async (fieldValues: LoginSchema) => {
-    const loggedInUser = await prisma.user.findUnique({
-        where: { email: fieldValues.email } as any as Prisma.UserWhereUniqueInput,
-        include: {
-            userMembership: true,
-        },
-    });
-
-    await encryptJWT(loggedInUser);
-};
-
-export const login = async (
-    currentActionState: FormActionState,
-    fieldValues: LoginSchema,
-): Promise<FormActionState> => {
-    const authState = { ...currentActionState };
-
+export const login = async (parsedFieldValues: typeof LoginSchema.shape): Promise<string> => {
+    // Everyone who applied for membership exists in the database
     const loggedInUser = await prisma.user.findUnique({
         where: {
-            email: fieldValues.email,
-        } as any as Prisma.UserWhereUniqueInput,
+            email: parsedFieldValues.email as unknown as string,
+        } as Prisma.UserWhereUniqueInput,
         include: {
             userMembership: true,
         },
     });
+    if (!loggedInUser) throw new Error("Please apply for membership");
 
-    if (!loggedInUser) {
-        authState.status = 404;
-        authState.errorMsg = "Please apply for membership";
-        authState.result = "";
-        return authState;
-    }
-
+    // All validated members have credentials
     const userCredentials = await prisma.userCredentials.findUnique({
         where: {
-            email: fieldValues.email,
+            userId: loggedInUser.id,
         } as any as Prisma.UserCredentialsWhereUniqueInput,
     });
-    if (!userCredentials) {
-        authState.status = 403;
-        authState.errorMsg = "Membership pending";
-        authState.result = "";
-        return authState;
-    }
+    if (!userCredentials) throw new Error("Invalid credentials");
 
+    // Match hashed password to stored hashed password
     const hashedPassword = await hashPassword(
-        fieldValues.password as string,
+        parsedFieldValues.password as unknown as string,
         userCredentials[GlobalConstants.SALT],
     );
     const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
-    if (!passwordsMatch) {
-        authState.status = 401;
-        authState.errorMsg = "Invalid credentials";
-        authState.result = "";
-        return authState;
-    }
-    authState.status = 200;
-    authState.result = JSON.stringify(loggedInUser);
-    authState.errorMsg = "";
-    await createSession(fieldValues);
-    return authState;
+    if (!passwordsMatch) throw new Error("Invalid credentials");
+
+    await encryptJWT(loggedInUser);
+    revalidateTag(GlobalConstants.USER);
+    redirect("/");
 };
 
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);

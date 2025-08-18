@@ -52,8 +52,8 @@ model User {
 // Admins can validate membership to create credentials for user.
 model UserCredentials {
     id             String @id @default(uuid())
-    user           User   @relation(fields: [email], references: [email])
-    email          String @unique // relation scalar field (used in the `@relation` attribute above)
+    user           User   @relation(fields: [userId], references: [id])
+    userId         String @unique
     salt           String
     hashedPassword String
 
