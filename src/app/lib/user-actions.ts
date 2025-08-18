@@ -30,16 +30,16 @@ export const getUserById = async (
     return newActionState;
 };
 
-export const createUser = async (fieldValues: Prisma.UserCreateInput): Promise<void> => {
+export const createUser = async (parsedFieldValues: Prisma.UserCreateInput): Promise<void> => {
     let createdUserId: string;
     try {
         const createdUser = await prisma.user.create({
             data: {
-                ...fieldValues,
+                ...parsedFieldValues,
             },
         });
         createdUserId = createdUser.id;
-    } catch {
+    } catch (error) {
         throw new Error("Failed creating user");
     }
 
@@ -154,74 +154,6 @@ export const updateUserCredentials = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = "Updated successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-const createUserCredentialsTransaction = (
-    generatedUserCredentials: Prisma.UserCredentialsCreateInput,
-): PrismaPromise<any> => {
-    const transaction = prisma.userCredentials.create({
-        data: generatedUserCredentials,
-    });
-    return transaction;
-};
-
-export const resetUserCredentials = async (
-    currentActionState: FormActionState,
-    fieldValues: ResetCredentialsSchema,
-) => {
-    const newActionState = { ...currentActionState };
-    const userEmail = fieldValues.email;
-
-    // Check if user has existing credentials. If not, return ambiguous error message to
-    // prevent revealing if the email is registered or not.
-    newActionState.status = 200;
-    newActionState.errorMsg = "";
-    newActionState.result = "New credentials sent to your email if we have it on record";
-    const user = await prisma.user.findUnique({
-        where: {
-            email: userEmail,
-        },
-    });
-    const userCredentials = await prisma.userCredentials.findUnique({
-        where: {
-            userId: user.id,
-        },
-    });
-    if (!userCredentials) {
-        return newActionState;
-    }
-
-    const generatedPassword = await generateSalt();
-    const generatedUserCredentials = (await getGeneratedUserCredentials(
-        userEmail,
-        generatedPassword,
-    )) as Prisma.UserCredentialsCreateInput;
-
-    // Email new credentials to user email
-    try {
-        await sendUserCredentials(userEmail, generatedPassword);
-    } catch (error) {
-        newActionState.status = error.statusCode;
-        newActionState.result = "";
-        newActionState.errorMsg = `Credentials could not be sent to user because:\n${error.message}`;
-        return newActionState;
-    }
-
-    try {
-        const deleteCredentialsTransaction = prisma.userCredentials.deleteMany({
-            where: {
-                [GlobalConstants.EMAIL]: userEmail,
-            },
-        });
-        const createCredentialsTransaction =
-            createUserCredentialsTransaction(generatedUserCredentials);
-        await prisma.$transaction([deleteCredentialsTransaction, createCredentialsTransaction]);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
