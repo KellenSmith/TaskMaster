@@ -158,6 +158,7 @@ const EventDashboard = ({
                                 event={event}
                                 eventTicketsPromise={eventTicketsPromise}
                                 goToOrganizeTab={goToOrganizeTab}
+                                eventParticipants={eventParticipants}
                             />
                         </Suspense>
                     </ErrorBoundary>
