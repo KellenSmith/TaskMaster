@@ -136,7 +136,8 @@ export const decryptJWT = async (): Promise<JWTPayload | null> => {
         }); // If this fails, check that AUTH_SECRET exists in .env
         const jwtPayload = result?.payload;
         return jwtPayload;
-    } catch {
+    } catch (error) {
+        console.error("Error decrypting JWT:", error);
         return null;
     }
 };

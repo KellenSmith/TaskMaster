@@ -1,13 +1,13 @@
 "use server";
 
-import { EventStatus, Prisma } from "@prisma/client";
+import { EventStatus, Prisma, TicketType } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { createEventSchema } from "./zod-schemas";
+import { createEventSchema, createProductSchema } from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
-import { DatagridActionState, FormActionState } from "./definitions";
-import { revalidatePath } from "next/cache";
+import { DatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
+import { revalidateTag } from "next/cache";
 
 export const createEvent = async (
     currentActionState: FormActionState,
@@ -33,11 +33,12 @@ export const createEvent = async (
                 },
                 tickets: {
                     create: {
+                        type: TicketType.volunteer,
                         Product: {
                             create: {
-                                name: `Ticket for ${parsedFieldValues.title}`,
-                                description: "Admittance for one person",
-                                price: parsedFieldValues.fullTicketPrice,
+                                name: `Volunteer ticket for ${parsedFieldValues.title}`,
+                                description:
+                                    "Admittance for one member signed up for at least one volunteer task",
                                 unlimitedStock: true,
                             },
                         },
@@ -45,32 +46,70 @@ export const createEvent = async (
                 },
             },
             include: {
-                tickets: {
-                    select: {
-                        id: true,
-                    },
+                tickets: true,
+            },
+        });
+
+        // Add the host as a participant with the volunteer ticket
+        const volunteerTicket = createdEvent.tickets.find(
+            (ticket) => ticket.type === TicketType.volunteer,
+        );
+        if (volunteerTicket) {
+            await prisma.participantInEvent.create({
+                data: {
+                    userId: loggedInUserId,
+                    eventId: createdEvent.id,
+                    ticketId: volunteerTicket.id,
                 },
-            },
-        });
-        if (!createdEvent.tickets || createdEvent.tickets.length === 0) {
-            throw new Error("Failed to create event ticket");
+            });
         }
-        await prisma.participantInEvent.create({
-            data: {
-                userId: loggedInUserId,
-                eventId: createdEvent.id,
-                ticketId: createdEvent.tickets[0].id,
-            },
-        });
+
         newActionState.errorMsg = "";
         newActionState.status = 201;
         newActionState.result = createdEvent.id;
+        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
+        revalidateTag(GlobalConstants.EVENT);
+        revalidateTag(GlobalConstants.TICKET);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
         newActionState.result = "";
     }
     return newActionState;
+};
+
+export const createEventTicket = async (
+    eventId: string,
+    fieldValues: Prisma.TicketCreateInput & Prisma.ProductCreateInput,
+) => {
+    try {
+        const ticketFieldValues = {
+            type: fieldValues.type,
+        } as Prisma.TicketCreateInput;
+        const productFieldValues = createProductSchema.parse({
+            name: fieldValues.name,
+            description: fieldValues.description,
+            price: fieldValues.price,
+            unlimitedStock: fieldValues.unlimitedStock,
+        }) as Prisma.ProductCreateInput;
+        await prisma.ticket.create({
+            data: {
+                ...ticketFieldValues,
+                Product: {
+                    create: productFieldValues,
+                },
+                Event: {
+                    connect: {
+                        id: eventId,
+                    },
+                },
+            },
+        });
+        revalidateTag(GlobalConstants.TICKET);
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to create event ticket");
+    }
 };
 
 export const getAllEvents = async (
@@ -92,14 +131,14 @@ export const getAllEvents = async (
 
 export const getEventById = async (
     eventId: string,
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+): Promise<
+    Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>
+> => {
     try {
-        const event = await prisma.event.findUniqueOrThrow({
+        return await prisma.event.findUniqueOrThrow({
             where: {
                 id: eventId,
-            } as Prisma.EventWhereUniqueInput,
+            },
             include: {
                 host: {
                     select: {
@@ -107,36 +146,65 @@ export const getEventById = async (
                         nickname: true,
                     },
                 },
-                participantUsers: {
+            },
+        });
+    } catch {
+        throw new Error("Failed to fetch event");
+    }
+};
+
+export const getEventParticipants = async (
+    eventId: string,
+): Promise<
+    Prisma.ParticipantInEventGetPayload<{
+        include: { User: { select: { id: true; nickname: true } } };
+    }>[]
+> => {
+    try {
+        const participants = await prisma.participantInEvent.findMany({
+            where: {
+                eventId: eventId,
+            },
+            include: {
+                User: {
                     select: {
-                        User: {
-                            select: {
-                                id: true,
-                                nickname: true,
-                            },
-                        },
-                    },
-                },
-                reserveUsers: {
-                    select: {
-                        userId: true,
-                        queueingSince: true,
-                    },
-                    orderBy: {
-                        queueingSince: "asc",
+                        id: true,
+                        nickname: true,
                     },
                 },
             },
         });
-        newActionState.status = 200;
-        newActionState.result = [event];
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+        return participants;
+    } catch {
+        throw new Error("Failed to fetch event participants");
     }
-    return newActionState;
+};
+
+export const getEventReserves = async (
+    eventId: string,
+): Promise<
+    Prisma.ReserveInEventGetPayload<{
+        include: { User: { select: { id: true; nickname: true } } };
+    }>[]
+> => {
+    try {
+        const reserves = await prisma.reserveInEvent.findMany({
+            where: {
+                eventId: eventId,
+            },
+            include: {
+                User: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+            },
+        });
+        return reserves;
+    } catch {
+        throw new Error("Failed to fetch event reserves");
+    }
 };
 
 export const updateEvent = async (
@@ -154,7 +222,7 @@ export const updateEvent = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Updated successfully`;
-        revalidatePath(`/calendar/event`);
+        revalidateTag(GlobalConstants.EVENT_ID);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -178,7 +246,7 @@ export const cancelEvent = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Cancelled event and informed participants`;
-        revalidatePath(`/calendar/event`);
+        revalidateTag(GlobalConstants.EVENT_ID);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -230,7 +298,7 @@ export const addEventReserve = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Successfully added to reserve list`;
-        revalidatePath(`/calendar/event`);
+        revalidateTag(GlobalConstants.RESERVE_USERS);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -255,7 +323,7 @@ export const deleteEventParticipant = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Removed user ${userId} from event ${eventId} participants`;
-        revalidatePath(`/calendar/event`);
+        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
     } catch (error) {
         console.error(error);
         newActionState.status = 500;
@@ -281,7 +349,7 @@ export const deleteEventReserve = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Removed user ${userId} from event ${eventId} reserves`;
-        revalidatePath(`/calendar/event`);
+        revalidateTag(GlobalConstants.RESERVE_USERS);
     } catch (error) {
         console.error(error);
         newActionState.status = 500;
@@ -289,4 +357,38 @@ export const deleteEventReserve = async (
         newActionState.result = "";
     }
     return newActionState;
+};
+
+export const getEventTicketsAvailableToUser = async (eventId: string, userId: string) => {
+    console.log("Fetching event tickets for eventId: ", eventId);
+    try {
+        if (!(eventId && userId)) throw new Error("Event and user id required");
+
+        let availableEventTickets = await prisma.ticket.findMany({
+            where: {
+                eventId,
+            },
+            include: {
+                Product: true,
+            },
+        });
+
+        // The volunteer ticket is only available if
+        // the user is signed up for volunteering for the event.
+        const tasksAssignedToUser = await prisma.task.count({
+            where: {
+                eventId,
+                assigneeId: userId,
+            },
+        });
+        if (tasksAssignedToUser < 1) {
+            availableEventTickets = availableEventTickets.filter(
+                (ticket) => ticket.type !== TicketType.volunteer,
+            );
+        }
+
+        return availableEventTickets;
+    } catch (error) {
+        throw new Error("Failed to fetch event tickets");
+    }
 };

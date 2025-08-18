@@ -5,7 +5,6 @@ import { addEventReserve } from "../../../lib/event-actions";
 import { startTransition, useActionState } from "react";
 import { getFormActionMsg } from "../../../ui/form/Form";
 import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
-import { tabs } from "./EventDashboard";
 import { isUserParticipant } from "./event-utils";
 
 const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {
@@ -63,7 +62,6 @@ const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {
                     get on reserve list
                 </Button>
             );
-        return <Button onClick={() => setOpenTab(tabs.participate)}>participate</Button>;
     };
 
     return (

@@ -5,38 +5,54 @@ import { formatDate } from "../../../ui/utils";
 import { FieldLabels } from "../../../ui/form/FieldCfg";
 import { useMemo } from "react";
 import dayjs from "dayjs";
+import { Prisma } from "@prisma/client";
 
-const ParticipantListPDF = ({ event }) => {
-    const headers = useMemo(() => [GlobalConstants.NICKNAME, GlobalConstants.EMAIL, "Arrived"], []);
+interface ParticipantListPDFProps {
+    event: Prisma.EventGetPayload<{
+        include: { host: { select: { id: true; nickname: true } } };
+    }>;
+    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+        include: { User: { select: { id: true; nickname: true } } };
+    }>[];
+}
+
+const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProps) => {
+    const headers = useMemo(() => [GlobalConstants.NICKNAME, "Arrived"], []);
 
     const getEventDetails = () => (
         <View key="event" style={styles.eventDetails}>
             <View style={styles.eventDetailRow}>
                 <Text style={styles.eventDetailLabel}>Event:</Text>
-                <Text>{event[GlobalConstants.TITLE]}</Text>
+                <Text>{event.title}</Text>
             </View>
             <View style={styles.eventDetailRow}>
                 <Text style={styles.eventDetailLabel}>Time:</Text>
-                <Text>{`${formatDate(event[GlobalConstants.START_TIME])} - ${formatDate(event[GlobalConstants.END_TIME])}`}</Text>
+                <Text>{`${formatDate(event.startTime)} - ${formatDate(event.endTime)}`}</Text>
             </View>
         </View>
     );
 
     const getParticipantRows = () => {
-        if (event[GlobalConstants.PARTICIPANT_USERS].length < 1) return null;
-        return event[GlobalConstants.PARTICIPANT_USERS].map((participant) => (
-            <View style={styles.tableRow} key={participant.User[GlobalConstants.ID]}>
-                {headers.map((header) => (
-                    <Text
-                        key={header}
-                        wrap={true}
-                        style={{ ...styles.tableCell, ...styles.columnStyle }}
-                    >
-                        {participant.User[header]}
-                    </Text>
-                ))}
-            </View>
-        ));
+        if (eventParticipants.length < 1) return null;
+        return eventParticipants.map(
+            (
+                participant: Prisma.ParticipantInEventGetPayload<{
+                    include: { User: { select: { id: true; nickname: true } } };
+                }>,
+            ) => (
+                <View style={styles.tableRow} key={participant.User.id}>
+                    {headers.map((header) => (
+                        <Text
+                            key={header}
+                            wrap={true}
+                            style={{ ...styles.tableCell, ...styles.columnStyle }}
+                        >
+                            {participant.User[header]}
+                        </Text>
+                    ))}
+                </View>
+            ),
+        );
     };
 
     return (

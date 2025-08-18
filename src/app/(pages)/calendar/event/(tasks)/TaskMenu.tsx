@@ -305,7 +305,8 @@ const TaskMenu = ({ event, readOnly, tasks, fetchTasksAction, isTasksPending }) 
                                               ? "Sign up for tasks or volunteer shifts to unlock the volunteer ticket!"
                                               : ""}
                                     </Typography>
-                                    <TicketShop event={event} selectedTasks={selectedTasks} />
+                                    {/* TODO: Fix TicketShop props - currently expecting eventTicketsPromise */}
+                                    {/* <TicketShop event={event} selectedTasks={selectedTasks} /> */}
                                 </>
                             )}
                         </Stack>

@@ -11,7 +11,7 @@ model OrganizationSettings {
     remindMembershipExpiresInDays    Int    @default(7)
     organizationName                 String @unique @default("Task Master")
     purgeMembersAfterDaysUnvalidated Int    @default(180)
-    email                            String @default("email@gmail.com")
+    email                            String @default("kellensmith407@gmail.com")
 
     @@map("organization_settings")
 }
@@ -200,7 +200,7 @@ model Ticket {
     Product            Product              @relation(fields: [productId], references: [id])
     productId          String               @unique
     Event              Event                @relation(fields: [eventId], references: [id])
-    eventId            String               @unique
+    eventId            String
     ParticipantInEvent ParticipantInEvent[]
 
     @@map("tickets")

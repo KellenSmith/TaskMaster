@@ -1,15 +1,16 @@
 import dayjs from "dayjs";
 import GlobalConstants from "../../../GlobalConstants";
+import { EventStatus, Prisma } from "@prisma/client";
 
 export const isEventPublished = (event) =>
     event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED;
 
-export const isUserParticipant = (user: any, event: any) =>
-    event
-        ? event[GlobalConstants.PARTICIPANT_USERS]
-              .map((participant: any) => participant.User[GlobalConstants.ID])
-              .includes(user[GlobalConstants.ID])
-        : false;
+export const isUserParticipant = (
+    user: any,
+    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+        include: { User: { select: { id: true } } };
+    }>[],
+) => !!eventParticipants.find((participant) => participant.User.id === user[GlobalConstants.ID]);
 
 export const isTaskSelected = (task: any, selectedTasks: any[]) =>
     selectedTasks.map((task) => task[GlobalConstants.ID]).includes(task[GlobalConstants.ID]);
@@ -70,9 +71,13 @@ export const getSortedTaskComps = (taskList, getTaskShiftsComp) => {
     return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
 };
 
-export const isEventSoldOut = (event: any) =>
-    event &&
-    event[GlobalConstants.PARTICIPANT_USERS]?.length >= event[GlobalConstants.MAX_PARTICIPANTS];
+export const isEventSoldOut = (
+    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>,
+    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+        include: { User: { select: { id: true; nickname: true } } };
+    }>[],
+) => event && eventParticipants.length >= event.maxParticipants;
 
-export const isEventCancelled = (event: any) =>
-    event && event[GlobalConstants.STATUS] === GlobalConstants.CANCELLED;
+export const isEventCancelled = (
+    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>,
+) => event && event.status === EventStatus.cancelled;

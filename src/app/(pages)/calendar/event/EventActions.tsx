@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, startTransition, useMemo, useState } from "react";
+import { FC, use, useMemo, useState, useTransition } from "react";
 import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
 import GlobalConstants from "../../../GlobalConstants";
 import { useUserContext } from "../../../context/UserContext";
@@ -15,7 +15,6 @@ import {
     deleteEventReserve,
     updateEvent,
 } from "../../../lib/event-actions";
-import { tabs } from "./EventDashboard";
 import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
 import ConfirmButton from "../../../ui/ConfirmButton";
 import { navigateToRoute } from "../../../ui/utils";
@@ -28,18 +27,34 @@ import { MoreHoriz } from "@mui/icons-material";
 import { useNotificationContext } from "../../../context/NotificationContext";
 
 interface IEventActions {
-    event: any;
-    fetchEventAction: Function;
+    event: Prisma.EventGetPayload<{
+        include: { host: { select: { id: true; nickname: true } } };
+    }>;
     openTab: string;
     setOpenTab: Function;
+    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+        include: { User: { select: { id: true; nickname: true } } };
+    }>[];
+    eventReservesPromise: Promise<
+        Prisma.ReserveInEventGetPayload<{
+            include: { User: { select: { id: true; nickname: true } } };
+        }>[]
+    >;
 }
 
-const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, setOpenTab }) => {
+const EventActions: FC<IEventActions> = ({
+    event,
+    openTab,
+    setOpenTab,
+    eventParticipants,
+    eventReservesPromise,
+}) => {
     const { user } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState("");
     const { addNotification } = useNotificationContext();
-    const [loading, setLoading] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const eventReserves = use(eventReservesPromise);
     const sendoutToOptions = useMemo(
         () => ({
             ALL: "All",
@@ -53,28 +68,24 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
 
     const addUserAsEventReserve = () => {
         performEventAction(() =>
-            addEventReserve(
-                user[GlobalConstants.ID],
-                event[GlobalConstants.ID],
-                defaultFormActionState,
-            ),
+            addEventReserve(user[GlobalConstants.ID], event.id, defaultFormActionState),
         );
     };
 
     const publishEvent = () => {
         performEventAction(() =>
-            updateEvent(event[GlobalConstants.ID], defaultFormActionState, {
+            updateEvent(event.id, defaultFormActionState, {
                 status: EventStatus.published,
             }),
         );
     };
 
     const cancelThisEvent = () =>
-        performEventAction(() => cancelEvent(event[GlobalConstants.ID], defaultFormActionState));
+        performEventAction(() => cancelEvent(event.id, defaultFormActionState));
 
     const deleteThisEvent = () =>
         performEventAction(async () => {
-            const result = await deleteEvent(event[GlobalConstants.ID], defaultFormActionState);
+            const result = await deleteEvent(event.id, defaultFormActionState);
             if (result.status === 200) {
                 navigateToRoute(`/${GlobalConstants.CALENDAR}`, router);
             }
@@ -82,47 +93,37 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
 
     const removeUserFromParticipantList = () =>
         performEventAction(() =>
-            deleteEventParticipant(
-                user[GlobalConstants.ID],
-                event[GlobalConstants.ID],
-                defaultFormActionState,
-            ),
+            deleteEventParticipant(user[GlobalConstants.ID], event.id, defaultFormActionState),
         );
 
     const removeUserFromReserveList = () =>
         performEventAction(() =>
-            deleteEventReserve(
-                user[GlobalConstants.ID],
-                event[GlobalConstants.ID],
-                defaultFormActionState,
-            ),
+            deleteEventReserve(user[GlobalConstants.ID], event.id, defaultFormActionState),
         );
 
     const performEventAction = (action: Function) => {
         startTransition(async () => {
-            setLoading(true);
             const actionResult = await action();
             if (actionResult.status === 200) {
                 addNotification(actionResult.result, "success");
-                await fetchEventAction();
                 closeActionMenu();
             } else {
                 addNotification(actionResult.errorMsg, "error");
             }
-            setLoading(false);
         });
     };
 
     const findReserveUserIndexById = () => {
-        if (!event) return -1;
-        return event[GlobalConstants.RESERVE_USERS].findIndex(
+        return eventReserves.findIndex(
             (reserve) => reserve[GlobalConstants.USER_ID] === user[GlobalConstants.ID],
         );
     };
 
     const printParticipantList = async () => {
         closeActionMenu();
-        const taskSchedule = await pdf(<ParticipantListPDF event={event} />).toBlob();
+        const taskSchedule = await pdf(
+            <ParticipantListPDF event={event} eventParticipants={eventParticipants} />,
+        ).toBlob();
         const url = URL.createObjectURL(taskSchedule);
         window.open(url, "_blank");
     };
@@ -131,15 +132,15 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
         const ActionButtons = [];
         if (isUserHost(user, event)) {
             if (
-                [GlobalConstants.DRAFT, GlobalConstants.CANCELLED].includes(
-                    event[GlobalConstants.STATUS],
+                ([EventStatus.draft, EventStatus.cancelled] as string[]).includes(
+                    event.status as string,
                 )
             ) {
                 ActionButtons.push(
                     <ConfirmButton
                         key="publish"
                         color="success"
-                        disabled={loading}
+                        disabled={isPending}
                         onClick={publishEvent}
                     >
                         publish event
@@ -150,8 +151,8 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                     <ConfirmButton
                         key="cancel"
                         color="error"
-                        disabled={loading}
-                        confirmText={`An info email will be sent to all ${event[GlobalConstants.PARTICIPANT_USERS].length} participants. Are you sure?`}
+                        disabled={isPending}
+                        confirmText={`An info email will be sent to all ${eventParticipants.length} participants. Are you sure?`}
                         onClick={cancelThisEvent}
                     >
                         cancel event
@@ -182,60 +183,48 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
                 </Button>,
             );
             // Only allow deleting events that only the host is participating in
-            if (event[GlobalConstants.PARTICIPANT_USERS]?.length === 1)
+            if (eventParticipants.length === 1)
                 ActionButtons.push(
                     <ConfirmButton
                         key="delete"
                         color="error"
-                        disabled={loading}
+                        disabled={isPending}
                         onClick={deleteThisEvent}
                     >
                         delete
                     </ConfirmButton>,
                 );
         } else {
-            if (isUserParticipant(user, event))
+            if (isUserParticipant(user, eventParticipants))
                 ActionButtons.push(
                     <ConfirmButton
                         key="leave participant"
                         onClick={removeUserFromParticipantList}
-                        disabled={loading}
+                        disabled={isPending}
                     >
                         leave participant list
                     </ConfirmButton>,
                 );
             else if (!isEventCancelled(event)) {
-                if (isEventSoldOut(event)) {
+                if (isEventSoldOut(event, eventParticipants)) {
                     if (findReserveUserIndexById() > -1)
                         ActionButtons.push(
                             <ConfirmButton
                                 key="leave reserve"
                                 onClick={removeUserFromReserveList}
-                                disabled={loading}
+                                disabled={isPending}
                             >{`leave reserve list (you are #${findReserveUserIndexById() + 1})`}</ConfirmButton>,
                         );
                     else
                         ActionButtons.push(
                             <Button
                                 key="add reserve"
-                                disabled={loading}
+                                disabled={isPending}
                                 onClick={addUserAsEventReserve}
                             >
                                 get on reserve list
                             </Button>,
                         );
-                } else if (openTab !== tabs.participate) {
-                    ActionButtons.push(
-                        <Button
-                            key="participate"
-                            onClick={() => {
-                                closeActionMenu();
-                                setOpenTab(tabs.participate);
-                            }}
-                        >
-                            participate
-                        </Button>,
-                    );
                 }
             }
         }
@@ -250,13 +239,13 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
     const sendoutToEventUsers = async (currentActionState: FormActionState, fieldValues: any) => {
         const recipientIds = [];
         if (sendoutTo === sendoutToOptions.PARTICIPANTS || sendoutTo === sendoutToOptions.ALL) {
-            event[GlobalConstants.PARTICIPANT_USERS].forEach((participant: any) => {
-                recipientIds.push(participant[GlobalConstants.USER_ID]);
+            eventParticipants.forEach((participant: any) => {
+                recipientIds.push(participant.User.id);
             });
         }
         if (sendoutTo === sendoutToOptions.RESERVES || sendoutTo === sendoutToOptions.ALL)
-            event[GlobalConstants.RESERVE_USERS].forEach((reserve: any) => {
-                recipientIds.push(reserve[GlobalConstants.USER_ID]);
+            eventReserves.forEach((reserve: any) => {
+                recipientIds.push(reserve.User.id);
             });
         const recipientCriteria: Prisma.UserWhereInput = {
             id: {
@@ -272,11 +261,9 @@ const EventActions: FC<IEventActions> = ({ event, fetchEventAction, openTab, set
         const buttonLabel = dialogOpen === GlobalConstants.SENDOUT ? "send" : "save";
         const action =
             dialogOpen === GlobalConstants.SENDOUT ? sendoutToEventUsers : updateEventById;
-        let recipientCount = event[GlobalConstants.PARTICIPANT_USERS].length;
-        if (sendoutTo === sendoutToOptions.RESERVES)
-            recipientCount = event[GlobalConstants.RESERVE_USERS].length;
-        else if (sendoutTo === sendoutToOptions.ALL)
-            recipientCount += event[GlobalConstants.RESERVE_USERS].length;
+        let recipientCount = eventParticipants.length;
+        if (sendoutTo === sendoutToOptions.RESERVES) recipientCount = eventReserves.length;
+        else if (sendoutTo === sendoutToOptions.ALL) recipientCount += eventReserves.length;
         return (
             dialogOpen && (
                 <>

@@ -104,17 +104,18 @@ export const getLoggedInUser = async (
             include: { userMembership: true },
         });
         if (!loggedInUser) {
+            console.log(1);
             newActionState.status = 404;
             newActionState.errorMsg = "";
             newActionState.result = "";
             return newActionState;
         }
         // Renew JWT
-        await encryptJWT(loggedInUser);
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = JSON.stringify(loggedInUser);
     } else {
+        console.log(2);
         newActionState.status = 404;
         newActionState.errorMsg = "";
         newActionState.result = "";

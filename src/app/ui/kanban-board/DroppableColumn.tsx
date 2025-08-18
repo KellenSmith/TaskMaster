@@ -12,7 +12,7 @@ import {
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
-import { startTransition, useState } from "react";
+import { useState } from "react";
 import {
     getEarliestStartTime,
     getLatestEndTime,
@@ -31,7 +31,6 @@ const DroppableColumn = ({
     event = null,
     status,
     tasks,
-    fetchDbTasks,
     taskActionState,
     setTaskActionState,
     readOnly,
@@ -50,7 +49,6 @@ const DroppableColumn = ({
             defaultFormActionState,
             { [GlobalConstants.STATUS]: status },
         );
-        startTransition(() => fetchDbTasks());
         setTaskActionState(updateTaskResult);
     };
 
@@ -69,7 +67,6 @@ const DroppableColumn = ({
                     key={taskList[0][GlobalConstants.ID]}
                     task={taskList[0]}
                     setDraggedTask={setDraggedTask}
-                    fetchDbTasks={fetchDbTasks}
                     readOnly={readOnly}
                     taskActionState={taskActionState}
                     setTaskActionState={setTaskActionState}
@@ -99,7 +96,6 @@ const DroppableColumn = ({
                                 key={task[GlobalConstants.ID]}
                                 task={task}
                                 setDraggedTask={setDraggedTask}
-                                fetchDbTasks={fetchDbTasks}
                                 readOnly={readOnly}
                                 taskActionState={taskActionState}
                                 setTaskActionState={setTaskActionState}
@@ -149,7 +145,6 @@ const DroppableColumn = ({
         if (event) fieldValues[GlobalConstants.EVENT_ID] = event[GlobalConstants.ID];
         const createTaskResult = await createTask(taskActionState, { ...addTask, ...fieldValues });
         setTaskActionState(createTaskResult);
-        startTransition(() => fetchDbTasks());
         setAddTask(null);
         return currentActionState;
     };

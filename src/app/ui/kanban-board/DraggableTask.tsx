@@ -12,7 +12,6 @@ import { defaultFormActionState } from "../../lib/definitions";
 const DraggableTask = ({
     task,
     setDraggedTask,
-    fetchDbTasks,
     readOnly,
     taskActionState,
     setTaskActionState,
@@ -23,7 +22,6 @@ const DraggableTask = ({
 
     const deleteViewTask = async () => {
         const deleteTaskResult = await deleteTask(task[GlobalConstants.ID], taskActionState);
-        startTransition(() => fetchDbTasks());
         setTaskActionState(deleteTaskResult);
         setDialogOpen(false);
     };
@@ -34,7 +32,6 @@ const DraggableTask = ({
             currentActionState,
             newTaskData,
         );
-        startTransition(() => fetchDbTasks());
         return updateTaskResult;
     };
 
@@ -44,7 +41,6 @@ const DraggableTask = ({
             [task[GlobalConstants.ID]],
             defaultFormActionState,
         );
-        startTransition(() => fetchDbTasks());
         setTaskActionState(assignTasksResult);
     };
 

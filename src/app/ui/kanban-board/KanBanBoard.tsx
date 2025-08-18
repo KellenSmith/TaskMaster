@@ -5,7 +5,6 @@ import {
     Accordion,
     AccordionSummary,
     Button,
-    CircularProgress,
     FormControl,
     FormControlLabel,
     FormGroup,
@@ -24,8 +23,19 @@ import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { getActiveMembers } from "../../lib/user-actions";
 import { defaultDatagridActionState, defaultFormActionState } from "../../lib/definitions";
+import { Prisma } from "@prisma/client";
 
-const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
+interface KanBanBoardProps {
+    event: Prisma.EventGetPayload<{
+        include: { host: { select: { id: true; nickname: true } } };
+    }> | null;
+    tasks: Prisma.TaskGetPayload<{
+        include: { Assignee: { select: { id: true; nickname: true } } };
+    }>[];
+    readOnly: boolean;
+}
+
+const KanBanBoard = ({ event = null, tasks, readOnly = true }: KanBanBoardProps) => {
     const { user } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
@@ -131,7 +141,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
     };
 
     return (
-        <Stack spacing={2} justifyContent="center">
+        <Stack spacing={2} justifyContent="center" height="100%">
             <Accordion>
                 <AccordionSummary expandIcon={<ExpandMore />}>Filters</AccordionSummary>
                 <Stack direction="row" spacing={2}>
@@ -142,32 +152,27 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
                 </Button>
             </Accordion>
             {getFormActionMsg(taskActionState)}
-            {isTasksPending ? (
-                <CircularProgress sx={{ alignSelf: "center", padding: 10 }} />
-            ) : (
-                <Grid2 container spacing={2} columns={4}>
-                    {selectFieldOptions[GlobalConstants.STATUS].map((status) => (
-                        <Grid2 size={1} key={status}>
-                            <DroppableColumn
-                                event={event}
-                                status={status}
-                                tasks={filterTasks(tasks, filters).filter(
-                                    (task) => task[GlobalConstants.STATUS] === status,
-                                )}
-                                fetchDbTasks={fetchDbTasks}
-                                taskActionState={taskActionState}
-                                setTaskActionState={setTaskActionState}
-                                readOnly={readOnly}
-                                draggedTask={draggedTask}
-                                setDraggedTask={setDraggedTask}
-                                draggedOverColumn={draggedOverColumn}
-                                setDraggedOverColumn={setDraggedOverColumn}
-                                activeMembers={activeMembers}
-                            />
-                        </Grid2>
-                    ))}
-                </Grid2>
-            )}
+            <Grid2 container spacing={2} columns={4} height="100%">
+                {selectFieldOptions[GlobalConstants.STATUS].map((status) => (
+                    <Grid2 size={1} key={status} height="100%">
+                        <DroppableColumn
+                            event={event}
+                            status={status}
+                            tasks={filterTasks(tasks, filters).filter(
+                                (task) => task[GlobalConstants.STATUS] === status,
+                            )}
+                            taskActionState={taskActionState}
+                            setTaskActionState={setTaskActionState}
+                            readOnly={readOnly}
+                            draggedTask={draggedTask}
+                            setDraggedTask={setDraggedTask}
+                            draggedOverColumn={draggedOverColumn}
+                            setDraggedOverColumn={setDraggedOverColumn}
+                            activeMembers={activeMembers}
+                        />
+                    </Grid2>
+                ))}
+            </Grid2>
         </Stack>
     );
 };

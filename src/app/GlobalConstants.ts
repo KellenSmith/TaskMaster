@@ -23,7 +23,6 @@ const GlobalConstants = {
     VALIDATE_MEMBERSHIP: "validateMembership",
     APPLY: "apply",
     // Org settings
-
     ORGANIZATION_NAME: "organizationName",
     REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remindMembershipExpiresInDays",
     PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purgeMembersAfterDaysUnvalidated",
@@ -75,6 +74,9 @@ const GlobalConstants = {
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueingSince",
+    // Ticket
+    TICKET: "ticket",
+    TICKET_TYPE: "type",
     // Product
     PRODUCT: "product",
     PRICE: "price",

@@ -1,61 +1,31 @@
 "use client";
 
-import TaskMenu from "./TaskMenu";
-import { defaultDatagridActionState, isUserHost } from "../../../../lib/definitions";
-import { isEventPublished, isUserParticipant } from "../event-utils";
-import { useUserContext } from "../../../../context/UserContext";
 import KanBanBoard from "../../../../ui/kanban-board/KanBanBoard";
-import { getFilteredTasks } from "../../../../lib/task-actions";
-import GlobalConstants from "../../../../GlobalConstants";
-import { startTransition, useActionState, useEffect } from "react";
-import { Typography } from "@mui/material";
+import { Suspense, use } from "react";
+import { Stack, Typography } from "@mui/material";
+import { Prisma } from "@prisma/client";
+import { ErrorBoundary } from "react-error-boundary";
 
-const TaskDashboard = ({ event, readOnly }) => {
-    const { user } = useUserContext();
+interface TaskDashboardProps {
+    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>;
+    eventTaskPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: { Assignee: { select: { id: true; nickname: true } } };
+        }>[]
+    >;
+    readOnly?: boolean;
+}
 
-    const fetchEventTasks = async () => {
-        return await getFilteredTasks(
-            { eventId: event[GlobalConstants.ID] },
-            defaultDatagridActionState,
-        );
-    };
-    const [tasksActionState, fetchTasksAction, isTasksPending] = useActionState(
-        fetchEventTasks,
-        defaultDatagridActionState,
-    );
-
-    useEffect(() => {
-        startTransition(() => fetchTasksAction());
-        // Fetch tasks in first render
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+const TaskDashboard = ({ event, eventTaskPromise, readOnly }: TaskDashboardProps) => {
+    const tasks = use(eventTaskPromise);
 
     return (
-        <>
-            {(isUserHost(user, event) && !isEventPublished(event)) ||
-            !isUserParticipant(user, event) ? (
-                <TaskMenu
-                    event={event}
-                    readOnly={readOnly}
-                    tasks={tasksActionState.result}
-                    fetchTasksAction={fetchTasksAction}
-                    isTasksPending={isTasksPending}
-                />
-            ) : (
-                <>
-                    <Typography textAlign="center" variant="h4" color="primary">
-                        Assign yourself to tasks and shifts to help make the event happen
-                    </Typography>
-                    <KanBanBoard
-                        event={event}
-                        tasks={tasksActionState.result}
-                        fetchDbTasks={fetchTasksAction}
-                        readOnly={readOnly}
-                        isTasksPending={isTasksPending}
-                    />
-                </>
-            )}
-        </>
+        <Stack>
+            <Typography textAlign="center" variant="h4" color="primary">
+                Assign yourself to tasks and shifts to help make the event happen
+            </Typography>
+            <KanBanBoard event={event} tasks={tasks} readOnly={readOnly} />
+        </Stack>
     );
 };
 

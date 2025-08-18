@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState, FormActionState } from "./definitions";
+import { revalidateTag } from "next/cache";
 
 export const deleteTask = async (taskId: string, currentActionState: FormActionState) => {
     const newActionState = { ...currentActionState };
@@ -16,6 +17,7 @@ export const deleteTask = async (taskId: string, currentActionState: FormActionS
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = "Deleted task";
+        revalidateTag(GlobalConstants.TASK);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -40,6 +42,7 @@ export const updateTaskById = async (
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = "Updated task";
+        revalidateTag(GlobalConstants.TASK);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -60,6 +63,7 @@ export const createTask = async (
         newActionState.errorMsg = "";
         newActionState.status = 201;
         newActionState.result = "Created task";
+        revalidateTag(GlobalConstants.TASK);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -175,6 +179,26 @@ export const getFilteredTasks = async (
     return newActionState;
 };
 
+export const getEventTasks = async (filterParams: Prisma.TaskWhereInput) => {
+    try {
+        return await prisma.task.findMany({
+            where: {
+                ...filterParams,
+            },
+            include: {
+                Assignee: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+            },
+        });
+    } catch (error) {
+        throw new Error("Failed to fetch event tasks");
+    }
+};
+
 export const assignTasksToUser = async (
     userId: string,
     taskIds: string[],
@@ -197,6 +221,7 @@ export const assignTasksToUser = async (
         newActionState.status = 200;
         newActionState.errorMsg = "";
         newActionState.result = "Assigned tasks";
+        revalidateTag(GlobalConstants.TASK);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;

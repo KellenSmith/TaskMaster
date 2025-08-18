@@ -255,7 +255,7 @@ const Form: FC<FormProps> = ({
     };
 
     return (
-        <Card component="form" onSubmit={submitForm}>
+        <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto" }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <CardHeader title={FieldLabels[name]} />
                 {editable &&

@@ -1,3 +1,4 @@
+import { TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 
 export const FieldLabels = {
@@ -23,8 +24,8 @@ export const FieldLabels = {
     [GlobalConstants.PHONE]: "Phone",
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED_AT]: "Created At",
-    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters from Wish`,
-    [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the Wish member registry",
+    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters`,
+    [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the member registry",
     [GlobalConstants.PENDING]: "Pending",
     [GlobalConstants.ACTIVE]: "Active",
     [GlobalConstants.EXPIRED]: "Expired",
@@ -76,6 +77,9 @@ export const FieldLabels = {
     [GlobalConstants.STOCK]: "Stock",
     [GlobalConstants.UNLIMITED_STOCK]: "Unlimited Stock",
     [GlobalConstants.IMAGE_URL]: "Image URL",
+    // Ticket
+    [GlobalConstants.TICKET]: "Ticket",
+    [GlobalConstants.TICKET_TYPE]: "Type",
 };
 
 export const RenderedFields = {
@@ -134,7 +138,12 @@ export const RenderedFields = {
         GlobalConstants.IMAGE_URL,
         GlobalConstants.DESCRIPTION,
     ],
+    [GlobalConstants.TICKET]: [GlobalConstants.NAME, GlobalConstants.PRICE],
 };
+RenderedFields[GlobalConstants.TICKET] = [
+    GlobalConstants.TICKET_TYPE,
+    ...RenderedFields[GlobalConstants.PRODUCT],
+];
 RenderedFields[GlobalConstants.MEMBERSHIP] = [
     ...RenderedFields[GlobalConstants.PRODUCT],
     GlobalConstants.DURATION,
@@ -186,8 +195,12 @@ export const RequiredFields = {
     ],
     [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REPORTER],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
-    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.STOCK],
+    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE],
 };
+RequiredFields[GlobalConstants.TICKET] = [
+    ...RequiredFields[GlobalConstants.PRODUCT],
+    GlobalConstants.TICKET_TYPE,
+];
 // Apply
 RequiredFields[GlobalConstants.APPLY] = [
     ...RequiredFields[GlobalConstants.PROFILE],
@@ -212,21 +225,17 @@ export const passwordFields = [
 
 export const selectFieldOptions = {
     // User
-    [GlobalConstants.ROLE]: [GlobalConstants.USER, GlobalConstants.ADMIN],
+    [GlobalConstants.ROLE]: Object.values(UserRole),
     [GlobalConstants.PHASE]: [
         GlobalConstants.BEFORE,
         GlobalConstants.DURING,
         GlobalConstants.AFTER,
     ],
-    [GlobalConstants.STATUS]: [
-        GlobalConstants.TO_DO,
-        GlobalConstants.IN_PROGRESS,
-        GlobalConstants.IN_REVIEW,
-        GlobalConstants.DONE,
-    ],
+    [GlobalConstants.STATUS]: Object.values(TaskStatus),
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
     [GlobalConstants.ASSIGNEE_ID]: ["Custom"],
     [GlobalConstants.REPORTER_ID]: ["Custom"],
+    [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
 };
 
 export const formatAssigneeOptions = (activeMembers: any[]) => {

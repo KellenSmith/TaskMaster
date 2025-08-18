@@ -1,6 +1,6 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { Prisma } from "@prisma/client";
+import { Event, Prisma } from "@prisma/client";
 
 // Convention: "path"=`/${route}`
 
@@ -54,8 +54,8 @@ export const isMembershipExpired = (
 export const isUserAdmin = (user: any): boolean =>
     user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
 
-export const isUserHost = (user: any, event: any): boolean =>
-    user && user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
+export const isUserHost = (user: any, event: Event): boolean =>
+    user && user[GlobalConstants.ID] === event.hostId;
 
 export interface LoginSchema {
     email: string;

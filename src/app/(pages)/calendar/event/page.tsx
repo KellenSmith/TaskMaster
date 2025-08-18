@@ -1,70 +1,64 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-import { getEventById } from "../../../lib/event-actions";
-import { startTransition, useActionState, useEffect, useMemo } from "react";
-import { CircularProgress, Stack, Typography, useTheme } from "@mui/material";
-import GlobalConstants from "../../../GlobalConstants";
-import { useUserContext } from "../../../context/UserContext";
+"use server";
+import {
+    getEventById,
+    getEventParticipants,
+    getEventReserves,
+    getEventTicketsAvailableToUser,
+} from "../../../lib/event-actions";
+import { getEventTasks } from "../../../lib/task-actions";
+import { getLoggedInUser } from "../../../lib/user-actions";
+import { Suspense } from "react";
+import { CircularProgress, Stack, Typography } from "@mui/material";
 import EventDashboard from "./EventDashboard";
-import { defaultDatagridActionState } from "../../../lib/definitions";
+import { ErrorBoundary } from "react-error-boundary";
+import { unstable_cache } from "next/cache";
+import GlobalConstants from "../../../GlobalConstants";
+import { defaultFormActionState } from "../../../lib/definitions";
 
-const EventPage = () => {
-    const theme = useTheme();
-    const { user } = useUserContext();
-    const searchParams = useSearchParams();
-    const eventId = useMemo(() => searchParams.get(GlobalConstants.EVENT_ID), [searchParams]);
+interface EventPageProps {
+    searchParams: { [eventId: string]: string };
+}
 
-    const getEvent = async () => {
-        return getEventById(eventId, fetchEventState);
-    };
+const EventPage = async ({ searchParams }: EventPageProps) => {
+    const eventId = (await searchParams).eventId;
 
-    const [fetchEventState, fetchEventAction, isEventPending] = useActionState(
-        getEvent,
-        defaultDatagridActionState,
-    );
+    // Get user ID for user-specific caching
+    const loggedInUserResult = await getLoggedInUser(defaultFormActionState);
+    const userId =
+        loggedInUserResult.status === 200 ? JSON.parse(loggedInUserResult.result).id : null;
 
-    const getEventResult = () => {
-        if (fetchEventState.result.length < 1) return null;
-        return fetchEventState.result[0];
-    };
-
-    useEffect(() => {
-        startTransition(() => {
-            fetchEventAction();
-        });
-        // Only fetch event on first render
-        //eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const isEventDraft = () => getEventResult()[GlobalConstants.STATUS] === GlobalConstants.DRAFT;
+    const cachedEvent = unstable_cache(getEventById, [eventId], {
+        tags: [GlobalConstants.EVENT_ID],
+    })(eventId);
+    const cachedEventParticipants = unstable_cache(getEventParticipants, [eventId], {
+        tags: [GlobalConstants.PARTICIPANT_USERS],
+    })(eventId);
+    const cachedEventReserves = unstable_cache(getEventReserves, [eventId], {
+        tags: [GlobalConstants.RESERVE_USERS],
+    })(eventId);
+    const cachedEventTasks = unstable_cache(getEventTasks, [eventId], {
+        tags: [GlobalConstants.TASK],
+    })({ eventId });
+    const cachedEventTickets = unstable_cache(getEventTicketsAvailableToUser, [eventId, userId], {
+        tags: [GlobalConstants.TICKET],
+    })(eventId, userId);
 
     return (
-        !!user && (
-            <Stack>
-                {isEventPending ? (
-                    <CircularProgress />
-                ) : !getEventResult() ? (
-                    <Typography color={theme.palette.text.secondary}>
-                        {"Sorry, this event doesn't exist"}
-                    </Typography>
-                ) : (
-                    <>
-                        <Stack spacing={2}>
-                            {isEventDraft() && (
-                                <Typography variant="h4" color={theme.palette.primary.main}>
-                                    {"This is an event draft. It is only visible to the host."}
-                                </Typography>
-                            )}
-                            <EventDashboard
-                                event={getEventResult()}
-                                fetchEventAction={fetchEventAction}
-                            />
-                        </Stack>
-                    </>
-                )}
-            </Stack>
-        )
+        <ErrorBoundary
+            fallback={<Typography color="primary">{"Sorry, we can't show this event"}</Typography>}
+        >
+            <Suspense fallback={<CircularProgress />}>
+                <Stack spacing={2}>
+                    <EventDashboard
+                        eventPromise={cachedEvent}
+                        eventParticipantsPromise={cachedEventParticipants}
+                        eventReservesPromise={cachedEventReserves}
+                        eventTasksPromise={cachedEventTasks}
+                        eventTicketsPromise={cachedEventTickets}
+                    />
+                </Stack>
+            </Suspense>
+        </ErrorBoundary>
     );
 };
 
