@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, PrismaPromise, UserRole } from "@prisma/client";
+import { Prisma, PrismaPromise, UserMembership, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { decryptJWT, generateSalt, generateUserCredentials } from "./auth/auth";
@@ -8,7 +8,8 @@ import { sendUserCredentials } from "./mail-service/mail-service";
 import { DatagridActionState, FormActionState, ResetCredentialsSchema } from "./definitions";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
-import { LoginSchema } from "./zod-schemas";
+import { LoginSchema, UserUpdateSchema } from "./zod-schemas";
+import { revalidateTag } from "next/cache";
 
 export const getUserById = async (
     currentState: DatagridActionState,
@@ -80,41 +81,24 @@ export const getAllUsers = async (
     return newActionState;
 };
 
-export const getLoggedInUser = async (
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    const jwtPayload = await decryptJWT();
-    if (jwtPayload) {
-        const loggedInUser = await prisma.user.findUnique({
+export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
+    include: { userMembership: true };
+}> | null> => {
+    try {
+        const jwtPayload = await decryptJWT();
+        return await prisma.user.findUniqueOrThrow({
             where: { id: jwtPayload[GlobalConstants.ID] as string },
             include: { userMembership: true },
         });
-        if (!loggedInUser) {
-            newActionState.status = 404;
-            newActionState.errorMsg = "";
-            newActionState.result = "";
-            return newActionState;
-        }
-        // Renew JWT
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = JSON.stringify(loggedInUser);
-    } else {
-        console.log(2);
-        newActionState.status = 404;
-        newActionState.errorMsg = "";
-        newActionState.result = "";
+    } catch {
+        return null;
     }
-    return newActionState;
 };
 
 export const updateUser = async (
     userId: string,
-    currentActionState: FormActionState,
     fieldValues: Prisma.UserUpdateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+): Promise<void> => {
     try {
         await prisma.user.update({
             where: {
@@ -122,53 +106,9 @@ export const updateUser = async (
             },
             data: fieldValues,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Updated successfully`;
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = null;
+        throw new Error(`Failed to update user`);
     }
-    return newActionState;
-};
-
-export const updateUserCredentials = async (
-    currentActionState: FormActionState,
-    fieldValues: typeof LoginSchema.shape,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    const newCredentials = await generateUserCredentials(fieldValues.password as unknown as string);
-    try {
-        const user = await prisma.user.findUnique({
-            where: {
-                email: fieldValues.email as unknown as string,
-            },
-        });
-        await prisma.userCredentials.update({
-            where: {
-                userId: user.id,
-            },
-            data: newCredentials,
-        });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Updated successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-const getGeneratedUserCredentials = async (
-    userEmail: string,
-    generatedPassword: string,
-): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
-    const generatedUserCredentials = await generateUserCredentials(generatedPassword);
-    generatedUserCredentials[GlobalConstants.EMAIL] = userEmail;
-    return generatedUserCredentials;
 };
 
 export const renewUserMembership = async (
@@ -213,51 +153,68 @@ export const renewUserMembership = async (
     return newActionState;
 };
 
-export const deleteUser = async (
-    user: Prisma.UserUpdateInput,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+export const deleteUser = async (userId: string): Promise<void> => {
+    let adminCount = 0;
     try {
-        const adminCount = await prisma.user.count({
+        adminCount = await prisma.user.count({
             where: {
                 role: UserRole.admin,
             },
         });
+    } catch (error) {
+        throw new Error("Failed to check admin count");
+    }
+    if (adminCount <= 1) {
+        throw new Error("You are the last admin standing. Find an heir before leaving.");
+    }
 
-        if (adminCount <= 1) {
-            newActionState.status = 400;
-            newActionState.errorMsg =
-                "You are the last admin standing. Find an heir before leaving.";
-            newActionState.result = "";
-            return newActionState;
-        }
-        const deleteCredentials = prisma.userCredentials.deleteMany({
+    try {
+        const deleteReservedInEventsPromise = prisma.reserveInEvent.deleteMany({
             where: {
-                userId: user.id as string,
+                userId: userId,
             },
         });
+        const deleteParticipantInEventsPromise = prisma.participantInEvent.deleteMany({
+            where: {
+                userId: userId,
+            },
+        });
+        const deleteMembershipPromise = prisma.userMembership.deleteMany({
+            where: {
+                userId: userId,
+            },
+        });
+        const deleteCredentialsPromise = prisma.userCredentials.deleteMany({
+            where: {
+                userId: userId,
+            },
+        });
+
         const deleteUser = prisma.user.delete({
             where: {
-                id: user.id as string,
+                id: userId,
             } as unknown as Prisma.UserWhereUniqueInput,
         });
 
         /**
-         * Delete credentials and user in a transaction where all actions must
+         * Delete dependencies and user in a transaction where all actions must
          * succeed or no action is taken to preserve data integrity.
          */
-        await prisma.$transaction([deleteCredentials, deleteUser]);
-
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Deleted successfully";
+        await prisma.$transaction([
+            deleteReservedInEventsPromise,
+            deleteParticipantInEventsPromise,
+            deleteMembershipPromise,
+            deleteCredentialsPromise,
+            deleteUser,
+        ]);
+        revalidateTag(GlobalConstants.USER);
+        revalidateTag(GlobalConstants.USER_CREDENTIALS);
+        revalidateTag(GlobalConstants.USER_MEMBERSHIP);
+        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
+        revalidateTag(GlobalConstants.RESERVE_USERS);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to delete user");
     }
-    return newActionState;
 };
 
 export const getUserEvents = async (

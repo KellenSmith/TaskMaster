@@ -1,5 +1,4 @@
 "use client";
-
 import { Stack, Tab, Tabs } from "@mui/material";
 import { useMemo, useState } from "react";
 import AccountTab from "./AccountTab";
@@ -8,14 +7,14 @@ import TasksTab from "./TasksTab";
 import { isMembershipExpired } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 
-const ProfilePage = () => {
+const ProfilePage = async () => {
     const { user } = useUserContext();
     const tabs = useMemo(
         () => ({
             account: "Account",
             ...(!isMembershipExpired(user) && { events: "Events", tasks: "Tasks" }),
         }),
-        [user],
+        [],
     );
     const [openTab, setOpenTab] = useState<string>(tabs.account);
 

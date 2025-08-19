@@ -1,6 +1,6 @@
 "use server";
 
-import { JWTPayload, jwtVerify, SignJWT } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
 import GlobalConstants from "../../GlobalConstants";
@@ -79,7 +79,9 @@ export const login = async (parsedFieldValues: typeof LoginSchema.shape): Promis
 
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
 
-export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
+export const encryptJWT = async (
+    loggedInUser: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
+) => {
     const expiresAt = dayjs().add(1, "d").toDate();
     // Encode the user ID as jwt
     const jwt = await new SignJWT(loggedInUser)
@@ -90,29 +92,34 @@ export const encryptJWT = async (loggedInUser: Prisma.UserWhereUniqueInput) => {
         .setExpirationTime(expiresAt)
         .sign(getEncryptionKey());
     const cookieStore = await cookies();
-    cookieStore.set(GlobalConstants.USER_CREDENTIALS, jwt, {
+    cookieStore.set(GlobalConstants.USER, jwt, {
         httpOnly: true,
         secure: true,
         expires: expiresAt,
     });
 };
 
-export const decryptJWT = async (): Promise<JWTPayload | null> => {
+export const decryptJWT = async (): Promise<Prisma.UserGetPayload<{
+    include: { userMembership: true };
+}> | null> => {
     try {
         const cookieStore = await cookies();
-        const cookie = cookieStore.get(GlobalConstants.USER_CREDENTIALS)?.value;
+        const cookie = cookieStore.get(GlobalConstants.USER)?.value;
         const result = await jwtVerify(cookie, getEncryptionKey(), {
             algorithms: ["HS256"],
         }); // If this fails, check that AUTH_SECRET exists in .env
-        const jwtPayload = result?.payload;
+        const jwtPayload = result?.payload as Prisma.UserGetPayload<{
+            include: { userMembership: true };
+        }>;
         return jwtPayload;
     } catch {
-        await deleteUserCookie();
+        await deleteUserCookieAndRedirectToHome();
         return null;
     }
 };
 
-export const deleteUserCookie = async () => {
+export const deleteUserCookieAndRedirectToHome = async () => {
     const cookieStore = await cookies();
-    cookieStore.delete(GlobalConstants.USER_CREDENTIALS);
+    cookieStore.delete(GlobalConstants.USER);
+    redirect("/");
 };

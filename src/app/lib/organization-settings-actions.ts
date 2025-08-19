@@ -1,8 +1,9 @@
 "use server";
 
-import { OrganizationSettings, Prisma } from "@prisma/client";
+import { OrganizationSettings } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "./definitions";
+import { revalidateTag } from "next/cache";
+import GlobalConstants from "../GlobalConstants";
 
 export const getOrganizationSettings = async (): Promise<OrganizationSettings> => {
     let orgSettings = await prisma.organizationSettings.findFirst();
@@ -18,10 +19,8 @@ export const getOrganizationName = async (): Promise<string> => {
 };
 
 export const updateOrganizationSettings = async (
-    currentActionState: FormActionState,
-    fieldValues: Prisma.UserCreateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    fieldValues: OrganizationSettings,
+): Promise<void> => {
     try {
         const settings = await getOrganizationSettings();
         await prisma.organizationSettings.update({
@@ -30,13 +29,8 @@ export const updateOrganizationSettings = async (
             },
             data: fieldValues,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Updated settings successfully`;
+        revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error(`Failed to update organization settings`);
     }
-    return newActionState;
 };

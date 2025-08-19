@@ -1,11 +1,10 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { generateSalt, hashPassword } from "./auth/auth";
-import { FormActionState } from "./definitions";
 import { sendUserCredentials } from "./mail-service/mail-service";
-import { ResetCredentialsSchema } from "./zod-schemas";
+import { getLoggedInUser } from "./user-actions";
+import { ResetCredentialsSchema, UpdateCredentialsSchema } from "./zod-schemas";
 
 export const validateUserMembership = async (userId: string): Promise<void> => {
     const generatedPassword = await generateSalt();
@@ -69,5 +68,28 @@ export const resetUserCredentials = async (
         await sendUserCredentials(userEmail, generatedPassword);
     } catch (error) {
         throw new Error("Credentials were reset but could not be emailed to user");
+    }
+};
+
+export const updateUserCredentials = async (
+    fieldValues: typeof UpdateCredentialsSchema.shape,
+): Promise<void> => {
+    try {
+        const loggedInUser = await getLoggedInUser();
+        const salt = await generateSalt();
+        await prisma.userCredentials.update({
+            where: {
+                userId: loggedInUser.id,
+            },
+            data: {
+                salt,
+                hashedPassword: await hashPassword(
+                    fieldValues.newPassword as unknown as string,
+                    salt,
+                ),
+            },
+        });
+    } catch (error) {
+        throw new Error("Failed to update user credentials");
     }
 };

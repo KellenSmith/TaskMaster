@@ -22,19 +22,28 @@ import { Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { navigateToRoute } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
+import { deleteUserCookieAndRedirectToHome } from "../lib/auth/auth";
+import { useNotificationContext } from "../context/NotificationContext";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { user, logOut, editMode, setEditMode } = useUserContext();
+    const { user, editMode, setEditMode } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
+    const { addNotification } = useNotificationContext();
+
     const router = useRouter();
 
     const toggleDrawerOpen = () => {
         setDrawerOpen((prev) => !prev);
     };
 
-    const openReadme = () => {
-        window.open("/README.pdf", "_blank");
+    const logOut = async () => {
+        try {
+            await deleteUserCookieAndRedirectToHome();
+            addNotification("Successfully logged out", "success");
+        } catch {
+            addNotification("Failed to log out", "error");
+        }
     };
 
     const getLinkGroup = (privacyStatus: string) => {

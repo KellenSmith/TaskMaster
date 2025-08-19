@@ -1,7 +1,6 @@
 "use client";
 
-import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
-import { getOrganizationSettings } from "../lib/organization-settings-actions";
+import { createContext, FC, ReactNode, use, useContext } from "react";
 import { OrganizationSettings } from "@prisma/client";
 import { CircularProgress } from "@mui/material";
 
@@ -17,28 +16,18 @@ export const useOrganizationSettingsContext = () => {
 };
 
 interface OrganizationSettingsProviderProps {
+    organizationSettingsPromise: Promise<OrganizationSettings>;
     children: ReactNode;
 }
 
-const OrganizationSettingsProvider: FC<OrganizationSettingsProviderProps> = ({ children }) => {
-    const [organizationSettings, setOrganizationSettings] = useState<OrganizationSettings | null>(
-        null,
-    );
-
-    const refreshOrganizationSettings = async (): Promise<void> => {
-        // Fetch organization settings from API or other source
-        const settings = await getOrganizationSettings();
-        setOrganizationSettings(settings);
-    };
-
-    useEffect(() => {
-        refreshOrganizationSettings();
-    }, []);
+const OrganizationSettingsProvider: FC<OrganizationSettingsProviderProps> = ({
+    organizationSettingsPromise,
+    children,
+}) => {
+    const organizationSettings = use(organizationSettingsPromise);
 
     return (
-        <OrganizationSettingsContext.Provider
-            value={{ organizationSettings, refreshOrganizationSettings }}
-        >
+        <OrganizationSettingsContext.Provider value={{ organizationSettings }}>
             {organizationSettings ? children : <CircularProgress />}
         </OrganizationSettingsContext.Provider>
     );

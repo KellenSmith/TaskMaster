@@ -1,6 +1,6 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { Event, Prisma } from "@prisma/client";
+import { Event, Prisma, UserRole } from "@prisma/client";
 
 // Convention: "path"=`/${route}`
 
@@ -26,7 +26,12 @@ export const routes = {
 
 export const routesToPath = (routeList: string[]) => routeList.map((route) => `/${route}`);
 
-export const isUserAuthorized = (path: string, user: any): boolean => {
+export const isUserAuthorized = (
+    path: string,
+    user: Prisma.UserGetPayload<{
+        include: { userMembership: true };
+    }> | null,
+): boolean => {
     // Only allow non-logged in users access to public routes
     if (!user) return routesToPath(routes[GlobalConstants.PUBLIC]).includes(path);
     // Only allow users with expired memberships access to public pages and their own profile
@@ -36,7 +41,7 @@ export const isUserAuthorized = (path: string, user: any): boolean => {
         );
 
     // Allow admins access to all routes
-    if (user[GlobalConstants.ROLE] === GlobalConstants.ADMIN) return true;
+    if (user.role === UserRole.admin) return true;
     // Allow regular users access to everything except admin paths.
     const adminPaths = routesToPath(routes[GlobalConstants.ADMIN]);
     return !adminPaths.some((adminPath) => path.startsWith(adminPath));
@@ -51,11 +56,18 @@ export const isMembershipExpired = (
     return !membershipExpiresAt || dayjs(membershipExpiresAt).isBefore(dayjs());
 };
 
-export const isUserAdmin = (user: any): boolean =>
-    user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
+export const isUserAdmin = (
+    user: Prisma.UserGetPayload<{
+        include: { userMembership: true };
+    }> | null,
+): boolean => user && user.role === UserRole.admin;
 
-export const isUserHost = (user: any, event: Event): boolean =>
-    user && user[GlobalConstants.ID] === event.hostId;
+export const isUserHost = (
+    user: Prisma.UserGetPayload<{
+        include: { userMembership: true };
+    }> | null,
+    event: Event,
+): boolean => user && user.id === event.hostId;
 
 export interface ResetCredentialsSchema {
     email: string;

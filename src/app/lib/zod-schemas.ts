@@ -264,3 +264,9 @@ export const ResetCredentialsSchema = z.object({
 });
 
 export const UpdateTextContentSchema = z.object({ content: z.string() });
+
+export const UpdateCredentialsSchema = z.object({
+    currentPassword: z.string(),
+    newPassword: z.string().min(6).max(100),
+    repeatPassword: z.string().min(6).max(100),
+});

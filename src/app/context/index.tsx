@@ -7,7 +7,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import "dayjs/locale/en-gb";
 import updateLocale from "dayjs/plugin/updateLocale";
 import ThemeContextProvider from "./ThemeContext";
-import ComponentWrapper from "./ComponentWrapper";
+import ContextWrapper from "./ContextWrapper";
 import { FC, ReactNode } from "react";
 
 const locale = "en-gb";
@@ -30,7 +30,7 @@ const ContextProviders: FC<ContextProvidersProps> = ({ children }) => {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={locale}>
             <ThemeContextProvider>
-                <ComponentWrapper>{children}</ComponentWrapper>
+                <ContextWrapper>{children}</ContextWrapper>
             </ThemeContextProvider>
         </LocalizationProvider>
     );

@@ -34,8 +34,7 @@ model User {
     role                 UserRole @default(user)
 
     userCredentials UserCredentials?
-
-    userMembership UserMembership?
+    userMembership  UserMembership?
 
     hostingEvents     Event[]
     participantEvents ParticipantInEvent[]

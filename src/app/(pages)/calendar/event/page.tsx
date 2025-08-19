@@ -13,7 +13,6 @@ import EventDashboard from "./EventDashboard";
 import { ErrorBoundary } from "react-error-boundary";
 import { unstable_cache } from "next/cache";
 import GlobalConstants from "../../../GlobalConstants";
-import { defaultFormActionState } from "../../../lib/definitions";
 
 interface EventPageProps {
     searchParams: { [eventId: string]: string };
@@ -23,9 +22,8 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventId = (await searchParams).eventId;
 
     // Get user ID for user-specific caching
-    const loggedInUserResult = await getLoggedInUser(defaultFormActionState);
-    const userId =
-        loggedInUserResult.status === 200 ? JSON.parse(loggedInUserResult.result).id : null;
+    const loggedInUser = await getLoggedInUser();
+    const userId = loggedInUser?.id || null;
 
     const cachedEvent = unstable_cache(getEventById, [eventId], {
         tags: [GlobalConstants.EVENT_ID],
