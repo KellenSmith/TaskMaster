@@ -63,7 +63,7 @@ interface FormProps {
 
 const Form: FC<FormProps> = ({
     name,
-    buttonLabel,
+    buttonLabel = "save",
     action,
     validationSchema,
     defaultValues,
@@ -76,10 +76,6 @@ const Form: FC<FormProps> = ({
     const [isPending, startTransition] = useTransition();
     const [editMode, setEditMode] = useState(!readOnly);
     const { addNotification } = useNotificationContext();
-
-    useEffect(() => {
-        setEditMode(!readOnly);
-    }, [readOnly]);
 
     const validateFormData = (formData: FormData) => {
         const formDataObject = Object.fromEntries(formData);
@@ -104,14 +100,13 @@ const Form: FC<FormProps> = ({
     const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        console.log("FormData entries:", Object.fromEntries(formData));
         const parsedFieldValues = validateFormData(formData);
-        console.log("Parsed field values:", parsedFieldValues);
         if (parsedFieldValues)
             startTransition(async () => {
                 try {
                     const submitResult = await action(parsedFieldValues);
                     addNotification(submitResult, "success");
+                    setEditMode(false);
                 } catch (error) {
                     addNotification(error.message, "error");
                 }
@@ -203,18 +198,23 @@ const Form: FC<FormProps> = ({
 
     return (
         <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto" }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <CardHeader title={FieldLabels[name]} />
-                {editable &&
-                    (editMode ? (
-                        <Cancel
-                            sx={{ padding: 2, cursor: "pointer" }}
-                            onClick={() => setEditMode(false)}
-                        />
-                    ) : (
-                        <Edit sx={{ padding: 2 }} onClick={() => setEditMode(true)} />
-                    ))}
-            </Stack>
+            {(editable || FieldLabels[name]) && (
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <CardHeader title={FieldLabels[name]} />
+                    {editable &&
+                        (editMode ? (
+                            <Cancel
+                                sx={{ padding: 2, cursor: "pointer" }}
+                                onClick={() => setEditMode(false)}
+                            />
+                        ) : (
+                            <Edit
+                                sx={{ padding: 2, cursor: "pointer" }}
+                                onClick={() => setEditMode(true)}
+                            />
+                        ))}
+                </Stack>
+            )}
 
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>

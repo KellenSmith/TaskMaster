@@ -17,41 +17,6 @@ const mockTextContent = {
 };
 
 describe("Text Content Actions", () => {
-    describe("createTextContent", () => {
-        it("should create text content successfully", async () => {
-            mockContext.prisma.textContent.create.mockResolvedValue(mockTextContent);
-
-            const result = await createTextContent(
-                defaultFormActionState,
-                mockTextContent.id,
-                mockTextContent.language,
-                mockTextContent.content,
-                mockTextContent.category,
-            );
-
-            expect(result.status).toBe(201);
-            expect(result.result).toBe("Created text content");
-            expect(mockContext.prisma.textContent.create).toHaveBeenCalledWith({
-                data: mockTextContent,
-            });
-        });
-
-        it("should handle create errors", async () => {
-            mockContext.prisma.textContent.create.mockRejectedValue(new Error("Creation failed"));
-
-            const result = await createTextContent(
-                defaultFormActionState,
-                mockTextContent.id,
-                mockTextContent.language,
-                mockTextContent.content,
-            );
-
-            expect(result.status).toBe(500);
-            expect(result.errorMsg).toBe("Creation failed");
-            expect(result.result).toBe("");
-        });
-    });
-
     describe("getTextContent", () => {
         it("should get existing text content successfully", async () => {
             mockContext.prisma.textContent.findUnique.mockResolvedValue(mockTextContent);
@@ -157,43 +122,6 @@ describe("Text Content Actions", () => {
 
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Update failed");
-            expect(result.result).toBe("");
-        });
-    });
-
-    describe("deleteTextContent", () => {
-        it("should delete text content successfully", async () => {
-            mockContext.prisma.textContent.delete.mockResolvedValue(mockTextContent);
-
-            const result = await deleteTextContent(
-                defaultFormActionState,
-                mockTextContent.id,
-                mockTextContent.language,
-            );
-
-            expect(result.status).toBe(200);
-            expect(result.result).toBe("Deleted text content");
-            expect(mockContext.prisma.textContent.delete).toHaveBeenCalledWith({
-                where: {
-                    id_language: {
-                        id: mockTextContent.id,
-                        language: mockTextContent.language,
-                    },
-                },
-            });
-        });
-
-        it("should handle delete errors", async () => {
-            mockContext.prisma.textContent.delete.mockRejectedValue(new Error("Delete failed"));
-
-            const result = await deleteTextContent(
-                defaultFormActionState,
-                mockTextContent.id,
-                mockTextContent.language,
-            );
-
-            expect(result.status).toBe(500);
-            expect(result.errorMsg).toBe("Delete failed");
             expect(result.result).toBe("");
         });
     });

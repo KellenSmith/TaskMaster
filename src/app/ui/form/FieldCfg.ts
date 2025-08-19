@@ -139,6 +139,7 @@ export const RenderedFields = {
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.TICKET]: [GlobalConstants.NAME, GlobalConstants.PRICE],
+    [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],
 };
 RenderedFields[GlobalConstants.TICKET] = [
     GlobalConstants.TICKET_TYPE,

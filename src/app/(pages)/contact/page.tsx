@@ -9,7 +9,7 @@ const ContactPage: React.FC = () => {
             <Typography textAlign="center" color="primary" variant="h3">
                 Contact
             </Typography>
-            <TextContent id={GlobalConstants.CONTACT} richText={true} />
+            <TextContent id={GlobalConstants.CONTACT} />
         </Stack>
     );
 };

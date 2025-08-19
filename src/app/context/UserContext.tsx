@@ -31,6 +31,7 @@ interface UserContextProviderProps {
 const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     const [user, setUser] = useState(null);
     const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
+    const [editMode, setEditMode] = useState(false);
     const router = useRouter();
 
     const updateLoggedInUser = async () => {
@@ -76,6 +77,8 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
                 updateLoggedInUser,
                 language,
                 setLanguage,
+                editMode,
+                setEditMode,
             }}
         >
             {children}

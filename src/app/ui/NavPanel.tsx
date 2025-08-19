@@ -1,22 +1,31 @@
 "use client";
 
 import React, { useState } from "react";
-import { AppBar, Toolbar, Typography, Drawer, List, ListItem, Button } from "@mui/material";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Drawer,
+    List,
+    ListItem,
+    Button,
+    Tooltip,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAuthorized, routes, routesToPath } from "../lib/definitions";
-import { Article } from "@mui/icons-material";
+import { isUserAdmin, isUserAuthorized, routes, routesToPath } from "../lib/definitions";
+import { Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { navigateToRoute } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { user, logOut } = useUserContext();
+    const { user, logOut, editMode, setEditMode } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const router = useRouter();
 
@@ -74,9 +83,13 @@ const NavPanel = () => {
                     >
                         {organizationSettings?.organizationName || "Organization Name"}
                     </Typography>
-                    <Button onClick={openReadme}>
-                        <Article />
-                    </Button>
+                    {isUserAdmin(user) && (
+                        <Tooltip title={`${editMode ? "Disable" : "Enable"} website edit mode`}>
+                            <Button onClick={() => setEditMode((prev) => !prev)}>
+                                {editMode ? <Cancel /> : <Edit />}
+                            </Button>
+                        </Tooltip>
+                    )}
                     {user ? (
                         <Button onClick={logOut}>
                             <LogoutIcon />

@@ -262,3 +262,5 @@ export const LoginSchema = z.object({
 export const ResetCredentialsSchema = z.object({
     email: z.email(),
 });
+
+export const UpdateTextContentSchema = z.object({ content: z.string() });

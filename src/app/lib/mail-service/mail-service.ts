@@ -105,7 +105,8 @@ export const informOfCancelledEvent = async (eventId: string): Promise<string[]>
         const mailContent = createElement(EventCancelledTemplate, {
             event: event,
             organizationName: await getOrganizationName(),
-            organizationEmail: (await getOrganizationSettings())?.email || "<email@gmail.com>",
+            organizationEmail:
+                (await getOrganizationSettings())?.email || "<kellensmith407@gmail.com>",
         });
 
         const mailPayload = await getEmailPayload(

@@ -113,6 +113,7 @@ const GlobalConstants = {
     CONTENT: "content",
     RECIPIENT_CRITERIA: "recipientCriteria",
     // TextContent
+    TEXT_CONTENT: "textContent",
     LANGUAGE: "language",
     ENGLISH: "english",
     CATEGORY: "category",
