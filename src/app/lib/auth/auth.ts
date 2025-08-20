@@ -103,11 +103,9 @@ export const encryptJWT = async (
     });
 };
 
-export const decryptJWT = async (): Promise<
-    Prisma.UserGetPayload<{
-        include: { userMembership: true };
-    }>
-> => {
+export const decryptJWT = async (): Promise<Prisma.UserGetPayload<{
+    include: { userMembership: true };
+}> | null> => {
     try {
         const cookieStore = await cookies();
         const cookie = cookieStore.get(GlobalConstants.USER)?.value;
@@ -119,17 +117,12 @@ export const decryptJWT = async (): Promise<
         }>;
         return jwtPayload;
     } catch (error) {
-        console.error("Error decrypting JWT:", error);
-        await deleteUserCookie();
+        return null;
     }
 };
 
 export const deleteUserCookieAndRedirectToHome = async () => {
-    await deleteUserCookie();
-    redirect("/");
-};
-
-export const deleteUserCookie = async () => {
     const cookieStore = await cookies();
     cookieStore.delete(GlobalConstants.USER);
+    redirect("/");
 };

@@ -77,13 +77,12 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
     include: { userMembership: true };
 }> | null> => {
     try {
-        const jwtPayload = await decryptJWT();
+        const loggedInUser = await decryptJWT();
         return await prisma.user.findUniqueOrThrow({
-            where: { id: jwtPayload[GlobalConstants.ID] as string },
+            where: { id: loggedInUser.id },
             include: { userMembership: true },
         });
     } catch (error) {
-        console.error("Error getting logged in user:", error);
         return null;
     }
 };
