@@ -1,8 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
 import GlobalConstants from "../GlobalConstants";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useState } from "react";
+import Error from "next/error";
 
 export const formatDate = (date: string | Date | Dayjs): string => dayjs(date).format("L HH:mm");
 
@@ -17,3 +16,11 @@ export const getDummyId = (existingItems: any[]) =>
 export const navigateToRoute = (route: string, router: AppRouterInstance) => {
     router.push(`${window.location.origin}${route}`);
 };
+
+export const allowRedirectException = (error: Error & { digest?: string }) => {
+    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+        throw error;
+    }
+};
+
+export const formatPrice = (price: number): number => price / 100;

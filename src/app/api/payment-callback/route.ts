@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateOrderStatus } from "../../lib/order-actions";
+import { progressOrder } from "../../lib/order-actions";
 import { getNewOrderStatus, PaymentStateType } from "../../lib/payment-utils";
 import { defaultFormActionState } from "../../lib/definitions";
 
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const transactionState = requestBody.authorization.transaction.state;
         const newOrderStatus = getNewOrderStatus(transactionState);
 
-        const updateOrderStatusResult = await updateOrderStatus(
+        const updateOrderStatusResult = await progressOrder(
             orderId,
             defaultFormActionState,
             newOrderStatus,

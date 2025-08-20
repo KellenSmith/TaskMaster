@@ -22,9 +22,9 @@ vi.mock("./order-actions", () => ({
 }));
 
 // Import the mocked functions after the mock is set up
-import { getOrderById, updateOrderStatus } from "./order-actions";
+import { getOrderById, progressOrder } from "./order-actions";
 const mockGetOrderById = vi.mocked(getOrderById);
-const mockUpdateOrderStatus = vi.mocked(updateOrderStatus);
+const mockUpdateOrderStatus = vi.mocked(progressOrder);
 
 // Mock environment variables
 const mockEnv = {

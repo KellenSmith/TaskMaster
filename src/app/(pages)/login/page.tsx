@@ -5,17 +5,22 @@ import { Button, Stack } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
-import z from "zod";
 import { login } from "../../lib/auth/auth";
-import { navigateToRoute } from "../../ui/utils";
+import { allowRedirectException, navigateToRoute } from "../../ui/utils";
 import { LoginSchema } from "../../lib/zod-schemas";
 
 const LoginPage: FC = () => {
     const router = useRouter();
 
     const handleLogin = async (parsedFieldValues: typeof LoginSchema.shape) => {
-        await login(parsedFieldValues);
-        return "Logged in successfully. Redirecting...";
+        try {
+            await login(parsedFieldValues);
+            return "Logged in successfully. Redirecting...";
+        } catch (error) {
+            allowRedirectException(error);
+            console.log(error);
+            throw new Error("Failed to log in");
+        }
     };
 
     return (

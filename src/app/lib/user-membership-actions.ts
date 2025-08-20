@@ -36,8 +36,8 @@ export const renewUserMembership = async (userId: string, membershipId: string):
                 expiresAt: newExpiryDate,
             },
         });
-        revalidateTag(GlobalConstants.USER);
     } catch (error) {
+        console.error("Failed to renew user membership:", error);
         throw new Error("Failed to renew membership");
     }
 };

@@ -20,7 +20,6 @@ export const routes = {
         GlobalConstants.APPLY,
         GlobalConstants.CONTACT,
         GlobalConstants.ORDER,
-        "order/complete",
     ],
 };
 

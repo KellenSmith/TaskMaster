@@ -10,7 +10,6 @@ import {
     ListItem,
     Button,
     Tooltip,
-    useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -21,13 +20,12 @@ import { useUserContext } from "../context/UserContext";
 import { isUserAdmin, isUserAuthorized, routes, routesToPath } from "../lib/definitions";
 import { Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { navigateToRoute } from "./utils";
+import { allowRedirectException, navigateToRoute } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { deleteUserCookieAndRedirectToHome } from "../lib/auth/auth";
 import { useNotificationContext } from "../context/NotificationContext";
 
 const NavPanel = () => {
-    const theme = useTheme();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { user, editMode, setEditMode } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
@@ -42,7 +40,8 @@ const NavPanel = () => {
         try {
             await deleteUserCookieAndRedirectToHome();
             addNotification("Successfully logged out", "success");
-        } catch {
+        } catch (error) {
+            allowRedirectException(error);
             addNotification("Failed to log out", "error");
         }
     };

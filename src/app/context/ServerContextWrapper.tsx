@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
 import GlobalConstants from "../GlobalConstants";
 import { getLoggedInUser, getUserById } from "../lib/user-actions";
+import { deleteUserCookieAndRedirectToHome } from "../lib/auth/auth";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
@@ -15,11 +16,25 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     })();
 
     // Get user info first to use as cache key
-    const loggedInUser = await getLoggedInUser();
+    let loggedInUser = null;
+    try {
+        loggedInUser = await getLoggedInUser();
+    } catch {
+        await deleteUserCookieAndRedirectToHome();
+    }
+
+    // Allow no user to be logged in to the context
+    const getLoggedInUserOrNull = async (loggedInUserId: string) => {
+        try {
+            return await getUserById(loggedInUserId);
+        } catch {
+            return null;
+        }
+    };
     // Use userId in cache key to ensure proper invalidation
-    const loggedInUserPromise = unstable_cache(getUserById, [loggedInUser.id], {
+    const loggedInUserPromise = unstable_cache(getLoggedInUserOrNull, [loggedInUser?.id], {
         tags: [GlobalConstants.USER],
-    })(loggedInUser.id);
+    })(loggedInUser?.id);
 
     return (
         <ContextWrapper

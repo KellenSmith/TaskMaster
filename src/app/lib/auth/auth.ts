@@ -75,10 +75,10 @@ export const login = async (parsedFieldValues: typeof LoginSchema.shape): Promis
 
         await encryptJWT(loggedInUser);
         revalidateTag(GlobalConstants.USER);
-        redirect("/");
     } catch {
         throw new Error("Login failed. Please check your credentials and try again.");
     }
+    redirect("/");
 };
 
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);

@@ -4,7 +4,7 @@ import {
     getOrderById,
     getAllOrders,
     createOrder,
-    updateOrderStatus,
+    progressOrder,
     deleteOrder,
 } from "./order-actions";
 import testdata from "../../test/testdata";
@@ -207,7 +207,7 @@ describe("Order Actions", () => {
                 status: "paid",
             });
 
-            const result = await updateOrderStatus("1", defaultFormActionState, "paid");
+            const result = await progressOrder("1", defaultFormActionState, "paid");
             expect(result.status).toBe(200);
             expect(result.result).toBe("Order completed");
             expect(mockContext.prisma.order.update).toHaveBeenCalledWith({
@@ -220,7 +220,7 @@ describe("Order Actions", () => {
             mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testdata.order);
             mockContext.prisma.order.update.mockRejectedValue(new Error("Update failed"));
 
-            const result = await updateOrderStatus("1", defaultFormActionState, "paid");
+            const result = await progressOrder("1", defaultFormActionState, "paid");
             expect(result.status).toBe(500);
             expect(result.errorMsg).toBe("Update failed");
         });

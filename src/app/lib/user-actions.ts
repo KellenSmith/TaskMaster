@@ -82,7 +82,7 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
             where: { id: loggedInUser.id },
             include: { userMembership: true },
         });
-    } catch (error) {
+    } catch {
         return null;
     }
 };

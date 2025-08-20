@@ -7,7 +7,7 @@ import { deleteUser, updateUser } from "../../lib/user-actions";
 import { Button, Card, CardContent, Stack, Typography, useTheme } from "@mui/material";
 import { isMembershipExpired, isUserAdmin } from "../../lib/definitions";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { formatDate, navigateToRoute } from "../../ui/utils";
+import { allowRedirectException, formatDate, navigateToRoute } from "../../ui/utils";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { deleteUserCookieAndRedirectToHome } from "../../lib/auth/auth";
@@ -55,10 +55,7 @@ const AccountTab = () => {
         try {
             await createMembershipOrder();
         } catch (error) {
-            // Re-throw Next.js redirect errors to allow the redirect to work
-            if (error.digest?.startsWith("NEXT_REDIRECT")) {
-                throw error;
-            }
+            allowRedirectException(error);
             // Show notification for all other errors
             addNotification("Failed to activate membership", "error");
         }

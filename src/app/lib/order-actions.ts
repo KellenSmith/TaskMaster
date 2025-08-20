@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
+import { capturePaymentFunds } from "./payment-actions";
 
 export const getOrderById = async (
     orderId: string,
@@ -117,45 +118,66 @@ const processOrderItems = async (orderId: string): Promise<void> => {
         for (const orderItem of order.orderItems) {
             await processOrderedProduct(order.userId, orderItem);
         }
-        await prisma.order.update({
-            where: { id: orderId },
-            data: { status: OrderStatus.shipped },
-        });
     } catch (error) {
+        console.log(error);
         throw new Error(`Failed to process order items`);
     }
 };
 
-export const updateOrderStatus = async (orderId: string, newStatus: OrderStatus): Promise<void> => {
+// Only allow progression of orders, not regression
+const isStatusTransitionValid = (orderStatus: OrderStatus, newStatus: OrderStatus) =>
+    Object.keys(OrderStatus).indexOf(orderStatus) <= Object.keys(OrderStatus).indexOf(newStatus);
+
+export const progressOrder = async (
+    orderId: string,
+    newStatus: OrderStatus,
+    needsCapture = false,
+): Promise<void> => {
     try {
-        const order = await prisma.order.findUniqueOrThrow({
-            where: { id: orderId },
-            select: {
-                status: true,
-            },
-        });
-
-        // Don't update from completed status to any other status
-        if (order.status === OrderStatus.completed) {
-            throw new Error("Order is already completed and cannot be updated");
-        }
-        if (order.status === newStatus) {
-            throw new Error(`Order is already in status: ${newStatus}`);
+        // Always allow transitioning to cancelled or error
+        if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(newStatus)) {
+            await prisma.order.update({
+                where: { id: orderId },
+                data: { status: newStatus },
+            });
+            return;
         }
 
-        // Always update the order to the requested status first
-        await prisma.order.update({
+        let order: Prisma.OrderGetPayload<true> = await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
-            data: { status: newStatus },
         });
 
-        // If status is paid and not shipped yet, attempt to process order items
-        if (newStatus === OrderStatus.paid && order.status !== OrderStatus.shipped) {
+        if (!isStatusTransitionValid(order.status, newStatus)) {
+            throw new Error("Invalid order status transition");
+        }
+
+        // Pending to paid
+        if (order.status === OrderStatus.pending) {
+            order = await prisma.order.update({
+                where: { id: orderId },
+                data: { status: OrderStatus.paid },
+            });
+        }
+        // Paid to shipped
+        if (order.status === OrderStatus.paid) {
             await processOrderItems(orderId);
+            order = await prisma.order.update({
+                where: { id: orderId },
+                data: { status: OrderStatus.shipped },
+            });
+        }
+        // Shipped to completed
+        if (order.status === OrderStatus.shipped) {
             await sendOrderConfirmation(orderId);
+            needsCapture && (await capturePaymentFunds(orderId));
+            order = await prisma.order.update({
+                where: { id: orderId },
+                data: { status: OrderStatus.completed },
+            });
         }
     } catch (error) {
-        throw new Error("Failed to update order status");
+        console.log(error);
+        throw new Error("Failed to progress order");
     }
 };
 

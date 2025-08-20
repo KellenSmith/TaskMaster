@@ -9,27 +9,38 @@ import { getOrderById } from "../../lib/order-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { prisma } from "../../../prisma/prisma-client";
+import { checkPaymentStatus } from "../../lib/payment-actions";
+import { redirect } from "next/navigation";
+import { NextURL } from "next/dist/server/web/next-url";
 
 const OrderPage = async ({ searchParams }) => {
-    const orderId = searchParams.orderId as string;
-    const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+    const orderId = (await searchParams).orderId as string;
+
+    // Always make sure the order state is updated
+    try {
+        await checkPaymentStatus(orderId);
+    } catch {}
+
+    const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { orderItems: { include: { product: true } } },
+    });
     const loggedInUser = await getLoggedInUser();
 
-    if (order && loggedInUser?.id !== order?.userId) {
+    if (!order || !loggedInUser)
         return <Typography color="primary">Failed to load order</Typography>;
-    }
 
-    const orderPromise = unstable_cache(getOrderById, [orderId], {
-        tags: [GlobalConstants.ORDER],
-    })(orderId);
+    if (!loggedInUser || loggedInUser?.id !== order?.userId) {
+        redirect(new NextURL("/", process.env.VERCEL_URL).toString());
+    }
 
     return (
         <ErrorBoundary fallback={<Typography color="primary">Failed to load order</Typography>}>
             <Suspense fallback={<CircularProgress />}>
                 <Card>
                     <CardContent>
-                        <OrderSummary orderPromise={orderPromise} />
-                        <PaymentHandler orderPromise={orderPromise} />
+                        <OrderSummary order={order} />
+                        <PaymentHandler order={order} />
                     </CardContent>
                 </Card>
             </Suspense>

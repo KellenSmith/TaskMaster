@@ -33,6 +33,7 @@ import { FormActionState } from "../../lib/definitions";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { ZodType, ZodError } from "zod";
 import dayjs from "dayjs";
+import { allowRedirectException } from "../utils";
 
 export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
     (formActionState.errorMsg || formActionState.result) && (
@@ -109,6 +110,7 @@ const Form: FC<FormProps> = ({
                     addNotification(submitResult, "success");
                     setEditMode(false);
                 } catch (error) {
+                    allowRedirectException(error);
                     addNotification(error.message, "error");
                 }
             });

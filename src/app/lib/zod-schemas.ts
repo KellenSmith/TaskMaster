@@ -145,7 +145,11 @@ export const ProductCreateSchema = z.object({
     id: z.uuid().optional(),
     name: z.string().default(""),
     description: z.string().default(""),
-    price: z.number().nonnegative().default(0),
+    price: z
+        .number()
+        .nonnegative()
+        .default(0)
+        .transform((val) => Math.round(val * 100)),
     stock: z.number().int().nonnegative().nullable().default(0),
     unlimitedStock: z.boolean().default(false),
     imageUrl: z.string().url().default(""),
