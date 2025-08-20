@@ -8,7 +8,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { useRouter } from "next/navigation";
 import { formatDate, navigateToRoute } from "../../ui/utils";
 import { defaultDatagridActionState, isUserHost } from "../../lib/definitions";
-import { isEventPublished } from "../calendar/event/event-utils";
+import { isEventPublished } from "../event/event-utils";
 const EventsTab: React.FC = () => {
     const { user } = useUserContext();
     const [events, setEvents] = useState<any[]>([]);

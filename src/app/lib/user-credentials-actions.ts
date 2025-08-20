@@ -1,5 +1,6 @@
 "use server";
 
+import z from "zod";
 import { prisma } from "../../prisma/prisma-client";
 import { generateSalt, hashPassword } from "./auth/auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
@@ -39,7 +40,7 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
 };
 
 export const resetUserCredentials = async (
-    fieldValues: typeof ResetCredentialsSchema.shape,
+    fieldValues: z.infer<typeof ResetCredentialsSchema>,
 ): Promise<void> => {
     const userEmail: string = fieldValues.email as unknown as string;
     const generatedPassword = await generateSalt();
@@ -72,7 +73,7 @@ export const resetUserCredentials = async (
 };
 
 export const updateUserCredentials = async (
-    fieldValues: typeof UpdateCredentialsSchema.shape,
+    fieldValues: z.infer<typeof UpdateCredentialsSchema>,
 ): Promise<void> => {
     try {
         const loggedInUser = await getLoggedInUser();

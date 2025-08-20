@@ -73,7 +73,6 @@ model Event {
     endTime         DateTime
     description     String      @default("")
     maxParticipants Int? // null if unlimited
-    fullTicketPrice Int         @default(0)
     status          EventStatus @default(draft)
 
     host   User   @relation(fields: [hostId], references: [id])

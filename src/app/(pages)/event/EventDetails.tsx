@@ -8,14 +8,14 @@ import {
 } from "@mui/icons-material";
 import { Accordion, AccordionSummary, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { Suspense, use } from "react";
-import { formatDate } from "../../../ui/utils";
-import GlobalConstants from "../../../GlobalConstants";
-import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
-import RichTextField from "../../../ui/form/RichTextField";
-import { useUserContext } from "../../../context/UserContext";
-import ConfirmButton from "../../../ui/ConfirmButton";
-import { deleteEventParticipant } from "../../../lib/event-actions";
-import { useNotificationContext } from "../../../context/NotificationContext";
+import { formatDate } from "../../ui/utils";
+import GlobalConstants from "../../GlobalConstants";
+import { defaultFormActionState, FormActionState, isUserHost } from "../../lib/definitions";
+import RichTextField from "../../ui/form/RichTextField";
+import { useUserContext } from "../../context/UserContext";
+import ConfirmButton from "../../ui/ConfirmButton";
+import { deleteEventParticipant } from "../../lib/event-actions";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { Prisma } from "@prisma/client";
 
 interface EventDetailsProps {

@@ -4,9 +4,9 @@ import ThemeContextProvider from "./ThemeContext";
 import UserContextProvider from "./UserContext";
 import OrganizationSettingsProvider from "./OrganizationSettingsContext";
 import NotificationContextProvider from "./NotificationContext";
+import LocalizationContextProvider from "./LocalizationContext";
 import { ErrorBoundary } from "react-error-boundary";
 import { CircularProgress, Typography } from "@mui/material";
-import LocalizationContextProvider from "./LocalizationContext";
 
 interface ContextWrapperProps {
     children: ReactNode;

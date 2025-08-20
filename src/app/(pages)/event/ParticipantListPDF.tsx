@@ -1,8 +1,8 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { styles } from "../../../ui/pdf-styles";
-import GlobalConstants from "../../../GlobalConstants";
-import { formatDate } from "../../../ui/utils";
-import { FieldLabels } from "../../../ui/form/FieldCfg";
+import { styles } from "../../ui/pdf-styles";
+import GlobalConstants from "../../GlobalConstants";
+import { formatDate } from "../../ui/utils";
+import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useMemo } from "react";
 import dayjs from "dayjs";
 import { Prisma } from "@prisma/client";

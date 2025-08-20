@@ -8,6 +8,15 @@ import {
     OrderStatus,
     Prisma,
 } from "@prisma/client";
+import dayjs from "dayjs";
+
+// Required dayjs to string schema for create operations
+const stringToISODate = z
+    .string()
+    .refine((val) => dayjs(val, "DD/MM/YYYY HH:mm").isValid(), {
+        message: "Invalid date",
+    })
+    .transform((val) => dayjs(val, "DD/MM/YYYY HH:mm").toISOString()) as z.ZodType<string>;
 
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
@@ -39,20 +48,19 @@ export const OrganizationSettingsUpdateSchema: z.ZodType<Prisma.OrganizationSett
 // =============================================================================
 
 export const UserCreateSchema = z.object({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
     firstName: z.string().default(""),
     surName: z.string().default(""),
     nickname: z.string().optional(),
     pronoun: z.string().nullable().default("they/them"),
     email: z.email(),
     phone: z.string().nullable().default(""),
-    createdAt: z.date().optional(),
     consentToNewsletters: z.coerce.boolean().default(true),
     role: UserRoleSchema.default(UserRole.user),
 });
 
 export const UserUpdateSchema = UserCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -60,14 +68,14 @@ export const UserUpdateSchema = UserCreateSchema.partial().extend({
 // =============================================================================
 
 export const UserCredentialsCreateSchema = z.object({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
     email: z.email(),
     salt: z.string(),
     hashedPassword: z.string(),
 });
 
 export const UserCredentialsUpdateSchema = UserCredentialsCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -75,20 +83,17 @@ export const UserCredentialsUpdateSchema = UserCredentialsCreateSchema.partial()
 // =============================================================================
 
 export const EventCreateSchema = z.object({
-    id: z.uuid().optional(),
     title: z.string().default(""),
     location: z.string().default(""),
-    startTime: z.date(),
-    endTime: z.date(),
+    startTime: stringToISODate,
+    endTime: stringToISODate,
     description: z.string().default(""),
-    maxParticipants: z.number().int().positive().nullable(),
-    fullTicketPrice: z.number().int().nonnegative().default(0),
+    maxParticipants: z.coerce.number().int().positive().nullable(),
     status: EventStatusSchema.default(EventStatus.draft),
-    hostId: z.uuid(),
 });
 
 export const EventUpdateSchema = EventCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -96,9 +101,9 @@ export const EventUpdateSchema = EventCreateSchema.partial().extend({
 // =============================================================================
 
 export const ParticipantInEventCreateSchema = z.object({
-    userId: z.uuid(),
-    eventId: z.uuid(),
-    ticketId: z.uuid(),
+    userId: z.string(),
+    eventId: z.string(),
+    ticketId: z.string(),
 });
 
 export const ParticipantInEventUpdateSchema = ParticipantInEventCreateSchema;
@@ -108,9 +113,9 @@ export const ParticipantInEventUpdateSchema = ParticipantInEventCreateSchema;
 // =============================================================================
 
 export const ReserveInEventCreateSchema = z.object({
-    userId: z.uuid(),
-    eventId: z.uuid(),
-    queueingSince: z.date().default(() => new Date()),
+    userId: z.string(),
+    eventId: z.string(),
+    queueingSince: stringToISODate.default(dayjs().toISOString()),
 });
 
 export const ReserveInEventUpdateSchema = ReserveInEventCreateSchema;
@@ -120,21 +125,21 @@ export const ReserveInEventUpdateSchema = ReserveInEventCreateSchema;
 // =============================================================================
 
 export const TaskCreateSchema = z.object({
-    id: z.uuid().optional(),
-    eventId: z.uuid().nullable(),
-    assigneeId: z.uuid().nullable(),
-    reporterId: z.uuid().nullable(),
+    id: z.string().optional(),
+    eventId: z.string().nullable(),
+    assigneeId: z.string().nullable(),
+    reporterId: z.string().nullable(),
     phase: TaskPhaseSchema.default(TaskPhase.before),
     name: z.string().default(""),
     status: TaskStatusSchema.default(TaskStatus.toDo),
     tags: z.array(z.string()).default([]),
-    startTime: z.date().nullable(),
-    endTime: z.date().nullable(),
+    startTime: stringToISODate.nullable(),
+    endTime: stringToISODate.nullable(),
     description: z.string().default(""),
 });
 
 export const TaskUpdateSchema = TaskCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -142,7 +147,7 @@ export const TaskUpdateSchema = TaskCreateSchema.partial().extend({
 // =============================================================================
 
 export const ProductCreateSchema = z.object({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
     name: z.string().default(""),
     description: z.string().default(""),
     price: z
@@ -156,7 +161,7 @@ export const ProductCreateSchema = z.object({
 });
 
 export const ProductUpdateSchema = ProductCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -164,13 +169,13 @@ export const ProductUpdateSchema = ProductCreateSchema.partial().extend({
 // =============================================================================
 
 export const MembershipCreateSchema = z.object({
-    id: z.uuid().optional(),
-    productId: z.uuid(),
+    id: z.string().optional(),
+    productId: z.string(),
     duration: z.number().int().positive().default(365), // days
 });
 
 export const MembershipUpdateSchema = MembershipCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -178,14 +183,14 @@ export const MembershipUpdateSchema = MembershipCreateSchema.partial().extend({
 // =============================================================================
 
 export const UserMembershipCreateSchema = z.object({
-    id: z.uuid().optional(),
-    userId: z.uuid(),
-    membershipId: z.uuid(),
-    expiresAt: z.date(),
+    id: z.string().optional(),
+    userId: z.string(),
+    membershipId: z.string(),
+    expiresAt: stringToISODate,
 });
 
 export const UserMembershipUpdateSchema = UserMembershipCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -193,14 +198,14 @@ export const UserMembershipUpdateSchema = UserMembershipCreateSchema.partial().e
 // =============================================================================
 
 export const TicketCreateSchema = z.object({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
     type: TicketTypeSchema.default(TicketType.standard),
-    productId: z.uuid(),
-    eventId: z.uuid(),
+    productId: z.string(),
+    eventId: z.string(),
 });
 
 export const TicketUpdateSchema = TicketCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -208,18 +213,16 @@ export const TicketUpdateSchema = TicketCreateSchema.partial().extend({
 // =============================================================================
 
 export const OrderCreateSchema = z.object({
-    id: z.uuid().optional(),
-    createdAt: z.date().optional(),
-    updatedAt: z.date().optional(),
+    id: z.string().optional(),
     status: OrderStatusSchema.default(OrderStatus.pending),
     totalAmount: z.number().nonnegative().default(0.0),
     paymentRequestId: z.string().nullable(),
     payeeRef: z.string().nullable(),
-    userId: z.uuid(),
+    userId: z.string(),
 });
 
 export const OrderUpdateSchema = OrderCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================
@@ -227,15 +230,15 @@ export const OrderUpdateSchema = OrderCreateSchema.partial().extend({
 // =============================================================================
 
 export const OrderItemCreateSchema = z.object({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
     quantity: z.number().int().positive().default(1),
     price: z.number().nonnegative().default(0),
-    orderId: z.uuid(),
-    productId: z.uuid(),
+    orderId: z.string(),
+    productId: z.string(),
 });
 
 export const OrderItemUpdateSchema = OrderItemCreateSchema.partial().extend({
-    id: z.uuid().optional(),
+    id: z.string().optional(),
 });
 
 // =============================================================================

@@ -8,7 +8,7 @@ import isBetween from "dayjs/plugin/isBetween";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
-import { isEventPublished } from "./event/event-utils";
+import { isEventPublished } from "../event/event-utils";
 
 dayjs.extend(isBetween);
 

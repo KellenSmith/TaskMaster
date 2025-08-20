@@ -8,6 +8,8 @@ import { DatagridActionState } from "./definitions";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
+import z from "zod";
+import { UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
 
 export const getUserById = async (
     userId: string,
@@ -22,7 +24,9 @@ export const getUserById = async (
     }
 };
 
-export const createUser = async (parsedFieldValues: Prisma.UserCreateInput): Promise<void> => {
+export const createUser = async (
+    parsedFieldValues: z.infer<typeof UserCreateSchema>,
+): Promise<void> => {
     let createdUserId: string;
     try {
         const createdUser = await prisma.user.create({
@@ -89,7 +93,7 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
 
 export const updateUser = async (
     userId: string,
-    fieldValues: Prisma.UserUpdateInput,
+    fieldValues: z.infer<typeof UserUpdateSchema>,
 ): Promise<void> => {
     try {
         await prisma.user.update({

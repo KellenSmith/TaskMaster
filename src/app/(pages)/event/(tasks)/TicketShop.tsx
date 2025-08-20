@@ -23,7 +23,7 @@ import { createEventTicket } from "../../../../lib/event-actions";
 import Image from "next/image";
 import { useUserContext } from "../../../../context/UserContext";
 import Form from "../../../../ui/form/Form";
-import { isUserParticipant } from "../event-utils";
+import { isUserParticipant } from "../../../event/event-utils";
 
 interface TicketShopProps {
     event: Prisma.EventGetPayload<{ include: { host: { select: { id: true } } } }>;

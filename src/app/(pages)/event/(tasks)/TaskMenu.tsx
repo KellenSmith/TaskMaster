@@ -22,7 +22,7 @@ import { ExpandMore } from "@mui/icons-material";
 import { updateEventTasks, assignTasksToUser } from "../../../../lib/task-actions";
 import dayjs from "dayjs";
 import { useUserContext } from "../../../../context/UserContext";
-import { getLatestEndTime, isUserParticipant, sortGroupedTasks } from "../event-utils";
+import { getLatestEndTime, isUserParticipant, sortGroupedTasks } from "../../../event/event-utils";
 import {
     defaultDatagridActionState,
     defaultFormActionState,

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import GlobalConstants from "../../../GlobalConstants";
+import GlobalConstants from "../../GlobalConstants";
 import { EventStatus, Prisma } from "@prisma/client";
 
 export const isEventPublished = (event) =>

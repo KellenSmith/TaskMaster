@@ -21,7 +21,7 @@ import {
 } from "../../../../ui/form/FieldCfg";
 import { FormActionState, isUserHost } from "../../../../lib/definitions";
 import { useState } from "react";
-import { isTaskSelected } from "../event-utils";
+import { isTaskSelected } from "../../../event/event-utils";
 
 const TaskMenuOption = ({
     event,

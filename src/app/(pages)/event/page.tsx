@@ -4,15 +4,15 @@ import {
     getEventParticipants,
     getEventReserves,
     getEventTicketsAvailableToUser,
-} from "../../../lib/event-actions";
-import { getEventTasks } from "../../../lib/task-actions";
-import { getLoggedInUser } from "../../../lib/user-actions";
+} from "../../lib/event-actions";
+import { getEventTasks } from "../../lib/task-actions";
+import { getLoggedInUser } from "../../lib/user-actions";
 import { Suspense } from "react";
 import { CircularProgress, Stack, Typography } from "@mui/material";
 import EventDashboard from "./EventDashboard";
 import { ErrorBoundary } from "react-error-boundary";
 import { unstable_cache } from "next/cache";
-import GlobalConstants from "../../../GlobalConstants";
+import GlobalConstants from "../../GlobalConstants";
 
 interface EventPageProps {
     searchParams: { [eventId: string]: string };

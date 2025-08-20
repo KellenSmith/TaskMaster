@@ -31,9 +31,9 @@ import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
 import { FormActionState } from "../../lib/definitions";
 import { useNotificationContext } from "../../context/NotificationContext";
-import { ZodType, ZodError } from "zod";
-import dayjs from "dayjs";
+import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException } from "../utils";
+import dayjs from "dayjs";
 
 export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
     (formActionState.errorMsg || formActionState.result) && (
@@ -79,7 +79,7 @@ const Form: FC<FormProps> = ({
     const [editMode, setEditMode] = useState(!readOnly);
     const { addNotification } = useNotificationContext();
 
-    const validateFormData = (formData: FormData) => {
+    const validateFormData = (formData: FormData): z.infer<typeof validationSchema> | null => {
         const formDataObject = Object.fromEntries(formData);
         if (!validationSchema) return formDataObject;
         try {
@@ -92,7 +92,9 @@ const Form: FC<FormProps> = ({
                 if (zodIssues.length > 0) {
                     const errorField = zodIssues[0]?.path[0];
                     const errorMessage = error.issues[0]?.message;
-                    setValidationError(`Error in field '${errorField as string}': ${errorMessage}`);
+                    setValidationError(
+                        `Error in field ${FieldLabels[errorField as string]}: ${errorMessage}`,
+                    );
                 } else setValidationError("Unknown validation error");
             }
             return null;
@@ -148,7 +150,13 @@ const Form: FC<FormProps> = ({
                     key={fieldId}
                     name={fieldId}
                     label={FieldLabels[fieldId]}
-                    defaultValue={defaultValues?.[fieldId] || dayjs().toISOString()}
+                    defaultValue={
+                        defaultValues?.[fieldId]
+                            ? dayjs(defaultValues?.[fieldId])
+                            : RequiredFields[name].includes(fieldId)
+                              ? dayjs()
+                              : null
+                    }
                     slotProps={{
                         textField: {
                             name: fieldId,

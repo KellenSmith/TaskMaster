@@ -2,15 +2,15 @@
 
 import { CircularProgress, Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import { Suspense, useState, use } from "react";
-import { isUserHost } from "../../../lib/definitions";
-import { useUserContext } from "../../../context/UserContext";
-import TaskDashboard from "./(tasks)/TaskDashboard";
+import { isUserHost } from "../../lib/definitions";
+import { useUserContext } from "../../context/UserContext";
+import TaskDashboard from "../calendar/event/(tasks)/TaskDashboard";
 import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
 import EventDetails from "./EventDetails";
 import { EventStatus, Prisma } from "@prisma/client";
 import { ErrorBoundary } from "react-error-boundary";
-import TicketShop from "./(tasks)/TicketShop";
+import TicketShop from "../calendar/event/(tasks)/TicketShop";
 
 interface EventDashboardProps {
     eventPromise: Promise<

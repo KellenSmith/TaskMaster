@@ -6,9 +6,10 @@ import { Stack } from "@mui/material";
 import { FC } from "react";
 import { resetUserCredentials } from "../../lib/user-credentials-actions";
 import { ResetCredentialsSchema } from "../../lib/zod-schemas";
+import z from "zod";
 
 const LoginForm: FC = () => {
-    const handleReset = async (values: typeof ResetCredentialsSchema.shape) => {
+    const handleReset = async (values: z.infer<typeof ResetCredentialsSchema>) => {
         await resetUserCredentials(values);
         // Return ambiguous error message to prevent revealing if the email is registered or not.
         return "New credentials sent to your email if we have it on record";

@@ -1,12 +1,12 @@
 "use client";
 
 import { FC, use, useMemo, useState, useTransition } from "react";
-import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
-import GlobalConstants from "../../../GlobalConstants";
-import { useUserContext } from "../../../context/UserContext";
+import { defaultFormActionState, FormActionState, isUserHost } from "../../lib/definitions";
+import GlobalConstants from "../../GlobalConstants";
+import { useUserContext } from "../../context/UserContext";
 import { Button, Dialog, Menu, Stack } from "@mui/material";
 import { EventStatus, Prisma } from "@prisma/client";
-import Form from "../../../ui/form/Form";
+import Form from "../../ui/form/Form";
 import {
     addEventReserve,
     cancelEvent,
@@ -14,17 +14,17 @@ import {
     deleteEventParticipant,
     deleteEventReserve,
     updateEvent,
-} from "../../../lib/event-actions";
+} from "../../lib/event-actions";
 import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
-import ConfirmButton from "../../../ui/ConfirmButton";
-import { navigateToRoute } from "../../../ui/utils";
+import ConfirmButton from "../../ui/ConfirmButton";
+import { navigateToRoute } from "../../ui/utils";
 import { useRouter } from "next/navigation";
-import { sendMassEmail } from "../../../lib/mail-service/mail-service";
-import AccordionRadioGroup from "../../../ui/AccordionRadioGroup";
+import { sendMassEmail } from "../../lib/mail-service/mail-service";
+import AccordionRadioGroup from "../../ui/AccordionRadioGroup";
 import { pdf } from "@react-pdf/renderer";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { MoreHoriz } from "@mui/icons-material";
-import { useNotificationContext } from "../../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 
 interface IEventActions {
     event: Prisma.EventGetPayload<{

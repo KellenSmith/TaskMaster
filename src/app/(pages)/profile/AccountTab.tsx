@@ -16,6 +16,7 @@ import { UpdateCredentialsSchema, UserUpdateSchema } from "../../lib/zod-schemas
 import { updateUserCredentials } from "../../lib/user-credentials-actions";
 import { Prisma } from "@prisma/client";
 import { createMembershipOrder } from "../../lib/user-membership-actions";
+import z from "zod";
 
 const AccountTab = () => {
     const theme = useTheme();
@@ -29,7 +30,7 @@ const AccountTab = () => {
     };
 
     const validateAndUpdateCredentials = async (
-        parsedFieldValues: typeof UpdateCredentialsSchema.shape,
+        parsedFieldValues: z.infer<typeof UpdateCredentialsSchema>,
     ) => {
         if (parsedFieldValues.newPassword !== parsedFieldValues.repeatPassword) {
             throw new Error("New password and repeat password do not match");

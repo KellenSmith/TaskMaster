@@ -1,10 +1,10 @@
 import { Button, Stack, Typography } from "@mui/material";
-import GlobalConstants from "../../../GlobalConstants";
-import { useUserContext } from "../../../context/UserContext";
-import { addEventReserve } from "../../../lib/event-actions";
+import GlobalConstants from "../../GlobalConstants";
+import { useUserContext } from "../../context/UserContext";
+import { addEventReserve } from "../../lib/event-actions";
 import { startTransition, useActionState } from "react";
-import { getFormActionMsg } from "../../../ui/form/Form";
-import { defaultFormActionState, FormActionState, isUserHost } from "../../../lib/definitions";
+import { getFormActionMsg } from "../../ui/form/Form";
+import { defaultFormActionState, FormActionState, isUserHost } from "../../lib/definitions";
 import { isUserParticipant } from "./event-utils";
 
 const ParticipationSection = ({ event, fetchEventAction, setOpenTab }) => {

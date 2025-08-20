@@ -13,7 +13,12 @@ import GlobalConstants from "../../../../GlobalConstants";
 import { formatDate } from "../../../../ui/utils";
 import TaskMenuOption from "./TaskMenuOption";
 import { CloseRounded, ExpandMore } from "@mui/icons-material";
-import { getEarliestStartTime, getLatestEndTime, isTaskSelected, sortTasks } from "../event-utils";
+import {
+    getEarliestStartTime,
+    getLatestEndTime,
+    isTaskSelected,
+    sortTasks,
+} from "../../../event/event-utils";
 import dayjs from "dayjs";
 
 const TaskShifts = ({

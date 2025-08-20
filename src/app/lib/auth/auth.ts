@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { LoginSchema } from "../zod-schemas";
+import z from "zod";
 
 // Generate a random string of specified length
 export const generateSalt = async (): Promise<string> => {
@@ -44,7 +45,7 @@ export const generateUserCredentials = async (
     };
 };
 
-export const login = async (parsedFieldValues: typeof LoginSchema.shape): Promise<string> => {
+export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Promise<string> => {
     try {
         // Everyone who applied for membership exists in the database
         const loggedInUser = await prisma.user.findUnique({

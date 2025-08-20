@@ -8,11 +8,12 @@ import { FC } from "react";
 import { login } from "../../lib/auth/auth";
 import { allowRedirectException, navigateToRoute } from "../../ui/utils";
 import { LoginSchema } from "../../lib/zod-schemas";
+import z from "zod";
 
 const LoginPage: FC = () => {
     const router = useRouter();
 
-    const handleLogin = async (parsedFieldValues: typeof LoginSchema.shape) => {
+    const handleLogin = async (parsedFieldValues: z.infer<typeof LoginSchema>) => {
         try {
             await login(parsedFieldValues);
             return "Logged in successfully. Redirecting...";

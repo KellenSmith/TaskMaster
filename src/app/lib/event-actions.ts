@@ -1,36 +1,33 @@
 "use server";
 
 import { EventStatus, Prisma, TicketType } from "@prisma/client";
+import { z } from "zod";
 import { prisma } from "../../prisma/prisma-client";
-import { createEventSchema, createProductSchema } from "./zod-schemas";
+import { EventCreateSchema, ProductCreateSchema } from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
-import { DatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
+import { FormActionState } from "./definitions";
 import { revalidateTag } from "next/cache";
+import { NextURL } from "next/dist/server/web/next-url";
+import { redirect } from "next/navigation";
 
 export const createEvent = async (
-    currentActionState: FormActionState,
-    fieldValues: Prisma.EventCreateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof EventCreateSchema>,
+): Promise<void> => {
+    let createdEventId: string;
 
     try {
-        const loggedInUserResult = await getLoggedInUser(currentActionState);
-        if (loggedInUserResult.status !== 200) {
-            throw new Error("You must be logged in to create an event");
-        }
-        const loggedInUserId = JSON.parse(loggedInUserResult.result)[GlobalConstants.ID];
-        const parsedFieldValues = createEventSchema.parse(fieldValues) as Prisma.EventCreateInput;
-
+        const loggedInUser = await getLoggedInUser();
         const createdEvent = await prisma.event.create({
             data: {
                 ...parsedFieldValues,
                 host: {
                     connect: {
-                        id: loggedInUserId,
+                        id: loggedInUser.id,
                     },
                 },
+
                 tickets: {
                     create: {
                         type: TicketType.volunteer,
@@ -57,25 +54,28 @@ export const createEvent = async (
         if (volunteerTicket) {
             await prisma.participantInEvent.create({
                 data: {
-                    userId: loggedInUserId,
+                    userId: loggedInUser.id,
                     eventId: createdEvent.id,
                     ticketId: volunteerTicket.id,
                 },
             });
         }
 
-        newActionState.errorMsg = "";
-        newActionState.status = 201;
-        newActionState.result = createdEvent.id;
+        createdEventId = createdEvent.id;
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
         revalidateTag(GlobalConstants.EVENT);
         revalidateTag(GlobalConstants.TICKET);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        console.log(error);
+        throw new Error("Failed to create event");
     }
-    return newActionState;
+    createdEventId &&
+        redirect(
+            new NextURL(
+                `/${GlobalConstants.EVENT}?eventId=${createdEventId}`,
+                process.env.VERCEL_URL,
+            ).toString(),
+        );
 };
 
 export const createEventTicket = async (
@@ -86,7 +86,7 @@ export const createEventTicket = async (
         const ticketFieldValues = {
             type: fieldValues.type,
         } as Prisma.TicketCreateInput;
-        const productFieldValues = createProductSchema.parse({
+        const productFieldValues = ProductCreateSchema.parse({
             name: fieldValues.name,
             description: fieldValues.description,
             price: fieldValues.price,
@@ -112,21 +112,12 @@ export const createEventTicket = async (
     }
 };
 
-export const getAllEvents = async (
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> => {
     try {
-        const events = await prisma.event.findMany();
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = events;
+        return await prisma.event.findMany();
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+        throw new Error("Failed to fetch events");
     }
-    return newActionState;
 };
 
 export const getEventById = async (
