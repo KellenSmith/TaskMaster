@@ -7,7 +7,7 @@ import TasksTab from "./TasksTab";
 import { isMembershipExpired } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 
-const ProfilePage = async () => {
+const ProfilePage = () => {
     const { user } = useUserContext();
     const tabs = useMemo(
         () => ({
@@ -16,6 +16,7 @@ const ProfilePage = async () => {
         }),
         [],
     );
+
     const [openTab, setOpenTab] = useState<string>(tabs.account);
 
     return (

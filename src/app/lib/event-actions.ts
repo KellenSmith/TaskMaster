@@ -360,7 +360,6 @@ export const deleteEventReserve = async (
 };
 
 export const getEventTicketsAvailableToUser = async (eventId: string, userId: string) => {
-    console.log("Fetching event tickets for eventId: ", eventId);
     try {
         if (!(eventId && userId)) throw new Error("Event and user id required");
 

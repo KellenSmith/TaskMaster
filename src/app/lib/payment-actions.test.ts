@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockContext } from "../../test/mocks/prismaMock";
-import { getPaymentRedirectUrl, checkPaymentStatus, capturePaymentFunds } from "./payment-actions";
+import {
+    redirectToSwedbankPayment,
+    checkPaymentStatus,
+    capturePaymentFunds,
+} from "./payment-actions";
 import { defaultFormActionState } from "./definitions";
 import testdata from "../../test/testdata";
 import { PaymentOrderResponse, PaymentState } from "./payment-utils";
@@ -90,7 +94,7 @@ describe("Payment Actions", () => {
                 paymentRequestId: mockPaymentResponse.paymentOrder.id,
             });
 
-            const result = await getPaymentRedirectUrl(defaultFormActionState, mockOrder.id);
+            const result = await redirectToSwedbankPayment(defaultFormActionState, mockOrder.id);
 
             expect(result.status).toBe(200);
             expect(result.result).toBe(mockPaymentResponse.operations[0].href);
@@ -145,7 +149,7 @@ describe("Payment Actions", () => {
                 errorMsg: "Order not found",
             });
 
-            const result = await getPaymentRedirectUrl(
+            const result = await redirectToSwedbankPayment(
                 defaultFormActionState,
                 "non-existent-order",
             );
@@ -161,7 +165,7 @@ describe("Payment Actions", () => {
                 status: 400,
             });
 
-            const result = await getPaymentRedirectUrl(defaultFormActionState, mockOrder.id);
+            const result = await redirectToSwedbankPayment(defaultFormActionState, mockOrder.id);
 
             expect(result.status).toBe(500);
             expect(result.result).toBe("");
@@ -185,7 +189,7 @@ describe("Payment Actions", () => {
                 json: () => Promise.resolve(responseWithoutRedirect),
             });
 
-            const result = await getPaymentRedirectUrl(defaultFormActionState, mockOrder.id);
+            const result = await redirectToSwedbankPayment(defaultFormActionState, mockOrder.id);
 
             expect(result.status).toBe(500);
             expect(result.result).toBe("");
@@ -202,7 +206,7 @@ describe("Payment Actions", () => {
                 new Error("Database connection failed"),
             );
 
-            const result = await getPaymentRedirectUrl(defaultFormActionState, mockOrder.id);
+            const result = await redirectToSwedbankPayment(defaultFormActionState, mockOrder.id);
 
             expect(result.status).toBe(500);
             expect(result.result).toBe("");
@@ -234,8 +238,8 @@ describe("Payment Actions", () => {
 
             mockContext.prisma.order.update.mockResolvedValue({});
 
-            await getPaymentRedirectUrl(defaultFormActionState, order1.id);
-            await getPaymentRedirectUrl(defaultFormActionState, order2.id);
+            await redirectToSwedbankPayment(defaultFormActionState, order1.id);
+            await redirectToSwedbankPayment(defaultFormActionState, order2.id);
 
             const calls = mockFetch.mock.calls;
             const body1 = JSON.parse(calls[0][1].body);
@@ -495,7 +499,7 @@ describe("Payment Actions", () => {
                 json: () => Promise.resolve(mockPaymentResponse),
             });
 
-            await getPaymentRedirectUrl(defaultFormActionState, mockOrder.id);
+            await redirectToSwedbankPayment(defaultFormActionState, mockOrder.id);
             const authPayeeRef = JSON.parse(mockFetch.mock.calls[0][1].body).paymentorder.payeeInfo
                 .payeeReference;
 

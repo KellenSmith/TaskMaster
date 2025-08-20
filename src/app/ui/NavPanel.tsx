@@ -10,6 +10,7 @@ import {
     ListItem,
     Button,
     Tooltip,
+    useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -26,11 +27,11 @@ import { deleteUserCookieAndRedirectToHome } from "../lib/auth/auth";
 import { useNotificationContext } from "../context/NotificationContext";
 
 const NavPanel = () => {
+    const theme = useTheme();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { user, editMode, setEditMode } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
-
     const router = useRouter();
 
     const toggleDrawerOpen = () => {

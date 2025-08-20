@@ -6,9 +6,7 @@ import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import "dayjs/locale/en-gb";
 import updateLocale from "dayjs/plugin/updateLocale";
-import ThemeContextProvider from "./ThemeContext";
-import ContextWrapper from "./ContextWrapper";
-import { FC, ReactNode } from "react";
+import { ReactNode, FC } from "react";
 
 const locale = "en-gb";
 
@@ -22,18 +20,16 @@ dayjs.updateLocale(locale, {
     weekdaysShort: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 });
 
-interface ContextProvidersProps {
+interface LocalizationContextProviderProps {
     children: ReactNode;
 }
 
-const ContextProviders: FC<ContextProvidersProps> = ({ children }) => {
+const LocalizationContextProvider: FC<LocalizationContextProviderProps> = ({ children }) => {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={locale}>
-            <ThemeContextProvider>
-                <ContextWrapper>{children}</ContextWrapper>
-            </ThemeContextProvider>
+            {children}
         </LocalizationProvider>
     );
 };
 
-export default ContextProviders;
+export default LocalizationContextProvider;

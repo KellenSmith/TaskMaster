@@ -8,6 +8,7 @@ import {
     CardHeader,
     Checkbox,
     FormControlLabel,
+    IconButton,
     Stack,
     TextField,
     Typography,
@@ -201,18 +202,11 @@ const Form: FC<FormProps> = ({
             {(editable || FieldLabels[name]) && (
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <CardHeader title={FieldLabels[name]} />
-                    {editable &&
-                        (editMode ? (
-                            <Cancel
-                                sx={{ padding: 2, cursor: "pointer" }}
-                                onClick={() => setEditMode(false)}
-                            />
-                        ) : (
-                            <Edit
-                                sx={{ padding: 2, cursor: "pointer" }}
-                                onClick={() => setEditMode(true)}
-                            />
-                        ))}
+                    {editable && (
+                        <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
+                            {editMode ? <Cancel /> : <Edit />}
+                        </IconButton>
+                    )}
                 </Stack>
             )}
 

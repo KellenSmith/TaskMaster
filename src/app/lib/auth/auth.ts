@@ -45,36 +45,40 @@ export const generateUserCredentials = async (
 };
 
 export const login = async (parsedFieldValues: typeof LoginSchema.shape): Promise<string> => {
-    // Everyone who applied for membership exists in the database
-    const loggedInUser = await prisma.user.findUnique({
-        where: {
-            email: parsedFieldValues.email as unknown as string,
-        } as Prisma.UserWhereUniqueInput,
-        include: {
-            userMembership: true,
-        },
-    });
-    if (!loggedInUser) throw new Error("Please apply for membership");
+    try {
+        // Everyone who applied for membership exists in the database
+        const loggedInUser = await prisma.user.findUnique({
+            where: {
+                email: parsedFieldValues.email as unknown as string,
+            } as Prisma.UserWhereUniqueInput,
+            include: {
+                userMembership: true,
+            },
+        });
+        if (!loggedInUser) throw new Error("Please apply for membership");
 
-    // All validated members have credentials
-    const userCredentials = await prisma.userCredentials.findUnique({
-        where: {
-            userId: loggedInUser.id,
-        } as any as Prisma.UserCredentialsWhereUniqueInput,
-    });
-    if (!userCredentials) throw new Error("Invalid credentials");
+        // All validated members have credentials
+        const userCredentials = await prisma.userCredentials.findUnique({
+            where: {
+                userId: loggedInUser.id,
+            } as any as Prisma.UserCredentialsWhereUniqueInput,
+        });
+        if (!userCredentials) throw new Error("Invalid credentials");
 
-    // Match hashed password to stored hashed password
-    const hashedPassword = await hashPassword(
-        parsedFieldValues.password as unknown as string,
-        userCredentials[GlobalConstants.SALT],
-    );
-    const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
-    if (!passwordsMatch) throw new Error("Invalid credentials");
+        // Match hashed password to stored hashed password
+        const hashedPassword = await hashPassword(
+            parsedFieldValues.password as unknown as string,
+            userCredentials[GlobalConstants.SALT],
+        );
+        const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
+        if (!passwordsMatch) throw new Error("Invalid credentials");
 
-    await encryptJWT(loggedInUser);
-    revalidateTag(GlobalConstants.USER);
-    redirect("/");
+        await encryptJWT(loggedInUser);
+        revalidateTag(GlobalConstants.USER);
+        redirect("/");
+    } catch {
+        throw new Error("Login failed. Please check your credentials and try again.");
+    }
 };
 
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
@@ -99,9 +103,11 @@ export const encryptJWT = async (
     });
 };
 
-export const decryptJWT = async (): Promise<Prisma.UserGetPayload<{
-    include: { userMembership: true };
-}> | null> => {
+export const decryptJWT = async (): Promise<
+    Prisma.UserGetPayload<{
+        include: { userMembership: true };
+    }>
+> => {
     try {
         const cookieStore = await cookies();
         const cookie = cookieStore.get(GlobalConstants.USER)?.value;
@@ -112,14 +118,18 @@ export const decryptJWT = async (): Promise<Prisma.UserGetPayload<{
             include: { userMembership: true };
         }>;
         return jwtPayload;
-    } catch {
-        await deleteUserCookieAndRedirectToHome();
-        return null;
+    } catch (error) {
+        console.error("Error decrypting JWT:", error);
+        await deleteUserCookie();
     }
 };
 
 export const deleteUserCookieAndRedirectToHome = async () => {
+    await deleteUserCookie();
+    redirect("/");
+};
+
+export const deleteUserCookie = async () => {
     const cookieStore = await cookies();
     cookieStore.delete(GlobalConstants.USER);
-    redirect("/");
 };

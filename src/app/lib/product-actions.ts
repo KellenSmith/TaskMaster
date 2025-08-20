@@ -2,15 +2,10 @@
 
 import { Prisma, Product, TicketType } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import {
-    createMembershipProductSchema,
-    createProductSchema,
-    updateProductSchema,
-} from "./zod-schemas";
-import GlobalConstants from "../GlobalConstants";
-import { renewUserMembership } from "./user-actions";
+import {} from "./zod-schemas";
 import dayjs from "dayjs";
 import { DatagridActionState, FormActionState } from "./definitions";
+import { renewUserMembership } from "./user-membership-actions";
 
 export const getProductById = async (
     currentState: DatagridActionState,
@@ -76,7 +71,7 @@ export const createProduct = async (
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
-        const parsedFieldValues = createProductSchema.parse(fieldValues);
+        const parsedFieldValues = fieldValues;
         const createdProduct = await prisma.product.create({
             data: parsedFieldValues,
         });
@@ -93,11 +88,11 @@ export const createProduct = async (
 
 export const createMembershipProduct = async (
     currentActionState: FormActionState,
-    fieldValues: Prisma.ProductCreateInput,
+    fieldValues: Prisma.MembershipCreateInput & Prisma.ProductCreateInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
-        const parsedFieldValues = createMembershipProductSchema.parse(fieldValues);
+        const parsedFieldValues = fieldValues;
         const createdMembershipProduct = await prisma.product.create({
             data: {
                 ...parsedFieldValues,
@@ -127,7 +122,7 @@ export const updateProduct = async (
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
-        const parsedFieldValues = updateProductSchema.parse(fieldValues);
+        const parsedFieldValues = fieldValues;
         await prisma.product.update({
             where: { id: productId },
             data: parsedFieldValues,
@@ -146,11 +141,11 @@ export const updateProduct = async (
 export const updateMembershipProduct = async (
     productId: string,
     currentActionState: FormActionState,
-    fieldValues: Prisma.ProductUpdateInput,
+    fieldValues: Prisma.MembershipUpdateInput,
 ): Promise<FormActionState> => {
     const newActionState = { ...currentActionState };
     try {
-        const parsedFieldValues = updateProductSchema.parse(fieldValues);
+        const parsedFieldValues = fieldValues;
         await prisma.product.update({
             where: { id: productId },
             data: {
@@ -193,89 +188,40 @@ export const deleteProduct = async (
     return newActionState;
 };
 
-export const getMembershipProductId = async (): Promise<string> => {
-    try {
-        // Try to find existing membership product
-        const membershipProduct = await prisma.membership.findFirst({
-            select: {
-                productId: true,
-            },
-        });
-
-        if (membershipProduct) {
-            return membershipProduct.productId;
-        }
-
-        // If no membership product exists, create it
-        const newMembershipProduct = await prisma.product.create({
-            data: {
-                name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
-                description: "Annual membership",
-                price: 0,
-                unlimitedStock: true,
-                Membership: {
-                    create: {
-                        duration: 365,
-                    },
-                },
-            },
-        });
-
-        return newMembershipProduct.id;
-    } catch (error) {
-        throw new Error(`Failed to get/create membership product: ${error.message}`);
-    }
-};
-
 export const processOrderedProduct = async (
-    productId: string,
-    quantity: number,
     userId: string,
-    currentActionState: FormActionState,
+    orderItem: Prisma.OrderItemGetPayload<{
+        include: { product: { include: { Membership: true; Ticket: true } } };
+    }>,
 ) => {
-    const newActionState = { ...currentActionState };
-    const product = await prisma.product.findUniqueOrThrow({
-        where: { id: productId },
-        include: { Membership: true, Ticket: true },
-    });
     const failedProducts: string[] = [];
-    for (let i = 0; i < quantity; i++) {
-        if (product.Membership) {
-            const renewMembershipResult = await renewUserMembership(
-                userId,
-                product.Membership.id,
-                currentActionState,
-            );
-            if (renewMembershipResult.status !== 200) {
-                failedProducts.push(`Membership renewal failed for user ${userId}`);
+    for (let i = 0; i < orderItem.quantity; i++) {
+        if (orderItem.product.Membership) {
+            try {
+                await renewUserMembership(userId, orderItem.product.Membership.id);
+            } catch {
+                failedProducts.push(`Failed to renew membership for user ${userId}`);
             }
-        } else if (product.Ticket) {
+        } else if (orderItem.product.Ticket) {
             // Add user as participant for the ticket
             try {
                 await prisma.participantInEvent.create({
                     data: {
                         userId,
-                        eventId: product.Ticket.eventId,
-                        ticketId: product.Ticket.id,
+                        eventId: orderItem.product.Ticket.eventId,
+                        ticketId: orderItem.product.Ticket.id,
                     },
                 });
             } catch (error) {
                 failedProducts.push(
-                    `Failed to create participant for user ${userId} in event ${product.Ticket.eventId}: ${error.message}`,
+                    `Failed to create participant for user ${userId} in event ${orderItem.product.Ticket.eventId}: ${error.message}`,
                 );
             }
         }
     }
-    newActionState.status = 200;
-    newActionState.errorMsg = "";
-    newActionState.result = `Processed ${quantity} of product ${productId} for user ${userId}`;
     if (failedProducts.length > 0) {
-        newActionState.status = 500;
-        newActionState.errorMsg = failedProducts.join(", ");
-        newActionState.result = "";
-        return newActionState;
+        throw new Error(failedProducts.join(", "));
     }
-    return newActionState;
 };
 
 export const getEventTickets = async (

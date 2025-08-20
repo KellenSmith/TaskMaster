@@ -1,34 +1,25 @@
 "use server";
 
-import { Prisma, PrismaPromise, UserMembership, UserRole } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { decryptJWT, generateSalt, generateUserCredentials } from "./auth/auth";
-import { sendUserCredentials } from "./mail-service/mail-service";
-import { DatagridActionState, FormActionState, ResetCredentialsSchema } from "./definitions";
+import { decryptJWT } from "./auth/auth";
+import { DatagridActionState } from "./definitions";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
-import { LoginSchema, UserUpdateSchema } from "./zod-schemas";
 import { revalidateTag } from "next/cache";
 
 export const getUserById = async (
-    currentState: DatagridActionState,
     userId: string,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+): Promise<Prisma.UserGetPayload<{ include: { userMembership: true } }>> => {
     try {
-        const user = await prisma.user.findUniqueOrThrow({
+        return await prisma.user.findUniqueOrThrow({
             where: { id: userId },
             include: { userMembership: true },
         });
-        newActionState.status = 200;
-        newActionState.result = [user];
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+        throw new Error("Failed to get user");
     }
-    return newActionState;
 };
 
 export const createUser = async (parsedFieldValues: Prisma.UserCreateInput): Promise<void> => {
@@ -57,6 +48,7 @@ export const createUser = async (parsedFieldValues: Prisma.UserCreateInput): Pro
     } catch {
         throw new Error("Failed validating user membership");
     }
+    revalidateTag(GlobalConstants.USER);
 };
 
 export const getAllUsers = async (
@@ -90,7 +82,8 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
             where: { id: jwtPayload[GlobalConstants.ID] as string },
             include: { userMembership: true },
         });
-    } catch {
+    } catch (error) {
+        console.error("Error getting logged in user:", error);
         return null;
     }
 };
@@ -106,51 +99,10 @@ export const updateUser = async (
             },
             data: fieldValues,
         });
+        revalidateTag(GlobalConstants.USER);
     } catch (error) {
         throw new Error(`Failed to update user`);
     }
-};
-
-export const renewUserMembership = async (
-    userId: string,
-    membershipId: string,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        const membership = await prisma.membership.findUniqueOrThrow({
-            where: { id: membershipId },
-        });
-        const userMembership = await prisma.userMembership.findUnique({
-            where: { userId: userId },
-        });
-
-        await prisma.userMembership.upsert({
-            where: { userId: userId },
-            update: {
-                membershipId: membershipId,
-                expiresAt:
-                    // If the membership is the same, extend the expiration date
-                    userMembership?.membershipId === membershipId
-                        ? dayjs(userMembership.expiresAt)
-                              .add(membership.duration, "d")
-                              .toISOString()
-                        : // If the membership is different, reset the expiration date
-                          dayjs().add(membership.duration, "d").toISOString(),
-            },
-            // If no membership exists, create a new one
-            create: {
-                userId: userId,
-                membershipId: membershipId,
-                expiresAt: dayjs().add(membership.duration, "d").toISOString(),
-            },
-        });
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {

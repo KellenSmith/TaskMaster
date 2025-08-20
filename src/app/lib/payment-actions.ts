@@ -7,6 +7,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
 import { getOrganizationName } from "./organization-settings-actions";
+import { redirect } from "next/navigation";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -95,12 +96,17 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     };
 };
 
-export const getPaymentRedirectUrl = async (
-    currentActionState: FormActionState,
-    orderId: string,
-): Promise<FormActionState> => {
-    const newActionState: FormActionState = { ...currentActionState };
+export const redirectToSwedbankPayment = async (orderId: string): Promise<void> => {
+    let redirectUrl: string;
     try {
+        const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+        if (order?.status !== OrderStatus.pending) {
+            throw new Error("Order is not in a pending state");
+        }
+        if (order.totalAmount < 1) {
+            await updateOrderStatus(order.id, OrderStatus.paid);
+        }
+
         const requestBody = await getSwedbankPaymentRequestPayload(orderId);
         if (!requestBody) throw new Error("Failed to create payment request");
 
@@ -123,27 +129,18 @@ export const getPaymentRedirectUrl = async (
         }
 
         // Save payment order ID to the order to check status later
-        try {
-            await prisma.order.update({
-                where: { id: orderId },
-                data: {
-                    paymentRequestId: responseData.paymentOrder.id,
-                },
-            });
-        } catch (error) {
-            throw new Error("Failed to update order with payment request ID: " + error.message);
-        }
+        await prisma.order.update({
+            where: { id: orderId },
+            data: {
+                paymentRequestId: responseData.paymentOrder.id,
+            },
+        });
 
-        newActionState.status = 200;
-        newActionState.result = redirectOperation.href;
-        newActionState.errorMsg = "";
+        redirectUrl = redirectOperation.href;
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg =
-            error instanceof Error ? error.message : "An unexpected error occurred";
-        newActionState.result = "";
+        throw new Error("Failed to redirect to payment");
     }
-    return newActionState;
+    redirect(redirectUrl);
 };
 
 export const capturePaymentFunds = async (order: Order) => {

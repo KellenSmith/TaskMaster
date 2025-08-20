@@ -155,7 +155,6 @@ export const sendMassEmail = async (
                 },
             })
         ).map((user) => user.email);
-        console.log(recipients);
         const mailContent = createElement(MailTemplate, {
             html: fieldValues[GlobalConstants.CONTENT],
             organizationName: await getOrganizationName(),
@@ -166,9 +165,7 @@ export const sendMassEmail = async (
             mailContent,
         );
 
-        console.log(mailPayload);
         const mailResponse = await mailTransport.sendMail(mailPayload);
-        console.log(mailResponse);
         if (mailResponse.error) throw new Error(mailResponse.error.message);
         newActionState.status = 200;
         newActionState.errorMsg = "";

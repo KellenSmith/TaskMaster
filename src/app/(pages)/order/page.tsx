@@ -1,78 +1,39 @@
-"use client";
-import { Card, CardContent, CircularProgress, Typography, Stack } from "@mui/material";
-import React, { useActionState, useEffect, useMemo, startTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useUserContext } from "../../context/UserContext";
-import { getOrderById } from "../../lib/order-actions";
-import GlobalConstants from "../../GlobalConstants";
-import { navigateToRoute } from "../../ui/utils";
+"use server";
+import { Card, CardContent, CircularProgress, Typography } from "@mui/material";
+import React, { Suspense } from "react";
 import OrderSummary from "./OrderSummary";
 import PaymentHandler from "../../ui/payment/PaymentHandler";
-import { DatagridActionState, defaultDatagridActionState } from "../../lib/definitions";
+import { ErrorBoundary } from "react-error-boundary";
+import { unstable_cache } from "next/cache";
+import { getOrderById } from "../../lib/order-actions";
+import GlobalConstants from "../../GlobalConstants";
+import { getLoggedInUser } from "../../lib/user-actions";
+import { prisma } from "../../../prisma/prisma-client";
 
-const OrderPage = () => {
-    const { user } = useUserContext();
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const orderId = useMemo(() => searchParams.get(GlobalConstants.ORDER_ID), [searchParams]);
+const OrderPage = async ({ searchParams }) => {
+    const orderId = searchParams.orderId as string;
+    const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+    const loggedInUser = await getLoggedInUser();
 
-    const getOrderProp = (orderProp?: string) => {
-        if (getOrderActionState.status === 200 && getOrderActionState.result.length > 0) {
-            const order = getOrderActionState.result[0];
-            if (!orderProp) return order;
-            return order[orderProp];
-        }
-        return null;
-    };
+    if (order && loggedInUser?.id !== order?.userId) {
+        return <Typography color="primary">Failed to load order</Typography>;
+    }
 
-    const getOrder = async (currentState: DatagridActionState) => {
-        const getOrderResult = await getOrderById(currentState, orderId);
-
-        // Check authorization using the result directly, not the state
-        if (getOrderResult.status === 200 && getOrderResult.result.length > 0) {
-            const order = getOrderResult.result[0];
-            const orderUserId = order[GlobalConstants.USER_ID];
-            if (user && user[GlobalConstants.ID] !== orderUserId) {
-                navigateToRoute("/", router);
-            }
-        }
-
-        return getOrderResult;
-    };
-
-    const [getOrderActionState, getOrderAction, isOrderLoading] = useActionState(
-        getOrder,
-        defaultDatagridActionState,
-    );
-
-    useEffect(() => {
-        // Only fetch order when user data is available and orderId exists
-        if (user && orderId) {
-            startTransition(() => {
-                getOrderAction();
-            });
-        }
-    }, [user, getOrderAction, orderId]);
+    const orderPromise = unstable_cache(getOrderById, [orderId], {
+        tags: [GlobalConstants.ORDER],
+    })(orderId);
 
     return (
-        <Card>
-            <CardContent>
-                {isOrderLoading ? (
-                    <CircularProgress />
-                ) : getOrderActionState.status !== 200 || !getOrderProp() ? (
-                    <Stack alignItems="center" justifyContent="center" textAlign="center">
-                        <Typography variant="h4" component="h2" gutterBottom>
-                            Order Not Found
-                        </Typography>
-                    </Stack>
-                ) : (
-                    <>
-                        <OrderSummary order={getOrderProp()} />
-                        <PaymentHandler order={getOrderProp()} />
-                    </>
-                )}
-            </CardContent>
-        </Card>
+        <ErrorBoundary fallback={<Typography color="primary">Failed to load order</Typography>}>
+            <Suspense fallback={<CircularProgress />}>
+                <Card>
+                    <CardContent>
+                        <OrderSummary orderPromise={orderPromise} />
+                        <PaymentHandler orderPromise={orderPromise} />
+                    </CardContent>
+                </Card>
+            </Suspense>
+        </ErrorBoundary>
     );
 };
 

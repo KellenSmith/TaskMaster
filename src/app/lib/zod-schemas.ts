@@ -52,7 +52,7 @@ export const UserCreateSchema = z.object({
 });
 
 export const UserUpdateSchema = UserCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -67,7 +67,7 @@ export const UserCredentialsCreateSchema = z.object({
 });
 
 export const UserCredentialsUpdateSchema = UserCredentialsCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -88,7 +88,7 @@ export const EventCreateSchema = z.object({
 });
 
 export const EventUpdateSchema = EventCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -134,7 +134,7 @@ export const TaskCreateSchema = z.object({
 });
 
 export const TaskUpdateSchema = TaskCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -152,7 +152,7 @@ export const ProductCreateSchema = z.object({
 });
 
 export const ProductUpdateSchema = ProductCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -166,7 +166,7 @@ export const MembershipCreateSchema = z.object({
 });
 
 export const MembershipUpdateSchema = MembershipCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -181,7 +181,7 @@ export const UserMembershipCreateSchema = z.object({
 });
 
 export const UserMembershipUpdateSchema = UserMembershipCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -196,7 +196,7 @@ export const TicketCreateSchema = z.object({
 });
 
 export const TicketUpdateSchema = TicketCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -215,7 +215,7 @@ export const OrderCreateSchema = z.object({
 });
 
 export const OrderUpdateSchema = OrderCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -231,7 +231,7 @@ export const OrderItemCreateSchema = z.object({
 });
 
 export const OrderItemUpdateSchema = OrderItemCreateSchema.partial().extend({
-    id: z.uuid(), // Required for updates
+    id: z.uuid().optional(),
 });
 
 // =============================================================================
@@ -246,8 +246,8 @@ export const TextContentCreateSchema = z.object({
 });
 
 export const TextContentUpdateSchema = TextContentCreateSchema.partial().extend({
-    id: z.string(), // Required for updates
-    language: z.string(), // Required for updates (part of composite key)
+    id: z.string(),
+    language: z.string(), // Required (part of composite key)
 });
 
 // =============================================================================

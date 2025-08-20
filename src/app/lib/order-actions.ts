@@ -1,23 +1,21 @@
 "use server";
 
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
-import { getMembershipProductId, processOrderedProduct } from "./product-actions";
+import { processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
 import { DatagridActionState, FormActionState } from "./definitions";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
-
-type CreateOrderItemInput = {
-    [productId: string]: number; // productId: quantity
-};
+import { redirect } from "next/navigation";
+import { NextURL } from "next/dist/server/web/next-url";
+import GlobalConstants from "../GlobalConstants";
+import { revalidateTag } from "next/cache";
 
 export const getOrderById = async (
-    currentState: DatagridActionState,
     orderId: string,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+): Promise<Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>> => {
     try {
-        const order = await prisma.order.findUniqueOrThrow({
+        return await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
             include: {
                 orderItems: {
@@ -27,15 +25,9 @@ export const getOrderById = async (
                 },
             },
         });
-        newActionState.status = 200;
-        newActionState.result = [order];
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+    } catch {
+        throw new Error("Failed to fetch order");
     }
-    return newActionState;
 };
 
 export const getAllOrders = async (
@@ -64,134 +56,77 @@ export const getAllOrders = async (
 };
 
 export const createOrder = async (
-    currentActionState: FormActionState,
-    orderItems: CreateOrderItemInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    orderItems: Prisma.OrderItemCreateManyOrderInput[],
+): Promise<void> => {
+    let redirectUrl: string;
     try {
-        let totalAmount = 0;
-
-        // First fetch all products to validate they exist and get their prices
-        const productIds = Object.keys(orderItems);
-        const products = await prisma.product.findMany({
-            where: {
-                id: {
-                    in: productIds,
-                },
-            },
-        });
-
-        // Validate all products exist and calculate total
-        if (products.length !== productIds.length) {
-            throw new Error("Some products not found");
-        }
-
-        // Get the logged-in user
-        const loggedInUserResult = await getLoggedInUser(currentActionState);
-        if (loggedInUserResult.status !== 200) {
-            throw new Error(loggedInUserResult.errorMsg || "Failed to get logged-in user");
-        }
-        const loggedInUser = JSON.parse(loggedInUserResult.result as string);
-
+        const loggedInUser = await getLoggedInUser();
         // Create the order with items in a transaction
         const order = await prisma.$transaction(async (tx) => {
-            // Create the order first
-            const order = await tx.order.create({
+            return await tx.order.create({
                 data: {
                     userId: loggedInUser.id,
-                    status: "pending",
-                    totalAmount: 0, // We'll update this after creating items
+                    totalAmount: orderItems.reduce(
+                        (acc, item) => item.price * item.quantity + acc,
+                        0,
+                    ),
+                    orderItems: {
+                        createMany: {
+                            data: orderItems,
+                        },
+                    },
                 },
             });
-
-            // Create order items and calculate total
-            const orderItemsPromises = products.map(async (product) => {
-                const quantity = orderItems[product.id];
-                const itemPrice = product.price * quantity;
-                totalAmount += itemPrice;
-
-                return tx.orderItem.create({
-                    data: {
-                        orderId: order.id,
-                        productId: product.id,
-                        quantity,
-                        price: itemPrice,
-                    },
-                });
-            });
-
-            await Promise.all(orderItemsPromises);
-
-            // Update order with final total
-            return tx.order.update({
-                where: { id: order.id },
-                data: { totalAmount },
-            });
         });
-
-        newActionState.errorMsg = "";
-        newActionState.status = 201;
-        newActionState.result = order.id;
+        const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, process.env.VERCEL_URL);
+        orderUrl.searchParams.set(GlobalConstants.ORDER_ID, order.id);
+        redirectUrl = orderUrl.toString();
+        revalidateTag(GlobalConstants.ORDER);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to create order");
     }
-    return newActionState;
+    if (!redirectUrl) {
+        throw new Error("Failed to redirect to order");
+    }
+    redirect(redirectUrl);
 };
 
-const processOrderItems = async (
-    orderId: string,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+const processOrderItems = async (orderId: string): Promise<void> => {
     try {
         const order = await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
-            select: {
-                userId: true,
+            include: {
+                orderItems: {
+                    include: {
+                        product: {
+                            include: {
+                                Membership: true,
+                                Ticket: true,
+                            },
+                        },
+                    },
+                },
             },
         });
-        const orderItems = await prisma.orderItem.findMany({
-            where: { orderId },
-        });
 
-        if (orderItems.length === 0) {
+        if (order.orderItems.length === 0) {
             throw new Error("No items found for this order");
         }
 
         // Process each order item
-        for (const item of orderItems) {
-            await processOrderedProduct(
-                item.productId,
-                item.quantity,
-                order.userId,
-                currentActionState,
-            );
+        for (const orderItem of order.orderItems) {
+            await processOrderedProduct(order.userId, orderItem);
         }
         await prisma.order.update({
             where: { id: orderId },
-            data: { status: OrderStatus.completed }, // Update order status to completed
+            data: { status: OrderStatus.shipped },
         });
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = "Order items processed successfully";
-        return newActionState;
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error(`Failed to process order items`);
     }
-    return newActionState;
 };
 
-export const updateOrderStatus = async (
-    orderId: string,
-    currentActionState: FormActionState,
-    newStatus: OrderStatus,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-
+export const updateOrderStatus = async (orderId: string, newStatus: OrderStatus): Promise<void> => {
     try {
         const order = await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
@@ -199,19 +134,13 @@ export const updateOrderStatus = async (
                 status: true,
             },
         });
+
         // Don't update from completed status to any other status
         if (order.status === OrderStatus.completed) {
-            newActionState.status = 200;
-            newActionState.result = `Order is already completed and cannot be updated`;
-            newActionState.errorMsg = "";
-            return newActionState;
+            throw new Error("Order is already completed and cannot be updated");
         }
-
         if (order.status === newStatus) {
-            newActionState.status = 200;
-            newActionState.result = `Order is already in status: ${newStatus}`;
-            newActionState.errorMsg = "";
-            return newActionState;
+            throw new Error(`Order is already in status: ${newStatus}`);
         }
 
         // Always update the order to the requested status first
@@ -222,39 +151,12 @@ export const updateOrderStatus = async (
 
         // If status is paid and not shipped yet, attempt to process order items
         if (newStatus === OrderStatus.paid && order.status !== OrderStatus.shipped) {
-            const processedItemsResult = await processOrderItems(orderId, currentActionState);
-            if (processedItemsResult.status === 200) {
-                // Processing succeeded - update to shipped
-                await prisma.order.update({
-                    where: { id: orderId },
-                    data: { status: OrderStatus.shipped },
-                });
-
-                await sendOrderConfirmation(orderId);
-
-                newActionState.errorMsg = "";
-                newActionState.status = 200;
-                newActionState.result = "Order completed";
-            } else {
-                // Processing failed - order remains as paid, return processing error
-                newActionState.status = processedItemsResult.status;
-                newActionState.errorMsg = processedItemsResult.errorMsg;
-                newActionState.result = "";
-                return newActionState;
-            }
-        } else {
-            // For any other status, just confirm the update
-            newActionState.status = 200;
-            newActionState.errorMsg = "";
-            newActionState.result = `Order updated to ${newStatus}`;
+            await processOrderItems(orderId);
+            await sendOrderConfirmation(orderId);
         }
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-        return newActionState;
+        throw new Error("Failed to update order status");
     }
-    return newActionState;
 };
 
 export const deleteOrder = async (
@@ -282,30 +184,4 @@ export const deleteOrder = async (
         newActionState.result = "";
     }
     return newActionState;
-};
-
-export const createMembershipOrder = async (
-    currentActionState: FormActionState,
-): Promise<FormActionState & { orderId?: string }> => {
-    const newActionState = { ...currentActionState };
-    try {
-        // Get or create the membership product
-        const membershipProductId = await getMembershipProductId();
-
-        // Create order using existing createOrder function
-        const orderResult = await createOrder(currentActionState, {
-            [membershipProductId]: 1, // One membership
-        });
-
-        if (orderResult.status !== 201 || !orderResult.result) {
-            throw new Error(orderResult.errorMsg || "Failed to create membership order");
-        }
-
-        return orderResult;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-        return newActionState;
-    }
 };

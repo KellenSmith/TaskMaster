@@ -1,40 +1,41 @@
-import { ReactNode, FC } from "react";
+"use client";
+import { ReactNode, FC, Suspense } from "react";
 import ThemeContextProvider from "./ThemeContext";
 import UserContextProvider from "./UserContext";
 import OrganizationSettingsProvider from "./OrganizationSettingsContext";
 import NotificationContextProvider from "./NotificationContext";
-import { unstable_cache } from "next/cache";
-import { getOrganizationSettings } from "../lib/organization-settings-actions";
-import GlobalConstants from "../GlobalConstants";
-import { getLoggedInUser } from "../lib/user-actions";
 import { ErrorBoundary } from "react-error-boundary";
-import { Typography } from "@mui/material";
+import { CircularProgress, Typography } from "@mui/material";
+import LocalizationContextProvider from "./LocalizationContext";
 
 interface ContextWrapperProps {
     children: ReactNode;
+    organizationSettingsPromise: Promise<any>;
+    loggedInUserPromise: Promise<any>;
 }
 
-const ContextWrapper: FC<ContextWrapperProps> = async ({ children }) => {
-    const organizationSettingsPromise = unstable_cache(getOrganizationSettings, [], {
-        tags: [GlobalConstants.ORGANIZATION_SETTINGS],
-    })();
-    const loggedInUserPromise = unstable_cache(getLoggedInUser, [], {
-        tags: [GlobalConstants.USER],
-    })();
-
+const ContextWrapper: FC<ContextWrapperProps> = ({
+    children,
+    organizationSettingsPromise,
+    loggedInUserPromise,
+}) => {
     return (
         <ErrorBoundary fallback={<Typography color="primary">Failed to load context</Typography>}>
-            <NotificationContextProvider>
-                <OrganizationSettingsProvider
-                    organizationSettingsPromise={organizationSettingsPromise}
-                >
+            <Suspense fallback={<CircularProgress />}>
+                <LocalizationContextProvider>
                     <ThemeContextProvider>
-                        <UserContextProvider loggedInUserPromise={loggedInUserPromise}>
-                            {children}
-                        </UserContextProvider>
+                        <NotificationContextProvider>
+                            <OrganizationSettingsProvider
+                                organizationSettingsPromise={organizationSettingsPromise}
+                            >
+                                <UserContextProvider loggedInUserPromise={loggedInUserPromise}>
+                                    {children}
+                                </UserContextProvider>
+                            </OrganizationSettingsProvider>
+                        </NotificationContextProvider>
                     </ThemeContextProvider>
-                </OrganizationSettingsProvider>
-            </NotificationContextProvider>
+                </LocalizationContextProvider>
+            </Suspense>
         </ErrorBoundary>
     );
 };

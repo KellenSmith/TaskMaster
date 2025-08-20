@@ -20,7 +20,6 @@ interface UserContextProviderProps {
 const UserContextProvider: FC<UserContextProviderProps> = ({ loggedInUserPromise, children }) => {
     const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
     const [editMode, setEditMode] = useState(false);
-
     const user = use(loggedInUserPromise);
 
     return (

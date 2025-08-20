@@ -1,6 +1,7 @@
 "use client";
 
-import { createTheme, Theme } from "@mui/material";
+import { createTheme, Theme, ThemeProvider } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
 import { blueGrey } from "@mui/material/colors";
 import { createContext, useState, useEffect, ReactNode, FC } from "react";
 
@@ -33,7 +34,14 @@ const ThemeContextProvider: FC<ThemeContextProviderProps> = ({ children }) => {
         return null; // Render nothing until the theme is set
     }
 
-    return <ThemeContext.Provider value={{ theme }}>{children}</ThemeContext.Provider>;
+    return (
+        <ThemeContext.Provider value={{ theme }}>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                {children}
+            </ThemeProvider>
+        </ThemeContext.Provider>
+    );
 };
 
 export default ThemeContextProvider;

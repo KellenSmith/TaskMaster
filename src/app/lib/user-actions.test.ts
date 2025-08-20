@@ -1,33 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { mockContext } from "../../test/mocks/prismaMock";
-import { getUserById, createUser, getAllUsers, updateUser } from "./user-actions";
+import { createUser, getAllUsers, updateUser } from "./user-actions";
 import testdata from "../../test/testdata";
 import { defaultDatagridActionState, defaultFormActionState } from "./definitions";
-
-describe("User Actions", () => {
-    it("should get user by id", async () => {
-        const mockUser = testdata.user;
-
-        mockContext.prisma.user.findUniqueOrThrow.mockResolvedValue(mockUser);
-
-        const result = await getUserById(defaultDatagridActionState, mockUser.id);
-        expect(result.result[0]).toEqual(mockUser);
-        expect(result.status).toBe(200);
-        expect(mockContext.prisma.user.findUniqueOrThrow).toHaveBeenCalledWith({
-            where: { id: mockUser.id },
-            include: { userMembership: true },
-        });
-    });
-
-    it("should handle errors", async () => {
-        mockContext.prisma.user.findUniqueOrThrow.mockRejectedValue(new Error("User not found"));
-
-        const result = await getUserById(defaultDatagridActionState, "999");
-        expect(result.status).toBe(500);
-        expect(result.errorMsg).toBe("User not found");
-        expect(result.result).toEqual([]);
-    });
-});
 
 describe("Create User", () => {
     it("should create a new user successfully", async () => {

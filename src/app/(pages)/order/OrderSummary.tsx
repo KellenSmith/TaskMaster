@@ -14,14 +14,18 @@ import {
     TableRow,
     useTheme,
 } from "@mui/material";
-import GlobalConstants from "../../GlobalConstants";
+import { use } from "react";
+import { Prisma } from "@prisma/client";
 
 interface OrderSummaryProps {
-    order: any[];
+    orderPromise: Promise<
+        Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>
+    >;
 }
 
-const OrderSummary = ({ order }: OrderSummaryProps) => {
+const OrderSummary = ({ orderPromise }: OrderSummaryProps) => {
     const theme = useTheme();
+    const order = use(orderPromise);
 
     return (
         order && (
@@ -30,8 +34,8 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                     <Stack spacing={3}>
                         <Stack direction="row" justifyContent="space-between">
                             <Typography variant="h5">Order Summary</Typography>
-                            <Typography variant="h6" color={theme.palette.text.secondary}>
-                                Status: {order[GlobalConstants.STATUS]}
+                            <Typography variant="h6" color="secondary">
+                                Status: {order.status}
                             </Typography>
                         </Stack>
 
@@ -46,7 +50,7 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {order[GlobalConstants.ORDER_ITEMS].map((item) => (
+                                    {order.orderItems.map((item) => (
                                         <TableRow key={item.product.name}>
                                             <TableCell component="th" scope="row">
                                                 <Stack>
@@ -68,7 +72,7 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                         </TableCell>
                                         <TableCell align="right">
                                             <Typography variant="subtitle1">
-                                                {order[GlobalConstants.TOTAL_AMOUNT]} SEK
+                                                {order.totalAmount} SEK
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
@@ -78,7 +82,7 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
 
                         <Stack spacing={1}>
                             <Typography variant="body2" color={theme.palette.text.secondary}>
-                                Order ID: {order[GlobalConstants.ID]}
+                                Order ID: {order.id}
                             </Typography>
                         </Stack>
                     </Stack>

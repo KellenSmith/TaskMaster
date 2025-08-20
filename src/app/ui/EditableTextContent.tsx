@@ -18,8 +18,6 @@ const EditableTextContent = ({ id, textContentPromise }: EditableTextContentProp
     const { language, editMode: editWebsiteMode } = useUserContext();
     const textContent = use(textContentPromise);
 
-    console.log(textContent);
-
     const handleUpdateTextContent = async (
         fieldValues: z.output<typeof UpdateTextContentSchema>,
     ) => {
