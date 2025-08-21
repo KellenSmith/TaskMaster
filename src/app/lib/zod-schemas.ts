@@ -36,9 +36,9 @@ export const OrderStatusSchema = z.enum(OrderStatus);
 // =============================================================================
 
 export const OrganizationSettingsCreateSchema = z.object({
-    remindMembershipExpiresInDays: z.number().int().positive().default(7),
+    remindMembershipExpiresInDays: z.coerce.number().int().positive().default(7),
     organizationName: z.string().default("Task Master"),
-    purgeMembersAfterDaysUnvalidated: z.number().int().positive().default(180),
+    purgeMembersAfterDaysUnvalidated: z.coerce.number().int().positive().default(180),
     email: z.email().default("kellensmith407@gmail.com"),
 });
 

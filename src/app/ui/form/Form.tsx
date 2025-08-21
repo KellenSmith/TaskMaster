@@ -111,7 +111,7 @@ const Form: FC<FormProps> = ({
                 try {
                     const submitResult = await action(parsedFieldValues);
                     addNotification(submitResult, "success");
-                    setEditMode(false);
+                    editable && setEditMode(false);
                 } catch (error) {
                     allowRedirectException(error);
                     addNotification(error.message, "error");

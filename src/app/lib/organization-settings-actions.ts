@@ -4,6 +4,8 @@ import { OrganizationSettings } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
+import z from "zod";
+import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 
 export const getOrganizationSettings = async (): Promise<OrganizationSettings> => {
     let orgSettings = await prisma.organizationSettings.findFirst();
@@ -19,7 +21,7 @@ export const getOrganizationName = async (): Promise<string> => {
 };
 
 export const updateOrganizationSettings = async (
-    fieldValues: OrganizationSettings,
+    fieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
 ): Promise<void> => {
     try {
         const settings = await getOrganizationSettings();
