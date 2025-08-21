@@ -12,11 +12,11 @@ import { Card } from "@mui/material";
 
 interface RichTextFieldProps {
     fieldId?: string;
-    editMode: boolean;
+    editMode?: boolean;
     defaultValue: string;
 }
 
-const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode, defaultValue }) => {
+const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode = false, defaultValue }) => {
     const extensions = useExtensions();
     const rteRef = useRef<RichTextEditorRef>(null);
 

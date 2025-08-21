@@ -1,6 +1,6 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { Event, Prisma, UserRole } from "@prisma/client";
+import { Event, Prisma, User, UserRole } from "@prisma/client";
 
 // Convention: "path"=`/${route}`
 
@@ -62,9 +62,7 @@ export const isUserAdmin = (
 ): boolean => user && user.role === UserRole.admin;
 
 export const isUserHost = (
-    user: Prisma.UserGetPayload<{
-        include: { userMembership: true };
-    }> | null,
+    user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
     event: Event,
 ): boolean => user && user.id === event.hostId;
 

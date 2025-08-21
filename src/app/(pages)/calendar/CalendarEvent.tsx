@@ -28,7 +28,7 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
 
     const goToEventPage = () =>
         navigateToRoute(
-            `${pathname}/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${event[GlobalConstants.ID]}`,
+            `/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${event[GlobalConstants.ID]}`,
             router,
         );
     return (

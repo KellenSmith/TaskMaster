@@ -1,35 +1,30 @@
 "use client";
-import { use, useMemo, useState } from "react";
-import GlobalConstants from "../../../../GlobalConstants";
-import {
-    Stack,
-    Typography,
-    useTheme,
-    Card,
-    CardContent,
-    CardMedia,
-    Box,
-    Chip,
-    Button,
-    Dialog,
-} from "@mui/material";
-import ProductCard from "../../../../ui/shop/Product";
-import { createOrder } from "../../../../lib/order-actions";
-import { NextURL } from "next/dist/server/web/next-url";
-import { useRouter } from "next/navigation";
-import { Product, Prisma, TicketType } from "@prisma/client";
-import { defaultFormActionState, isUserHost } from "../../../../lib/definitions";
-import { createEventTicket } from "../../../../lib/event-actions";
-import Image from "next/image";
-import { useUserContext } from "../../../../context/UserContext";
-import Form from "../../../../ui/form/Form";
-import { isUserParticipant } from "../../../event/event-utils";
+import { use, useState } from "react";
+import { Stack, Typography, useTheme, Button, Dialog } from "@mui/material";
+import { Prisma, TicketType } from "@prisma/client";
+import { useUserContext } from "../../../context/UserContext";
+import { createOrder } from "../../../lib/order-actions";
+import { createEventTicket } from "../../../lib/event-actions";
+import { isUserHost } from "../../../lib/definitions";
+import { isUserParticipant } from "../event-utils";
+import ProductCard from "../../../ui/shop/Product";
+import Form from "../../../ui/form/Form";
+import GlobalConstants from "../../../GlobalConstants";
+import z from "zod";
+import { TicketCreateSchema } from "../../../lib/zod-schemas";
+import { allowRedirectException } from "../../../ui/utils";
+import { useNotificationContext } from "../../../context/NotificationContext";
 
 interface TicketShopProps {
     event: Prisma.EventGetPayload<{ include: { host: { select: { id: true } } } }>;
     eventTicketsPromise: Promise<
         Prisma.TicketGetPayload<{
             include: { Product: true };
+        }>[]
+    >;
+    eventTasksPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: { Assignee: { select: { id: true; nickname: true } } };
         }>[]
     >;
     eventParticipants: Prisma.ParticipantInEventGetPayload<{
@@ -41,109 +36,39 @@ interface TicketShopProps {
 const TicketShop = ({
     event,
     eventTicketsPromise,
+    eventTasksPromise,
     eventParticipants,
     goToOrganizeTab,
 }: TicketShopProps) => {
     const { user } = useUserContext();
+    const { addNotification } = useNotificationContext();
     const theme = useTheme();
-    const router = useRouter();
     const tickets = use(eventTicketsPromise);
+    const tasks = use(eventTasksPromise);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    const createTicketOrder = async (product: Product) => {
-        const orderItems = {
-            [product.id]: 1,
+    const createTicketOrder = async (productId: string) => {
+        const ticketOrderItems: Prisma.OrderItemCreateManyOrderInput = {
+            productId: productId,
+            quantity: 1,
         };
-        const createTicketOrderResult = await createOrder(defaultFormActionState, orderItems);
-        if (createTicketOrderResult.status === 201) {
-            const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, window.location.origin);
-            orderUrl.searchParams.set(GlobalConstants.ORDER_ID, createTicketOrderResult.result);
-            router.push(orderUrl.toString());
-        }
-    };
-
-    const isVolunteerTicketAvailable = useMemo(() => {
-        return tickets.find((ticket) => ticket.type === TicketType.volunteer);
-    }, [tickets]);
-
-    const handleCreateTicket = async (currentActionState, fieldValues) => {
         try {
-            await createEventTicket(event.id, fieldValues);
-            setDialogOpen(false);
-            return { ...currentActionState, status: 200, result: "Ticket created successfully" };
+            await createOrder([ticketOrderItems]);
         } catch (error) {
-            return { ...currentActionState, status: 500, errorMsg: error.message };
+            allowRedirectException(error);
+            addNotification("Failed to create ticket order", "error");
         }
     };
 
-    // Bare bones volunteer ticket card component
-    const VolunteerTicketCard = () => {
-        const defaultImage = "/images/product-placeholder.svg";
+    const handleCreateTicket = async (parsedFieldValues: z.infer<typeof TicketCreateSchema>) => {
+        await createEventTicket(event.id, parsedFieldValues);
+        setDialogOpen(false);
+        return "Created ticket";
+    };
 
-        return (
-            <Card
-                sx={{
-                    maxWidth: 250,
-                    width: "fit-content",
-                    opacity: 0.7,
-                    cursor: "pointer",
-                    position: "relative",
-                    "&::after": {
-                        content: '"🔒"',
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        fontSize: "3rem",
-                        zIndex: 1,
-                        backgroundColor: "rgba(255, 255, 255, 0.9)",
-                        borderRadius: "50%",
-                        width: "60px",
-                        height: "60px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                    },
-                }}
-                onClick={goToOrganizeTab}
-            >
-                <CardMedia>
-                    <Image
-                        src={defaultImage}
-                        alt="Volunteer Ticket"
-                        width={400}
-                        height={400}
-                        style={{
-                            objectFit: "contain",
-                            maxHeight: 250,
-                            maxWidth: 250,
-                            filter: "grayscale(100%)",
-                        }}
-                    />
-                </CardMedia>
-                <CardContent>
-                    <Typography gutterBottom variant="h6" component="h2" color="text.secondary">
-                        Volunteer Ticket
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        Sign up for volunteer shifts to unlock the volunteer ticket
-                    </Typography>
-                    <Box
-                        sx={{
-                            mt: 2,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <Typography variant="h6" color="text.secondary">
-                            Free
-                        </Typography>
-                        <Chip label="Locked" color="warning" size="small" />
-                    </Box>
-                </CardContent>
-            </Card>
-        );
+    const isVolunteerTicketAvailable = () => {
+        const tasksAssignedToUser = tasks.filter((task) => task.assigneeId === user.id);
+        return tasksAssignedToUser.length > 0;
     };
 
     if (!isUserHost(user, event) && isUserParticipant(user, eventParticipants))
@@ -168,12 +93,17 @@ const TicketShop = ({
                 <Typography color="primary">Sorry, no tickets available for this event.</Typography>
             ) : (
                 <Stack direction="row" flexWrap="wrap" gap={2}>
-                    {!isVolunteerTicketAvailable && <VolunteerTicketCard />}
                     {tickets.map((ticket) => (
                         <ProductCard
                             key={ticket.id}
                             product={ticket.Product}
                             onAddToCart={createTicketOrder}
+                            {...(ticket.type === TicketType.volunteer && {
+                                isAvailable: isVolunteerTicketAvailable(),
+                                makeAvailableText:
+                                    "Unlock the volunteer ticket by helping organize the event",
+                                onClick: goToOrganizeTab,
+                            })}
                         />
                     ))}
                 </Stack>

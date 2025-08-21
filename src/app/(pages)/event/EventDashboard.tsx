@@ -4,13 +4,13 @@ import { CircularProgress, Stack, Tab, Tabs, Typography, useTheme } from "@mui/m
 import { Suspense, useState, use } from "react";
 import { isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
-import TaskDashboard from "../calendar/event/(tasks)/TaskDashboard";
 import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventActions from "./EventActions";
 import EventDetails from "./EventDetails";
 import { EventStatus, Prisma } from "@prisma/client";
 import { ErrorBoundary } from "react-error-boundary";
-import TicketShop from "../calendar/event/(tasks)/TicketShop";
+import TaskDashboard from "./(tasks)/TaskDashboard";
+import TicketShop from "./(tasks)/TicketShop";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -64,8 +64,8 @@ const EventDashboard = ({
         user && (
             <Stack>
                 {event.status === EventStatus.draft && (
-                    <Typography variant="h4" color={theme.palette.primary.main}>
-                        {"This is an event draft. It is only visible to the host."}
+                    <Typography variant="h4" color="warning">
+                        This is an event draft and is only visible to the host
                     </Typography>
                 )}
                 <Typography
@@ -134,13 +134,11 @@ const EventDashboard = ({
                     <ErrorBoundary
                         fallback={<Typography color="primary">Failed to load tasks</Typography>}
                     >
-                        <Suspense
-                            fallback={<Typography color="primary">Loading tasks...</Typography>}
-                        >
+                        <Suspense fallback={<CircularProgress />}>
                             <TaskDashboard
                                 readOnly={!isUserHost(user, event)}
                                 event={event}
-                                eventTaskPromise={eventTasksPromise}
+                                eventTasksPromise={eventTasksPromise}
                             />
                         </Suspense>
                     </ErrorBoundary>
@@ -148,15 +146,14 @@ const EventDashboard = ({
                 {openTab === EventTabs.tickets && (
                     <ErrorBoundary
                         fallback={
-                            <Typography color="primary">
-                                "Sorry, we couldn't fetch event tickets"
-                            </Typography>
+                            <Typography color="primary">"Failed to load event tickets"</Typography>
                         }
                     >
                         <Suspense fallback={<CircularProgress />}>
                             <TicketShop
                                 event={event}
                                 eventTicketsPromise={eventTicketsPromise}
+                                eventTasksPromise={eventTasksPromise}
                                 goToOrganizeTab={goToOrganizeTab}
                                 eventParticipants={eventParticipants}
                             />

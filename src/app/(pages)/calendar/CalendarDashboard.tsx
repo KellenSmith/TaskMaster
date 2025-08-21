@@ -1,16 +1,7 @@
 "use client";
 
-import React, { FC, use, useState } from "react";
-import {
-    Stack,
-    Typography,
-    Button,
-    Grid2,
-    useTheme,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-} from "@mui/material";
+import React, { FC, useState } from "react";
+import { Stack, Typography, Button, Grid2, Dialog, DialogContent } from "@mui/material";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
 import { createEvent } from "../../lib/event-actions";
@@ -32,13 +23,10 @@ interface CalendarDashboardProps {
 
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
     const { user } = useUserContext();
-    const theme = useTheme();
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
-    const events = use(eventsPromise);
     const [createOpen, setCreateOpen] = useState(false);
 
     const createEventWithHostAndTicket = async (fieldValues: z.infer<typeof EventCreateSchema>) => {
-        console.log(fieldValues.startTime);
         await createEvent(fieldValues);
         return "Created event";
     };
@@ -96,7 +84,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
                     ))}
                     {getDaysToShow().map((date) => (
                         <Grid2 key={date.format("YYYY-MM-DD")} size={1}>
-                            <CalendarDay date={date} events={events} />
+                            <CalendarDay date={date} eventsPromise={eventsPromise} />
                         </Grid2>
                     ))}
                 </Grid2>
@@ -116,11 +104,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
                             >
                                 <ArrowLeft />
                             </Button>
-                            <Typography
-                                color={theme.palette.text.secondary}
-                                alignSelf="center"
-                                variant="h4"
-                            >
+                            <Typography color="primary" alignSelf="center" variant="h4">
                                 {selectedDate.format("MMMM YYYY")}
                             </Typography>
                             <Button onClick={() => setSelectedDate((prev) => prev.add(1, "month"))}>

@@ -1,13 +1,6 @@
-import {
-    AttachMoney,
-    CalendarMonth,
-    ExpandMore,
-    Group,
-    LocationOn,
-    Person,
-} from "@mui/icons-material";
+import { CalendarMonth, ExpandMore, Group, LocationOn, Person } from "@mui/icons-material";
 import { Accordion, AccordionSummary, Paper, Stack, Typography, useTheme } from "@mui/material";
-import { Suspense, use } from "react";
+import { use } from "react";
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { defaultFormActionState, FormActionState, isUserHost } from "../../lib/definitions";
@@ -45,7 +38,7 @@ const EventDetails = ({ event, eventParticipants, eventReservesPromise }: EventD
             defaultFormActionState,
         );
         if (deleteParticipantResult.status === 200)
-            addNotification("Successfully removed participant", "success");
+            addNotification("Removed participant", "success");
         else addNotification("Failed to remove participant", "error");
         return deleteParticipantResult;
     };
@@ -74,10 +67,6 @@ const EventDetails = ({ event, eventParticipants, eventReservesPromise }: EventD
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                         <Person color="primary" />
                         <Typography>Host: {event.host.nickname}</Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                        <AttachMoney color="primary" />
-                        <Typography>Ticket Price: {event.fullTicketPrice} SEK</Typography>
                     </Stack>
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMore />}>
@@ -128,7 +117,7 @@ const EventDetails = ({ event, eventParticipants, eventReservesPromise }: EventD
                             </Stack>
                         </Paper>
                     )}
-                    <RichTextField editMode={false} value={event.description} />
+                    <RichTextField editMode={false} defaultValue={event.description} />
                 </Stack>
             </Paper>
         </Stack>

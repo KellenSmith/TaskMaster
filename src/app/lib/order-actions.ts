@@ -62,15 +62,28 @@ export const createOrder = async (
     let redirectUrl: string;
     try {
         const loggedInUser = await getLoggedInUser();
+
+        // Calculate the price of each order item
+        for (const item of orderItems) {
+            const product = await prisma.product.findUniqueOrThrow({
+                where: { id: item.productId },
+            });
+            item.price = product.price * item.quantity;
+        }
+
         // Create the order with items in a transaction
         const order = await prisma.$transaction(async (tx) => {
             return await tx.order.create({
                 data: {
-                    userId: loggedInUser.id,
                     totalAmount: orderItems.reduce(
                         (acc, item) => item.price * item.quantity + acc,
                         0,
                     ),
+                    user: {
+                        connect: {
+                            id: loggedInUser.id,
+                        },
+                    },
                     orderItems: {
                         createMany: {
                             data: orderItems,
@@ -82,12 +95,8 @@ export const createOrder = async (
         const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, process.env.VERCEL_URL);
         orderUrl.searchParams.set(GlobalConstants.ORDER_ID, order.id);
         redirectUrl = orderUrl.toString();
-        revalidateTag(GlobalConstants.ORDER);
     } catch (error) {
         throw new Error("Failed to create order");
-    }
-    if (!redirectUrl) {
-        throw new Error("Failed to redirect to order");
     }
     redirect(redirectUrl);
 };

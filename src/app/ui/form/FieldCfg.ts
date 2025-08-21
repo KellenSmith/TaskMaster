@@ -138,12 +138,13 @@ export const RenderedFields = {
         GlobalConstants.IMAGE_URL,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TICKET]: [GlobalConstants.NAME, GlobalConstants.PRICE],
     [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],
 };
 RenderedFields[GlobalConstants.TICKET] = [
     GlobalConstants.TICKET_TYPE,
-    ...RenderedFields[GlobalConstants.PRODUCT],
+    ...RenderedFields[GlobalConstants.PRODUCT].filter(
+        (fieldId) => ![GlobalConstants.STOCK, GlobalConstants.UNLIMITED_STOCK].includes(fieldId),
+    ),
 ];
 RenderedFields[GlobalConstants.MEMBERSHIP] = [
     ...RenderedFields[GlobalConstants.PRODUCT],

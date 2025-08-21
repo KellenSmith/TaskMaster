@@ -14,7 +14,15 @@ import {
     DialogActions,
     Box,
     Chip,
+    Tooltip,
+    Stack,
+    IconButton,
 } from "@mui/material";
+import { Edit, Lock } from "@mui/icons-material";
+import { formatPrice } from "../utils";
+import RichTextField from "../form/RichTextField";
+import Form from "../form/Form";
+import GlobalConstants from "../../GlobalConstants";
 
 interface Product {
     id: string;
@@ -28,15 +36,26 @@ interface Product {
 
 interface ProductCardProps {
     product: Product;
-    onAddToCart?: Function;
+    onAddToCart?: (productId: string) => void;
+    isAvailable?: boolean;
+    makeAvailableText?: string;
+    onClick?: () => void;
+    editable?: boolean;
 }
 
-export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export default function ProductCard({
+    product,
+    onAddToCart,
+    isAvailable = true,
+    makeAvailableText,
+    onClick,
+    editable,
+}: ProductCardProps) {
     const [isOpen, setIsOpen] = useState(false);
     const defaultImage = "/images/product-placeholder.svg";
 
     const getStockChipLabel = () => {
-        if (product.unlimitedStock) {
+        if (product.unlimitedStock || product.stock > 5) {
             return "In Stock";
         }
         if (!product.stock) return "Out of Stock";
@@ -44,7 +63,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
     };
 
     const getStockChipColor = () => {
-        if (product.unlimitedStock) {
+        if (product.unlimitedStock || product.stock > 5) {
             return "success";
         }
         if (!product.stock) return "error";
@@ -53,101 +72,152 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
     return (
         <>
-            <Card
-                sx={{
-                    maxWidth: 250,
-                    width: "fit-content",
-                    cursor: "pointer",
-                    transition: "0.3s",
-                    "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: 3,
-                    },
-                }}
-                onClick={() => setIsOpen(true)}
+            <Tooltip
+                title={!isAvailable && makeAvailableText ? makeAvailableText : ""}
+                arrow
+                placement="top"
+                disableHoverListener={isAvailable}
             >
-                <CardMedia>
-                    <Image
-                        src={product.imageUrl || defaultImage}
-                        alt={product.name}
-                        width={400}
-                        height={400}
-                        style={{
-                            objectFit: "contain",
-                            maxHeight: 250,
-                            maxWidth: 250,
-                        }}
-                    />
-                </CardMedia>
-                <CardContent>
-                    <Typography gutterBottom variant="h6" component="h2">
-                        {product.name}
-                    </Typography>
-                    <Box
-                        sx={{
-                            mt: 2,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <Typography variant="h6" color="primary">
-                            {`${product.price.toFixed(2)} SEK`}
-                        </Typography>
-                        {product.stock !== null && (
-                            <Chip
-                                label={getStockChipLabel()}
-                                color={getStockChipColor()}
-                                size="small"
-                            />
+                <Card
+                    sx={{
+                        maxWidth: 250,
+                        width: "fit-content",
+                        cursor: "pointer",
+                        transition: "0.3s",
+                        opacity: isAvailable ? 1 : 0.6,
+                        filter: isAvailable ? "none" : "grayscale(30%)",
+                        "&:hover": {
+                            transform: isAvailable ? "translateY(-4px)" : "none",
+                            boxShadow: isAvailable ? 3 : 1,
+                        },
+                    }}
+                    onClick={onClick || (() => setIsOpen(true))}
+                >
+                    <CardMedia sx={{ position: "relative" }}>
+                        <Image
+                            src={product.imageUrl || defaultImage}
+                            alt={product.name}
+                            width={400}
+                            height={400}
+                            style={{
+                                objectFit: "contain",
+                                maxHeight: 250,
+                                maxWidth: 250,
+                            }}
+                        />
+                        {!isAvailable && (
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                    borderRadius: "4px 4px 0 0",
+                                }}
+                            >
+                                <Lock
+                                    sx={{
+                                        color: "white",
+                                        fontSize: 48,
+                                        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                                    }}
+                                />
+                            </Box>
                         )}
-                    </Box>
-                </CardContent>
-            </Card>
+                    </CardMedia>
+                    <CardContent>
+                        <Typography gutterBottom variant="h6" component="h2">
+                            {product.name}
+                        </Typography>
+                        <Box
+                            sx={{
+                                mt: 2,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                            }}
+                        >
+                            <Typography variant="h6" color="primary">
+                                {`${formatPrice(product.price)} SEK`}
+                            </Typography>
+                            {product.stock !== null && (
+                                <Chip
+                                    label={getStockChipLabel()}
+                                    color={getStockChipColor()}
+                                    size="small"
+                                />
+                            )}
+                        </Box>
+                    </CardContent>
+                </Card>
+            </Tooltip>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>{product.name}</DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: "flex", gap: 3, mb: 3 }}>
-                        <Box sx={{ position: "relative", width: 300, height: 300, flexShrink: 0 }}>
+                    <Stack direction="row" spacing={4}>
+                        <Stack
+                            sx={{ position: "relative", width: 300, height: 300, flexShrink: 0 }}
+                        >
                             <Image
                                 src={product.imageUrl || defaultImage}
                                 alt={product.name}
                                 fill
                                 style={{ objectFit: "cover", borderRadius: 8 }}
                             />
-                        </Box>
-                        <Box>
-                            <Typography variant="body1" paragraph>
-                                {product.description}
-                            </Typography>
-                            <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
-                                {`${product.price.toFixed(2)} SEK`}
-                            </Typography>
-                            {product.stock !== null && (
-                                <Box sx={{ mt: 2 }}>
-                                    <Chip
-                                        label={
-                                            product.unlimitedStock || product.stock > 5
-                                                ? "In Stock"
-                                                : `${product.stock} left`
-                                        }
-                                        color={
-                                            product.stock > 0 || product.unlimitedStock
-                                                ? "success"
-                                                : "warning"
-                                        }
+                            {!isAvailable && (
+                                <Stack
+                                    sx={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                        borderRadius: 2,
+                                    }}
+                                >
+                                    <Lock
+                                        sx={{
+                                            color: "white",
+                                            fontSize: 64,
+                                            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                                        }}
                                     />
-                                </Box>
+                                </Stack>
                             )}
-                        </Box>
-                    </Box>
+                        </Stack>
+                        <Stack width="100%" spacing={2}>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
+                                    {`${formatPrice(product.price)} SEK`}
+                                </Typography>
+                                {product.stock !== null && (
+                                    <Box sx={{ mt: 2 }}>
+                                        <Chip
+                                            label={getStockChipLabel()}
+                                            color={getStockChipColor()}
+                                        />
+                                    </Box>
+                                )}
+                            </Stack>
+                            <RichTextField defaultValue={product.description} />
+                        </Stack>
+                    </Stack>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setIsOpen(false)}>Close</Button>
                     <Button
-                        onClick={() => onAddToCart(product)}
-                        disabled={!product.unlimitedStock && product.stock === 0}
+                        onClick={() => onAddToCart(product.id)}
+                        disabled={!isAvailable || (!product.unlimitedStock && product.stock === 0)}
                     >
                         buy
                     </Button>

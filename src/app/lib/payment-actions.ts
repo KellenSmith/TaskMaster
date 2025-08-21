@@ -200,23 +200,23 @@ export const checkPaymentStatus = async (orderId: string): Promise<FormActionSta
             return;
         }
 
-        if (!order.paymentRequestId) throw new Error("Payment request ID not found for this order");
-
-        const paymentStatusResponse = await makeSwedbankApiRequest(
-            `https://api.externalintegration.payex.com${order.paymentRequestId}?$expand=paid`,
-        );
-        if (!paymentStatusResponse.ok) {
-            throw new Error("Failed to check payment status");
+        if (order.paymentRequestId) {
+            const paymentStatusResponse = await makeSwedbankApiRequest(
+                `https://api.externalintegration.payex.com${order.paymentRequestId}?$expand=paid`,
+            );
+            if (!paymentStatusResponse.ok) {
+                throw new Error("Failed to check payment status");
+            }
+            const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
+            const paymentStatus = paymentStatusData.paymentOrder.status;
+            console.log(paymentStatus);
+            const newOrderStatus = getNewOrderStatus(paymentStatus);
+            const needsCapture =
+                paymentStatusData.paymentOrder.paid.transactionType ===
+                TransactionType.Authorization;
+            await progressOrder(orderId, newOrderStatus, needsCapture);
         }
-        const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
-        const paymentStatus = paymentStatusData.paymentOrder.status;
-        const newOrderStatus = getNewOrderStatus(paymentStatus);
-        const needsCapture =
-            paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
-
-        await progressOrder(orderId, newOrderStatus, needsCapture);
     } catch (error) {
-        console.log(error);
         throw new Error("Failed to check payment status");
     }
 };

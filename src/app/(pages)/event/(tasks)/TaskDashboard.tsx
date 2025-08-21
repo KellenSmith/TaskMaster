@@ -1,14 +1,13 @@
 "use client";
 
-import KanBanBoard from "../../../../ui/kanban-board/KanBanBoard";
-import { Suspense, use } from "react";
+import { use } from "react";
 import { Stack, Typography } from "@mui/material";
 import { Prisma } from "@prisma/client";
-import { ErrorBoundary } from "react-error-boundary";
+import KanBanBoard from "../../../ui/kanban-board/KanBanBoard";
 
 interface TaskDashboardProps {
     event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>;
-    eventTaskPromise: Promise<
+    eventTasksPromise: Promise<
         Prisma.TaskGetPayload<{
             include: { Assignee: { select: { id: true; nickname: true } } };
         }>[]
@@ -16,8 +15,8 @@ interface TaskDashboardProps {
     readOnly?: boolean;
 }
 
-const TaskDashboard = ({ event, eventTaskPromise, readOnly }: TaskDashboardProps) => {
-    const tasks = use(eventTaskPromise);
+const TaskDashboard = ({ event, eventTasksPromise, readOnly }: TaskDashboardProps) => {
+    const tasks = use(eventTasksPromise);
 
     return (
         <Stack>

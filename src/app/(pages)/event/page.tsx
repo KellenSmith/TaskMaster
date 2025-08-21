@@ -3,7 +3,7 @@ import {
     getEventById,
     getEventParticipants,
     getEventReserves,
-    getEventTicketsAvailableToUser,
+    getEventTickets,
 } from "../../lib/event-actions";
 import { getEventTasks } from "../../lib/task-actions";
 import { getLoggedInUser } from "../../lib/user-actions";
@@ -37,9 +37,9 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const cachedEventTasks = unstable_cache(getEventTasks, [eventId], {
         tags: [GlobalConstants.TASK],
     })({ eventId });
-    const cachedEventTickets = unstable_cache(getEventTicketsAvailableToUser, [eventId, userId], {
+    const cachedEventTickets = unstable_cache(getEventTickets, [eventId], {
         tags: [GlobalConstants.TICKET],
-    })(eventId, userId);
+    })(eventId);
 
     return (
         <ErrorBoundary

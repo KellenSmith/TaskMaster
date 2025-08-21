@@ -40,7 +40,7 @@ const OrderSummary = async ({ order }: OrderSummaryProps) => {
                 <Stack spacing={3}>
                     <Stack direction="row" justifyContent="space-between">
                         <Typography variant="h5">Order Summary</Typography>
-                        <Typography variant="h6" color="secondary">
+                        <Typography variant="h6" color="primary">
                             Status: {order.status}
                         </Typography>
                     </Stack>
@@ -89,12 +89,12 @@ const OrderSummary = async ({ order }: OrderSummaryProps) => {
                     </TableContainer>
 
                     <Stack spacing={1}>
-                        <Typography variant="body2" color="secondary">
+                        <Typography variant="body2" color="primary">
                             Order ID: {order.id}
                         </Typography>
                     </Stack>
                 </Stack>
-                <Typography color="secondary">{getStatusMessage(order.status)}</Typography>
+                <Typography color="primary">{getStatusMessage(order.status)}</Typography>
             </CardContent>
         </Card>
     );

@@ -3,7 +3,12 @@
 import { EventStatus, Prisma, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../prisma/prisma-client";
-import { EventCreateSchema, ProductCreateSchema } from "./zod-schemas";
+import {
+    EventCreateSchema,
+    ProductCreateSchema,
+    TicketCreateSchema,
+    TicketWithoutProductSchema,
+} from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
@@ -27,7 +32,6 @@ export const createEvent = async (
                         id: loggedInUser.id,
                     },
                 },
-
                 tickets: {
                     create: {
                         type: TicketType.volunteer,
@@ -36,7 +40,7 @@ export const createEvent = async (
                                 name: `Volunteer ticket for ${parsedFieldValues.title}`,
                                 description:
                                     "Admittance for one member signed up for at least one volunteer task",
-                                unlimitedStock: true,
+                                stock: parsedFieldValues.maxParticipants,
                             },
                         },
                     },
@@ -62,9 +66,7 @@ export const createEvent = async (
         }
 
         createdEventId = createdEvent.id;
-        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
         revalidateTag(GlobalConstants.EVENT);
-        revalidateTag(GlobalConstants.TICKET);
     } catch (error) {
         console.log(error);
         throw new Error("Failed to create event");
@@ -80,23 +82,31 @@ export const createEvent = async (
 
 export const createEventTicket = async (
     eventId: string,
-    fieldValues: Prisma.TicketCreateInput & Prisma.ProductCreateInput,
+    parsedFieldValues: z.infer<typeof TicketCreateSchema>,
 ) => {
     try {
-        const ticketFieldValues = {
-            type: fieldValues.type,
-        } as Prisma.TicketCreateInput;
-        const productFieldValues = ProductCreateSchema.parse({
-            name: fieldValues.name,
-            description: fieldValues.description,
-            price: fieldValues.price,
-            unlimitedStock: fieldValues.unlimitedStock,
-        }) as Prisma.ProductCreateInput;
+        const event = await prisma.event.findUniqueOrThrow({
+            where: {
+                id: eventId,
+            },
+            include: {
+                participantUsers: true,
+            },
+        });
+        console.log("parsedFieldValues", parsedFieldValues);
+        const ticketFieldValues = TicketWithoutProductSchema.parse(parsedFieldValues);
+        console.log("ticketFieldValues", ticketFieldValues);
+        const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
+        console.log("productFieldValues", productFieldValues);
+
         await prisma.ticket.create({
             data: {
                 ...ticketFieldValues,
                 Product: {
-                    create: productFieldValues,
+                    create: {
+                        ...productFieldValues,
+                        stock: event.maxParticipants - event.participantUsers.length,
+                    },
                 },
                 Event: {
                     connect: {
@@ -106,15 +116,18 @@ export const createEventTicket = async (
             },
         });
         revalidateTag(GlobalConstants.TICKET);
+        revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
-        console.error(error);
+        console.log(error);
         throw new Error("Failed to create event ticket");
     }
 };
 
 export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> => {
     try {
-        return await prisma.event.findMany();
+        const events = await prisma.event.findMany();
+        console.log(events.length);
+        return events;
     } catch (error) {
         throw new Error("Failed to fetch events");
     }
@@ -214,6 +227,7 @@ export const updateEvent = async (
         newActionState.status = 200;
         newActionState.result = `Updated successfully`;
         revalidateTag(GlobalConstants.EVENT_ID);
+        revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -238,6 +252,7 @@ export const cancelEvent = async (
         newActionState.status = 200;
         newActionState.result = `Cancelled event and informed participants`;
         revalidateTag(GlobalConstants.EVENT_ID);
+        revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -264,6 +279,7 @@ export const deleteEvent = async (eventId: string, currentActionState: FormActio
         newActionState.errorMsg = "";
         newActionState.status = 200;
         newActionState.result = `Deleted event, participants and reserve list`;
+        revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
         newActionState.status = 500;
         newActionState.errorMsg = error.message;
@@ -350,11 +366,9 @@ export const deleteEventReserve = async (
     return newActionState;
 };
 
-export const getEventTicketsAvailableToUser = async (eventId: string, userId: string) => {
+export const getEventTickets = async (eventId: string) => {
     try {
-        if (!(eventId && userId)) throw new Error("Event and user id required");
-
-        let availableEventTickets = await prisma.ticket.findMany({
+        return await prisma.ticket.findMany({
             where: {
                 eventId,
             },
@@ -362,22 +376,6 @@ export const getEventTicketsAvailableToUser = async (eventId: string, userId: st
                 Product: true,
             },
         });
-
-        // The volunteer ticket is only available if
-        // the user is signed up for volunteering for the event.
-        const tasksAssignedToUser = await prisma.task.count({
-            where: {
-                eventId,
-                assigneeId: userId,
-            },
-        });
-        if (tasksAssignedToUser < 1) {
-            availableEventTickets = availableEventTickets.filter(
-                (ticket) => ticket.type !== TicketType.volunteer,
-            );
-        }
-
-        return availableEventTickets;
     } catch (error) {
         throw new Error("Failed to fetch event tickets");
     }

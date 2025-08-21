@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, use } from "react";
 import { Paper, Stack, Typography } from "@mui/material";
 import CalendarEvent, { ICalendarEvent } from "./CalendarEvent";
 import dayjs from "dayjs";
@@ -9,16 +9,18 @@ import GlobalConstants from "../../GlobalConstants";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventPublished } from "../event/event-utils";
+import { Prisma } from "@prisma/client";
 
 dayjs.extend(isBetween);
 
 interface CalendarDayProps {
     date: dayjs.Dayjs;
-    events: ICalendarEvent[];
+    eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
 }
 
-const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
+const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     const { user } = useUserContext();
+    const events = use(eventsPromise);
 
     const shouldShowEvent = (event: any) => {
         let startTime = dayjs(event[GlobalConstants.START_TIME]);
@@ -58,9 +60,11 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
     };
 
     return (
-        <Paper>
+        <Paper sx={{ height: "100%" }}>
             <Stack spacing={1}>
-                <Typography variant="subtitle2">{date.format("D")}</Typography>
+                <Typography padding={1} variant="subtitle2">
+                    {date.format("D")}
+                </Typography>
                 {getDayComp()}
             </Stack>
         </Paper>

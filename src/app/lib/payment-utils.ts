@@ -56,7 +56,7 @@ export type PaymentOrderResponse = {
     operations: PaymentOperation[];
 };
 
-export const getNewOrderStatus = (paymentState: PaymentStateType) => {
+export const getNewOrderStatus = (paymentState: PaymentStateType): OrderStatus => {
     switch (paymentState) {
         case PaymentState.Paid:
             return OrderStatus.paid;

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z, ZodURL } from "zod";
 import {
     UserRole,
     EventStatus,
@@ -150,14 +150,14 @@ export const ProductCreateSchema = z.object({
     id: z.string().optional(),
     name: z.string().default(""),
     description: z.string().default(""),
-    price: z
+    price: z.coerce
         .number()
         .nonnegative()
         .default(0)
         .transform((val) => Math.round(val * 100)),
-    stock: z.number().int().nonnegative().nullable().default(0),
+    stock: z.coerce.number().int().nonnegative().nullable().default(0),
     unlimitedStock: z.boolean().default(false),
-    imageUrl: z.string().url().default(""),
+    imageUrl: z.string().optional(),
 });
 
 export const ProductUpdateSchema = ProductCreateSchema.partial().extend({
@@ -197,16 +197,17 @@ export const UserMembershipUpdateSchema = UserMembershipCreateSchema.partial().e
 // TICKET SCHEMAS
 // =============================================================================
 
-export const TicketCreateSchema = z.object({
+export const TicketWithoutProductSchema = z.object({
     id: z.string().optional(),
     type: TicketTypeSchema.default(TicketType.standard),
-    productId: z.string(),
-    eventId: z.string(),
 });
 
-export const TicketUpdateSchema = TicketCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+export const TicketCreateSchema = z.union([
+    TicketWithoutProductSchema,
+    ProductCreateSchema.omit({ stock: true, unlimitedStock: true }),
+]);
+
+export const TicketUpdateSchema = TicketCreateSchema;
 
 // =============================================================================
 // ORDER SCHEMAS
