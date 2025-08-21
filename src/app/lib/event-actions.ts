@@ -68,7 +68,6 @@ export const createEvent = async (
         createdEventId = createdEvent.id;
         revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
-        console.log(error);
         throw new Error("Failed to create event");
     }
     createdEventId &&
@@ -93,11 +92,8 @@ export const createEventTicket = async (
                 participantUsers: true,
             },
         });
-        console.log("parsedFieldValues", parsedFieldValues);
         const ticketFieldValues = TicketWithoutProductSchema.parse(parsedFieldValues);
-        console.log("ticketFieldValues", ticketFieldValues);
         const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
-        console.log("productFieldValues", productFieldValues);
 
         await prisma.ticket.create({
             data: {
@@ -118,7 +114,6 @@ export const createEventTicket = async (
         revalidateTag(GlobalConstants.TICKET);
         revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
-        console.log(error);
         throw new Error("Failed to create event ticket");
     }
 };
@@ -126,7 +121,6 @@ export const createEventTicket = async (
 export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> => {
     try {
         const events = await prisma.event.findMany();
-        console.log(events.length);
         return events;
     } catch (error) {
         throw new Error("Failed to fetch events");

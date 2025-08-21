@@ -128,7 +128,6 @@ const processOrderItems = async (orderId: string): Promise<void> => {
             await processOrderedProduct(order.userId, orderItem);
         }
     } catch (error) {
-        console.log(error);
         throw new Error(`Failed to process order items`);
     }
 };

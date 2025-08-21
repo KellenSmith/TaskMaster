@@ -209,7 +209,6 @@ export const checkPaymentStatus = async (orderId: string): Promise<FormActionSta
             }
             const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
             const paymentStatus = paymentStatusData.paymentOrder.status;
-            console.log(paymentStatus);
             const newOrderStatus = getNewOrderStatus(paymentStatus);
             const needsCapture =
                 paymentStatusData.paymentOrder.paid.transactionType ===
