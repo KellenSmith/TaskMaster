@@ -176,6 +176,7 @@ const Form: FC<FormProps> = ({
                         <Checkbox
                             name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
+                            defaultChecked={defaultValues?.[fieldId] || false}
                         />
                     }
                     defaultValue={defaultValues?.[fieldId] || false}

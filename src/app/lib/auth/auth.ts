@@ -50,13 +50,14 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
         // Everyone who applied for membership exists in the database
         const loggedInUser = await prisma.user.findUnique({
             where: {
-                email: parsedFieldValues.email as unknown as string,
-            } as Prisma.UserWhereUniqueInput,
+                email: parsedFieldValues.email,
+            },
             include: {
                 userMembership: true,
             },
         });
         if (!loggedInUser) throw new Error("Please apply for membership");
+        if (!loggedInUser.userMembership) throw new Error("Membership application pending");
 
         // All validated members have credentials
         const userCredentials = await prisma.userCredentials.findUnique({
@@ -74,10 +75,14 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
         const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
         if (!passwordsMatch) throw new Error("Invalid credentials");
 
-        await encryptJWT(loggedInUser);
+        try {
+            await encryptJWT(loggedInUser);
+        } catch {
+            throw new Error("Failed to log in");
+        }
         revalidateTag(GlobalConstants.USER);
-    } catch {
-        throw new Error("Login failed. Please check your credentials and try again.");
+    } catch (error) {
+        throw new Error(error.message);
     }
     redirect("/");
 };

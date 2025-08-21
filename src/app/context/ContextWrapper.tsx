@@ -7,17 +7,18 @@ import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
 import { ErrorBoundary } from "react-error-boundary";
 import { CircularProgress, Typography } from "@mui/material";
+import { Prisma } from "@prisma/client";
 
 interface ContextWrapperProps {
     children: ReactNode;
     organizationSettingsPromise: Promise<any>;
-    loggedInUserPromise: Promise<any>;
+    loggedInUser: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
 }
 
 const ContextWrapper: FC<ContextWrapperProps> = ({
     children,
     organizationSettingsPromise,
-    loggedInUserPromise,
+    loggedInUser,
 }) => {
     return (
         <ErrorBoundary fallback={<Typography color="primary">Failed to load context</Typography>}>
@@ -28,7 +29,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                             <OrganizationSettingsProvider
                                 organizationSettingsPromise={organizationSettingsPromise}
                             >
-                                <UserContextProvider loggedInUserPromise={loggedInUserPromise}>
+                                <UserContextProvider loggedInUser={loggedInUser}>
                                     {children}
                                 </UserContextProvider>
                             </OrganizationSettingsProvider>

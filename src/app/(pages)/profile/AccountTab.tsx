@@ -14,18 +14,19 @@ import { deleteUserCookieAndRedirectToHome } from "../../lib/auth/auth";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { UpdateCredentialsSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { updateUserCredentials } from "../../lib/user-credentials-actions";
-import { Prisma } from "@prisma/client";
 import { createMembershipOrder } from "../../lib/user-membership-actions";
 import z from "zod";
+import { useTransition } from "react";
 
 const AccountTab = () => {
     const theme = useTheme();
     const router = useRouter();
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
+    const [isPending, startTransition] = useTransition();
 
-    const updateUserProfile = async (fieldValues: Prisma.UserUpdateInput) => {
-        await updateUser(user.id, fieldValues);
+    const updateUserProfile = async (parsedFieldValues: z.infer<typeof UserUpdateSchema>) => {
+        await updateUser(user.id, parsedFieldValues);
         return "Successfully updated profile";
     };
 
@@ -39,28 +40,30 @@ const AccountTab = () => {
         return "Successfully updated password";
     };
 
-    const deleteMyAccount = async () => {
-        try {
-            await deleteUser(user.id);
+    const deleteMyAccount = async () =>
+        startTransition(async () => {
             try {
-                await deleteUserCookieAndRedirectToHome();
+                await deleteUser(user.id);
+                try {
+                    await deleteUserCookieAndRedirectToHome();
+                } catch {
+                    navigateToRoute("/", router);
+                }
             } catch {
-                navigateToRoute("/", router);
+                addNotification("Failed to delete account", "error");
             }
-        } catch {
-            addNotification("Failed to delete account", "error");
-        }
-    };
+        });
 
-    const activateMembership = async () => {
-        try {
-            await createMembershipOrder();
-        } catch (error) {
-            allowRedirectException(error);
-            // Show notification for all other errors
-            addNotification("Failed to activate membership", "error");
-        }
-    };
+    const activateMembership = async () =>
+        startTransition(async () => {
+            try {
+                await createMembershipOrder();
+            } catch (error) {
+                allowRedirectException(error);
+                // Show notification for all other errors
+                addNotification("Failed to activate membership", "error");
+            }
+        });
 
     return (
         <Stack>
@@ -70,7 +73,7 @@ const AccountTab = () => {
                         <Typography>Your membership is expired!</Typography>
                     ) : (
                         <>
-                            <Typography>{`Member since ${formatDate(user.created)}`}</Typography>
+                            <Typography>{`Member since ${formatDate(user.createdAt)}`}</Typography>
                             <Typography>
                                 {`Your membership expires ${formatDate(dayjs(user.userMembership.expiresAt))}`}
                             </Typography>
@@ -92,10 +95,10 @@ const AccountTab = () => {
                 action={validateAndUpdateCredentials}
                 validationSchema={UpdateCredentialsSchema}
             ></Form>
-            <Button onClick={activateMembership}>
+            <Button onClick={activateMembership} disabled={isPending}>
                 {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
             </Button>
-            <ConfirmButton color="error" onClick={deleteMyAccount}>
+            <ConfirmButton color="error" onClick={deleteMyAccount} disabled={isPending}>
                 Delete My Account
             </ConfirmButton>
         </Stack>

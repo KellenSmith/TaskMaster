@@ -19,7 +19,7 @@ const LoginPage: FC = () => {
             return "Logged in successfully. Redirecting...";
         } catch (error) {
             allowRedirectException(error);
-            throw new Error("Failed to log in");
+            throw new Error(error.message);
         }
     };
 

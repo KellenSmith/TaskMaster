@@ -16,30 +16,12 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     })();
 
     // Get user info first to use as cache key
-    let loggedInUser = null;
-    try {
-        loggedInUser = await getLoggedInUser();
-    } catch {
-        await deleteUserCookieAndRedirectToHome();
-    }
-
-    // Allow no user to be logged in to the context
-    const getLoggedInUserOrNull = async (loggedInUserId: string) => {
-        try {
-            return await getUserById(loggedInUserId);
-        } catch {
-            return null;
-        }
-    };
-    // Use userId in cache key to ensure proper invalidation
-    const loggedInUserPromise = unstable_cache(getLoggedInUserOrNull, [loggedInUser?.id], {
-        tags: [GlobalConstants.USER],
-    })(loggedInUser?.id);
+    const loggedInUser = await getLoggedInUser();
 
     return (
         <ContextWrapper
             organizationSettingsPromise={organizationSettingsPromise}
-            loggedInUserPromise={loggedInUserPromise}
+            loggedInUser={loggedInUser}
         >
             {children}
         </ContextWrapper>

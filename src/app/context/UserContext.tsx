@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, FC, ReactNode, use, useContext, useState } from "react";
+import { createContext, FC, ReactNode, useContext, useState } from "react";
 import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 
@@ -21,17 +21,16 @@ export const useUserContext = (): UserContextValue => {
 };
 
 interface UserContextProviderProps {
-    loggedInUserPromise: Promise<Prisma.UserGetPayload<{ include: { userMembership: true } }>>;
+    loggedInUser: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
     children: ReactNode;
 }
 
-const UserContextProvider: FC<UserContextProviderProps> = ({ loggedInUserPromise, children }) => {
+const UserContextProvider: FC<UserContextProviderProps> = ({ loggedInUser, children }) => {
     const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
     const [editMode, setEditMode] = useState(false);
-    const user = use(loggedInUserPromise);
 
     const contextValue: UserContextValue = {
-        user,
+        user: loggedInUser,
         language,
         setLanguage,
         editMode,

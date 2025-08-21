@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma } from "../../prisma/prisma-client";
@@ -36,6 +35,7 @@ export const renewUserMembership = async (userId: string, membershipId: string):
                 expiresAt: newExpiryDate,
             },
         });
+        // TODO: revalidate user data after renewing membership such that user context is refreshed
     } catch (error) {
         console.error("Failed to renew user membership:", error);
         throw new Error("Failed to renew membership");
