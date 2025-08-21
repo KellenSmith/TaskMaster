@@ -43,9 +43,9 @@ export const getAllMembershipProducts = async (
     const newActionState = { ...currentActionState };
     try {
         const membershipProducts = await prisma.product.findMany({
-            where: { Membership: { isNot: null } },
+            where: { membership: { isNot: null } },
             include: {
-                Membership: true, // Include membership details
+                membership: true, // Include membership details
             },
         });
         newActionState.status = 200;
@@ -82,7 +82,7 @@ export const createMembershipProduct = async (
         const createdMembershipProduct = await prisma.product.create({
             data: {
                 ...parsedFieldValues,
-                Membership: {
+                membership: {
                     create: {
                         duration: parsedFieldValues.duration as number,
                     },
@@ -128,7 +128,7 @@ export const updateMembershipProduct = async (
             where: { id: productId },
             data: {
                 ...parsedFieldValues,
-                Membership: {
+                membership: {
                     update: {
                         duration: parsedFieldValues.duration as number,
                     },
@@ -184,30 +184,30 @@ export const deleteProduct = async (product: Product): Promise<void> => {
 export const processOrderedProduct = async (
     userId: string,
     orderItem: Prisma.OrderItemGetPayload<{
-        include: { product: { include: { Membership: true; Ticket: true } } };
+        include: { product: { include: { membership: true; ticket: true } } };
     }>,
 ) => {
     const failedProducts: string[] = [];
     for (let i = 0; i < orderItem.quantity; i++) {
-        if (orderItem.product.Membership) {
+        if (orderItem.product.membership) {
             try {
-                await renewUserMembership(userId, orderItem.product.Membership.id);
+                await renewUserMembership(userId, orderItem.product.membership.id);
             } catch {
                 failedProducts.push(`Failed to renew membership for user ${userId}`);
             }
-        } else if (orderItem.product.Ticket) {
+        } else if (orderItem.product.ticket) {
             // Add user as participant for the ticket
             try {
                 await prisma.participantInEvent.create({
                     data: {
                         userId,
-                        eventId: orderItem.product.Ticket.eventId,
-                        ticketId: orderItem.product.Ticket.id,
+                        eventId: orderItem.product.ticket.eventId,
+                        ticketId: orderItem.product.ticket.id,
                     },
                 });
             } catch (error) {
                 failedProducts.push(
-                    `Failed to create participant for user ${userId} in event ${orderItem.product.Ticket.eventId}: ${error.message}`,
+                    `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.eventId}: ${error.message}`,
                 );
             }
         }
@@ -237,7 +237,7 @@ export const getEventTickets = async (
         const tickets = await prisma.ticket.findMany({
             where: { eventId, type: { in: eligibleTicketTypes } },
             include: {
-                Product: true,
+                product: true,
             },
         });
         newActionState.status = 200;

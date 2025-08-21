@@ -4,13 +4,15 @@ import { OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
-import { DatagridActionState, FormActionState } from "./definitions";
+import { FormActionState } from "./definitions";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
 import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { capturePaymentFunds } from "./payment-actions";
+import z from "zod";
+import { OrderUpdateSchema } from "./zod-schemas";
 
 export const getOrderById = async (
     orderId: string,
@@ -31,13 +33,22 @@ export const getOrderById = async (
     }
 };
 
-export const getAllOrders = async (
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+export type AllOrdersType = Prisma.OrderGetPayload<{
+    include: {
+        user: { select: { nickname: true } };
+        orderItems: { include: { product: true } };
+    };
+}>;
+
+export const getAllOrders = async (): Promise<AllOrdersType[]> => {
     try {
-        const orders = await prisma.order.findMany({
+        return prisma.order.findMany({
             include: {
+                user: {
+                    select: {
+                        nickname: true,
+                    },
+                },
                 orderItems: {
                     include: {
                         product: true,
@@ -45,15 +56,9 @@ export const getAllOrders = async (
                 },
             },
         });
-        newActionState.status = 200;
-        newActionState.result = orders;
-        newActionState.errorMsg = "";
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+        throw new Error("Failed to fetch orders");
     }
-    return newActionState;
 };
 
 export const createOrder = async (
@@ -110,8 +115,8 @@ const processOrderItems = async (orderId: string): Promise<void> => {
                     include: {
                         product: {
                             include: {
-                                Membership: true,
-                                Ticket: true,
+                                membership: true,
+                                ticket: true,
                             },
                         },
                     },
@@ -183,17 +188,26 @@ export const progressOrder = async (
                 data: { status: OrderStatus.completed },
             });
         }
-    } catch (error) {
-        console.log(error);
+    } catch {
         throw new Error("Failed to progress order");
     }
 };
 
-export const deleteOrder = async (
+export const updateOrder = async (
     orderId: string,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof OrderUpdateSchema>,
+): Promise<void> => {
+    try {
+        await prisma.order.update({
+            where: { id: orderId },
+            data: parsedFieldValues,
+        });
+    } catch {
+        throw new Error("Failed updating order");
+    }
+};
+
+export const deleteOrder = async (orderId: string): Promise<void> => {
     try {
         await prisma.$transaction(async (tx) => {
             // Delete all order items first
@@ -205,13 +219,7 @@ export const deleteOrder = async (
                 where: { id: orderId },
             });
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Order deleted successfully";
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to delete order");
     }
-    return newActionState;
 };

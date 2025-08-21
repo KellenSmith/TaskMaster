@@ -10,9 +10,10 @@ import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
 import { navigateToRoute, formatDate } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
-import { ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
-import { Prisma, Product } from "@prisma/client";
+import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
+import { Order, Prisma, Product } from "@prisma/client";
 import z from "zod";
+import { AllOrdersType } from "../lib/order-actions";
 
 export interface RowActionProps {
     name: string;
@@ -27,22 +28,31 @@ export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
           include: { userCredentials: true; userMembership: true };
       }>
-    | Product;
+    | Product
+    | AllOrdersType;
 
 interface DatagridProps {
+    allowAddNew?: boolean;
     name: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     updateAction?: (
-        row: ImplementedDatagridEntities, // eslint-disable-line no-unused-vars
-        fieldValues: z.infer<typeof UserUpdateSchema>, // eslint-disable-line no-unused-vars
+        row: ImplementedDatagridEntities,
+        fieldValues:
+            | z.infer<typeof UserUpdateSchema>
+            | z.infer<typeof ProductUpdateSchema>
+            | z.infer<typeof OrderUpdateSchema>,
     ) => Promise<string>;
-    validationSchema: typeof UserUpdateSchema | typeof ProductUpdateSchema;
+    validationSchema:
+        | typeof UserUpdateSchema
+        | typeof ProductUpdateSchema
+        | typeof OrderUpdateSchema;
     rowActions: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
 }
 
 const Datagrid: React.FC<DatagridProps> = ({
+    allowAddNew = true,
     name,
     dataGridRowsPromise,
     updateAction,
@@ -131,7 +141,7 @@ const Datagrid: React.FC<DatagridProps> = ({
             <DataGrid
                 apiRef={apiRef}
                 rows={datagridRows}
-                onRowClick={(row) => setClickedRow(row.row)}
+                onRowClick={(row) => updateAction && setClickedRow(row.row)}
                 columns={columns}
                 initialState={{
                     columns: {
@@ -142,11 +152,13 @@ const Datagrid: React.FC<DatagridProps> = ({
                 }}
                 autoPageSize
             />
-            <Button
-                onClick={() => navigateToRoute(`${pathname}/${GlobalConstants.CREATE}`, router)}
-            >
-                Add New
-            </Button>
+            {allowAddNew && (
+                <Button
+                    onClick={() => navigateToRoute(`${pathname}/${GlobalConstants.CREATE}`, router)}
+                >
+                    Add New
+                </Button>
+            )}
             <Dialog open={clickedRow !== null} onClose={() => setClickedRow(null)}>
                 <Form
                     name={name}

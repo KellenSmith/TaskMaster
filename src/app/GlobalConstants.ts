@@ -40,6 +40,7 @@ const GlobalConstants = {
     ACTIVE: "active",
     EXPIRED: "expired",
     CREATED_AT: "createdAt",
+    UPDATED_AT: "updatedAt",
     CONSENT_TO_NEWSLETTERS: "consentToNewsletters",
     CONSENT_GDPR: "consentGDPR",
     HOSTING_EVENTS: "hostingEvents",

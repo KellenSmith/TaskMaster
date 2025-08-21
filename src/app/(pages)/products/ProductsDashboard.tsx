@@ -19,6 +19,7 @@ const ProductsDashboard = ({ productsPromise }) => {
         await deleteProduct(product as Product);
         return "Deleted product";
     };
+
     const rowActions: RowActionProps[] = [
         {
             name: GlobalConstants.DELETE,

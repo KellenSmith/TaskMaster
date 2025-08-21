@@ -1,26 +1,21 @@
-"use client";
-import { Stack } from "@mui/material";
-import Datagrid from "../../ui/Datagrid";
-import GlobalConstants from "../../GlobalConstants";
+"use server";
+
+import { Typography } from "@mui/material";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import OrdersDashboard from "./OrdersDashboard";
+import { unstable_cache } from "next/cache";
 import { getAllOrders } from "../../lib/order-actions";
+import GlobalConstants from "../../GlobalConstants";
 
 const OrdersPage = () => {
-    const hiddenColumns = [
-        GlobalConstants.ID,
-        GlobalConstants.USER_CREDENTIALS,
-        GlobalConstants.CONSENT_TO_NEWSLETTERS,
-    ];
-
-    // TODO: If on mobile, just show list of pending members, viewable and validatable
+    const ordersPromise = unstable_cache(getAllOrders, [], { tags: [GlobalConstants.ORDER] })();
     return (
-        <Stack sx={{ height: "100%" }}>
-            <Datagrid
-                name={GlobalConstants.USER}
-                fetchData={getAllOrders}
-                rowActions={[]}
-                hiddenColumns={hiddenColumns}
-            />
-        </Stack>
+        <ErrorBoundary fallback={<Typography color="primary">Error loading orders</Typography>}>
+            <Suspense>
+                <OrdersDashboard ordersPromise={ordersPromise} />
+            </Suspense>
+        </ErrorBoundary>
     );
 };
 

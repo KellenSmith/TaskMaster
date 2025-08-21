@@ -24,6 +24,7 @@ export const FieldLabels = {
     [GlobalConstants.PHONE]: "Phone",
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED_AT]: "Created At",
+    [GlobalConstants.UPDATED_AT]: "Updated At",
     [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the member registry",
     [GlobalConstants.PENDING]: "Pending",
@@ -138,6 +139,7 @@ export const RenderedFields = {
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],
+    [GlobalConstants.ORDER]: [GlobalConstants.STATUS],
 };
 RenderedFields[GlobalConstants.TICKET] = [
     GlobalConstants.TICKET_TYPE,
@@ -251,6 +253,7 @@ export const allowSelectMultiple = [GlobalConstants.TAGS];
 
 export const datePickerFields = [
     GlobalConstants.CREATED_AT,
+    GlobalConstants.UPDATED_AT,
     GlobalConstants.START_TIME,
     GlobalConstants.END_TIME,
 ];
@@ -268,4 +271,4 @@ export const checkboxFields = [
     GlobalConstants.UNLIMITED_STOCK,
 ];
 
-export const priceFields = [GlobalConstants.PRICE];
+export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT];
