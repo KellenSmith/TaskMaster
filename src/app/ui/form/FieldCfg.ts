@@ -27,8 +27,8 @@ export const FieldLabels = {
     [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the member registry",
     [GlobalConstants.PENDING]: "Pending",
-    [GlobalConstants.ACTIVE]: "Active",
-    [GlobalConstants.EXPIRED]: "Expired",
+    [GlobalConstants.ACTIVE]: "Is member",
+    [GlobalConstants.EXPIRED]: "Is not member",
     // Login
     [GlobalConstants.LOGIN]: "Login",
     [GlobalConstants.PASSWORD]: "Password",
@@ -250,7 +250,6 @@ export const formatAssigneeOptions = (activeMembers: any[]) => {
 export const allowSelectMultiple = [GlobalConstants.TAGS];
 
 export const datePickerFields = [
-    // User
     GlobalConstants.CREATED_AT,
     GlobalConstants.START_TIME,
     GlobalConstants.END_TIME,

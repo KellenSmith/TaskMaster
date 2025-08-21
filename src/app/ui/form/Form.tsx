@@ -125,7 +125,8 @@ const Form: FC<FormProps> = ({
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
                     defaultValue={
-                        defaultValues?.[fieldId] || allowSelectMultiple.includes(fieldId) ? [] : ""
+                        defaultValues?.[fieldId] ||
+                        (allowSelectMultiple.includes(fieldId) ? [] : "")
                     }
                     renderInput={(params) => (
                         <TextField

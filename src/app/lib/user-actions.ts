@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, UserRole } from "@prisma/client";
+import { Prisma, User, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { decryptJWT, getUserCookie } from "./auth/auth";
@@ -55,26 +55,19 @@ export const createUser = async (
     revalidateTag(GlobalConstants.USER);
 };
 
-export const getAllUsers = async (
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+export const getAllUsers = async (): Promise<
+    Prisma.UserGetPayload<{ include: { userCredentials: true; userMembership: true } }>[]
+> => {
     try {
-        const users = await prisma.user.findMany({
+        return await prisma.user.findMany({
             include: {
                 userCredentials: true,
                 userMembership: true,
             },
         });
-        newActionState.status = 200;
-        newActionState.result = users;
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+    } catch {
+        throw new Error("Failed to get all users");
     }
-    return newActionState;
 };
 
 export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
@@ -104,24 +97,26 @@ export const updateUser = async (
             data: fieldValues,
         });
         revalidateTag(GlobalConstants.USER);
-    } catch (error) {
+    } catch {
         throw new Error(`Failed to update user`);
     }
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-    let adminCount = 0;
+    let admins: User[];
     try {
-        adminCount = await prisma.user.count({
+        admins = await prisma.user.findMany({
             where: {
                 role: UserRole.admin,
             },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to check admin count");
     }
-    if (adminCount <= 1) {
-        throw new Error("You are the last admin standing. Find an heir before leaving.");
+    if (admins.length <= 1) {
+        if (admins[0].id === userId) {
+            throw new Error("You are the last admin standing. Find an heir before leaving.");
+        }
     }
 
     try {

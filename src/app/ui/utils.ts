@@ -5,6 +5,8 @@ import Error from "next/error";
 
 export const formatDate = (date: string | Date | Dayjs): string => dayjs(date).format("L HH:mm");
 
+export const formatDateForGrid = (value: any): string => dayjs(value).format();
+
 export const getDummyId = (existingItems: any[]) =>
     existingItems?.length > 0
         ? existingItems

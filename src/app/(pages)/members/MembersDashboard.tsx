@@ -1,0 +1,164 @@
+"use client";
+import { Stack, Typography } from "@mui/material";
+import { deleteUser, updateUser } from "../../lib/user-actions";
+import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/Datagrid";
+import GlobalConstants from "../../GlobalConstants";
+import { GridColDef } from "@mui/x-data-grid";
+import { FieldLabels } from "../../ui/form/FieldCfg";
+import { isMembershipExpired } from "../../lib/definitions";
+import { validateUserMembership } from "../../lib/user-credentials-actions";
+import { Prisma } from "@prisma/client";
+import z from "zod";
+import { UserUpdateSchema } from "../../lib/zod-schemas";
+import { useUserContext } from "../../context/UserContext";
+import {
+    Check as CheckIcon,
+    Error as ErrorIcon,
+    Warning as WarningIcon,
+} from "@mui/icons-material";
+
+interface MembersDashboardProps {
+    membersPromise: Promise<
+        Prisma.UserGetPayload<{ include: { userCredentials: true; userMembership: true } }>[]
+    >;
+}
+
+const MembersDashboard: React.FC<MembersDashboardProps> = ({ membersPromise }) => {
+    const { user } = useUserContext();
+
+    const isMembershipPending = (member: ImplementedDatagridEntities) => !member?.userCredentials;
+
+    const updateUserAction = async (
+        member: ImplementedDatagridEntities,
+        parsedFieldValues: z.infer<typeof UserUpdateSchema>,
+    ) => {
+        try {
+            await updateUser(member.id, parsedFieldValues);
+            return "User updated successfully";
+        } catch {
+            throw new Error("Failed updating user");
+        }
+    };
+
+    const validateMembershipAction = async (member: ImplementedDatagridEntities) => {
+        try {
+            await validateUserMembership(member.id);
+            return "Validated user membership";
+        } catch {
+            throw new Error("Failed validating user membership");
+        }
+    };
+
+    const deleteUserAction = async (member: ImplementedDatagridEntities) => {
+        try {
+            await deleteUser(member.id);
+            return "Deleted user";
+        } catch {
+            throw new Error("Failed deleting user");
+        }
+    };
+    const rowActions: RowActionProps[] = [
+        {
+            name: GlobalConstants.VALIDATE_MEMBERSHIP,
+            serverAction: validateMembershipAction,
+            available: (member: ImplementedDatagridEntities) =>
+                member && isMembershipPending(member),
+        },
+        {
+            name: GlobalConstants.DELETE,
+            serverAction: deleteUserAction,
+            available: (member: ImplementedDatagridEntities) => member?.id !== user.id,
+            buttonColor: "error",
+        },
+    ];
+
+    const getStatusConfig = (member: ImplementedDatagridEntities) => {
+        if (isMembershipPending(member))
+            return {
+                status: GlobalConstants.PENDING,
+                icon: WarningIcon,
+                color: "warning.main",
+            };
+        if (isMembershipExpired(member))
+            return {
+                status: GlobalConstants.EXPIRED,
+                icon: ErrorIcon,
+                color: "error.main",
+            };
+        return {
+            status: GlobalConstants.ACTIVE,
+            icon: CheckIcon,
+            color: "success.main",
+        };
+    };
+
+    const customColumns: GridColDef[] = [
+        {
+            field: GlobalConstants.STATUS,
+            headerName: FieldLabels[GlobalConstants.STATUS],
+            type: "string",
+            valueGetter: (_, member: ImplementedDatagridEntities) => {
+                const { status } = getStatusConfig(member);
+                return status;
+            },
+            sortComparator: (value1, value2) => {
+                if (value1 === value2) return 0;
+                // pending - active/expired
+                if (
+                    value1 === GlobalConstants.PENDING &&
+                    [GlobalConstants.ACTIVE, GlobalConstants.EXPIRED].includes(value2)
+                )
+                    return -1;
+                // active - pending/expired
+                if (value1 === GlobalConstants.ACTIVE) {
+                    if (value2 === GlobalConstants.EXPIRED) return -1;
+                    if (value2 === GlobalConstants.PENDING) return 1;
+                }
+                // expired - pending/active
+                if (value1 === GlobalConstants.EXPIRED) return 1;
+            },
+            renderCell: (params) => {
+                const member: ImplementedDatagridEntities = params.row;
+                const { status, icon: Icon, color } = getStatusConfig(member);
+                const statusText = FieldLabels[status] || status;
+                return (
+                    <Stack
+                        height="100%"
+                        direction="row"
+                        justifyContent="flex-start"
+                        alignItems="center"
+                        gap={1}
+                    >
+                        <Icon sx={{ color }} />
+                        <Typography variant="body2" sx={{ color }}>
+                            {statusText}
+                        </Typography>
+                    </Stack>
+                );
+            },
+        },
+    ];
+
+    const hiddenColumns = [
+        GlobalConstants.ID,
+        GlobalConstants.USER_CREDENTIALS,
+        GlobalConstants.USER_MEMBERSHIP,
+    ];
+
+    // TODO: If on mobile, just show list of pending members, viewable and validatable
+    return (
+        <Stack sx={{ height: "100%" }}>
+            <Datagrid
+                name={GlobalConstants.USER}
+                dataGridRowsPromise={membersPromise}
+                updateAction={updateUserAction}
+                validationSchema={UserUpdateSchema}
+                rowActions={rowActions}
+                customColumns={customColumns}
+                hiddenColumns={hiddenColumns}
+            />
+        </Stack>
+    );
+};
+
+export default MembersDashboard;
