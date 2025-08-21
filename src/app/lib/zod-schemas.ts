@@ -18,6 +18,8 @@ const stringToISODate = z
     })
     .transform((val) => dayjs(val, "DD/MM/YYYY HH:mm").toISOString()) as z.ZodType<string>;
 
+const passwordSchema = z.string().min(6).max(100);
+
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
 // =============================================================================
@@ -264,7 +266,7 @@ export const TextContentUpdateSchema = TextContentCreateSchema.partial().extend(
 
 export const LoginSchema = z.object({
     email: z.email(),
-    password: z.string().min(6).max(100),
+    password: z.string(),
 });
 
 export const ResetCredentialsSchema = z.object({
@@ -274,7 +276,12 @@ export const ResetCredentialsSchema = z.object({
 export const UpdateTextContentSchema = z.object({ content: z.string() });
 
 export const UpdateCredentialsSchema = z.object({
-    currentPassword: z.string(),
-    newPassword: z.string().min(6).max(100),
-    repeatPassword: z.string().min(6).max(100),
+    currentPassword: passwordSchema,
+    newPassword: passwordSchema,
+    repeatPassword: passwordSchema,
+});
+
+export const EmailSendoutSchema = z.object({
+    subject: z.string(),
+    content: z.string(),
 });

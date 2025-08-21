@@ -5,12 +5,12 @@ import { Suspense, useState, use } from "react";
 import { isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut } from "./event-utils";
-import EventActions from "./EventActions";
 import EventDetails from "./EventDetails";
 import { EventStatus, Prisma } from "@prisma/client";
 import { ErrorBoundary } from "react-error-boundary";
 import TaskDashboard from "./(tasks)/TaskDashboard";
 import TicketShop from "./(tasks)/TicketShop";
+import EventActions from "./EventActions";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -63,24 +63,31 @@ const EventDashboard = ({
     return (
         user && (
             <Stack>
-                {event.status === EventStatus.draft && (
-                    <Typography variant="h4" color="warning">
-                        This is an event draft and is only visible to the host
+                <Stack padding="0 24px 0 24px" spacing={2}>
+                    {event.status === EventStatus.draft && (
+                        <Typography variant="h4" color="warning">
+                            This is an event draft and is only visible to the host
+                        </Typography>
+                    )}
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            color: isEventCancelled(event)
+                                ? theme.palette.error.main
+                                : theme.palette.primary.main,
+                            textDecoration: isEventCancelled(event) ? "line-through" : "none",
+                        }}
+                    >
+                        {`${event.title} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event, eventParticipants) ? "(SOLD OUT)" : ""}`}
                     </Typography>
-                )}
-                <Typography
-                    variant="h4"
-                    sx={{
-                        color: isEventCancelled(event)
-                            ? theme.palette.error.main
-                            : theme.palette.primary.main,
-                        textDecoration: isEventCancelled(event) ? "line-through" : "none",
-                    }}
-                >
-                    {`${event.title} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event, eventParticipants) ? "(SOLD OUT)" : ""}`}
-                </Typography>
+                </Stack>
 
-                <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Stack
+                    direction="row"
+                    padding="0 24px 0 24px "
+                    justifyContent="space-between"
+                    spacing={2}
+                >
                     <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
                         {Object.keys(EventTabs).map((tab) => (
                             <Tab
@@ -90,25 +97,29 @@ const EventDashboard = ({
                             />
                         ))}
                     </Tabs>
-                    <ErrorBoundary
-                        fallback={
-                            <Typography color="primary">Failed to load event reserves</Typography>
-                        }
-                    >
-                        <Suspense
+                    {isUserHost(user, event) && (
+                        <ErrorBoundary
                             fallback={
-                                <Typography color="primary">Loading event reserves...</Typography>
+                                <Typography color="primary">
+                                    Failed to load event reserves
+                                </Typography>
                             }
                         >
-                            <EventActions
-                                event={event}
-                                openTab={openTab}
-                                setOpenTab={setOpenTab}
-                                eventParticipants={eventParticipants}
-                                eventReservesPromise={eventReservesPromise}
-                            />
-                        </Suspense>
-                    </ErrorBoundary>
+                            <Suspense
+                                fallback={
+                                    <Typography color="primary">
+                                        Loading event reserves...
+                                    </Typography>
+                                }
+                            >
+                                <EventActions
+                                    event={event}
+                                    eventParticipants={eventParticipants}
+                                    eventReservesPromise={eventReservesPromise}
+                                />
+                            </Suspense>
+                        </ErrorBoundary>
+                    )}
                 </Stack>
 
                 {openTab === EventTabs.details && (

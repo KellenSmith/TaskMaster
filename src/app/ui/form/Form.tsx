@@ -154,7 +154,7 @@ const Form: FC<FormProps> = ({
                         defaultValues?.[fieldId]
                             ? dayjs(defaultValues?.[fieldId])
                             : RequiredFields[name].includes(fieldId)
-                              ? dayjs()
+                              ? dayjs().hour(18).minute(0).second(0)
                               : null
                     }
                     slotProps={{

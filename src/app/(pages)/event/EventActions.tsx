@@ -1,21 +1,12 @@
 "use client";
 
-import { FC, use, useMemo, useState, useTransition } from "react";
-import { defaultFormActionState, FormActionState, isUserHost } from "../../lib/definitions";
+import { FC, use, useState, useTransition } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import { Button, Dialog, Menu, Stack } from "@mui/material";
 import { EventStatus, Prisma } from "@prisma/client";
 import Form from "../../ui/form/Form";
-import {
-    addEventReserve,
-    cancelEvent,
-    deleteEvent,
-    deleteEventParticipant,
-    deleteEventReserve,
-    updateEvent,
-} from "../../lib/event-actions";
-import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
+import { cancelEvent, deleteEvent, updateEvent } from "../../lib/event-actions";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { navigateToRoute } from "../../ui/utils";
 import { useRouter } from "next/navigation";
@@ -25,13 +16,13 @@ import { pdf } from "@react-pdf/renderer";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { MoreHoriz } from "@mui/icons-material";
 import { useNotificationContext } from "../../context/NotificationContext";
+import z from "zod";
+import { EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 
 interface IEventActions {
     event: Prisma.EventGetPayload<{
         include: { host: { select: { id: true; nickname: true } } };
     }>;
-    openTab: string;
-    setOpenTab: Function;
     eventParticipants: Prisma.ParticipantInEventGetPayload<{
         include: { User: { select: { id: true; nickname: true } } };
     }>[];
@@ -42,81 +33,57 @@ interface IEventActions {
     >;
 }
 
-const EventActions: FC<IEventActions> = ({
-    event,
-    openTab,
-    setOpenTab,
-    eventParticipants,
-    eventReservesPromise,
-}) => {
+const sendoutToOptions = {
+    All: "All",
+    Participants: "Participants",
+    Reserves: "Reserves",
+};
+
+const EventActions: FC<IEventActions> = ({ event, eventParticipants, eventReservesPromise }) => {
     const { user } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
-    const [dialogOpen, setDialogOpen] = useState("");
+    const [dialogOpen, setDialogOpen] = useState(null);
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const eventReserves = use(eventReservesPromise);
-    const sendoutToOptions = useMemo(
-        () => ({
-            ALL: "All",
-            PARTICIPANTS: "Participants",
-            RESERVES: "Reserves",
-        }),
-        [],
-    );
-    const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.ALL);
+
+    const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All);
     const router = useRouter();
 
-    const addUserAsEventReserve = () => {
-        performEventAction(() =>
-            addEventReserve(user[GlobalConstants.ID], event.id, defaultFormActionState),
-        );
-    };
-
     const publishEvent = () => {
-        performEventAction(() =>
-            updateEvent(event.id, defaultFormActionState, {
-                status: EventStatus.published,
-            }),
-        );
+        startTransition(async () => {
+            try {
+                await updateEvent(event.id, {
+                    status: EventStatus.published,
+                });
+                addNotification("Published event", "success");
+                closeActionMenu();
+            } catch (error) {
+                addNotification(error.message, "error");
+            }
+        });
     };
 
     const cancelThisEvent = () =>
-        performEventAction(() => cancelEvent(event.id, defaultFormActionState));
-
-    const deleteThisEvent = () =>
-        performEventAction(async () => {
-            const result = await deleteEvent(event.id, defaultFormActionState);
-            if (result.status === 200) {
-                navigateToRoute(`/${GlobalConstants.CALENDAR}`, router);
-            }
-        });
-
-    const removeUserFromParticipantList = () =>
-        performEventAction(() =>
-            deleteEventParticipant(user[GlobalConstants.ID], event.id, defaultFormActionState),
-        );
-
-    const removeUserFromReserveList = () =>
-        performEventAction(() =>
-            deleteEventReserve(user[GlobalConstants.ID], event.id, defaultFormActionState),
-        );
-
-    const performEventAction = (action: Function) => {
         startTransition(async () => {
-            const actionResult = await action();
-            if (actionResult.status === 200) {
-                addNotification(actionResult.result, "success");
+            try {
+                await cancelEvent(event.id);
+                addNotification("Cancelled event and informed participants", "success");
                 closeActionMenu();
-            } else {
-                addNotification(actionResult.errorMsg, "error");
+            } catch (error) {
+                addNotification(error.message, "error");
             }
         });
-    };
 
-    const findReserveUserIndexById = () => {
-        return eventReserves.findIndex(
-            (reserve) => reserve[GlobalConstants.USER_ID] === user[GlobalConstants.ID],
-        );
+    const deleteThisEvent = () => {
+        startTransition(async () => {
+            try {
+                await deleteEvent(event.id);
+                navigateToRoute(`/${GlobalConstants.CALENDAR}`, router);
+            } catch {
+                addNotification("Failed to delete event", "error");
+            }
+        });
     };
 
     const printParticipantList = async () => {
@@ -130,160 +97,140 @@ const EventActions: FC<IEventActions> = ({
 
     const getActionButtons = () => {
         const ActionButtons = [];
-        if (isUserHost(user, event)) {
-            if (
-                ([EventStatus.draft, EventStatus.cancelled] as string[]).includes(
-                    event.status as string,
-                )
-            ) {
-                ActionButtons.push(
-                    <ConfirmButton
-                        key="publish"
-                        color="success"
-                        disabled={isPending}
-                        onClick={publishEvent}
-                    >
-                        publish event
-                    </ConfirmButton>,
-                );
-            } else {
-                ActionButtons.push(
-                    <ConfirmButton
-                        key="cancel"
-                        color="error"
-                        disabled={isPending}
-                        confirmText={`An info email will be sent to all ${eventParticipants.length} participants. Are you sure?`}
-                        onClick={cancelThisEvent}
-                    >
-                        cancel event
-                    </ConfirmButton>,
-                );
-            }
+
+        if (event.status === EventStatus.draft)
             ActionButtons.push(
-                <Button
-                    key={GlobalConstants.SENDOUT}
-                    onClick={() => {
-                        closeActionMenu();
-                        setDialogOpen(GlobalConstants.SENDOUT);
-                    }}
+                <ConfirmButton
+                    key="publish"
+                    color="success"
+                    disabled={isPending}
+                    onClick={publishEvent}
                 >
-                    send mail to users
-                </Button>,
-                <Button key="print" onClick={printParticipantList}>
-                    print participant list
-                </Button>,
-                <Button
-                    key="edit"
-                    onClick={() => {
-                        closeActionMenu();
-                        setDialogOpen(GlobalConstants.EVENT);
-                    }}
-                >
-                    edit event details
-                </Button>,
+                    publish event
+                </ConfirmButton>,
             );
-            // Only allow deleting events that only the host is participating in
-            if (eventParticipants.length === 1)
-                ActionButtons.push(
-                    <ConfirmButton
-                        key="delete"
-                        color="error"
-                        disabled={isPending}
-                        onClick={deleteThisEvent}
-                    >
-                        delete
-                    </ConfirmButton>,
-                );
-        } else {
-            if (isUserParticipant(user, eventParticipants))
-                ActionButtons.push(
-                    <ConfirmButton
-                        key="leave participant"
-                        onClick={removeUserFromParticipantList}
-                        disabled={isPending}
-                    >
-                        leave participant list
-                    </ConfirmButton>,
-                );
-            else if (!isEventCancelled(event)) {
-                if (isEventSoldOut(event, eventParticipants)) {
-                    if (findReserveUserIndexById() > -1)
-                        ActionButtons.push(
-                            <ConfirmButton
-                                key="leave reserve"
-                                onClick={removeUserFromReserveList}
-                                disabled={isPending}
-                            >{`leave reserve list (you are #${findReserveUserIndexById() + 1})`}</ConfirmButton>,
-                        );
-                    else
-                        ActionButtons.push(
-                            <Button
-                                key="add reserve"
-                                disabled={isPending}
-                                onClick={addUserAsEventReserve}
-                            >
-                                get on reserve list
-                            </Button>,
-                        );
-                }
-            }
+
+        ActionButtons.push(
+            <Button
+                key="edit"
+                onClick={() => {
+                    closeActionMenu();
+                    setDialogOpen(GlobalConstants.EVENT);
+                }}
+            >
+                edit event details
+            </Button>,
+            <Button
+                key={GlobalConstants.SENDOUT}
+                onClick={() => {
+                    closeActionMenu();
+                    setDialogOpen(GlobalConstants.SENDOUT);
+                }}
+            >
+                send mail to users
+            </Button>,
+            <Button key="print" onClick={printParticipantList}>
+                print participant list
+            </Button>,
+        );
+
+        if (event.status === EventStatus.published)
+            ActionButtons.push(
+                <ConfirmButton
+                    key="cancel"
+                    color="error"
+                    disabled={isPending}
+                    confirmText={`An info email will be sent to all ${eventParticipants.length} participants. Are you sure?`}
+                    onClick={cancelThisEvent}
+                >
+                    cancel event
+                </ConfirmButton>,
+            );
+
+        // Only allow deleting events that only the host is participating in
+        if (eventParticipants.length === 1 && eventParticipants[0].userId === user.id) {
+            ActionButtons.push(
+                <ConfirmButton
+                    key="delete"
+                    color="error"
+                    disabled={isPending}
+                    onClick={deleteThisEvent}
+                >
+                    delete
+                </ConfirmButton>,
+            );
         }
+
         return ActionButtons;
     };
 
-    const updateEventById = (
-        currentActionState: FormActionState,
-        fieldValues: Prisma.EventUpdateInput,
-    ) => updateEvent(event[GlobalConstants.ID], currentActionState, fieldValues);
+    const updateEventById = async (parsedFieldValues: z.infer<typeof EventUpdateSchema>) => {
+        await updateEvent(event[GlobalConstants.ID], parsedFieldValues);
+        setDialogOpen(null);
+        return "Updated event";
+    };
 
-    const sendoutToEventUsers = async (currentActionState: FormActionState, fieldValues: any) => {
+    const sendoutToEventUsers = async (parsedFieldValues: z.infer<typeof EmailSendoutSchema>) => {
         const recipientIds = [];
-        if (sendoutTo === sendoutToOptions.PARTICIPANTS || sendoutTo === sendoutToOptions.ALL) {
+        if (sendoutTo === sendoutToOptions.Participants || sendoutTo === sendoutToOptions.All) {
             eventParticipants.forEach((participant: any) => {
                 recipientIds.push(participant.User.id);
             });
         }
-        if (sendoutTo === sendoutToOptions.RESERVES || sendoutTo === sendoutToOptions.ALL)
+        if (sendoutTo === sendoutToOptions.Reserves || sendoutTo === sendoutToOptions.All)
             eventReserves.forEach((reserve: any) => {
                 recipientIds.push(reserve.User.id);
             });
+
         const recipientCriteria: Prisma.UserWhereInput = {
             id: {
                 in: recipientIds,
             },
         };
-        fieldValues[GlobalConstants.RECIPIENT_CRITERIA] = recipientCriteria;
 
-        return sendMassEmail(currentActionState, fieldValues);
+        try {
+            const result = await sendMassEmail(recipientCriteria, parsedFieldValues);
+            setDialogOpen(null);
+            return result;
+        } catch (error) {
+            console.error("Failed to send email to participants");
+        }
     };
 
     const getDialogForm = () => {
-        const buttonLabel = dialogOpen === GlobalConstants.SENDOUT ? "send" : "save";
-        const action =
-            dialogOpen === GlobalConstants.SENDOUT ? sendoutToEventUsers : updateEventById;
+        if (!dialogOpen) return null;
+        if (dialogOpen === GlobalConstants.EVENT)
+            return (
+                <Form
+                    name={dialogOpen}
+                    readOnly={false}
+                    action={updateEventById}
+                    validationSchema={EventUpdateSchema}
+                    defaultValues={event}
+                />
+            );
+
         let recipientCount = eventParticipants.length;
-        if (sendoutTo === sendoutToOptions.RESERVES) recipientCount = eventReserves.length;
-        else if (sendoutTo === sendoutToOptions.ALL) recipientCount += eventReserves.length;
+        if (sendoutTo === sendoutToOptions.Reserves) recipientCount = eventReserves.length;
+        else if (sendoutTo === sendoutToOptions.All) recipientCount += eventReserves.length;
+
         return (
-            dialogOpen && (
-                <>
-                    {dialogOpen === GlobalConstants.SENDOUT && (
-                        <AccordionRadioGroup
-                            title={`Send to ${recipientCount} recipients`}
-                            value={sendoutTo}
-                            setValue={setSendoutTo}
-                            valueOptions={sendoutToOptions}
-                        />
-                    )}
-                    <Form
-                        name={dialogOpen}
-                        buttonLabel={buttonLabel}
-                        readOnly={false}
-                        action={action}
-                        defaultValues={event}
-                    />
-                </>
-            )
+            <>
+                <AccordionRadioGroup
+                    title={`Send to ${recipientCount} recipients`}
+                    value={sendoutTo}
+                    setValue={setSendoutTo}
+                    valueOptions={sendoutToOptions}
+                />
+                <Form
+                    name={dialogOpen}
+                    buttonLabel={"send"}
+                    readOnly={false}
+                    action={sendoutToEventUsers}
+                    validationSchema={EmailSendoutSchema}
+                    defaultValues={event}
+                />
+            </>
         );
     };
 
@@ -296,6 +243,7 @@ const EventActions: FC<IEventActions> = ({
             <Button
                 aria-controls="simple-menu"
                 aria-haspopup="true"
+                sx={{ marginRight: 4 }}
                 onClick={(event) => {
                     setActionMenuAnchorEl(event.currentTarget);
                 }}
@@ -311,9 +259,9 @@ const EventActions: FC<IEventActions> = ({
             >
                 <Stack>{getActionButtons()}</Stack>
             </Menu>
-            <Dialog open={!!dialogOpen} onClose={() => setDialogOpen("")} fullWidth maxWidth="xl">
+            <Dialog open={!!dialogOpen} onClose={() => setDialogOpen(null)} fullWidth maxWidth="xl">
                 {getDialogForm()}
-                <Button onClick={() => setDialogOpen("")}>cancel</Button>
+                <Button onClick={() => setDialogOpen(null)}>cancel</Button>
             </Dialog>
         </>
     );

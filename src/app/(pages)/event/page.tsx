@@ -1,10 +1,5 @@
 "use server";
-import {
-    getEventById,
-    getEventParticipants,
-    getEventReserves,
-    getEventTickets,
-} from "../../lib/event-actions";
+import { getEventById, getEventParticipants, getEventReserves } from "../../lib/event-actions";
 import { getEventTasks } from "../../lib/task-actions";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { Suspense } from "react";
@@ -13,6 +8,7 @@ import EventDashboard from "./EventDashboard";
 import { ErrorBoundary } from "react-error-boundary";
 import { unstable_cache } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
+import { getEventTickets } from "../../lib/ticket-actions";
 
 interface EventPageProps {
     searchParams: { [eventId: string]: string };
@@ -21,12 +17,8 @@ interface EventPageProps {
 const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventId = (await searchParams).eventId;
 
-    // Get user ID for user-specific caching
-    const loggedInUser = await getLoggedInUser();
-    const userId = loggedInUser?.id || null;
-
     const cachedEvent = unstable_cache(getEventById, [eventId], {
-        tags: [GlobalConstants.EVENT_ID],
+        tags: [GlobalConstants.EVENT],
     })(eventId);
     const cachedEventParticipants = unstable_cache(getEventParticipants, [eventId], {
         tags: [GlobalConstants.PARTICIPANT_USERS],

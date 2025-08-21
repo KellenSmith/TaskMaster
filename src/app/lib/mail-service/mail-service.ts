@@ -13,6 +13,8 @@ import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { defaultFormActionState, FormActionState } from "../definitions";
 import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
+import { EmailSendoutSchema } from "../zod-schemas";
+import z from "zod";
 
 interface EmailPayload {
     from: string;
@@ -83,8 +85,7 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
 /**
  * @throws Error if email fails
  */
-export const informOfCancelledEvent = async (eventId: string): Promise<string[]> => {
-    const newActionState: FormActionState = { ...defaultFormActionState };
+export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
     try {
         const participantEmails = (
             await prisma.participantInEvent.findMany({
@@ -98,30 +99,41 @@ export const informOfCancelledEvent = async (eventId: string): Promise<string[]>
                 },
             })
         ).map((participant) => participant.User.email);
+        const reservesEmails = (
+            await prisma.reserveInEvent.findMany({
+                where: { eventId },
+                select: {
+                    User: {
+                        select: {
+                            email: true,
+                        },
+                    },
+                },
+            })
+        ).map((reserve) => reserve.User.email);
         const event = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
-            select: { id: true, title: true, fullTicketPrice: true },
+            select: { id: true, title: true },
         });
         const mailContent = createElement(EventCancelledTemplate, {
             event: event,
             organizationName: await getOrganizationName(),
-            organizationEmail:
-                (await getOrganizationSettings())?.email || "<kellensmith407@gmail.com>",
         });
 
         const mailPayload = await getEmailPayload(
-            participantEmails,
+            [...participantEmails, ...reservesEmails],
             `Event ${event.title} cancelled`,
             mailContent,
         );
         const mailResponse = await mailTransport.sendMail(mailPayload);
         if (mailResponse.error) throw new Error(mailResponse.error.message);
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
+        const rejectedEmails = mailResponse?.rejected;
+        if (rejectedEmails.length > 0)
+            throw new Error(
+                `Failed to inform ${rejectedEmails.length} participants and reserves of cancelled event: ${rejectedEmails.join("\n")}`,
+            );
     } catch (error) {
-        console.error("Failed to fetch participant emails:", error);
-        return [];
+        throw new Error(`Failed to inform participants and reserves of cancelled event`);
     }
 };
 
@@ -142,40 +154,34 @@ export const getEmailRecipientCount = async (
  * @throws Error if email fails
  */
 export const sendMassEmail = async (
-    currentActionState: FormActionState,
-    fieldValues: any,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    recipientCriteria: Prisma.UserWhereInput,
+    parsedFieldValues: z.infer<typeof EmailSendoutSchema>,
+): Promise<string> => {
     try {
         const recipients = (
             await prisma.user.findMany({
-                where: fieldValues[GlobalConstants.RECIPIENT_CRITERIA],
+                where: recipientCriteria,
                 select: {
                     email: true,
                 },
             })
         ).map((user) => user.email);
         const mailContent = createElement(MailTemplate, {
-            html: fieldValues[GlobalConstants.CONTENT],
+            html: parsedFieldValues.content,
             organizationName: await getOrganizationName(),
         });
         const mailPayload = await getEmailPayload(
             recipients,
-            fieldValues[GlobalConstants.SUBJECT],
+            parsedFieldValues.subject,
             mailContent,
         );
 
         const mailResponse = await mailTransport.sendMail(mailPayload);
         if (mailResponse.error) throw new Error(mailResponse.error.message);
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
+        return `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
     } catch {
-        newActionState.status = 500;
-        newActionState.errorMsg = "Failed to send mass email";
-        newActionState.result = "";
+        throw new Error("Failed to send mass email");
     }
-    return newActionState;
 };
 
 /**

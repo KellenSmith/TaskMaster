@@ -4,9 +4,17 @@ import { createContext, FC, ReactNode, use, useContext, useState } from "react";
 import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 
-export const UserContext = createContext(null);
+interface UserContextValue {
+    user: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
+    language: string;
+    setLanguage: (language: string) => void;
+    editMode: boolean;
+    setEditMode: (editMode: boolean) => void;
+}
 
-export const useUserContext = () => {
+export const UserContext = createContext<UserContextValue | null>(null);
+
+export const useUserContext = (): UserContextValue => {
     const context = useContext(UserContext);
     if (!context) throw new Error("useUserContext must be used within UserContextProvider");
     return context;
@@ -22,19 +30,15 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ loggedInUserPromise
     const [editMode, setEditMode] = useState(false);
     const user = use(loggedInUserPromise);
 
-    return (
-        <UserContext.Provider
-            value={{
-                user,
-                language,
-                setLanguage,
-                editMode,
-                setEditMode,
-            }}
-        >
-            {children}
-        </UserContext.Provider>
-    );
+    const contextValue: UserContextValue = {
+        user,
+        language,
+        setLanguage,
+        editMode,
+        setEditMode,
+    };
+
+    return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };
 
 export default UserContextProvider;

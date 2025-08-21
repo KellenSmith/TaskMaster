@@ -3,12 +3,7 @@
 import { EventStatus, Prisma, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../prisma/prisma-client";
-import {
-    EventCreateSchema,
-    ProductCreateSchema,
-    TicketCreateSchema,
-    TicketWithoutProductSchema,
-} from "./zod-schemas";
+import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
@@ -77,45 +72,6 @@ export const createEvent = async (
                 process.env.VERCEL_URL,
             ).toString(),
         );
-};
-
-export const createEventTicket = async (
-    eventId: string,
-    parsedFieldValues: z.infer<typeof TicketCreateSchema>,
-) => {
-    try {
-        const event = await prisma.event.findUniqueOrThrow({
-            where: {
-                id: eventId,
-            },
-            include: {
-                participantUsers: true,
-            },
-        });
-        const ticketFieldValues = TicketWithoutProductSchema.parse(parsedFieldValues);
-        const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
-
-        await prisma.ticket.create({
-            data: {
-                ...ticketFieldValues,
-                Product: {
-                    create: {
-                        ...productFieldValues,
-                        stock: event.maxParticipants - event.participantUsers.length,
-                    },
-                },
-                Event: {
-                    connect: {
-                        id: eventId,
-                    },
-                },
-            },
-        });
-        revalidateTag(GlobalConstants.TICKET);
-        revalidateTag(GlobalConstants.EVENT);
-    } catch (error) {
-        throw new Error("Failed to create event ticket");
-    }
 };
 
 export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> => {
@@ -207,58 +163,55 @@ export const getEventReserves = async (
 
 export const updateEvent = async (
     eventId: string,
-    currentActionState: FormActionState,
-    fieldValues: Prisma.EventUpdateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-
+    parsedFieldValues: z.infer<typeof EventUpdateSchema>,
+): Promise<void> => {
     try {
         await prisma.event.update({
             where: { id: eventId },
-            data: fieldValues,
+            data: parsedFieldValues,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Updated successfully`;
-        revalidateTag(GlobalConstants.EVENT_ID);
         revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to update event");
     }
-    return newActionState;
 };
 
-export const cancelEvent = async (
-    eventId: string,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-
+export const cancelEvent = async (eventId: string): Promise<void> => {
     try {
-        await prisma.event.update({
-            where: { id: eventId },
-            data: { status: EventStatus.cancelled } as Prisma.EventUpdateInput,
-        });
+        await updateEvent(eventId, { status: EventStatus.cancelled });
+        revalidateTag(GlobalConstants.EVENT);
+    } catch (error) {
+        throw new Error("Failed to cancel event");
+    }
+    try {
         await informOfCancelledEvent(eventId);
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Cancelled event and informed participants`;
-        revalidateTag(GlobalConstants.EVENT_ID);
-        revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error(error.message);
     }
-    return newActionState;
 };
 
-export const deleteEvent = async (eventId: string, currentActionState: FormActionState) => {
-    const newActionState = { ...currentActionState };
-
+export const deleteEvent = async (eventId: string): Promise<void> => {
     try {
+        const event = await prisma.event.findUniqueOrThrow({
+            where: { id: eventId },
+            include: {
+                participantUsers: {
+                    select: {
+                        userId: true,
+                    },
+                },
+            },
+        });
+
+        const onlyHostIsParticipating =
+            event.participantUsers.length === 1 &&
+            event.participantUsers[0].userId === event.hostId;
+
+        if (!onlyHostIsParticipating)
+            throw new Error(
+                "The event has participants and cannot be deleted. Cancel the event instead",
+            );
+
         await prisma.$transaction([
             prisma.reserveInEvent.deleteMany({
                 where: { eventId },
@@ -266,29 +219,21 @@ export const deleteEvent = async (eventId: string, currentActionState: FormActio
             prisma.participantInEvent.deleteMany({
                 where: { eventId },
             }),
+            prisma.ticket.deleteMany({
+                where: { eventId },
+            }),
             prisma.event.delete({
                 where: { id: eventId },
             }),
         ]);
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Deleted event, participants and reserve list`;
         revalidateTag(GlobalConstants.EVENT);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        console.log(error.message);
+        throw new Error("Failed to delete event");
     }
-    return newActionState;
 };
 
-export const addEventReserve = async (
-    userId: string,
-    eventId: string,
-    currentActionState: FormActionState,
-) => {
-    const newActionState = { ...currentActionState };
-
+export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
     try {
         await prisma.reserveInEvent.create({
             data: {
@@ -296,42 +241,23 @@ export const addEventReserve = async (
                 eventId: eventId,
             },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Successfully added to reserve list`;
         revalidateTag(GlobalConstants.RESERVE_USERS);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to add user to event reserves");
     }
-    return newActionState;
 };
 
-export const deleteEventParticipant = async (
-    userId: string,
-    eventId: string,
-    currentActionState: FormActionState,
-) => {
-    const newActionState = { ...currentActionState };
-
+export const deleteEventParticipant = async (userId: string, eventId: string): Promise<void> => {
     try {
         await prisma.participantInEvent.deleteMany({
             where: {
                 AND: [{ userId: userId }, { eventId: eventId }],
             } as Prisma.ParticipantInEventWhereInput,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Removed user ${userId} from event ${eventId} participants`;
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
     } catch (error) {
-        console.error(error);
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to remove user from event participants");
     }
-    return newActionState;
 };
 
 export const deleteEventReserve = async (
@@ -358,19 +284,4 @@ export const deleteEventReserve = async (
         newActionState.result = "";
     }
     return newActionState;
-};
-
-export const getEventTickets = async (eventId: string) => {
-    try {
-        return await prisma.ticket.findMany({
-            where: {
-                eventId,
-            },
-            include: {
-                Product: true,
-            },
-        });
-    } catch (error) {
-        throw new Error("Failed to fetch event tickets");
-    }
 };

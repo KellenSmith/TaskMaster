@@ -4,7 +4,7 @@ import { Stack, Typography, useTheme, Button, Dialog } from "@mui/material";
 import { Prisma, TicketType } from "@prisma/client";
 import { useUserContext } from "../../../context/UserContext";
 import { createOrder } from "../../../lib/order-actions";
-import { createEventTicket } from "../../../lib/event-actions";
+import { createEventTicket } from "../../../lib/ticket-actions";
 import { isUserHost } from "../../../lib/definitions";
 import { isUserParticipant } from "../event-utils";
 import ProductCard from "../../../ui/shop/Product";

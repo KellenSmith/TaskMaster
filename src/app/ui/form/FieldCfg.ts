@@ -116,7 +116,6 @@ export const RenderedFields = {
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.MAX_PARTICIPANTS,
-        GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.TASK]: [
