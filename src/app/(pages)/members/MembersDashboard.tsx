@@ -26,7 +26,12 @@ interface MembersDashboardProps {
 const MembersDashboard: React.FC<MembersDashboardProps> = ({ membersPromise }) => {
     const { user } = useUserContext();
 
-    const isMembershipPending = (member: ImplementedDatagridEntities) => !member?.userCredentials;
+    const isMembershipPending = (member: ImplementedDatagridEntities) =>
+        !(
+            member as Prisma.UserGetPayload<{
+                include: { userCredentials: true; userMembership: true };
+            }>
+        ).userCredentials;
 
     const updateUserAction = async (
         member: ImplementedDatagridEntities,
@@ -79,7 +84,13 @@ const MembersDashboard: React.FC<MembersDashboardProps> = ({ membersPromise }) =
                 icon: WarningIcon,
                 color: "warning.main",
             };
-        if (isMembershipExpired(member))
+        if (
+            isMembershipExpired(
+                member as Prisma.UserGetPayload<{
+                    include: { userCredentials: true; userMembership: true };
+                }>,
+            )
+        )
             return {
                 status: GlobalConstants.EXPIRED,
                 icon: ErrorIcon,

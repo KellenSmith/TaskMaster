@@ -57,7 +57,7 @@ export const UserCreateSchema = z.object({
     pronoun: z.string().nullable().default("they/them"),
     email: z.email(),
     phone: z.string().nullable().default(""),
-    consentToNewsletters: z.coerce.boolean().default(true),
+    consentToNewsletters: z.coerce.boolean(),
     role: UserRoleSchema.default(UserRole.user),
 });
 
@@ -158,7 +158,7 @@ export const ProductCreateSchema = z.object({
         .default(0)
         .transform((val) => Math.round(val * 100)),
     stock: z.coerce.number().int().nonnegative().nullable().default(0),
-    unlimitedStock: z.boolean().default(false),
+    unlimitedStock: z.coerce.boolean().default(false),
     imageUrl: z.string().optional(),
 });
 

@@ -24,6 +24,7 @@ import {
     allowSelectMultiple,
     checkboxFields,
     passwordFields,
+    priceFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import GlobalConstants from "../../GlobalConstants";
@@ -32,7 +33,7 @@ import RichTextField from "./RichTextField";
 import { FormActionState } from "../../lib/definitions";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
-import { allowRedirectException } from "../utils";
+import { allowRedirectException, formatPrice } from "../utils";
 import dayjs from "dayjs";
 
 export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
@@ -118,16 +119,29 @@ const Form: FC<FormProps> = ({
             });
     };
 
+    const getDefaultValue = (fieldId: string) => {
+        if (defaultValues && fieldId in defaultValues) {
+            if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId]);
+            if (datePickerFields.includes(fieldId)) return dayjs(defaultValues[fieldId]);
+            return defaultValues[fieldId];
+        }
+
+        if (fieldId in selectFieldOptions) return allowSelectMultiple.includes(fieldId) ? [] : "";
+        if (datePickerFields.includes(fieldId))
+            return RequiredFields[name].includes(fieldId)
+                ? dayjs().hour(18).minute(0).second(0)
+                : null;
+        if (checkboxFields.includes(fieldId)) return false;
+        return "";
+    };
+
     const getFieldComp = (fieldId: string) => {
         if (fieldId in selectFieldOptions) {
             return (
                 <Autocomplete
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
-                    defaultValue={
-                        defaultValues?.[fieldId] ||
-                        (allowSelectMultiple.includes(fieldId) ? [] : "")
-                    }
+                    defaultValue={getDefaultValue(fieldId)}
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -151,13 +165,7 @@ const Form: FC<FormProps> = ({
                     key={fieldId}
                     name={fieldId}
                     label={FieldLabels[fieldId]}
-                    defaultValue={
-                        defaultValues?.[fieldId]
-                            ? dayjs(defaultValues?.[fieldId])
-                            : RequiredFields[name].includes(fieldId)
-                              ? dayjs().hour(18).minute(0).second(0)
-                              : null
-                    }
+                    defaultValue={getDefaultValue(fieldId)}
                     slotProps={{
                         textField: {
                             name: fieldId,
@@ -177,10 +185,9 @@ const Form: FC<FormProps> = ({
                         <Checkbox
                             name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                            defaultChecked={defaultValues?.[fieldId] || false}
+                            defaultChecked={getDefaultValue(fieldId)}
                         />
                     }
-                    defaultValue={defaultValues?.[fieldId] || false}
                     label={FieldLabels[fieldId]}
                 />
             );
@@ -200,7 +207,7 @@ const Form: FC<FormProps> = ({
                 key={fieldId}
                 label={FieldLabels[fieldId]}
                 name={fieldId}
-                defaultValue={defaultValues?.[fieldId] || ""}
+                defaultValue={getDefaultValue(fieldId)}
                 required={RequiredFields[name].includes(fieldId)}
                 {...(passwordFields.includes(fieldId) && {
                     type: GlobalConstants.PASSWORD,

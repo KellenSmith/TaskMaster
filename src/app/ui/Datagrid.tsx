@@ -3,17 +3,16 @@
 import { Button, Dialog, Stack } from "@mui/material";
 import { DataGrid, GridColDef, useGridApiRef } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
-import { checkboxFields, datePickerFields, FieldLabels } from "./form/FieldCfg";
+import { checkboxFields, datePickerFields, FieldLabels, priceFields } from "./form/FieldCfg";
 import { usePathname, useRouter } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
-import { navigateToRoute, formatDateForGrid, formatDate } from "./utils";
+import { navigateToRoute, formatDate } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
-import { UserUpdateSchema } from "../lib/zod-schemas";
-import { Prisma } from "@prisma/client";
+import { ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
+import { Prisma, Product } from "@prisma/client";
 import z from "zod";
-import dayjs from "dayjs";
 
 export interface RowActionProps {
     name: string;
@@ -24,9 +23,11 @@ export interface RowActionProps {
     buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning";
 }
 
-export type ImplementedDatagridEntities = Prisma.UserGetPayload<{
-    include: { userCredentials: true; userMembership: true };
-}>;
+export type ImplementedDatagridEntities =
+    | Prisma.UserGetPayload<{
+          include: { userCredentials: true; userMembership: true };
+      }>
+    | Product;
 
 interface DatagridProps {
     name: string;
@@ -35,7 +36,7 @@ interface DatagridProps {
         row: ImplementedDatagridEntities, // eslint-disable-line no-unused-vars
         fieldValues: z.infer<typeof UserUpdateSchema>, // eslint-disable-line no-unused-vars
     ) => Promise<string>;
-    validationSchema: typeof UserUpdateSchema;
+    validationSchema: typeof UserUpdateSchema | typeof ProductUpdateSchema;
     rowActions: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
@@ -73,6 +74,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 if (datePickerFields.includes(key)) {
                     return formatDate(value);
                 }
+                if (priceFields.includes(key)) return parseInt(value) / 100;
                 return value;
             },
         })) as GridColDef[];

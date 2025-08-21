@@ -1,32 +1,22 @@
-"use client";
-import { Stack } from "@mui/material";
-import Datagrid, { RowActionProps } from "../../ui/Datagrid";
+import { CircularProgress, Typography } from "@mui/material";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import ProductsDashboard from "./ProductsDashboard";
+import { unstable_cache } from "next/cache";
+import { getAllProducts } from "../../lib/product-actions";
 import GlobalConstants from "../../GlobalConstants";
-import { deleteProduct, getAllProducts, updateProduct } from "../../lib/product-actions";
 
 const ProductsPage = () => {
-    const rowActions: RowActionProps[] = [
-        {
-            name: GlobalConstants.DELETE,
-            serverAction: deleteProduct,
-            available: () => true,
-            buttonColor: "error",
-        },
-    ];
+    const productsPromise = unstable_cache(getAllProducts, [], {
+        tags: [GlobalConstants.PRODUCT],
+    })();
 
-    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.DESCRIPTION];
-
-    // TODO: If on mobile, just show list of pending members, viewable and validatable
     return (
-        <Stack sx={{ height: "100%" }}>
-            <Datagrid
-                name={GlobalConstants.PRODUCT}
-                fetchData={getAllProducts}
-                updateAction={updateProduct}
-                rowActions={rowActions}
-                hiddenColumns={hiddenColumns}
-            />
-        </Stack>
+        <ErrorBoundary fallback={<Typography color="primary">Failed to fetch products</Typography>}>
+            <Suspense fallback={<CircularProgress />}>
+                <ProductsDashboard productsPromise={productsPromise} />
+            </Suspense>
+        </ErrorBoundary>
     );
 };
 

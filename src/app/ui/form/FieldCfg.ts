@@ -267,3 +267,5 @@ export const checkboxFields = [
     GlobalConstants.CONSENT_GDPR,
     GlobalConstants.UNLIMITED_STOCK,
 ];
+
+export const priceFields = [GlobalConstants.PRICE];
