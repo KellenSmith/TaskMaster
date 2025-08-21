@@ -12,7 +12,7 @@ export const config = {
 };
 
 // Verify JWT token in middleware context
-const getLoggedInUser = async (req: NextRequest) => {
+const getJwtPayload = async (req: NextRequest) => {
     try {
         // Access cookie directly from request
         const userCookie = req.cookies.get(GlobalConstants.USER).value;
@@ -27,7 +27,7 @@ export default async function middleware(req: NextRequest) {
     const redirectUrl = new NextURL(req.nextUrl);
     redirectUrl.pathname = `/${GlobalConstants.HOME}`;
     redirectUrl.search = new URLSearchParams().toString();
-    const loggedInUser = await getLoggedInUser(req);
+    const loggedInUser = await getJwtPayload(req);
 
     if (
         // Redirect unauthorized users to home

@@ -82,7 +82,11 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
 }> | null> => {
     try {
         const userCookie = await getUserCookie();
-        return await decryptJWT(userCookie);
+        const jwtPayload = await decryptJWT(userCookie);
+        return await prisma.user.findUniqueOrThrow({
+            where: { id: jwtPayload.id },
+            include: { userMembership: true },
+        });
     } catch {
         return null;
     }

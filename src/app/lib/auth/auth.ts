@@ -122,13 +122,10 @@ export const decryptJWT = async (
         const result = await jwtVerify(userCookie, getEncryptionKey(), {
             algorithms: ["HS256"],
         }); // TODO: If this fails, check that AUTH_SECRET exists in .env
-        const loggedInUser = result?.payload as Prisma.UserGetPayload<{
+        const jwtPayload = result?.payload as Prisma.UserGetPayload<{
             include: { userMembership: true };
         }>;
-        return await prisma.user.findUniqueOrThrow({
-            where: { id: loggedInUser.id },
-            include: { userMembership: true },
-        });
+        return jwtPayload;
     } catch (error) {
         return null;
     }
