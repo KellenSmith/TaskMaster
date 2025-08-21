@@ -35,7 +35,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
 
     return (
         <ErrorBoundary
-            fallback={<Typography color="primary">{"Sorry, we can't show this event"}</Typography>}
+            fallback={<Typography color="primary">Sorry, we can't show this event</Typography>}
         >
             <Suspense fallback={<CircularProgress />}>
                 <Stack spacing={2}>

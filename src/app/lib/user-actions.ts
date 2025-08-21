@@ -3,7 +3,7 @@
 import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { decryptJWT } from "./auth/auth";
+import { decryptJWT, getUserCookie } from "./auth/auth";
 import { DatagridActionState } from "./definitions";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
@@ -81,11 +81,8 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
     include: { userMembership: true };
 }> | null> => {
     try {
-        const loggedInUser = await decryptJWT();
-        return await prisma.user.findUniqueOrThrow({
-            where: { id: loggedInUser.id },
-            include: { userMembership: true },
-        });
+        const userCookie = await getUserCookie();
+        return await decryptJWT(userCookie);
     } catch {
         return null;
     }

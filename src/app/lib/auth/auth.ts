@@ -104,19 +104,31 @@ export const encryptJWT = async (
     });
 };
 
-export const decryptJWT = async (): Promise<Prisma.UserGetPayload<{
+export const getUserCookie = async (): Promise<string | null> => {
+    try {
+        const cookieStore = await cookies();
+        return cookieStore.get(GlobalConstants.USER)?.value;
+    } catch {
+        return null;
+    }
+};
+
+export const decryptJWT = async (
+    userCookie: string,
+): Promise<Prisma.UserGetPayload<{
     include: { userMembership: true };
 }> | null> => {
     try {
-        const cookieStore = await cookies();
-        const cookie = cookieStore.get(GlobalConstants.USER)?.value;
-        const result = await jwtVerify(cookie, getEncryptionKey(), {
+        const result = await jwtVerify(userCookie, getEncryptionKey(), {
             algorithms: ["HS256"],
-        }); // If this fails, check that AUTH_SECRET exists in .env
-        const jwtPayload = result?.payload as Prisma.UserGetPayload<{
+        }); // TODO: If this fails, check that AUTH_SECRET exists in .env
+        const loggedInUser = result?.payload as Prisma.UserGetPayload<{
             include: { userMembership: true };
         }>;
-        return jwtPayload;
+        return await prisma.user.findUniqueOrThrow({
+            where: { id: loggedInUser.id },
+            include: { userMembership: true },
+        });
     } catch (error) {
         return null;
     }
