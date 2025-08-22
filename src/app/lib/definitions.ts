@@ -66,16 +66,6 @@ export const isUserHost = (
     event: Event,
 ): boolean => user && user.id === event.hostId;
 
-export interface ResetCredentialsSchema {
-    email: string;
-}
-
-export interface UpdateCredentialsSchema {
-    currentPassword: string;
-    newPassword: string;
-    repeatPassword: string;
-}
-
 export interface FormActionState {
     status: number;
     errorMsg: string;

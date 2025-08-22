@@ -1,7 +1,7 @@
 "use server";
 import { getEventById, getEventParticipants, getEventReserves } from "../../lib/event-actions";
 import { getEventTasks } from "../../lib/task-actions";
-import { getLoggedInUser } from "../../lib/user-actions";
+import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import { Suspense } from "react";
 import { CircularProgress, Stack, Typography } from "@mui/material";
 import EventDashboard from "./EventDashboard";
@@ -17,21 +17,24 @@ interface EventPageProps {
 const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventId = (await searchParams).eventId;
 
-    const cachedEvent = unstable_cache(getEventById, [eventId], {
+    const eventPromise = unstable_cache(getEventById, [eventId], {
         tags: [GlobalConstants.EVENT],
     })(eventId);
-    const cachedEventParticipants = unstable_cache(getEventParticipants, [eventId], {
+    const eventParticipantsPromise = unstable_cache(getEventParticipants, [eventId], {
         tags: [GlobalConstants.PARTICIPANT_USERS],
     })(eventId);
-    const cachedEventReserves = unstable_cache(getEventReserves, [eventId], {
+    const aventReservesPromise = unstable_cache(getEventReserves, [eventId], {
         tags: [GlobalConstants.RESERVE_USERS],
     })(eventId);
-    const cachedEventTasks = unstable_cache(getEventTasks, [eventId], {
+    const eventTasksPromise = unstable_cache(getEventTasks, [eventId], {
         tags: [GlobalConstants.TASK],
-    })({ eventId });
-    const cachedEventTickets = unstable_cache(getEventTickets, [eventId], {
+    })(eventId);
+    const eventTicketsPromise = unstable_cache(getEventTickets, [eventId], {
         tags: [GlobalConstants.TICKET],
     })(eventId);
+    const activeMembersPromise = unstable_cache(getActiveMembers, [], {
+        tags: [GlobalConstants.USER],
+    })();
 
     return (
         <ErrorBoundary
@@ -40,11 +43,12 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
             <Suspense fallback={<CircularProgress />}>
                 <Stack spacing={2}>
                     <EventDashboard
-                        eventPromise={cachedEvent}
-                        eventParticipantsPromise={cachedEventParticipants}
-                        eventReservesPromise={cachedEventReserves}
-                        eventTasksPromise={cachedEventTasks}
-                        eventTicketsPromise={cachedEventTickets}
+                        eventPromise={eventPromise}
+                        eventParticipantsPromise={eventParticipantsPromise}
+                        eventReservesPromise={aventReservesPromise}
+                        eventTasksPromise={eventTasksPromise}
+                        eventTicketsPromise={eventTicketsPromise}
+                        activeMembersPromise={activeMembersPromise}
                     />
                 </Stack>
             </Suspense>

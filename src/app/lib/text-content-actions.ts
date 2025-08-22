@@ -1,7 +1,6 @@
 "use server";
 import { revalidateTag } from "next/cache";
 import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "./definitions";
 import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 
@@ -61,30 +60,4 @@ export const updateTextContent = async (
     } catch {
         throw new Error("Failed to update text content");
     }
-};
-
-export const deleteTextContent = async (
-    currentActionState: FormActionState,
-    id: string,
-    language: string,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        await prisma.textContent.delete({
-            where: {
-                id_language: {
-                    id,
-                    language,
-                },
-            },
-        });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Deleted text content";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
 };

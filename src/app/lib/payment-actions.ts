@@ -2,10 +2,9 @@
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById, progressOrder } from "./order-actions";
-import { Order, OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
-import { defaultDatagridActionState, defaultFormActionState, FormActionState } from "./definitions";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
 
@@ -186,7 +185,7 @@ export const capturePaymentFunds = async (orderId: string) => {
     }
 };
 
-export const checkPaymentStatus = async (orderId: string): Promise<FormActionState> => {
+export const checkPaymentStatus = async (orderId: string): Promise<void> => {
     try {
         const order = await getOrderById(orderId);
 

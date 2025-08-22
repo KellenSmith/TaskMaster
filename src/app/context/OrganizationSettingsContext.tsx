@@ -4,7 +4,13 @@ import { createContext, FC, ReactNode, use, useContext } from "react";
 import { OrganizationSettings } from "@prisma/client";
 import { CircularProgress } from "@mui/material";
 
-export const OrganizationSettingsContext = createContext(null);
+interface OrganizationSettingsContextValue {
+    organizationSettings: OrganizationSettings;
+}
+
+export const OrganizationSettingsContext = createContext<OrganizationSettingsContextValue | null>(
+    null,
+);
 
 export const useOrganizationSettingsContext = () => {
     const context = useContext(OrganizationSettingsContext);

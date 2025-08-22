@@ -13,7 +13,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, FC, ReactElement, useEffect, useTransition } from "react";
+import { useState, FC, ReactElement, useTransition } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -21,7 +21,6 @@ import {
     RequiredFields,
     datePickerFields,
     richTextFields,
-    allowSelectMultiple,
     checkboxFields,
     passwordFields,
     priceFields,
@@ -30,6 +29,7 @@ import { DateTimePicker } from "@mui/x-date-pickers";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
+import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
 import { FormActionState } from "../../lib/definitions";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
@@ -58,7 +58,7 @@ interface FormProps {
     action?: (fieldValues: any) => Promise<string>;
     validationSchema?: ZodType<any>;
     defaultValues?: any;
-    customOptions?: Object; // Additional options for Autocomplete field , if needed
+    customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
     readOnly?: boolean;
     editable?: boolean;
@@ -93,6 +93,7 @@ const Form: FC<FormProps> = ({
                 if (zodIssues.length > 0) {
                     const errorField = zodIssues[0]?.path[0];
                     const errorMessage = error.issues[0]?.message;
+                    console.log(formDataObject, formData.get("tags"));
                     setValidationError(
                         `Error in field ${FieldLabels[errorField as string]}: ${errorMessage}`,
                     );
@@ -126,7 +127,6 @@ const Form: FC<FormProps> = ({
             return defaultValues[fieldId];
         }
 
-        if (fieldId in selectFieldOptions) return allowSelectMultiple.includes(fieldId) ? [] : "";
         if (datePickerFields.includes(fieldId))
             return RequiredFields[name].includes(fieldId)
                 ? dayjs().hour(18).minute(0).second(0)
@@ -136,25 +136,17 @@ const Form: FC<FormProps> = ({
     };
 
     const getFieldComp = (fieldId: string) => {
-        if (fieldId in selectFieldOptions) {
+        if (fieldId in selectFieldOptions || customOptions[fieldId]) {
             return (
-                <Autocomplete
-                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
+                <AutocompleteWrapper
                     key={fieldId}
-                    defaultValue={getDefaultValue(fieldId)}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            name={fieldId}
-                            label={FieldLabels[fieldId]}
-                            required={
-                                name in RequiredFields && RequiredFields[name].includes(fieldId)
-                            }
-                        />
-                    )}
-                    autoSelect={name in RequiredFields && RequiredFields[name].includes(fieldId)}
-                    options={customOptions[fieldId] || selectFieldOptions[fieldId]}
-                    multiple={allowSelectMultiple.includes(fieldId)}
+                    name={name}
+                    fieldId={fieldId}
+                    label={FieldLabels[fieldId]}
+                    editMode={editMode}
+                    defaultValue={defaultValues?.[fieldId]}
+                    customReadOnlyFields={customReadOnlyFields}
+                    customOptions={customOptions[fieldId]}
                 />
             );
         }

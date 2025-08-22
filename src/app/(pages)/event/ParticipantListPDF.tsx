@@ -12,7 +12,7 @@ interface ParticipantListPDFProps {
         include: { host: { select: { id: true; nickname: true } } };
     }>;
     eventParticipants: Prisma.ParticipantInEventGetPayload<{
-        include: { User: { select: { id: true; nickname: true } } };
+        include: { user: { select: { id: true; nickname: true } } };
     }>[];
 }
 
@@ -37,17 +37,17 @@ const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProp
         return eventParticipants.map(
             (
                 participant: Prisma.ParticipantInEventGetPayload<{
-                    include: { User: { select: { id: true; nickname: true } } };
+                    include: { user: { select: { id: true; nickname: true } } };
                 }>,
             ) => (
-                <View style={styles.tableRow} key={participant.User.id}>
+                <View style={styles.tableRow} key={participant.user.id}>
                     {headers.map((header) => (
                         <Text
                             key={header}
                             wrap={true}
                             style={{ ...styles.tableCell, ...styles.columnStyle }}
                         >
-                            {participant.User[header]}
+                            {participant.user[header]}
                         </Text>
                     ))}
                 </View>

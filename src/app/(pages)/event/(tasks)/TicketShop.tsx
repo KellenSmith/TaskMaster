@@ -19,16 +19,16 @@ interface TicketShopProps {
     event: Prisma.EventGetPayload<{ include: { host: { select: { id: true } } } }>;
     eventTicketsPromise: Promise<
         Prisma.TicketGetPayload<{
-            include: { Product: true };
+            include: { product: true };
         }>[]
     >;
     eventTasksPromise: Promise<
         Prisma.TaskGetPayload<{
-            include: { Assignee: { select: { id: true; nickname: true } } };
+            include: { assignee: { select: { id: true; nickname: true } } };
         }>[]
     >;
     eventParticipants: Prisma.ParticipantInEventGetPayload<{
-        include: { User: { select: { id: true } } };
+        include: { user: { select: { id: true } } };
     }>[];
     goToOrganizeTab: () => void;
 }
@@ -96,7 +96,7 @@ const TicketShop = ({
                     {tickets.map((ticket) => (
                         <ProductCard
                             key={ticket.id}
-                            product={ticket.Product}
+                            product={ticket.product}
                             onAddToCart={createTicketOrder}
                             {...(ticket.type === TicketType.volunteer && {
                                 isAvailable: isVolunteerTicketAvailable(),

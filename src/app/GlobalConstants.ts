@@ -96,10 +96,10 @@ const GlobalConstants = {
     // Task
     TASK: "task",
     TASK_ID: "taskId",
-    ASSIGNEE: "Assignee",
+    ASSIGNEE: "assignee",
     ASSIGNEE_ID: "assigneeId",
-    REPORTER: "Reporter",
-    REPORTER_ID: "reporterId",
+    REVIEWER: "reviewer",
+    REVIEWER_ID: "reviewerId",
     TAGS: "tags",
     PHASE: "phase",
     BEFORE: "before",

@@ -25,13 +25,13 @@ export const createEventTicket = async (
         await prisma.ticket.create({
             data: {
                 ...ticketFieldValues,
-                Product: {
+                product: {
                     create: {
                         ...productFieldValues,
                         stock: event.maxParticipants - event.participantUsers.length,
                     },
                 },
-                Event: {
+                event: {
                     connect: {
                         id: eventId,
                     },
@@ -52,7 +52,7 @@ export const getEventTickets = async (eventId: string) => {
                 eventId,
             },
             include: {
-                Product: true,
+                product: true,
             },
         });
     } catch (error) {

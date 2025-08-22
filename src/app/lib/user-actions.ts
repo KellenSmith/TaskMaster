@@ -230,10 +230,11 @@ export const getUserNicknames = async (
     return newActionState;
 };
 
-export const getActiveMembers = async (currentActionState: DatagridActionState) => {
-    const newActionState = { ...currentActionState };
+export const getActiveMembers = async (): Promise<
+    Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+> => {
     try {
-        const activeMembers = await prisma.user.findMany({
+        return await prisma.user.findMany({
             where: {
                 userMembership: {
                     expiresAt: {
@@ -246,13 +247,7 @@ export const getActiveMembers = async (currentActionState: DatagridActionState) 
                 nickname: true,
             },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = activeMembers;
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+        throw new Error("Failed to get active members");
     }
-    return newActionState;
 };

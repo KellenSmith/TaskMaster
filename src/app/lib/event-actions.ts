@@ -7,7 +7,6 @@ import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
-import { FormActionState } from "./definitions";
 import { revalidateTag } from "next/cache";
 import { NextURL } from "next/dist/server/web/next-url";
 import { redirect } from "next/navigation";
@@ -30,7 +29,7 @@ export const createEvent = async (
                 tickets: {
                     create: {
                         type: TicketType.volunteer,
-                        Product: {
+                        product: {
                             create: {
                                 name: `Volunteer ticket for ${parsedFieldValues.title}`,
                                 description:
@@ -111,7 +110,7 @@ export const getEventParticipants = async (
     eventId: string,
 ): Promise<
     Prisma.ParticipantInEventGetPayload<{
-        include: { User: { select: { id: true; nickname: true } } };
+        include: { user: { select: { id: true; nickname: true } } };
     }>[]
 > => {
     try {
@@ -120,7 +119,7 @@ export const getEventParticipants = async (
                 eventId: eventId,
             },
             include: {
-                User: {
+                user: {
                     select: {
                         id: true,
                         nickname: true,
@@ -138,7 +137,7 @@ export const getEventReserves = async (
     eventId: string,
 ): Promise<
     Prisma.ReserveInEventGetPayload<{
-        include: { User: { select: { id: true; nickname: true } } };
+        include: { user: { select: { id: true; nickname: true } } };
     }>[]
 > => {
     try {
@@ -147,7 +146,7 @@ export const getEventReserves = async (
                 eventId: eventId,
             },
             include: {
-                User: {
+                user: {
                     select: {
                         id: true,
                         nickname: true,
@@ -260,28 +259,16 @@ export const deleteEventParticipant = async (userId: string, eventId: string): P
     }
 };
 
-export const deleteEventReserve = async (
-    userId: string,
-    eventId: string,
-    currentActionState: FormActionState,
-) => {
-    const newActionState = { ...currentActionState };
-
+export const deleteEventReserve = async (userId: string, eventId: string): Promise<void> => {
     try {
         await prisma.reserveInEvent.deleteMany({
             where: {
                 AND: [{ userId: userId }, { eventId: eventId }],
             } as Prisma.ReserveInEventWhereInput,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Removed user ${userId} from event ${eventId} reserves`;
         revalidateTag(GlobalConstants.RESERVE_USERS);
     } catch (error) {
         console.error(error);
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to delete event reserve");
     }
-    return newActionState;
 };

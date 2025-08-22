@@ -8,9 +8,9 @@ import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventDetails from "./EventDetails";
 import { EventStatus, Prisma } from "@prisma/client";
 import { ErrorBoundary } from "react-error-boundary";
-import TaskDashboard from "./(tasks)/TaskDashboard";
 import TicketShop from "./(tasks)/TicketShop";
 import EventActions from "./EventActions";
+import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -18,22 +18,27 @@ interface EventDashboardProps {
     >;
     eventParticipantsPromise: Promise<
         Prisma.ParticipantInEventGetPayload<{
-            include: { User: { select: { id: true; nickname: true } } };
+            include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;
     eventReservesPromise: Promise<
         Prisma.ReserveInEventGetPayload<{
-            include: { User: { select: { id: true; nickname: true } } };
+            include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;
     eventTasksPromise: Promise<
         Prisma.TaskGetPayload<{
-            include: { Assignee: { select: { id: true; nickname: true } } };
+            include: { assignee: { select: { id: true; nickname: true } } };
         }>[]
     >;
     eventTicketsPromise: Promise<
         Prisma.TicketGetPayload<{
-            include: { Product: true };
+            include: { product: true };
+        }>[]
+    >;
+    activeMembersPromise: Promise<
+        Prisma.UserGetPayload<{
+            select: { id: true; nickname: true };
         }>[]
     >;
 }
@@ -44,6 +49,7 @@ const EventDashboard = ({
     eventReservesPromise,
     eventTasksPromise,
     eventTicketsPromise,
+    activeMembersPromise,
 }: EventDashboardProps) => {
     const theme = useTheme();
     const { user } = useUserContext();
@@ -146,10 +152,11 @@ const EventDashboard = ({
                         fallback={<Typography color="primary">Failed to load tasks</Typography>}
                     >
                         <Suspense fallback={<CircularProgress />}>
-                            <TaskDashboard
+                            <KanBanBoard
                                 readOnly={!isUserHost(user, event)}
                                 event={event}
                                 eventTasksPromise={eventTasksPromise}
+                                activeMembersPromise={activeMembersPromise}
                             />
                         </Suspense>
                     </ErrorBoundary>

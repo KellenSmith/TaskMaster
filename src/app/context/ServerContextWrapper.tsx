@@ -3,8 +3,7 @@ import ContextWrapper from "./ContextWrapper";
 import { unstable_cache } from "next/cache";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
 import GlobalConstants from "../GlobalConstants";
-import { getLoggedInUser, getUserById } from "../lib/user-actions";
-import { deleteUserCookieAndRedirectToHome } from "../lib/auth/auth";
+import { getLoggedInUser } from "../lib/user-actions";
 
 interface ServerContextWrapperProps {
     children: ReactNode;

@@ -1,10 +1,13 @@
 "use client";
 
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
-import { Portal, Stack, Snackbar, Alert, IconButton, useTheme } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import { Portal, Stack, Alert, useTheme } from "@mui/material";
 
-export const NotificationContext = createContext(null);
+interface NotificationContextValue {
+    addNotification: (msg: string, severity: "success" | "error" | "info" | "warning") => void;
+}
+
+export const NotificationContext = createContext<NotificationContextValue | null>(null);
 
 export const useNotificationContext = () => {
     const context = useContext(NotificationContext);

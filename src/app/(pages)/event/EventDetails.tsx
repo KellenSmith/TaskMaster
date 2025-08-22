@@ -1,9 +1,8 @@
 import { CalendarMonth, ExpandMore, Group, LocationOn, Person } from "@mui/icons-material";
 import { Accordion, AccordionSummary, Paper, Stack, Typography, useTheme } from "@mui/material";
-import { use } from "react";
+import { use, useTransition } from "react";
 import { formatDate } from "../../ui/utils";
-import GlobalConstants from "../../GlobalConstants";
-import { defaultFormActionState, FormActionState, isUserHost } from "../../lib/definitions";
+import { isUserHost } from "../../lib/definitions";
 import RichTextField from "../../ui/form/RichTextField";
 import { useUserContext } from "../../context/UserContext";
 import ConfirmButton from "../../ui/ConfirmButton";
@@ -16,11 +15,11 @@ interface EventDetailsProps {
         include: { host: { select: { id: true; nickname: true } } };
     }>;
     eventParticipants: Prisma.ParticipantInEventGetPayload<{
-        include: { User: { select: { id: true; nickname: true } } };
+        include: { user: { select: { id: true; nickname: true } } };
     }>[];
     eventReservesPromise: Promise<
         Prisma.ReserveInEventGetPayload<{
-            include: { User: { select: { id: true; nickname: true } } };
+            include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;
 }
@@ -29,19 +28,18 @@ const EventDetails = ({ event, eventParticipants, eventReservesPromise }: EventD
     const theme = useTheme();
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
+    const [isPending, startTransition] = useTransition();
     const eventReserves = isUserHost(user, event) ? use(eventReservesPromise) : [];
 
-    const removeUserFromParticipantList = async (userId: string): Promise<FormActionState> => {
-        const deleteParticipantResult = await deleteEventParticipant(
-            userId,
-            event.id,
-            defaultFormActionState,
-        );
-        if (deleteParticipantResult.status === 200)
-            addNotification("Removed participant", "success");
-        else addNotification("Failed to remove participant", "error");
-        return deleteParticipantResult;
-    };
+    const removeUserFromParticipantList = (userId: string) =>
+        startTransition(async (): Promise<void> => {
+            try {
+                await deleteEventParticipant(userId, event.id);
+                addNotification("Removed participant", "success");
+            } catch {
+                addNotification("Failed to remove participant", "error");
+            }
+        });
 
     return (
         <Stack spacing={3} sx={{ p: 3 }}>
@@ -77,7 +75,7 @@ const EventDetails = ({ event, eventParticipants, eventReservesPromise }: EventD
                             {eventParticipants.map((participant) => (
                                 <Stack
                                     direction="row"
-                                    key={participant.User[GlobalConstants.ID]}
+                                    key={participant.user.id}
                                     sx={{
                                         alignItems: "center",
                                         justifyContent: "space-between",
@@ -90,17 +88,18 @@ const EventDetails = ({ event, eventParticipants, eventReservesPromise }: EventD
                                 >
                                     <Stack direction="row" alignItems="center">
                                         <Person color="primary" />
-                                        {participant.User.nickname}
+                                        {participant.user.nickname}
                                     </Stack>
                                     {isUserHost(user, event) &&
-                                        !isUserHost(participant.User, event) && (
+                                        !isUserHost(participant.user, event) && (
                                             <ConfirmButton
                                                 size={"small"}
-                                                onClick={async () =>
+                                                onClick={() =>
                                                     removeUserFromParticipantList(
-                                                        participant.User.id,
+                                                        participant.user.id,
                                                     )
                                                 }
+                                                disabled={isPending}
                                             >
                                                 delete
                                             </ConfirmButton>

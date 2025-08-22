@@ -1,53 +1,65 @@
 import { Button, Card, Dialog, Stack, Typography } from "@mui/material";
 import { formatDate } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
-import { assignTasksToUser, deleteTask, updateTaskById } from "../../lib/task-actions";
+import { assignTaskToUser, deleteTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
-import { startTransition, useState } from "react";
+import { use, useState } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
-import { formatAssigneeOptions } from "../form/FieldCfg";
-import { defaultFormActionState } from "../../lib/definitions";
+import { formatAssigneeOptions, getUserSelectOptions } from "../form/FieldCfg";
+import { Prisma } from "@prisma/client";
+import z from "zod";
+import { TaskUpdateSchema } from "../../lib/zod-schemas";
+import { useNotificationContext } from "../../context/NotificationContext";
+
+interface DraggableTaskProps {
+    readOnly: boolean;
+    task: Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } } };
+    }>;
+    activeMembersPromise: Promise<
+        Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+    >;
+    setDraggedTask: (
+        task: Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } } };
+        }> | null,
+    ) => void;
+}
 
 const DraggableTask = ({
-    task,
-    setDraggedTask,
     readOnly,
-    taskActionState,
-    setTaskActionState,
-    activeMembers,
-}) => {
+    task,
+    activeMembersPromise,
+    setDraggedTask,
+}: DraggableTaskProps) => {
     const { user } = useUserContext();
+    const { addNotification } = useNotificationContext();
+    const activeMembers = use(activeMembersPromise);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    const deleteViewTask = async () => {
-        const deleteTaskResult = await deleteTask(task[GlobalConstants.ID], taskActionState);
-        setTaskActionState(deleteTaskResult);
-        setDialogOpen(false);
+    const deleteTaskAction = async () => {
+        try {
+            await deleteTask(task.id);
+            setDialogOpen(false);
+            addNotification("Deleted task", "success");
+        } catch {
+            addNotification("Failed to delete task", "error");
+        }
     };
 
-    const updateViewTask = async (currentActionState, newTaskData) => {
-        const updateTaskResult = await updateTaskById(
-            task[GlobalConstants.ID],
-            currentActionState,
-            newTaskData,
-        );
-        return updateTaskResult;
+    const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
+        await updateTaskById(task.id, parsedFieldValues);
+        return "Updated task";
     };
 
     const assignTaskToMe = async () => {
-        const assignTasksResult = await assignTasksToUser(
-            user[GlobalConstants.ID],
-            [task[GlobalConstants.ID]],
-            defaultFormActionState,
-        );
-        setTaskActionState(assignTasksResult);
-    };
-
-    const getTaskDefaultValues = () => {
-        const defaultValues = { ...task };
-
-        return defaultValues;
+        try {
+            await assignTaskToUser(user[GlobalConstants.ID], task.id);
+            addNotification("Assigned task to you", "success");
+        } catch {
+            addNotification("Failed to assign task", "error");
+        }
     };
 
     return (
@@ -78,13 +90,12 @@ const DraggableTask = ({
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    defaultValues={getTaskDefaultValues()}
-                    customOptions={Object.fromEntries(
-                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REPORTER_ID].map(
-                            (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
-                        ),
-                    )}
-                    action={updateViewTask}
+                    defaultValues={task}
+                    customOptions={{
+                        [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(activeMembers),
+                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(activeMembers),
+                    }}
+                    action={updateTaskAction}
                     buttonLabel="save task"
                     readOnly={true}
                     editable={!readOnly}
@@ -98,7 +109,7 @@ const DraggableTask = ({
                         : "Assign to me"}
                 </Button>
                 {!readOnly && (
-                    <ConfirmButton color="error" onClick={deleteViewTask}>
+                    <ConfirmButton color="error" onClick={deleteTaskAction}>
                         delete
                     </ConfirmButton>
                 )}

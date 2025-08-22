@@ -128,13 +128,16 @@ export const ReserveInEventUpdateSchema = ReserveInEventCreateSchema;
 
 export const TaskCreateSchema = z.object({
     id: z.string().optional(),
-    eventId: z.string().nullable(),
-    assigneeId: z.string().nullable(),
-    reporterId: z.string().nullable(),
     phase: TaskPhaseSchema.default(TaskPhase.before),
     name: z.string().default(""),
     status: TaskStatusSchema.default(TaskStatus.toDo),
-    tags: z.array(z.string()).default([]),
+    assigneeId: z.string().nullable(),
+    reviewerId: z.string().nullable(),
+    eventId: z.string().nullable(),
+    tags: z
+        .string()
+        .transform((val) => val.split(","))
+        .default([]),
     startTime: stringToISODate.nullable(),
     endTime: stringToISODate.nullable(),
     description: z.string().default(""),
@@ -184,16 +187,14 @@ export const MembershipUpdateSchema = MembershipCreateSchema.partial().extend({
 // USER MEMBERSHIP SCHEMAS
 // =============================================================================
 
-export const UserMembershipCreateSchema = z.object({
-    id: z.string().optional(),
-    userId: z.string(),
-    membershipId: z.string(),
-    expiresAt: stringToISODate,
-});
+export const UserMembershipWithoutProductSchema = z.object({ expiresAt: stringToISODate });
 
-export const UserMembershipUpdateSchema = UserMembershipCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+export const UserMembershipCreateSchema = z.union([
+    UserMembershipWithoutProductSchema,
+    ProductCreateSchema,
+]);
+
+export const UserMembershipUpdateSchema = UserMembershipCreateSchema;
 
 // =============================================================================
 // TICKET SCHEMAS

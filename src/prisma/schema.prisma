@@ -8,10 +8,13 @@ datasource db {
 }
 
 model OrganizationSettings {
-    remindMembershipExpiresInDays    Int    @default(7)
-    organizationName                 String @unique @default("Task Master")
-    purgeMembersAfterDaysUnvalidated Int    @default(180)
-    email                            String @default("kellensmith407@gmail.com")
+    organizationName  String @unique @default("Task Master")
+    organizationEmail String @default("kellensmith407@gmail.com") @map("email")
+
+    remindMembershipExpiresInDays    Int @default(7)
+    purgeMembersAfterDaysUnvalidated Int @default(180)
+
+    defaultTaskShiftLength Int @default(2)
 
     @@map("organization_settings")
 }

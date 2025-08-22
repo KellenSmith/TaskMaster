@@ -1,4 +1,4 @@
-import { TaskStatus, TicketType, UserRole } from "@prisma/client";
+import { Prisma, TaskStatus, TicketType, User, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 
 export const FieldLabels = {
@@ -55,8 +55,8 @@ export const FieldLabels = {
     [GlobalConstants.NAME]: "Name",
     [GlobalConstants.ASSIGNEE]: "Assignee",
     [GlobalConstants.ASSIGNEE_ID]: "Assignee",
-    [GlobalConstants.REPORTER]: "Reporter",
-    [GlobalConstants.REPORTER_ID]: "Reporter",
+    [GlobalConstants.REVIEWER]: "Reviewer",
+    [GlobalConstants.REVIEWER_ID]: "Reviewer",
     [GlobalConstants.PHASE]: "Phase",
     [GlobalConstants.TAGS]: "Tags",
     [GlobalConstants.PHASE]: "Phase",
@@ -121,9 +121,10 @@ export const RenderedFields = {
     ],
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
+        GlobalConstants.STATUS,
         GlobalConstants.PHASE,
         GlobalConstants.ASSIGNEE_ID,
-        GlobalConstants.REPORTER_ID,
+        GlobalConstants.REVIEWER_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.DESCRIPTION,
@@ -196,7 +197,11 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REPORTER],
+    [GlobalConstants.TASK]: [
+        GlobalConstants.NAME,
+        GlobalConstants.STATUS,
+        GlobalConstants.REVIEWER,
+    ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
     [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE],
 };
@@ -236,10 +241,8 @@ export const selectFieldOptions = {
     ],
     [GlobalConstants.STATUS]: Object.values(TaskStatus),
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
-    [GlobalConstants.ASSIGNEE_ID]: ["Custom"],
-    [GlobalConstants.REPORTER_ID]: ["Custom"],
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
-};
+} as { [key: string]: string[] };
 
 export const formatAssigneeOptions = (activeMembers: any[]) => {
     if (!activeMembers || activeMembers.length < 1) return [];
@@ -272,3 +275,12 @@ export const checkboxFields = [
 ];
 
 export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT];
+
+export const getUserSelectOptions = (
+    users: Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[],
+) => {
+    return users.map((user) => ({
+        id: user.id,
+        label: user.nickname,
+    }));
+};

@@ -5,71 +5,100 @@ import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { DatagridActionState, FormActionState } from "./definitions";
 import { revalidateTag } from "next/cache";
+import z from "zod";
+import { TaskCreateSchema, TaskUpdateSchema } from "./zod-schemas";
 
-export const deleteTask = async (taskId: string, currentActionState: FormActionState) => {
-    const newActionState = { ...currentActionState };
+export const deleteTask = async (taskId: string): Promise<void> => {
     try {
         await prisma.task.delete({
             where: {
                 id: taskId,
             },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Deleted task";
         revalidateTag(GlobalConstants.TASK);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to delete task");
     }
-    return newActionState;
 };
 
 export const updateTaskById = async (
     taskId: string,
-    currentActionState: FormActionState,
-    newTaskData: Prisma.TaskUpdateInput,
-) => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof TaskUpdateSchema>,
+): Promise<void> => {
     try {
+        const { reviewerId, assigneeId, eventId, ...tasksWithoutUsers } = parsedFieldValues;
         await prisma.task.update({
             where: {
                 id: taskId,
             },
-            data: newTaskData,
+            data: {
+                ...tasksWithoutUsers,
+                tags: parsedFieldValues.tags,
+                ...(assigneeId && {
+                    assignee: {
+                        connect: {
+                            id: assigneeId,
+                        },
+                    },
+                }),
+                ...(reviewerId && {
+                    reviewer: {
+                        connect: {
+                            id: reviewerId,
+                        },
+                    },
+                }),
+                ...(eventId && {
+                    event: {
+                        connect: {
+                            id: eventId,
+                        },
+                    },
+                }),
+            },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Updated task";
         revalidateTag(GlobalConstants.TASK);
     } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        throw new Error("Failed to update task");
     }
-    return newActionState;
 };
 
 export const createTask = async (
-    currentActionState: FormActionState,
-    fieldValues: Prisma.TaskCreateInput,
-) => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof TaskCreateSchema>,
+): Promise<void> => {
     try {
+        const { reviewerId, assigneeId, eventId, ...tasksWithoutUsers } = parsedFieldValues;
         await prisma.task.create({
-            data: fieldValues,
+            data: {
+                ...tasksWithoutUsers,
+                tags: parsedFieldValues.tags,
+                ...(assigneeId && {
+                    assignee: {
+                        connect: {
+                            id: assigneeId,
+                        },
+                    },
+                }),
+                ...(reviewerId && {
+                    reviewer: {
+                        connect: {
+                            id: reviewerId,
+                        },
+                    },
+                }),
+                ...(eventId && {
+                    event: {
+                        connect: {
+                            id: eventId,
+                        },
+                    },
+                }),
+            },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 201;
-        newActionState.result = "Created task";
         revalidateTag(GlobalConstants.TASK);
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+    } catch {
+        throw new Error("Failed to create task");
     }
-    return newActionState;
 };
 
 export const updateEventTasks = async (
@@ -80,14 +109,14 @@ export const updateEventTasks = async (
     const newActionState = { ...currentActionState };
     const formattedTaskList = taskList.map((task) => {
         // Extract the IDs from the nested objects if they exist
-        const reporterId = (task.Reporter as any)?.connect?.id || null;
-        const assigneeId = (task.Assignee as any)?.connect?.id || null;
+        const reviewerId = (task.reviewer as any)?.connect?.id || null;
+        const assigneeId = (task.assignee as any)?.connect?.id || null;
 
         return {
             ...task,
             // Set the relation fields
-            Reporter: reporterId ? { connect: { id: reporterId } } : undefined,
-            Assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
+            reviewer: reviewerId ? { connect: { id: reviewerId } } : undefined,
+            assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
         };
     });
 
@@ -154,13 +183,13 @@ export const getFilteredTasks = async (
         const tasks = await prisma.task.findMany({
             where: searchParams,
             include: {
-                Assignee: {
+                assignee: {
                     select: {
                         id: true,
                         nickname: true,
                     },
                 },
-                Reporter: {
+                reviewer: {
                     select: {
                         id: true,
                         nickname: true,
@@ -179,14 +208,18 @@ export const getFilteredTasks = async (
     return newActionState;
 };
 
-export const getEventTasks = async (filterParams: Prisma.TaskWhereInput) => {
+export const getEventTasks = async (
+    eventId: string,
+): Promise<
+    Prisma.TaskGetPayload<{ include: { assignee: { select: { id: true; nickname: true } } } }>[]
+> => {
     try {
         return await prisma.task.findMany({
             where: {
-                ...filterParams,
+                eventId,
             },
             include: {
-                Assignee: {
+                assignee: {
                     select: {
                         id: true,
                         nickname: true,
@@ -199,33 +232,20 @@ export const getEventTasks = async (filterParams: Prisma.TaskWhereInput) => {
     }
 };
 
-export const assignTasksToUser = async (
-    userId: string,
-    taskIds: string[],
-    currentActionState: FormActionState,
-) => {
-    const newActionState = { ...currentActionState };
+export const assignTaskToUser = async (userId: string, taskId: string) => {
     try {
-        await prisma.user.update({
+        await prisma.task.update({
             where: {
-                id: userId,
+                id: taskId,
             },
             data: {
-                assignedTasks: {
-                    connect: taskIds.map((taskId) => ({
-                        id: taskId,
-                    })),
+                assignee: {
+                    connect: {
+                        id: userId,
+                    },
                 },
             },
         });
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = "Assigned tasks";
         revalidateTag(GlobalConstants.TASK);
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
+    } catch (error) {}
 };
