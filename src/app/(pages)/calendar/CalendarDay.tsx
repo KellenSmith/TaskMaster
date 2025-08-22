@@ -2,7 +2,7 @@
 
 import { FC, use } from "react";
 import { Paper, Stack, Typography } from "@mui/material";
-import CalendarEvent, { ICalendarEvent } from "./CalendarEvent";
+import CalendarEvent from "./CalendarEvent";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import GlobalConstants from "../../GlobalConstants";
@@ -40,7 +40,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     const getEmptyDay = () => <Paper key={`empty-end-${date.date()}`} elevation={0} />;
 
     const getDayComp = () => {
-        const eventsForDay = events.filter((event: ICalendarEvent) => shouldShowEvent(event));
+        const eventsForDay = events.filter((event) => shouldShowEvent(event));
         if (eventsForDay.length < 1) return getEmptyDay();
         return (
             <Stack

@@ -1,42 +1,41 @@
 import { ReactElement, ReactNode } from "react";
 import { render } from "@testing-library/react";
-import { vi } from "vitest";
 import ThemeContextProvider from "../app/context/ThemeContext";
 import { UserContext } from "../app/context/UserContext";
 import { OrganizationSettingsContext } from "../app/context/OrganizationSettingsContext";
-
-// Mock user data for testing
-export const mockUser = {
-    id: "test-user-id",
-    nickname: "Test User",
-    email: "test@example.com",
-    role: "USER",
-};
+import { Prisma } from "@prisma/client";
+import testdata from "./testdata";
 
 // Mock UserContext value
 const mockUserContextValue = {
-    user: mockUser,
-    logOut: vi.fn(),
-    login: vi.fn(),
-    updateLoggedInUser: vi.fn(),
+    user: testdata.user,
+    language: "english",
+    setLanguage: () => {},
+    editMode: false,
+    setEditMode: () => {},
 };
 
 // Mock OrganizationSettingsContext value
 const mockOrganizationSettingsContextValue = {
     organizationSettings: {
+        id: "orgsettingsid",
+        organizationEmail: "test@example.com",
         organizationName: "Task Master",
         remindMembershipExpiresInDays: 7,
         purgeMembersAfterDaysUnvalidated: 180,
+        defaultTaskShiftLength: 2,
     },
 };
 
 interface WrapperProps {
     children: ReactNode;
-    user?: typeof mockUser;
+    user?: Prisma.UserGetPayload<{
+        include: { userMembership: true; userCredentials: true };
+    }>;
 }
 
 // Create wrapper with mocked contexts
-const AllTheProviders = ({ children, user = mockUser }: WrapperProps) => {
+const AllTheProviders = ({ children, user = testdata.user }: WrapperProps) => {
     const contextValue = { ...mockUserContextValue, user };
 
     return (
@@ -48,8 +47,10 @@ const AllTheProviders = ({ children, user = mockUser }: WrapperProps) => {
     );
 };
 
-const customRender = (ui: ReactElement, { user, ...options }: { user?: typeof mockUser } = {}) =>
-    render(ui, { wrapper: (props) => <AllTheProviders {...props} user={user} />, ...options });
+const customRender = (
+    ui: ReactElement,
+    { user, ...options }: { user?: typeof testdata.user } = {},
+) => render(ui, { wrapper: (props) => <AllTheProviders {...props} user={user} />, ...options });
 
 // re-export everything
 export * from "@testing-library/react";

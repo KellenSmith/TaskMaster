@@ -9,7 +9,7 @@ interface UserContextValue {
     language: string;
     setLanguage: (language: string) => void; // eslint-disable-line no-unused-vars
     editMode: boolean;
-    setEditMode: (editMode: boolean) => void; // eslint-disable-line no-unused-vars
+    setEditMode: (editMode: boolean | ((prev: boolean) => boolean)) => void; // eslint-disable-line no-unused-vars
 }
 
 export const UserContext = createContext<UserContextValue | null>(null);

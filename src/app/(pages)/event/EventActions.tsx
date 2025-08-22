@@ -174,12 +174,12 @@ const EventActions: FC<IEventActions> = ({ event, eventParticipants, eventReserv
         const recipientIds = [];
         if (sendoutTo === sendoutToOptions.Participants || sendoutTo === sendoutToOptions.All) {
             eventParticipants.forEach((participant: any) => {
-                recipientIds.push(participant.User.id);
+                recipientIds.push(participant.user.id);
             });
         }
         if (sendoutTo === sendoutToOptions.Reserves || sendoutTo === sendoutToOptions.All)
             eventReserves.forEach((reserve: any) => {
-                recipientIds.push(reserve.User.id);
+                recipientIds.push(reserve.user.id);
             });
 
         const recipientCriteria: Prisma.UserWhereInput = {

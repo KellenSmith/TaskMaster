@@ -131,6 +131,7 @@ export const TaskCreateSchema = z.object({
     phase: TaskPhaseSchema.default(TaskPhase.before),
     name: z.string().default(""),
     status: TaskStatusSchema.default(TaskStatus.toDo),
+    eventId: z.string().nullable().optional(),
     assigneeId: z.string().nullable(),
     reviewerId: z.string().nullable(),
     tags: z

@@ -1,11 +1,11 @@
 "use client";
 
 import { createContext, FC, ReactNode, use, useContext } from "react";
-import { OrganizationSettings } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { CircularProgress } from "@mui/material";
 
 interface OrganizationSettingsContextValue {
-    organizationSettings: OrganizationSettings;
+    organizationSettings: Prisma.OrganizationSettingsGetPayload<true>;
 }
 
 export const OrganizationSettingsContext = createContext<OrganizationSettingsContextValue | null>(
@@ -22,7 +22,7 @@ export const useOrganizationSettingsContext = () => {
 };
 
 interface OrganizationSettingsProviderProps {
-    organizationSettingsPromise: Promise<OrganizationSettings>;
+    organizationSettingsPromise: Promise<Prisma.OrganizationSettingsGetPayload<true>>;
     children: ReactNode;
 }
 

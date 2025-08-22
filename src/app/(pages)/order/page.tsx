@@ -10,7 +10,11 @@ import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
-const OrderPage = async ({ searchParams }) => {
+interface OrderPageProps {
+    searchParams: Promise<{ [orderId: string]: string }>;
+}
+
+const OrderPage = async ({ searchParams }: OrderPageProps) => {
     const orderId = (await searchParams).orderId as string;
 
     // Always make sure the order state is updated

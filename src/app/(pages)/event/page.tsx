@@ -9,7 +9,7 @@ import { getEventTickets } from "../../lib/ticket-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 interface EventPageProps {
-    searchParams: { [eventId: string]: string };
+    searchParams: Promise<{ [eventId: string]: string }>;
 }
 
 const EventPage = async ({ searchParams }: EventPageProps) => {

@@ -1,21 +1,34 @@
+import { Prisma, UserRole } from "@prisma/client";
+import dayjs from "dayjs";
+
 const testdata = {
+    // Mock user data for testing
     user: {
-        id: "1234-5678-9abc-def0",
-        firstName: "Johnnie",
-        surName: "Doe",
-        nickname: "johnniedoe123",
+        id: "test-user-id",
+        firstName: "Test",
+        surName: "User",
         pronoun: "they/them",
-        email: "john.doe@example.com",
-        phone: "+1-555-123-4567",
-        created: new Date("2023-01-01T00:00:00Z"),
+        nickname: "Test User",
+        email: "test@example.com",
+        role: UserRole.user,
         consentToNewsletters: true,
-        role: "user",
-        hostingEvents: [],
-        participantEvents: [],
-        reserveEvents: [],
-        assignedTasks: [],
-        reporterTasks: [],
-    },
+        phone: "123-456-7890",
+        createdAt: dayjs().subtract(1, "year").toDate(),
+        userMembership: {
+            id: "test-membership-id",
+            membershipId: "test-membership-id",
+            userId: "test-user-id",
+            expiresAt: dayjs().add(1, "year").toDate(),
+        },
+        userCredentials: {
+            id: "test-user-credentials-id",
+            userId: "test-user-id",
+            salt: "test-password-salt",
+            hashedPassword: "test-hashed-password",
+        },
+    } as Prisma.UserGetPayload<{
+        include: { userMembership: true; userCredentials: true };
+    }>,
 
     createUser: {
         firstName: "Johnnie",

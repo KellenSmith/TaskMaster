@@ -1,13 +1,15 @@
 "use server";
 
-import { OrganizationSettings } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import z from "zod";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
+import { Prisma } from "@prisma/client";
 
-export const getOrganizationSettings = async (): Promise<OrganizationSettings> => {
+export const getOrganizationSettings = async (): Promise<
+    Prisma.OrganizationSettingsGetPayload<true>
+> => {
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
         orgSettings = await prisma.organizationSettings.upsert({
