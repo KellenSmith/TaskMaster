@@ -32,7 +32,7 @@ export const getTextContent = async (
                 select: { content: true },
             });
         return textContent;
-    } catch (error) {
+    } catch {
         throw new Error("Failed to fetch text content");
     }
 };

@@ -48,7 +48,7 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
         if (!defaultValue) return multiple ? [] : null;
         if (typeof defaultValue === "string") return getOptionWithId(defaultValue);
         return defaultValue.map((val) => getOptionWithId(val)).filter(Boolean);
-    }, [defaultValue, multiple]);
+    }, [defaultValue, multiple, getOptionWithId]);
 
     const [selectedOption, setSelectedOption] = useState<CustomOptionProps | CustomOptionProps[]>(
         getInitialValue(),

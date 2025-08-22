@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    Autocomplete,
     Button,
     Card,
     CardContent,
@@ -13,7 +12,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, FC, ReactElement, useTransition } from "react";
+import { useState, FC, useTransition, FormEvent } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -30,7 +29,6 @@ import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
 import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
-import { FormActionState } from "../../lib/definitions";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
@@ -39,7 +37,7 @@ import dayjs from "dayjs";
 interface FormProps {
     name: string;
     buttonLabel?: string;
-    action?: (fieldValues: any) => Promise<string>;
+    action?: (fieldValues: any) => Promise<string>; // eslint-disable-line no-unused-vars
     validationSchema?: ZodType<any>;
     defaultValues?: any;
     customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
@@ -87,7 +85,7 @@ const Form: FC<FormProps> = ({
         }
     };
 
-    const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
+    const submitForm = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const parsedFieldValues = validateFormData(formData);

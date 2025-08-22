@@ -36,12 +36,6 @@ export const getEarliestEndTime = (tasks: Task[]) =>
         .map((task) => task.endTime)
         .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
 
-export const getLatestEndTime = (tasks: Task[]) =>
-    tasks
-        .map((task) => task.endTime)
-        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))
-        .at(-1);
-
 export const sortTasks = (task1: Task, task2: Task) => {
     const startTime1 = dayjs(task1.startTime);
     const startTime2 = dayjs(task2.startTime);

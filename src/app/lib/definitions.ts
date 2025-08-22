@@ -1,11 +1,12 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { Event, Prisma, User, UserRole } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 
 // Convention: "path"=`/${route}`
 
 export const routes = {
     [GlobalConstants.ADMIN]: [
+        GlobalConstants.TASKS,
         GlobalConstants.SENDOUT,
         GlobalConstants.MEMBERS,
         GlobalConstants.PRODUCTS,
@@ -59,27 +60,9 @@ export const isUserAdmin = (
     user: Prisma.UserGetPayload<{
         include: { userMembership: true };
     }> | null,
-): boolean => user && user.role === UserRole.admin;
+): boolean => user?.role === UserRole.admin;
 
 export const isUserHost = (
     user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
     event: Prisma.EventGetPayload<true>,
-): boolean => user && user.id === event.hostId;
-
-export interface FormActionState {
-    status: number;
-    errorMsg: string;
-    result: string;
-}
-
-export interface DatagridActionState {
-    status: number;
-    errorMsg: string;
-    result: any[];
-}
-
-export const defaultDatagridActionState: DatagridActionState = {
-    status: 200,
-    errorMsg: "",
-    result: [],
-};
+): boolean => user?.id === event.hostId;

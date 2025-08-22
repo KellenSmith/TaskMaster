@@ -40,7 +40,7 @@ export const createEventTicket = async (
         });
         revalidateTag(GlobalConstants.TICKET);
         revalidateTag(GlobalConstants.EVENT);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to create event ticket");
     }
 };
@@ -55,7 +55,7 @@ export const getEventTickets = async (eventId: string) => {
                 product: true,
             },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to fetch event tickets");
     }
 };

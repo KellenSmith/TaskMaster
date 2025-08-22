@@ -8,8 +8,9 @@ datasource db {
 }
 
 model OrganizationSettings {
+    id                String @id @default(uuid())
     organizationName  String @unique @default("Task Master")
-    organizationEmail String @default("kellensmith407@gmail.com") @map("email")
+    organizationEmail String @default("kellensmith407@gmail.com")
 
     remindMembershipExpiresInDays    Int @default(7)
     purgeMembersAfterDaysUnvalidated Int @default(180)

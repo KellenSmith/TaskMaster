@@ -95,6 +95,7 @@ const GlobalConstants = {
     ORDER_ITEMS: "orderItems",
     // Task
     TASK: "task",
+    TASKS: "tasks",
     TASK_ID: "taskId",
     ASSIGNEE: "assignee",
     ASSIGNEE_ID: "assigneeId",

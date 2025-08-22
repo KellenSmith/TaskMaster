@@ -1,4 +1,4 @@
-import { z, ZodURL } from "zod";
+import { z } from "zod";
 import {
     UserRole,
     EventStatus,
@@ -133,7 +133,6 @@ export const TaskCreateSchema = z.object({
     status: TaskStatusSchema.default(TaskStatus.toDo),
     assigneeId: z.string().nullable(),
     reviewerId: z.string().nullable(),
-    eventId: z.string().nullable(),
     tags: z
         .string()
         .transform((val) => val.split(","))

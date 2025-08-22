@@ -64,7 +64,7 @@ export const getMembershipProduct = async (): Promise<
                 price: 0,
                 unlimitedStock: true,
 
-                Membership: {
+                membership: {
                     create: {
                         duration: 365,
                     },

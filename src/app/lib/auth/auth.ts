@@ -53,11 +53,12 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
                 email: parsedFieldValues.email,
             },
             include: {
+                userCredentials: true,
                 userMembership: true,
             },
         });
         if (!loggedInUser) throw new Error("Please apply for membership");
-        if (!loggedInUser.userMembership) throw new Error("Membership application pending");
+        if (!loggedInUser.userCredentials) throw new Error("Membership application pending");
 
         // All validated members have credentials
         const userCredentials = await prisma.userCredentials.findUnique({

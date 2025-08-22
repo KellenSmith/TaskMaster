@@ -26,6 +26,7 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
             },
         });
     } catch (error) {
+        console.log(error);
         throw new Error(`Failed creating user credentials`);
     }
 
@@ -33,6 +34,7 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     try {
         await sendUserCredentials(userEmail, generatedPassword);
     } catch (error) {
+        console.log(error);
         throw new Error(
             "The user membership was validated but credentials could not be sent by email. The user can still reset their password",
         );
@@ -60,14 +62,14 @@ export const resetUserCredentials = async (
                 hashedPassword: await hashPassword(generatedPassword, salt),
             },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Could not reset credentials");
     }
 
     // Email new credentials to user email
     try {
         await sendUserCredentials(userEmail, generatedPassword);
-    } catch (error) {
+    } catch {
         throw new Error("Credentials were reset but could not be emailed to user");
     }
 };
@@ -90,7 +92,7 @@ export const updateUserCredentials = async (
                 ),
             },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to update user credentials");
     }
 };

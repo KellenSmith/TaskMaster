@@ -12,7 +12,7 @@ const mailTransport =
         port: parseInt(process.env.SMTP_PORT),
         secure: parseInt(process.env.SMTP_PORT) === 465, // true for port 465, false for other ports
         auth: {
-            user: orgSettings?.email,
+            user: orgSettings?.organizationEmail,
             pass: process.env.EMAIL_PASSWORD,
         },
         tls: {

@@ -1,4 +1,4 @@
-import { Prisma, TaskStatus, TicketType, User, UserRole } from "@prisma/client";
+import { Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 
 export const FieldLabels = {

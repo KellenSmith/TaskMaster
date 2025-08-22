@@ -94,7 +94,7 @@ const NavPanel = () => {
                     </Typography>
                     {isUserAdmin(user) && (
                         <Tooltip title={`${editMode ? "Disable" : "Enable"} website edit mode`}>
-                            <Button onClick={() => setEditMode((prev) => !prev)}>
+                            <Button onClick={() => setEditMode((prev: boolean) => !prev)}>
                                 {editMode ? <Cancel /> : <Edit />}
                             </Button>
                         </Tooltip>

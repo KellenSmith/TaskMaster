@@ -16,13 +16,10 @@ import {
     Chip,
     Tooltip,
     Stack,
-    IconButton,
 } from "@mui/material";
-import { Edit, Lock } from "@mui/icons-material";
+import { Lock } from "@mui/icons-material";
 import { formatPrice } from "../utils";
 import RichTextField from "../form/RichTextField";
-import Form from "../form/Form";
-import GlobalConstants from "../../GlobalConstants";
 
 interface Product {
     id: string;
@@ -36,11 +33,10 @@ interface Product {
 
 interface ProductCardProps {
     product: Product;
-    onAddToCart?: (productId: string) => void;
+    onAddToCart?: (productId: string) => void; // eslint-disable-line no-unused-vars
     isAvailable?: boolean;
     makeAvailableText?: string;
     onClick?: () => void;
-    editable?: boolean;
 }
 
 export default function ProductCard({
@@ -49,7 +45,6 @@ export default function ProductCard({
     isAvailable = true,
     makeAvailableText,
     onClick,
-    editable,
 }: ProductCardProps) {
     const [isOpen, setIsOpen] = useState(false);
     const defaultImage = "/images/product-placeholder.svg";

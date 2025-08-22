@@ -17,7 +17,7 @@ const getJwtPayload = async (req: NextRequest) => {
         // Access cookie directly from request
         const userCookie = req.cookies.get(GlobalConstants.USER).value;
         return await decryptJWT(userCookie);
-    } catch (error) {
+    } catch {
         return null;
     }
 };

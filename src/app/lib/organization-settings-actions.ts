@@ -10,7 +10,11 @@ import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 export const getOrganizationSettings = async (): Promise<OrganizationSettings> => {
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
-        orgSettings = await prisma.organizationSettings.create({});
+        orgSettings = await prisma.organizationSettings.upsert({
+            where: { organizationName: process.env.NEXT_PUBLIC_ORG_NAME || "Task Master" },
+            update: {},
+            create: {},
+        });
     }
     return orgSettings;
 };

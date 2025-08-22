@@ -4,7 +4,6 @@ import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { decryptJWT, getUserCookie } from "./auth/auth";
-import { DatagridActionState } from "./definitions";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
@@ -19,7 +18,7 @@ export const getUserById = async (
             where: { id: userId },
             include: { userMembership: true },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to get user");
     }
 };
@@ -35,7 +34,7 @@ export const createUser = async (
             },
         });
         createdUserId = createdUser.id;
-    } catch (error) {
+    } catch {
         throw new Error("Failed creating user");
     }
 
@@ -163,7 +162,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
         revalidateTag(GlobalConstants.USER_MEMBERSHIP);
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
         revalidateTag(GlobalConstants.RESERVE_USERS);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to delete user");
     }
 };
@@ -185,7 +184,7 @@ export const getActiveMembers = async (): Promise<
                 nickname: true,
             },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to get active members");
     }
 };

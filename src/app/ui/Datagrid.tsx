@@ -11,7 +11,7 @@ import ConfirmButton from "./ConfirmButton";
 import { navigateToRoute, formatDate } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
-import { Order, Prisma, Product } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
 import z from "zod";
 import { AllOrdersType } from "../lib/order-actions";
 
@@ -36,9 +36,9 @@ interface DatagridProps {
     name: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     updateAction?: (
-        row: ImplementedDatagridEntities,
-        fieldValues:
-            | z.infer<typeof UserUpdateSchema>
+        row: ImplementedDatagridEntities, // eslint-disable-line no-unused-vars
+        fieldValues: // eslint-disable-line no-unused-vars
+        | z.infer<typeof UserUpdateSchema>
             | z.infer<typeof ProductUpdateSchema>
             | z.infer<typeof OrderUpdateSchema>,
     ) => Promise<string>;
