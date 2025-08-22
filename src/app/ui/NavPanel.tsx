@@ -22,7 +22,7 @@ import { Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { allowRedirectException, navigateToRoute } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
-import { deleteUserCookieAndRedirectToHome } from "../lib/auth/auth";
+import { deleteUserCookieAndRedirectToHome } from "../lib/auth";
 import { useNotificationContext } from "../context/NotificationContext";
 
 const NavPanel = () => {

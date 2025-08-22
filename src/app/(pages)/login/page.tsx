@@ -5,7 +5,7 @@ import { Button, Stack } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
-import { login } from "../../lib/auth/auth";
+import { login } from "../../lib/auth";
 import { allowRedirectException, navigateToRoute } from "../../ui/utils";
 import { LoginSchema } from "../../lib/zod-schemas";
 import z from "zod";

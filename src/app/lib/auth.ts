@@ -3,13 +3,13 @@
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
-import GlobalConstants from "../../GlobalConstants";
+import GlobalConstants from "./../GlobalConstants";
 import { Prisma } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "./../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { LoginSchema } from "../zod-schemas";
+import { LoginSchema } from "./zod-schemas";
 import z from "zod";
 
 // Generate a random string of specified length

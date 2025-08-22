@@ -10,7 +10,7 @@ import ConfirmButton from "../../ui/ConfirmButton";
 import { allowRedirectException, formatDate, navigateToRoute } from "../../ui/utils";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-import { deleteUserCookieAndRedirectToHome } from "../../lib/auth/auth";
+import { deleteUserCookieAndRedirectToHome } from "../../lib/auth";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { UpdateCredentialsSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { updateUserCredentials } from "../../lib/user-credentials-actions";

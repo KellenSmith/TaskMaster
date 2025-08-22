@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
 import { NextURL } from "next/dist/server/web/next-url";
 import { isUserAuthorized } from "./app/lib/definitions";
-import { decryptJWT } from "./app/lib/auth/auth";
+import { decryptJWT } from "./app/lib/auth";
 
 export const config = {
     // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher

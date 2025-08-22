@@ -3,7 +3,7 @@
 import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { decryptJWT, getUserCookie } from "./auth/auth";
+import { decryptJWT, getUserCookie } from "./auth";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
