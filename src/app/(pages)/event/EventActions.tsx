@@ -192,8 +192,9 @@ const EventActions: FC<IEventActions> = ({ event, eventParticipants, eventReserv
             const result = await sendMassEmail(recipientCriteria, parsedFieldValues);
             setDialogOpen(null);
             return result;
-        } catch (error) {
+        } catch {
             console.error("Failed to send email to participants");
+            throw new Error("Failed to send email");
         }
     };
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { Event, EventStatus, Prisma, TicketType } from "@prisma/client";
+import { EventStatus, Prisma, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../prisma/prisma-client";
 import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
@@ -61,7 +61,7 @@ export const createEvent = async (
 
         createdEventId = createdEvent.id;
         revalidateTag(GlobalConstants.EVENT);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to create event");
     }
     createdEventId &&
@@ -77,7 +77,7 @@ export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> =>
     try {
         const events = await prisma.event.findMany();
         return events;
-    } catch (error) {
+    } catch {
         throw new Error("Failed to fetch events");
     }
 };
@@ -126,7 +126,7 @@ export const getFilteredEvents = async (
             },
         });
         return events;
-    } catch (error) {
+    } catch {
         throw new Error("Failed to fetch events");
     }
 };
@@ -219,7 +219,7 @@ export const updateEvent = async (
             data: parsedFieldValues,
         });
         revalidateTag(GlobalConstants.EVENT);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to update event");
     }
 };
@@ -228,7 +228,7 @@ export const cancelEvent = async (eventId: string): Promise<void> => {
     try {
         await updateEvent(eventId, { status: EventStatus.cancelled });
         revalidateTag(GlobalConstants.EVENT);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to cancel event");
     }
     try {
@@ -290,7 +290,7 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
             },
         });
         revalidateTag(GlobalConstants.RESERVE_USERS);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to add user to event reserves");
     }
 };
@@ -303,7 +303,7 @@ export const deleteEventParticipant = async (userId: string, eventId: string): P
             } as Prisma.ParticipantInEventWhereInput,
         });
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to remove user from event participants");
     }
 };

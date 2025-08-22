@@ -130,7 +130,7 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
             throw new Error(
                 `Failed to inform ${rejectedEmails.length} participants and reserves of cancelled event: ${rejectedEmails.join("\n")}`,
             );
-    } catch (error) {
+    } catch {
         throw new Error(`Failed to inform participants and reserves of cancelled event`);
     }
 };

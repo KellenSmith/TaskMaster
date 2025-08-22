@@ -1,12 +1,8 @@
 "use server";
-import { Card, CardContent, CircularProgress, Typography } from "@mui/material";
-import React, { Suspense } from "react";
+import { Card, CardContent, Typography } from "@mui/material";
+import React from "react";
 import OrderSummary from "./OrderSummary";
 import PaymentHandler from "../../ui/payment/PaymentHandler";
-import { ErrorBoundary } from "react-error-boundary";
-import { unstable_cache } from "next/cache";
-import { getOrderById } from "../../lib/order-actions";
-import GlobalConstants from "../../GlobalConstants";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { prisma } from "../../../prisma/prisma-client";
 import { checkPaymentStatus } from "../../lib/payment-actions";
@@ -20,7 +16,9 @@ const OrderPage = async ({ searchParams }) => {
     // Always make sure the order state is updated
     try {
         await checkPaymentStatus(orderId);
-    } catch {}
+    } catch {
+        // If payment status check fails, still show the order page
+    }
 
     const order = await prisma.order.findUnique({
         where: { id: orderId },

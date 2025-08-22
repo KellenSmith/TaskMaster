@@ -20,11 +20,13 @@ interface DraggableTaskShiftsProps {
         Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
     >;
     setDraggedTask: (
+        // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };
         }> | null,
     ) => void;
     openCreateTaskDialog: (
+        // eslint-disable-next-line no-unused-vars
         defaultValues: Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };
         }>,

@@ -16,7 +16,7 @@ import GlobalConstants from "../GlobalConstants";
 export const getAllProducts = async (): Promise<Product[]> => {
     try {
         return await prisma.product.findMany();
-    } catch (error) {
+    } catch {
         throw new Error(`Failed fetching products`);
     }
 };
@@ -29,7 +29,7 @@ export const createProduct = async (
             data: parsedFieldValues,
         });
         revalidateTag(GlobalConstants.PRODUCT);
-    } catch (error) {
+    } catch {
         throw new Error(`Failed creating product`);
     }
 };
@@ -50,7 +50,7 @@ export const createMembershipProduct = async (
         });
         revalidateTag(GlobalConstants.PRODUCT);
         revalidateTag(GlobalConstants.MEMBERSHIP);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to create membership");
     }
 };
@@ -65,7 +65,7 @@ export const updateProduct = async (
             data: parsedFieldValues,
         });
         revalidateTag(GlobalConstants.PRODUCT);
-    } catch (error) {
+    } catch {
         throw new Error(`Failed updating product`);
     }
 };
@@ -100,7 +100,7 @@ export const deleteProduct = async (product: Product): Promise<void> => {
             }),
         ]);
         revalidateTag(GlobalConstants.PRODUCT);
-    } catch (error) {
+    } catch {
         throw new Error(`Failed deleting product`);
     }
 };

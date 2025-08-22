@@ -7,9 +7,9 @@ import { Prisma } from "@prisma/client";
 interface UserContextValue {
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
     language: string;
-    setLanguage: (language: string) => void;
+    setLanguage: (language: string) => void; // eslint-disable-line no-unused-vars
     editMode: boolean;
-    setEditMode: (editMode: boolean) => void;
+    setEditMode: (editMode: boolean) => void; // eslint-disable-line no-unused-vars
 }
 
 export const UserContext = createContext<UserContextValue | null>(null);

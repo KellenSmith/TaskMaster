@@ -33,7 +33,6 @@ interface DroppableColumnProps {
     setDraggedTask: (
         // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
-            // eslint-disable-line no-unused-vars
             include: { assignee: { select: { id: true; nickname: true } } };
         }> | null,
     ) => void;

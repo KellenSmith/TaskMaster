@@ -16,6 +16,7 @@ import {
     Error as ErrorIcon,
     Warning as WarningIcon,
 } from "@mui/icons-material";
+import { FC } from "react";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
@@ -23,7 +24,7 @@ interface MembersDashboardProps {
     >;
 }
 
-const MembersDashboard: React.FC<MembersDashboardProps> = ({ membersPromise }) => {
+const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
     const { user } = useUserContext();
 
     const isMembershipPending = (member: ImplementedDatagridEntities) =>

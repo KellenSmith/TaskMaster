@@ -1,12 +1,13 @@
 import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
-import { EventStatus, Prisma, Task, UserMembership } from "@prisma/client";
+import { EventStatus, Prisma, Task } from "@prisma/client";
 
-export const isEventPublished = (event) =>
-    event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED;
+export const isEventPublished = (
+    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>,
+) => event.status === EventStatus.published;
 
 export const isUserParticipant = (
-    user: any,
+    user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
     eventParticipants: Prisma.ParticipantInEventGetPayload<{
         include: { user: { select: { id: true } } };
     }>[],
@@ -67,7 +68,7 @@ export const sortGroupedTasks = (groupedTasks: Task[][]) => {
 
 export const getSortedTaskComps = (
     taskList: Task[],
-    getTaskShiftsComp: (taskGroup: Task[]) => any,
+    getTaskShiftsComp: (taskGroup: Task[]) => any, // eslint-disable-line no-unused-vars
 ) => {
     if (taskList.length < 1) return [];
     const uniqueTaskNames = [...new Set(taskList.map((task) => task.name))];

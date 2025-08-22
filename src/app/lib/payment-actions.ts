@@ -129,7 +129,7 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
 
             redirectUrl = redirectOperation.href;
         }
-    } catch (error) {
+    } catch {
         throw new Error("Failed to redirect to payment");
     }
     redirect(redirectUrl);
@@ -214,7 +214,7 @@ export const checkPaymentStatus = async (orderId: string): Promise<void> => {
                 TransactionType.Authorization;
             await progressOrder(orderId, newOrderStatus, needsCapture);
         }
-    } catch (error) {
+    } catch {
         throw new Error("Failed to check payment status");
     }
 };

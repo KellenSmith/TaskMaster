@@ -132,7 +132,7 @@ export const decryptJWT = async (
             include: { userMembership: true };
         }>;
         return jwtPayload;
-    } catch (error) {
+    } catch {
         return null;
     }
 };

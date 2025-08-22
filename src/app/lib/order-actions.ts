@@ -54,7 +54,7 @@ export const getAllOrders = async (): Promise<AllOrdersType[]> => {
                 },
             },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to fetch orders");
     }
 };
@@ -98,7 +98,7 @@ export const createOrder = async (
         const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, process.env.VERCEL_URL);
         orderUrl.searchParams.set(GlobalConstants.ORDER_ID, order.id);
         redirectUrl = orderUrl.toString();
-    } catch (error) {
+    } catch {
         throw new Error("Failed to create order");
     }
     redirect(redirectUrl);
@@ -130,7 +130,7 @@ const processOrderItems = async (orderId: string): Promise<void> => {
         for (const orderItem of order.orderItems) {
             await processOrderedProduct(order.userId, orderItem);
         }
-    } catch (error) {
+    } catch {
         throw new Error(`Failed to process order items`);
     }
 };
@@ -217,7 +217,7 @@ export const deleteOrder = async (orderId: string): Promise<void> => {
                 where: { id: orderId },
             });
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to delete order");
     }
 };

@@ -15,7 +15,7 @@ export const deleteTask = async (taskId: string): Promise<void> => {
             },
         });
         revalidateTag(GlobalConstants.TASK);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to delete task");
     }
 };
@@ -59,7 +59,7 @@ export const updateTaskById = async (
             },
         });
         revalidateTag(GlobalConstants.TASK);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to update task");
     }
 };
@@ -130,7 +130,7 @@ export const getFilteredTasks = async (
                 },
             },
         });
-    } catch (error) {
+    } catch {
         throw new Error("Failed to fetch tasks");
     }
 };
@@ -150,5 +150,7 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
             },
         });
         revalidateTag(GlobalConstants.TASK);
-    } catch (error) {}
+    } catch {
+        throw new Error("Failed to assign task");
+    }
 };

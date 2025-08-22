@@ -5,7 +5,7 @@ import { isUserHost } from "../../lib/definitions";
 import { isEventPublished, isUserParticipant, isUserReserve } from "../event/event-utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { Prisma } from "@prisma/client";
 
 interface EventCardProps {
@@ -37,8 +37,6 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
         if (isUserReserve(user, event)) return "Reserve";
         return "Unknown";
     };
-
-    const userStatus = useMemo(getStatusChipColor, [user, event]);
 
     return (
         <Card

@@ -1,13 +1,12 @@
 "use client";
 
-import { CircularProgress, Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
-import { Suspense, useState, use } from "react";
+import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
+import { useState, use, useMemo } from "react";
 import { isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut } from "./event-utils";
 import EventDetails from "./EventDetails";
 import { EventStatus, Prisma } from "@prisma/client";
-import { ErrorBoundary } from "react-error-boundary";
 import TicketShop from "./(tasks)/TicketShop";
 import EventActions from "./EventActions";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
@@ -54,18 +53,20 @@ const EventDashboard = ({
 }: EventDashboardProps) => {
     const theme = useTheme();
     const { user } = useUserContext();
+    const eventTabs = useMemo(
+        () => ({
+            details: "Details",
+            organize: "Organize",
+            tickets: "Tickets",
+        }),
+        [],
+    );
 
-    enum EventTabs {
-        details = "Details",
-        organize = "Organize",
-        tickets = "Tickets",
-    }
-
-    const [openTab, setOpenTab] = useState(EventTabs.details);
+    const [openTab, setOpenTab] = useState(eventTabs.details);
     const event = use(eventPromise);
     const eventParticipants = use(eventParticipantsPromise);
 
-    const goToOrganizeTab = () => setOpenTab(EventTabs.organize);
+    const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
 
     return (
         user && (
@@ -96,11 +97,11 @@ const EventDashboard = ({
                     spacing={2}
                 >
                     <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
-                        {Object.keys(EventTabs).map((tab) => (
+                        {Object.keys(eventTabs).map((tab) => (
                             <Tab
-                                key={EventTabs[tab]}
-                                value={EventTabs[tab]}
-                                label={EventTabs[tab]}
+                                key={eventTabs[tab]}
+                                value={eventTabs[tab]}
+                                label={eventTabs[tab]}
                             />
                         ))}
                     </Tabs>
@@ -115,7 +116,7 @@ const EventDashboard = ({
                     )}
                 </Stack>
 
-                {openTab === EventTabs.details && (
+                {openTab === eventTabs.details && (
                     <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
                         <EventDetails
                             event={event}
@@ -124,7 +125,7 @@ const EventDashboard = ({
                         />
                     </ErrorBoundarySuspense>
                 )}
-                {openTab === EventTabs.organize && (
+                {openTab === eventTabs.organize && (
                     <ErrorBoundarySuspense errorMessage="Failed to load tasks">
                         <KanBanBoard
                             readOnly={!isUserHost(user, event)}
@@ -134,7 +135,7 @@ const EventDashboard = ({
                         />
                     </ErrorBoundarySuspense>
                 )}
-                {openTab === EventTabs.tickets && (
+                {openTab === eventTabs.tickets && (
                     <ErrorBoundarySuspense errorMessage="Failed to load event tickets">
                         <TicketShop
                             event={event}

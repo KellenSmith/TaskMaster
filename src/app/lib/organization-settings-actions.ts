@@ -36,7 +36,7 @@ export const updateOrganizationSettings = async (
             data: fieldValues,
         });
         revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
-    } catch (error) {
+    } catch {
         throw new Error(`Failed to update organization settings`);
     }
 };
