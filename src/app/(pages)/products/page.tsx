@@ -1,10 +1,8 @@
-import { CircularProgress, Typography } from "@mui/material";
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import ProductsDashboard from "./ProductsDashboard";
 import { unstable_cache } from "next/cache";
 import { getAllProducts } from "../../lib/product-actions";
 import GlobalConstants from "../../GlobalConstants";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const ProductsPage = () => {
     const productsPromise = unstable_cache(getAllProducts, [], {
@@ -12,11 +10,9 @@ const ProductsPage = () => {
     })();
 
     return (
-        <ErrorBoundary fallback={<Typography color="primary">Failed to fetch products</Typography>}>
-            <Suspense fallback={<CircularProgress />}>
-                <ProductsDashboard productsPromise={productsPromise} />
-            </Suspense>
-        </ErrorBoundary>
+        <ErrorBoundarySuspense errorMessage="Failed to load products">
+            <ProductsDashboard productsPromise={productsPromise} />
+        </ErrorBoundarySuspense>
     );
 };
 

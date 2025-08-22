@@ -6,7 +6,7 @@ import Form from "../form/Form";
 import { use, useState } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
-import { formatAssigneeOptions, getUserSelectOptions } from "../form/FieldCfg";
+import { getUserSelectOptions } from "../form/FieldCfg";
 import { Prisma } from "@prisma/client";
 import z from "zod";
 import { TaskUpdateSchema } from "../../lib/zod-schemas";
@@ -55,7 +55,7 @@ const DraggableTask = ({
 
     const assignTaskToMe = async () => {
         try {
-            await assignTaskToUser(user[GlobalConstants.ID], task.id);
+            await assignTaskToUser(user.id, task.id);
             addNotification("Assigned task to you", "success");
         } catch {
             addNotification("Failed to assign task", "error");
@@ -76,15 +76,11 @@ const DraggableTask = ({
                     setDialogOpen(true);
                 }}
             >
-                <Typography variant="body1">{task[GlobalConstants.NAME]}</Typography>
+                <Typography variant="body1">{task.name}</Typography>
                 <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="body2">
-                        {formatDate(task[GlobalConstants.START_TIME])}
-                    </Typography>
+                    <Typography variant="body2">{formatDate(task.startTime)}</Typography>
                     {"-"}
-                    <Typography variant="body2">
-                        {formatDate(task[GlobalConstants.END_TIME])}
-                    </Typography>
+                    <Typography variant="body2">{formatDate(task.endTime)}</Typography>
                 </Stack>
             </Card>
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
@@ -100,13 +96,8 @@ const DraggableTask = ({
                     readOnly={true}
                     editable={!readOnly}
                 />
-                <Button
-                    onClick={assignTaskToMe}
-                    disabled={task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID]}
-                >
-                    {task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID]
-                        ? "This task is assigned to you"
-                        : "Assign to me"}
+                <Button onClick={assignTaskToMe} disabled={task.assigneeId === user.id}>
+                    {task.assigneeId === user.id ? "This task is assigned to you" : "Assign to me"}
                 </Button>
                 {!readOnly && (
                     <ConfirmButton color="error" onClick={deleteTaskAction}>

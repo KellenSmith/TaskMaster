@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, User, UserRole } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { decryptJWT, getUserCookie } from "./auth/auth";
@@ -103,7 +103,7 @@ export const updateUser = async (
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-    let admins: User[];
+    let admins: Prisma.UserGetPayload<true>[];
     try {
         admins = await prisma.user.findMany({
             where: {
@@ -166,68 +166,6 @@ export const deleteUser = async (userId: string): Promise<void> => {
     } catch (error) {
         throw new Error("Failed to delete user");
     }
-};
-
-export const getUserEvents = async (
-    userId: string,
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
-    try {
-        const events = await prisma.event.findMany({
-            where: {
-                OR: [
-                    {
-                        participantUsers: {
-                            some: {
-                                userId: userId,
-                            },
-                        },
-                    },
-                    {
-                        hostId: userId,
-                    },
-                ],
-            },
-        });
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = events;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
-};
-
-export const getUserNicknames = async (
-    userIds: string[],
-    currentActionState: DatagridActionState,
-) => {
-    const newActionState = { ...currentActionState };
-
-    try {
-        const userNicknames = await prisma.user.findMany({
-            where: {
-                id: {
-                    in: userIds,
-                },
-            },
-            select: {
-                id: true,
-                nickname: true,
-            },
-        });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = userNicknames;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
 };
 
 export const getActiveMembers = async (): Promise<

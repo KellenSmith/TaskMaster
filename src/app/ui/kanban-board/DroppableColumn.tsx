@@ -12,7 +12,7 @@ import {
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
-import { use, useState } from "react";
+import { use, useMemo, useState } from "react";
 import {
     getEarliestStartTime,
     getLatestEndTime,
@@ -26,7 +26,7 @@ import { FieldLabels, getUserSelectOptions } from "../form/FieldCfg";
 import { Prisma, Task, TaskPhase, TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import z from "zod";
-import { TaskCreateSchema, TaskUpdateSchema } from "../../lib/zod-schemas";
+import { TaskCreateSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
@@ -40,7 +40,7 @@ interface DroppableColumnProps {
     tasks: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } } };
     }>[];
-    activeMembersPromise: Promise<
+    activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
     >;
 
@@ -68,7 +68,10 @@ const DroppableColumn = ({
     setDraggedOverColumn,
 }: DroppableColumnProps) => {
     const theme = useTheme();
-    const activeMembers = use(activeMembersPromise);
+    const activeMembers = useMemo(() => {
+        if (!activeMembersPromise) return [];
+        return use(activeMembersPromise);
+    }, [activeMembersPromise]);
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
     const { organizationSettings } = useOrganizationSettingsContext();

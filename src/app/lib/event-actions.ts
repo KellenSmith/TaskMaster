@@ -1,6 +1,6 @@
 "use server";
 
-import { EventStatus, Prisma, TicketType } from "@prisma/client";
+import { Event, EventStatus, Prisma, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../prisma/prisma-client";
 import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
@@ -76,6 +76,55 @@ export const createEvent = async (
 export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> => {
     try {
         const events = await prisma.event.findMany();
+        return events;
+    } catch (error) {
+        throw new Error("Failed to fetch events");
+    }
+};
+
+export const getFilteredEvents = async (
+    filters: Prisma.EventWhereInput,
+): Promise<
+    Prisma.EventGetPayload<{
+        include: {
+            host: { select: { id: true; nickname: true } };
+            participantUsers: { include: { user: { select: { id: true; nickname: true } } } };
+            reserveUsers: { include: { user: { select: { id: true; nickname: true } } } };
+        };
+    }>[]
+> => {
+    try {
+        const events = await prisma.event.findMany({
+            where: filters,
+            include: {
+                host: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+                participantUsers: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                nickname: true,
+                            },
+                        },
+                    },
+                },
+                reserveUsers: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                nickname: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
         return events;
     } catch (error) {
         throw new Error("Failed to fetch events");

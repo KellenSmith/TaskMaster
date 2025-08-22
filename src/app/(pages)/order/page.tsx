@@ -12,6 +12,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const OrderPage = async ({ searchParams }) => {
     const orderId = (await searchParams).orderId as string;
@@ -35,16 +36,14 @@ const OrderPage = async ({ searchParams }) => {
     }
 
     return (
-        <ErrorBoundary fallback={<Typography color="primary">Failed to load order</Typography>}>
-            <Suspense fallback={<CircularProgress />}>
-                <Card>
-                    <CardContent>
-                        <OrderSummary order={order} />
-                        <PaymentHandler order={order} />
-                    </CardContent>
-                </Card>
-            </Suspense>
-        </ErrorBoundary>
+        <ErrorBoundarySuspense errorMessage="Failed to load order">
+            <Card>
+                <CardContent>
+                    <OrderSummary order={order} />
+                    <PaymentHandler order={order} />
+                </CardContent>
+            </Card>
+        </ErrorBoundarySuspense>
     );
 };
 

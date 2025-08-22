@@ -15,42 +15,39 @@ import {
     Typography,
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { getFormActionMsg } from "../form/Form";
 import DroppableColumn from "./DroppableColumn";
 import { FieldLabels } from "../form/FieldCfg";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
-import { defaultFormActionState } from "../../lib/definitions";
 import { Prisma, TaskStatus } from "@prisma/client";
 
 interface KanBanBoardProps {
     readOnly: boolean;
-    event: Prisma.EventGetPayload<{
+    event?: Prisma.EventGetPayload<{
         include: { host: { select: { id: true; nickname: true } } };
     }> | null;
-    eventTasksPromise: Promise<
+    tasksPromise: Promise<
         Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };
         }>[]
     >;
-    activeMembersPromise: Promise<
+    activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
     >;
 }
 
 const KanBanBoard = ({
     readOnly = true,
-    event = null,
-    eventTasksPromise,
+    event,
+    tasksPromise,
     activeMembersPromise,
 }: KanBanBoardProps) => {
     const { user } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
-    const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
-    const tasks = use(eventTasksPromise);
+    const tasks = use(tasksPromise);
 
     const getUniqueFilterOptions = (filterId) => {
         if (filterId === GlobalConstants.ASSIGNEE_ID) return [user.id, null];
@@ -164,7 +161,6 @@ const KanBanBoard = ({
                     print task schedule
                 </Button>
             </Accordion>
-            {getFormActionMsg(taskActionState)}
             <Grid2 container spacing={2} columns={4} height="100%">
                 {Object.values(TaskStatus).map((status) => (
                     <Grid2 size={1} key={status} height="100%">

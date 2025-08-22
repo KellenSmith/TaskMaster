@@ -1,14 +1,12 @@
 "use server";
 import { getEventById, getEventParticipants, getEventReserves } from "../../lib/event-actions";
-import { getEventTasks } from "../../lib/task-actions";
-import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
-import { Suspense } from "react";
-import { CircularProgress, Stack, Typography } from "@mui/material";
+import { getFilteredTasks } from "../../lib/task-actions";
+import { getActiveMembers } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
-import { ErrorBoundary } from "react-error-boundary";
 import { unstable_cache } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
 import { getEventTickets } from "../../lib/ticket-actions";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 interface EventPageProps {
     searchParams: { [eventId: string]: string };
@@ -26,9 +24,9 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const aventReservesPromise = unstable_cache(getEventReserves, [eventId], {
         tags: [GlobalConstants.RESERVE_USERS],
     })(eventId);
-    const eventTasksPromise = unstable_cache(getEventTasks, [eventId], {
+    const eventTasksPromise = unstable_cache(getFilteredTasks, [eventId], {
         tags: [GlobalConstants.TASK],
-    })(eventId);
+    })({ eventId });
     const eventTicketsPromise = unstable_cache(getEventTickets, [eventId], {
         tags: [GlobalConstants.TICKET],
     })(eventId);
@@ -37,22 +35,16 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     })();
 
     return (
-        <ErrorBoundary
-            fallback={<Typography color="primary">Sorry, we can't show this event</Typography>}
-        >
-            <Suspense fallback={<CircularProgress />}>
-                <Stack spacing={2}>
-                    <EventDashboard
-                        eventPromise={eventPromise}
-                        eventParticipantsPromise={eventParticipantsPromise}
-                        eventReservesPromise={aventReservesPromise}
-                        eventTasksPromise={eventTasksPromise}
-                        eventTicketsPromise={eventTicketsPromise}
-                        activeMembersPromise={activeMembersPromise}
-                    />
-                </Stack>
-            </Suspense>
-        </ErrorBoundary>
+        <ErrorBoundarySuspense errorMessage="Failed to load event">
+            <EventDashboard
+                eventPromise={eventPromise}
+                eventParticipantsPromise={eventParticipantsPromise}
+                eventReservesPromise={aventReservesPromise}
+                eventTasksPromise={eventTasksPromise}
+                eventTicketsPromise={eventTicketsPromise}
+                activeMembersPromise={activeMembersPromise}
+            />
+        </ErrorBoundarySuspense>
     );
 };
 

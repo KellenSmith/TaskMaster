@@ -1,36 +1,38 @@
 "use client";
 
-import { getUserEvents } from "../../lib/user-actions";
-import React, { useEffect, useState } from "react";
-import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
-import { useUserContext } from "../../context/UserContext";
-import GlobalConstants from "../../GlobalConstants";
-import { useRouter } from "next/navigation";
-import { formatDate, navigateToRoute } from "../../ui/utils";
-import { defaultDatagridActionState, isUserHost } from "../../lib/definitions";
-import { isEventPublished } from "../event/event-utils";
-const EventsTab: React.FC = () => {
-    const { user } = useUserContext();
-    const [events, setEvents] = useState<any[]>([]);
-    const router = useRouter();
+import React, { use } from "react";
+import { Stack, Typography } from "@mui/material";
+import { Prisma } from "@prisma/client";
+import EventCard from "./EventCard";
 
-    const fetchEvents = async () => {
-        const eventsData = await getUserEvents(
-            user[GlobalConstants.ID],
-            defaultDatagridActionState,
-        );
-        setEvents(eventsData.result);
+interface EventsTabProps {
+    eventsPromise: Promise<
+        Prisma.EventGetPayload<{
+            include: {
+                host: { select: { id: true; nickname: true } };
+                participantUsers: { include: { user: { select: { id: true; nickname: true } } } };
+                reserveUsers: { include: { user: { select: { id: true; nickname: true } } } };
+            };
+        }>[]
+    >;
+}
+
+const EventsTab: React.FC<EventsTabProps> = ({ eventsPromise }) => {
+    const events = use(eventsPromise);
+
+    const getSortedEvents = () => {
+        return events.sort((a, b) => {
+            if (a.startTime < b.startTime) return -1;
+            if (a.startTime > b.startTime) return 1;
+            if (a.endTime < b.endTime) return -1;
+            if (a.endTime > b.endTime) return 1;
+            return 0;
+        });
     };
-
-    useEffect(() => {
-        fetchEvents();
-        // Fetch events on first render
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     return (
         <Stack spacing={2}>
-            {events?.length === 0 ? (
+            {events.length === 0 ? (
                 <Typography
                     variant="h5"
                     color="textSecondary"
@@ -39,48 +41,7 @@ const EventsTab: React.FC = () => {
                     You are not participating in any events. Check the calendar to get involved!
                 </Typography>
             ) : (
-                events.map((event) => (
-                    <Card key={event.id}>
-                        <CardContent>
-                            <Stack direction="row" justifyContent="space-between">
-                                <Stack>
-                                    <Typography variant="h5" component="div">
-                                        {event.title}
-                                    </Typography>
-                                    <Typography color="textSecondary">
-                                        Start Date: {formatDate(event[GlobalConstants.START_TIME])}
-                                    </Typography>
-                                    <Typography color="textSecondary">
-                                        End Date: {formatDate(event[GlobalConstants.END_TIME])}
-                                    </Typography>
-                                </Stack>
-                                <Stack spacing={2} direction="row" alignItems="center">
-                                    {!isEventPublished(event) && (
-                                        <Typography color="secondary" variant="button">
-                                            draft
-                                        </Typography>
-                                    )}
-                                    {isUserHost(user, event) && (
-                                        <Typography color="secondary" variant="button">
-                                            host
-                                        </Typography>
-                                    )}
-                                    <Button
-                                        size="small"
-                                        onClick={() =>
-                                            navigateToRoute(
-                                                `/${GlobalConstants.CALENDAR}/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${event[GlobalConstants.ID]}`,
-                                                router,
-                                            )
-                                        }
-                                    >
-                                        visit
-                                    </Button>
-                                </Stack>
-                            </Stack>
-                        </CardContent>
-                    </Card>
-                ))
+                getSortedEvents().map((event) => <EventCard key={event.id} event={event} />)
             )}
         </Stack>
     );

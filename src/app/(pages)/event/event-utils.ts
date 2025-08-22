@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
-import { EventStatus, Prisma, Task } from "@prisma/client";
+import { EventStatus, Prisma, Task, UserMembership } from "@prisma/client";
 
 export const isEventPublished = (event) =>
     event[GlobalConstants.STATUS] === GlobalConstants.PUBLISHED;
@@ -11,6 +11,17 @@ export const isUserParticipant = (
         include: { user: { select: { id: true } } };
     }>[],
 ) => !!eventParticipants.find((participant) => participant.user.id === user[GlobalConstants.ID]);
+
+export // Helper function to check if user is on reserve list
+const isUserReserve = (
+    user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
+    event: Prisma.EventGetPayload<{
+        include: { reserveUsers: { include: { user: { select: { id: true } } } } };
+    }>,
+) => {
+    if (!event.reserveUsers || !user) return false;
+    return event.reserveUsers.some((reserve) => reserve.user.id === user.id);
+};
 
 export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>
     selectedTasks.map((task) => task.id).includes(task.id);

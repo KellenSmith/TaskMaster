@@ -8,10 +8,8 @@ import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
-import GlobalConstants from "../../GlobalConstants";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
-import { defaultFormActionState, FormActionState } from "../definitions";
 import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
 import { EmailSendoutSchema } from "../zod-schemas";
 import z from "zod";
@@ -30,7 +28,7 @@ const getEmailPayload = async (
 ): Promise<EmailPayload> => {
     const organizationSettings = await getOrganizationSettings();
     return {
-        from: `${await getOrganizationName()} <${organizationSettings?.email}>`,
+        from: `${await getOrganizationName()} <${organizationSettings?.organizationEmail}>`,
         bcc: receivers.join(", "),
         subject: subject,
         html: await render(mailContent),
@@ -91,26 +89,26 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
             await prisma.participantInEvent.findMany({
                 where: { eventId },
                 select: {
-                    User: {
+                    user: {
                         select: {
                             email: true,
                         },
                     },
                 },
             })
-        ).map((participant) => participant.User.email);
+        ).map((participant) => participant.user.email);
         const reservesEmails = (
             await prisma.reserveInEvent.findMany({
                 where: { eventId },
                 select: {
-                    User: {
+                    user: {
                         select: {
                             email: true,
                         },
                     },
                 },
             })
-        ).map((reserve) => reserve.User.email);
+        ).map((reserve) => reserve.user.email);
         const event = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
             select: { id: true, title: true },

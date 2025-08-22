@@ -36,22 +36,6 @@ import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
 import dayjs from "dayjs";
 
-export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
-    (formActionState.errorMsg || formActionState.result) && (
-        <Card sx={{ padding: 2 }}>
-            {formActionState.errorMsg && (
-                <Typography color="error" textAlign="center">
-                    {formActionState.errorMsg}
-                </Typography>
-            )}
-            {formActionState.result && (
-                <Typography color="success" textAlign="center">
-                    {formActionState.result}
-                </Typography>
-            )}
-        </Card>
-    );
-
 interface FormProps {
     name: string;
     buttonLabel?: string;

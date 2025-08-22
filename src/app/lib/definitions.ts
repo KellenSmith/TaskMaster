@@ -63,7 +63,7 @@ export const isUserAdmin = (
 
 export const isUserHost = (
     user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
-    event: Event,
+    event: Prisma.EventGetPayload<true>,
 ): boolean => user && user.id === event.hostId;
 
 export interface FormActionState {
@@ -71,12 +71,6 @@ export interface FormActionState {
     errorMsg: string;
     result: string;
 }
-
-export const defaultFormActionState: FormActionState = {
-    status: 200,
-    errorMsg: "",
-    result: "",
-};
 
 export interface DatagridActionState {
     status: number;

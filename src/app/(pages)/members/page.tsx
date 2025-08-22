@@ -7,6 +7,7 @@ import { unstable_cache } from "next/cache";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import MembersDashboard from "./MembersDashboard";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const MembersPage = async () => {
     const membersPromise = unstable_cache(getAllUsers, [], {
@@ -15,11 +16,9 @@ const MembersPage = async () => {
 
     // TODO: If on mobile, just show list of pending members, viewable and validatable
     return (
-        <ErrorBoundary fallback={<Typography color="primary">Failed to load users</Typography>}>
-            <Suspense fallback={<CircularProgress />}>
-                <MembersDashboard membersPromise={membersPromise} />
-            </Suspense>
-        </ErrorBoundary>
+        <ErrorBoundarySuspense errorMessage="Failed to load users">
+            <MembersDashboard membersPromise={membersPromise} />
+        </ErrorBoundarySuspense>
     );
 };
 

@@ -244,14 +244,6 @@ export const selectFieldOptions = {
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
 } as { [key: string]: string[] };
 
-export const formatAssigneeOptions = (activeMembers: any[]) => {
-    if (!activeMembers || activeMembers.length < 1) return [];
-    return activeMembers.map((member) => ({
-        value: member[GlobalConstants.ID],
-        label: member[GlobalConstants.NICKNAME],
-    }));
-};
-
 export const allowSelectMultiple = [GlobalConstants.TAGS];
 
 export const datePickerFields = [

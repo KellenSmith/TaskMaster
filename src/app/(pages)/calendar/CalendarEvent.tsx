@@ -6,10 +6,10 @@ import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
 import { formatDate, navigateToRoute } from "../../ui/utils";
 import { useRouter } from "next/navigation";
-import { Event, EventStatus } from "@prisma/client";
+import { EventStatus, Prisma } from "@prisma/client";
 
 export interface CalendarEventProps {
-    event: Event;
+    event: Prisma.EventGetPayload<true>;
 }
 
 const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {

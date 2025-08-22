@@ -1,13 +1,12 @@
 "use client";
-import { ReactNode, FC, Suspense } from "react";
+import { ReactNode, FC } from "react";
 import ThemeContextProvider from "./ThemeContext";
 import UserContextProvider from "./UserContext";
 import OrganizationSettingsProvider from "./OrganizationSettingsContext";
 import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
-import { ErrorBoundary } from "react-error-boundary";
-import { CircularProgress, Typography } from "@mui/material";
 import { Prisma } from "@prisma/client";
+import ErrorBoundarySuspense from "../ui/ErrorBoundarySuspense";
 
 interface ContextWrapperProps {
     children: ReactNode;
@@ -21,23 +20,21 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
     loggedInUser,
 }) => {
     return (
-        <ErrorBoundary fallback={<Typography color="primary">Failed to load context</Typography>}>
-            <Suspense fallback={<CircularProgress />}>
-                <LocalizationContextProvider>
-                    <ThemeContextProvider>
-                        <NotificationContextProvider>
-                            <OrganizationSettingsProvider
-                                organizationSettingsPromise={organizationSettingsPromise}
-                            >
-                                <UserContextProvider loggedInUser={loggedInUser}>
-                                    {children}
-                                </UserContextProvider>
-                            </OrganizationSettingsProvider>
-                        </NotificationContextProvider>
-                    </ThemeContextProvider>
-                </LocalizationContextProvider>
-            </Suspense>
-        </ErrorBoundary>
+        <ErrorBoundarySuspense errorMessage="Failed to load context">
+            <LocalizationContextProvider>
+                <ThemeContextProvider>
+                    <NotificationContextProvider>
+                        <OrganizationSettingsProvider
+                            organizationSettingsPromise={organizationSettingsPromise}
+                        >
+                            <UserContextProvider loggedInUser={loggedInUser}>
+                                {children}
+                            </UserContextProvider>
+                        </OrganizationSettingsProvider>
+                    </NotificationContextProvider>
+                </ThemeContextProvider>
+            </LocalizationContextProvider>
+        </ErrorBoundarySuspense>
     );
 };
 

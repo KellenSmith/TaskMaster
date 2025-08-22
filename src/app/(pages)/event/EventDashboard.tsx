@@ -11,6 +11,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import TicketShop from "./(tasks)/TicketShop";
 import EventActions from "./EventActions";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -104,79 +105,45 @@ const EventDashboard = ({
                         ))}
                     </Tabs>
                     {isUserHost(user, event) && (
-                        <ErrorBoundary
-                            fallback={
-                                <Typography color="primary">
-                                    Failed to load event reserves
-                                </Typography>
-                            }
-                        >
-                            <Suspense
-                                fallback={
-                                    <Typography color="primary">
-                                        Loading event reserves...
-                                    </Typography>
-                                }
-                            >
-                                <EventActions
-                                    event={event}
-                                    eventParticipants={eventParticipants}
-                                    eventReservesPromise={eventReservesPromise}
-                                />
-                            </Suspense>
-                        </ErrorBoundary>
-                    )}
-                </Stack>
-
-                {openTab === EventTabs.details && (
-                    <ErrorBoundary
-                        fallback={
-                            <Typography color="primary">Failed to load event reserves</Typography>
-                        }
-                    >
-                        <Suspense
-                            fallback={
-                                <Typography color="primary">Loading event reserves...</Typography>
-                            }
-                        >
-                            <EventDetails
+                        <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
+                            <EventActions
                                 event={event}
                                 eventParticipants={eventParticipants}
                                 eventReservesPromise={eventReservesPromise}
                             />
-                        </Suspense>
-                    </ErrorBoundary>
+                        </ErrorBoundarySuspense>
+                    )}
+                </Stack>
+
+                {openTab === EventTabs.details && (
+                    <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
+                        <EventDetails
+                            event={event}
+                            eventParticipants={eventParticipants}
+                            eventReservesPromise={eventReservesPromise}
+                        />
+                    </ErrorBoundarySuspense>
                 )}
                 {openTab === EventTabs.organize && (
-                    <ErrorBoundary
-                        fallback={<Typography color="primary">Failed to load tasks</Typography>}
-                    >
-                        <Suspense fallback={<CircularProgress />}>
-                            <KanBanBoard
-                                readOnly={!isUserHost(user, event)}
-                                event={event}
-                                eventTasksPromise={eventTasksPromise}
-                                activeMembersPromise={activeMembersPromise}
-                            />
-                        </Suspense>
-                    </ErrorBoundary>
+                    <ErrorBoundarySuspense errorMessage="Failed to load tasks">
+                        <KanBanBoard
+                            readOnly={!isUserHost(user, event)}
+                            event={event}
+                            tasksPromise={eventTasksPromise}
+                            activeMembersPromise={activeMembersPromise}
+                        />
+                    </ErrorBoundarySuspense>
                 )}
                 {openTab === EventTabs.tickets && (
-                    <ErrorBoundary
-                        fallback={
-                            <Typography color="primary">"Failed to load event tickets"</Typography>
-                        }
-                    >
-                        <Suspense fallback={<CircularProgress />}>
-                            <TicketShop
-                                event={event}
-                                eventTicketsPromise={eventTicketsPromise}
-                                eventTasksPromise={eventTasksPromise}
-                                goToOrganizeTab={goToOrganizeTab}
-                                eventParticipants={eventParticipants}
-                            />
-                        </Suspense>
-                    </ErrorBoundary>
+                    <ErrorBoundarySuspense errorMessage="Failed to load event tickets">
+                        <TicketShop
+                            event={event}
+                            eventTicketsPromise={eventTicketsPromise}
+                            eventTasksPromise={eventTasksPromise}
+                            goToOrganizeTab={goToOrganizeTab}
+                            eventParticipants={eventParticipants}
+                        />
+                    </ErrorBoundarySuspense>
                 )}
             </Stack>
         )

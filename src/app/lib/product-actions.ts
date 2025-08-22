@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, Product, TicketType } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
 import { prisma } from "../../prisma/prisma-client";
 import {
     MembershipCreateSchema,
@@ -8,8 +8,6 @@ import {
     ProductUpdateSchema,
     UserMembershipWithoutProductSchema,
 } from "./zod-schemas";
-import dayjs from "dayjs";
-import { DatagridActionState } from "./definitions";
 import { renewUserMembership } from "./user-membership-actions";
 import z from "zod";
 import { revalidateTag } from "next/cache";
@@ -141,38 +139,4 @@ export const processOrderedProduct = async (
     if (failedProducts.length > 0) {
         throw new Error(failedProducts.join(", "));
     }
-};
-
-export const getEventTickets = async (
-    eventId: string,
-    selectedTaskIds: string[],
-    currentActionState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        const eligibleTicketTypes: TicketType[] = [TicketType.standard];
-        if (selectedTaskIds.length > 0) eligibleTicketTypes.push(TicketType.volunteer);
-        const event = await prisma.event.findUniqueOrThrow({
-            where: { id: eventId },
-            select: { startTime: true },
-        });
-        const eventStartTime = event.startTime;
-        if (dayjs(eventStartTime).subtract(14, "d").isAfter(dayjs()))
-            eligibleTicketTypes.push(TicketType.earlyBird);
-
-        const tickets = await prisma.ticket.findMany({
-            where: { eventId, type: { in: eligibleTicketTypes } },
-            include: {
-                product: true,
-            },
-        });
-        newActionState.status = 200;
-        newActionState.result = tickets;
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
 };
