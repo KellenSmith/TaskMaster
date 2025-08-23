@@ -79,7 +79,7 @@ const EventActions: FC<IEventActions> = ({ event, eventParticipants, eventReserv
         startTransition(async () => {
             try {
                 await deleteEvent(event.id);
-                navigateToRoute(`/${GlobalConstants.CALENDAR}`, router);
+                navigateToRoute(router, [GlobalConstants.CALENDAR]);
             } catch {
                 addNotification("Failed to delete event", "error");
             }

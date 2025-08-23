@@ -15,7 +15,7 @@ const ApplyPage = () => {
         try {
             await createUser(fieldValues);
             // TODO: Send email notification to organization
-            navigateToRoute("/login", router);
+            navigateToRoute(router, [GlobalConstants.LOGIN]);
             return "Application submitted successfully";
         } catch {
             throw new Error("Failed to submit application");

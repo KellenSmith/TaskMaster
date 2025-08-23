@@ -1,19 +1,16 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { Prisma, UserRole } from "@prisma/client";
+import { redirect } from "next/navigation";
+import { NextURL } from "next/dist/server/web/next-url";
 
 // Convention: "path"=`/${route}`
+export const routeToPath = (route: string) => `/${route}`;
+export const pathToRoute = (path: string) => (path ? path.slice(1) : ""); // Remove leading "/"
+export const serverRedirect = (route: string) =>
+    redirect(new NextURL(routeToPath(route), process.env.VERCEL_URL).toString());
 
-export const routes = {
-    [GlobalConstants.ADMIN]: [
-        GlobalConstants.TASKS,
-        GlobalConstants.SENDOUT,
-        GlobalConstants.MEMBERS,
-        GlobalConstants.PRODUCTS,
-        GlobalConstants.ORDERS,
-        GlobalConstants.ORGANIZATION_SETTINGS,
-    ],
-    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
+export const applicationRoutes = {
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
@@ -22,29 +19,37 @@ export const routes = {
         GlobalConstants.CONTACT,
         GlobalConstants.ORDER,
     ],
+    [UserRole.member]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
+    [UserRole.admin]: [
+        GlobalConstants.TASKS,
+        GlobalConstants.SENDOUT,
+        GlobalConstants.MEMBERS,
+        GlobalConstants.PRODUCTS,
+        GlobalConstants.ORDERS,
+        GlobalConstants.ORGANIZATION_SETTINGS,
+    ],
 };
 
-export const routesToPath = (routeList: string[]) => routeList.map((route) => `/${route}`);
-
 export const isUserAuthorized = (
-    path: string,
+    pathname: string,
     user: Prisma.UserGetPayload<{
         include: { userMembership: true };
     }> | null,
 ): boolean => {
+    const requestedRoute = pathToRoute(pathname);
     // Only allow non-logged in users access to public routes
-    if (!user) return routesToPath(routes[GlobalConstants.PUBLIC]).includes(path);
+    if (!user) return applicationRoutes[GlobalConstants.PUBLIC].includes(requestedRoute);
     // Only allow users with expired memberships access to public pages and their own profile
     if (isMembershipExpired(user))
-        return routesToPath([...routes[GlobalConstants.PUBLIC], GlobalConstants.PROFILE]).includes(
-            path,
+        return [...applicationRoutes[GlobalConstants.PUBLIC], GlobalConstants.PROFILE].includes(
+            requestedRoute,
         );
-
     // Allow admins access to all routes
     if (user.role === UserRole.admin) return true;
     // Allow regular users access to everything except admin paths.
-    const adminPaths = routesToPath(routes[GlobalConstants.ADMIN]);
-    return !adminPaths.some((adminPath) => path.startsWith(adminPath));
+    const adminRoutes = applicationRoutes[UserRole.admin];
+
+    return !adminRoutes.some((adminRoute) => requestedRoute.startsWith(adminRoute));
 };
 
 export const isMembershipExpired = (

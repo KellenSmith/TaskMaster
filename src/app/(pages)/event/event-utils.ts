@@ -21,7 +21,7 @@ const isUserReserve = (
     }>,
 ) => {
     if (!event.reserveUsers || !user) return false;
-    return event.reserveUsers.some((reserve) => reserve.user.id === user.id);
+    return event.reserveUsers.adminRoute((reserve) => reserve.user.id === user.id);
 };
 
 export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>

@@ -157,9 +157,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 autoPageSize
             />
             {allowAddNew && (
-                <Button
-                    onClick={() => navigateToRoute(`${pathname}/${GlobalConstants.CREATE}`, router)}
-                >
+                <Button onClick={() => navigateToRoute(router, [pathname, GlobalConstants.CREATE])}>
                     Add New
                 </Button>
             )}

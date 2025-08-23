@@ -10,6 +10,8 @@ import {
     ListItem,
     Button,
     Tooltip,
+    ListSubheader,
+    Stack,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -17,13 +19,13 @@ import LoginIcon from "@mui/icons-material/Login";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAdmin, isUserAuthorized, routes, routesToPath } from "../lib/definitions";
+import { isUserAdmin, isUserAuthorized, applicationRoutes, routeToPath } from "../lib/definitions";
 import { Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { allowRedirectException, navigateToRoute } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
-import { deleteUserCookieAndRedirectToHome } from "../lib/auth";
 import { useNotificationContext } from "../context/NotificationContext";
+import { logout } from "../lib/auth";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -36,45 +38,48 @@ const NavPanel = () => {
         setDrawerOpen((prev) => !prev);
     };
 
-    const logOut = async () => {
+    const logOutAction = async () => {
         try {
-            await deleteUserCookieAndRedirectToHome();
-            addNotification("Successfully logged out", "success");
+            await logout();
+            addNotification("Logged out", "success");
         } catch (error) {
             allowRedirectException(error);
             addNotification("Failed to log out", "error");
         }
     };
 
+    const hiddenRoutes = [
+        GlobalConstants.LOGIN,
+        GlobalConstants.RESET,
+        GlobalConstants.APPLY,
+        GlobalConstants.ORDER,
+    ];
+
     const getLinkGroup = (privacyStatus: string) => {
+        const authorizedRoutes = applicationRoutes[privacyStatus]
+            .filter((route) => !hiddenRoutes.includes(route))
+            .filter((route) => isUserAuthorized(routeToPath(route), user));
+        if (authorizedRoutes.length === 0) return null;
         return (
-            <List>
-                {routesToPath(
-                    routes[privacyStatus].filter(
-                        (route) =>
-                            ![
-                                GlobalConstants.LOGIN,
-                                GlobalConstants.RESET,
-                                GlobalConstants.APPLY,
-                                GlobalConstants.ORDER,
-                                "order/complete",
-                            ].includes(route),
-                    ),
-                )
-                    .filter((route) => isUserAuthorized(route, user))
-                    .map((route) => (
-                        <ListItem key={route}>
-                            <Button
-                                onClick={() => {
-                                    setDrawerOpen(false);
-                                    navigateToRoute(route, router);
-                                }}
-                            >
-                                {route.replace(/^\/+/, "").replace(/-/g, " ")}
-                            </Button>
-                        </ListItem>
-                    ))}
-            </List>
+            <Stack key={privacyStatus}>
+                {privacyStatus !== GlobalConstants.PUBLIC && (
+                    <ListSubheader sx={{ textTransform: "capitalize" }}>
+                        {privacyStatus}
+                    </ListSubheader>
+                )}
+                {authorizedRoutes.map((route) => (
+                    <ListItem key={route}>
+                        <Button
+                            onClick={() => {
+                                setDrawerOpen(false);
+                                navigateToRoute(router, [route]);
+                            }}
+                        >
+                            {route}
+                        </Button>
+                    </ListItem>
+                ))}
+            </Stack>
         );
     };
 
@@ -88,7 +93,7 @@ const NavPanel = () => {
                     <Typography
                         variant="h6"
                         style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
-                        onClick={() => navigateToRoute("/", router)}
+                        onClick={() => navigateToRoute(router, [GlobalConstants.HOME])}
                     >
                         {organizationSettings?.organizationName || "Organization Name"}
                     </Typography>
@@ -100,25 +105,25 @@ const NavPanel = () => {
                         </Tooltip>
                     )}
                     {user ? (
-                        <Button onClick={logOut}>
+                        <Button onClick={logOutAction}>
                             <LogoutIcon />
                         </Button>
                     ) : (
-                        <Button
-                            onClick={() => navigateToRoute(`/${GlobalConstants.LOGIN}`, router)}
-                        >
+                        <Button onClick={() => navigateToRoute(router, [GlobalConstants.LOGIN])}>
                             <LoginIcon />
                         </Button>
                     )}
                 </Toolbar>
             </AppBar>
             <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
-                <Button onClick={toggleDrawerOpen}>
+                <Button sx={{ justifyContent: "flex-end" }} onClick={toggleDrawerOpen}>
                     <MenuOpenIcon />
                 </Button>
-                {getLinkGroup(GlobalConstants.PUBLIC)}
-                {getLinkGroup(GlobalConstants.PRIVATE)}
-                {getLinkGroup(GlobalConstants.ADMIN)}
+                <List>
+                    {Object.keys(applicationRoutes).map((privacyStatus) =>
+                        getLinkGroup(privacyStatus),
+                    )}
+                </List>
             </Drawer>
         </>
     );

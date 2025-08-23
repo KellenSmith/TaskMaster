@@ -131,14 +131,25 @@ export const decryptJWT = async (
         const jwtPayload = result?.payload as Prisma.UserGetPayload<{
             include: { userMembership: true };
         }>;
+
+        // The user is authenticated. Current database state still unclear
         return jwtPayload;
     } catch {
+        // Nonexistent or corrupted JWT
         return null;
     }
 };
 
-export const deleteUserCookieAndRedirectToHome = async () => {
+export const deleteUserCookie = async () => {
     const cookieStore = await cookies();
     cookieStore.delete(GlobalConstants.USER);
+};
+
+export const logout = async () => {
+    try {
+        await deleteUserCookie();
+    } catch {
+        throw new Error("Failed to log out");
+    }
     redirect("/");
 };

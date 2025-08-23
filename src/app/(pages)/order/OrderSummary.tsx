@@ -64,7 +64,7 @@ const OrderSummary = async ({ order }: OrderSummaryProps) => {
                                     <TableRow key={item.product.name}>
                                         <TableCell component="th" scope="row">
                                             <Stack>
-                                                <Typography variant="body1">
+                                                <Typography variant="body1" component="div">
                                                     {item.product.name}
                                                     {item.product.membership && (
                                                         <Typography variant="body2" color="warning">

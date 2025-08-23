@@ -11,17 +11,16 @@ import {
     Stack,
     Typography,
     useTheme,
-    Box,
     Chip,
     Divider,
 } from "@mui/material";
-import { isMembershipExpired, isUserAdmin } from "../../lib/definitions";
+import { isMembershipExpired } from "../../lib/definitions";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { allowRedirectException, formatDate, navigateToRoute } from "../../ui/utils";
 import { Person, Schedule, AdminPanelSettings, Warning, CheckCircle } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-import { deleteUserCookieAndRedirectToHome } from "../../lib/auth";
+import { logout } from "../../lib/auth";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { UpdateCredentialsSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { updateUserCredentials } from "../../lib/user-credentials-actions";
@@ -56,9 +55,9 @@ const AccountTab = () => {
             try {
                 await deleteUser(user.id);
                 try {
-                    await deleteUserCookieAndRedirectToHome();
+                    await logout();
                 } catch {
-                    navigateToRoute("/", router);
+                    navigateToRoute(router, [GlobalConstants.HOME]);
                 }
             } catch {
                 addNotification("Failed to delete account", "error");
@@ -95,9 +94,9 @@ const AccountTab = () => {
                 <CardContent>
                     <Stack spacing={3}>
                         {/* Header */}
-                        <Box display="flex" alignItems="center" justifyContent="space-between">
+                        <Stack display="flex" alignItems="center" justifyContent="space-between">
                             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                Membership Status
+                                Membership
                             </Typography>
                             {isMembershipExpired(user) ? (
                                 <Chip
@@ -114,13 +113,13 @@ const AccountTab = () => {
                                     size="small"
                                 />
                             )}
-                        </Box>
+                        </Stack>
 
                         <Divider />
 
                         {/* Membership Info */}
                         {isMembershipExpired(user) ? (
-                            <Box
+                            <Stack
                                 sx={{
                                     p: 2,
                                     borderRadius: 2,
@@ -140,49 +139,49 @@ const AccountTab = () => {
                                         ? "Your membership has expired and needs renewal"
                                         : "Welcome! Activate your membership to get started"}
                                 </Typography>
-                            </Box>
+                            </Stack>
                         ) : (
                             <Stack spacing={2}>
                                 {/* Member Since */}
-                                <Box display="flex" alignItems="center" gap={2}>
+                                <Stack alignItems="center" spacing={2}>
                                     <Person color="primary" />
-                                    <Box>
+                                    <Stack>
                                         <Typography variant="body2" color="text.secondary">
                                             Member since
                                         </Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                                             {formatDate(user.createdAt)}
                                         </Typography>
-                                    </Box>
-                                </Box>
+                                    </Stack>
+                                </Stack>
 
                                 {/* Expiration Date */}
-                                <Box display="flex" alignItems="center" gap={2}>
+                                <Stack alignItems="center" spacing={2}>
                                     <Schedule color="primary" />
-                                    <Box>
+                                    <Stack>
                                         <Typography variant="body2" color="text.secondary">
                                             Membership expires
                                         </Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                                             {formatDate(dayjs(user.userMembership.expiresAt))}
                                         </Typography>
-                                    </Box>
-                                </Box>
+                                    </Stack>
+                                </Stack>
 
-                                {/* Admin Status */}
-                                {isUserAdmin(user) && (
-                                    <Box display="flex" alignItems="center" gap={2}>
-                                        <AdminPanelSettings color="primary" />
-                                        <Box>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Role
-                                            </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                                Administrator
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                )}
+                                <Stack spacing={2} alignItems="center">
+                                    <AdminPanelSettings color="primary" />
+                                    <Stack>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Role
+                                        </Typography>
+                                        <Typography
+                                            variant="body1"
+                                            sx={{ fontWeight: 500, textTransform: "capitalize" }}
+                                        >
+                                            {user.role}
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
                             </Stack>
                         )}
                     </Stack>

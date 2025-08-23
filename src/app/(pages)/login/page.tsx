@@ -33,10 +33,10 @@ const LoginPage: FC = () => {
                 readOnly={false}
                 editable={false}
             />
-            <Button onClick={() => navigateToRoute(`/${GlobalConstants.RESET}`, router)}>
+            <Button onClick={() => navigateToRoute(router, [GlobalConstants.RESET])}>
                 reset password
             </Button>
-            <Button onClick={() => navigateToRoute(`/${GlobalConstants.APPLY}`, router)}>
+            <Button onClick={() => navigateToRoute(router, [GlobalConstants.APPLY])}>
                 {FieldLabels[GlobalConstants.APPLY]}
             </Button>
         </Stack>

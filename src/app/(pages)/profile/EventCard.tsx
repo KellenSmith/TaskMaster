@@ -95,10 +95,9 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                             variant="contained"
                             size="small"
                             onClick={() =>
-                                navigateToRoute(
-                                    `/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${event[GlobalConstants.ID]}`,
-                                    router,
-                                )
+                                navigateToRoute(router, [GlobalConstants.EVENT], {
+                                    eventId: event.id,
+                                })
                             }
                             sx={{ minWidth: 80 }}
                         >

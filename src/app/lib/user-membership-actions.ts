@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
+import { isMembershipExpired } from "./definitions";
+import { getLoggedInUser } from "./user-actions";
 
 export const renewUserMembership = async (userId: string, membershipId: string): Promise<void> => {
     try {
@@ -16,8 +18,9 @@ export const renewUserMembership = async (userId: string, membershipId: string):
         });
 
         let newExpiryDate = dayjs().add(membership.duration, "d").toISOString();
+        const loggedInUser = await getLoggedInUser();
         // If the membership is the same, extend the expiration date
-        if (userMembership?.membershipId === membershipId)
+        if (!isMembershipExpired(loggedInUser) && userMembership?.membershipId === membershipId)
             newExpiryDate = dayjs(userMembership.expiresAt)
                 .add(membership.duration, "d")
                 .toISOString();
