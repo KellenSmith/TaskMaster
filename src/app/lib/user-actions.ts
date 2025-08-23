@@ -10,6 +10,27 @@ import { revalidateTag } from "next/cache";
 import z from "zod";
 import { UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
 
+/**
+ * Simple in-memory cache for the logged-in user to prevent race conditions and reduce redundant calls.
+ *
+ * Why we need this cache:
+ * - getLoggedInUser() is often called multiple times in quick succession across different components
+ * - Each call involves: cookie access → JWT decryption → database query
+ * - Race conditions can occur when multiple calls happen simultaneously, especially with cookie access
+ * - The second call might fail due to timing issues with the cookies() API in Next.js
+ *
+ * How it works:
+ * - Stores the user result and a timestamp for when it was cached
+ * - If a subsequent call happens within CACHE_DURATION, returns the cached result
+ * - Cache is invalidated after CACHE_DURATION milliseconds to ensure fresh data
+ * - Both successful and failed results are cached to prevent repeated failed attempts
+ */
+let userCache: {
+    user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | null;
+    timestamp: number;
+} | null = null;
+const CACHE_DURATION = 1000; // Cache for 1 second - short enough to stay fresh, long enough to prevent race conditions
+
 export const getUserById = async (
     userId: string,
 ): Promise<Prisma.UserGetPayload<{ include: { userMembership: true } }>> => {
@@ -71,17 +92,59 @@ export const getAllUsers = async (): Promise<
     }
 };
 
+/**
+ * Retrieves the currently logged-in user from the authentication cookie and database.
+ *
+ * This function implements a short-term cache to prevent issues when called multiple times
+ * in quick succession (common in React server components).
+ *
+ * Process:
+ * 1. Check if we have a valid cached result (within CACHE_DURATION)
+ * 2. If no cache, retrieve the user cookie containing the JWT
+ * 3. Decrypt and verify the JWT to get the user ID
+ * 4. Query the database for the full user record with membership info
+ * 5. Cache the result (success or failure) to prevent repeated calls
+ *
+ * @returns User object with membership info, or null if not authenticated/error occurs
+ */
 export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
     include: { userMembership: true };
 }> | null> => {
+    // Check cache first - prevents race conditions when function is called multiple times rapidly
+    const now = Date.now();
+    if (userCache && now - userCache.timestamp < CACHE_DURATION) {
+        return userCache.user; // Return cached result if still valid
+    }
+
     try {
+        // Step 1: Get the authentication cookie containing the JWT
         const userCookie = await getUserCookie();
+        if (!userCookie) {
+            // No cookie means user is not logged in - cache this result
+            userCache = { user: null, timestamp: now };
+            return null;
+        }
+
+        // Step 2: Decrypt and verify the JWT to extract user information
         const jwtPayload = await decryptJWT(userCookie);
-        return await prisma.user.findUniqueOrThrow({
+        if (!jwtPayload) {
+            // JWT is invalid/expired - cache this result to prevent repeated attempts
+            userCache = { user: null, timestamp: now };
+            return null;
+        }
+
+        // Step 3: Query database for complete user record with membership details
+        const user = await prisma.user.findUniqueOrThrow({
             where: { id: jwtPayload.id },
             include: { userMembership: true },
         });
-    } catch {
+
+        // Step 4: Cache the successful result
+        userCache = { user, timestamp: now };
+        return user;
+    } catch (error) {
+        // Cache failed attempts to prevent repeated database calls on errors
+        userCache = { user: null, timestamp: now };
         return null;
     }
 };
