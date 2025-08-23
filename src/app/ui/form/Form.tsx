@@ -67,7 +67,6 @@ const Form: FC<FormProps> = ({
         if (!validationSchema) return formDataObject;
         try {
             const parsedFieldValues = validationSchema.parse(formDataObject);
-            console.log(parsedFieldValues);
             setValidationError(null);
             return parsedFieldValues;
         } catch (error) {

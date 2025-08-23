@@ -13,6 +13,7 @@ import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
 import z from "zod";
+import { pathToRoute } from "../lib/definitions";
 
 export interface RowActionProps {
     name: string;
@@ -157,11 +158,20 @@ const Datagrid: React.FC<DatagridProps> = ({
                 autoPageSize
             />
             {allowAddNew && (
-                <Button onClick={() => navigateToRoute(router, [pathname, GlobalConstants.CREATE])}>
+                <Button
+                    onClick={() =>
+                        navigateToRoute(router, [pathToRoute(pathname), GlobalConstants.CREATE])
+                    }
+                >
                     Add New
                 </Button>
             )}
-            <Dialog open={clickedRow !== null} onClose={() => setClickedRow(null)}>
+            <Dialog
+                fullWidth
+                maxWidth="xl"
+                open={clickedRow !== null}
+                onClose={() => setClickedRow(null)}
+            >
                 <Form
                     name={name}
                     buttonLabel="save"

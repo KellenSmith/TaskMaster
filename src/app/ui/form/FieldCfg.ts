@@ -10,8 +10,10 @@ export const FieldLabels = {
     // Organization settings
     [GlobalConstants.ORGANIZATION_SETTINGS]: "Settings",
     [GlobalConstants.ORGANIZATION_NAME]: "Organization Name",
-    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind Membership Expires In Days",
-    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]: "Purge Members After Days Unvalidated",
+    [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]: "Default Task Shift Length [hours]",
+    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind before membership expires [days]",
+    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]:
+        "Purge Members After Time Unvalidated [days]",
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
     // User
@@ -28,8 +30,8 @@ export const FieldLabels = {
     [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the member registry",
     [GlobalConstants.PENDING]: "Pending",
-    [GlobalConstants.ACTIVE]: "Is member",
-    [GlobalConstants.EXPIRED]: "Is not member",
+    [GlobalConstants.ACTIVE]: "Active",
+    [GlobalConstants.EXPIRED]: "Expired",
     // Login
     [GlobalConstants.LOGIN]: "Login",
     [GlobalConstants.PASSWORD]: "Password",
@@ -77,8 +79,6 @@ export const FieldLabels = {
     [GlobalConstants.PRICE]: "Price",
     [GlobalConstants.STOCK]: "Stock",
     [GlobalConstants.UNLIMITED_STOCK]: "Unlimited Stock",
-    [GlobalConstants.IMAGE_URL]: "Image URL",
-    // Ticket
     [GlobalConstants.TICKET]: "Ticket",
     [GlobalConstants.TICKET_TYPE]: "Type",
 };
@@ -88,6 +88,7 @@ export const RenderedFields = {
     [GlobalConstants.ORGANIZATION_SETTINGS]: [
         GlobalConstants.ORGANIZATION_NAME,
         GlobalConstants.ORGANIZATION_EMAIL,
+        GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
     ],
@@ -136,7 +137,6 @@ export const RenderedFields = {
         GlobalConstants.PRICE,
         GlobalConstants.STOCK,
         GlobalConstants.UNLIMITED_STOCK,
-        GlobalConstants.IMAGE_URL,
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],

@@ -29,7 +29,11 @@ const ProductsDashboard = ({ productsPromise }) => {
         },
     ];
 
-    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.DESCRIPTION];
+    const hiddenColumns = [
+        GlobalConstants.ID,
+        GlobalConstants.DESCRIPTION,
+        GlobalConstants.IMAGE_URL,
+    ];
 
     return (
         <Stack sx={{ height: "100%" }}>

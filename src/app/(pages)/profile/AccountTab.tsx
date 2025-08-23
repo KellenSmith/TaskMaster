@@ -94,7 +94,12 @@ const AccountTab = () => {
                 <CardContent>
                     <Stack spacing={3}>
                         {/* Header */}
-                        <Stack display="flex" alignItems="center" justifyContent="space-between">
+                        <Stack
+                            display="flex"
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                        >
                             <Typography variant="h6" sx={{ fontWeight: 600 }}>
                                 Membership
                             </Typography>
@@ -143,7 +148,7 @@ const AccountTab = () => {
                         ) : (
                             <Stack spacing={2}>
                                 {/* Member Since */}
-                                <Stack alignItems="center" spacing={2}>
+                                <Stack direction="row" alignItems="center" spacing={2}>
                                     <Person color="primary" />
                                     <Stack>
                                         <Typography variant="body2" color="text.secondary">
@@ -156,7 +161,7 @@ const AccountTab = () => {
                                 </Stack>
 
                                 {/* Expiration Date */}
-                                <Stack alignItems="center" spacing={2}>
+                                <Stack direction="row" alignItems="center" spacing={2}>
                                     <Schedule color="primary" />
                                     <Stack>
                                         <Typography variant="body2" color="text.secondary">
@@ -168,7 +173,7 @@ const AccountTab = () => {
                                     </Stack>
                                 </Stack>
 
-                                <Stack spacing={2} alignItems="center">
+                                <Stack direction="row" spacing={2} alignItems="center">
                                     <AdminPanelSettings color="primary" />
                                     <Stack>
                                         <Typography variant="body2" color="text.secondary">

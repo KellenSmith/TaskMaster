@@ -109,7 +109,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
     const customColumns: GridColDef[] = [
         {
             field: GlobalConstants.STATUS,
-            headerName: FieldLabels[GlobalConstants.STATUS],
+            headerName: "Membership status",
             type: "string",
             valueGetter: (_, member: ImplementedDatagridEntities) => {
                 const { status } = getStatusConfig(member);

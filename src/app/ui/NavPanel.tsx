@@ -64,11 +64,11 @@ const NavPanel = () => {
             <Stack key={privacyStatus}>
                 {privacyStatus !== GlobalConstants.PUBLIC && (
                     <ListSubheader sx={{ textTransform: "capitalize" }}>
-                        {privacyStatus}
+                        {privacyStatus}s only
                     </ListSubheader>
                 )}
                 {authorizedRoutes.map((route) => (
-                    <ListItem key={route}>
+                    <ListItem key={route} dense>
                         <Button
                             onClick={() => {
                                 setDrawerOpen(false);

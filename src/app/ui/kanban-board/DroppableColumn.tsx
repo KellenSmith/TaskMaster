@@ -162,7 +162,12 @@ const DroppableColumn = ({
                 </Stack>
                 <Stack spacing={2}>{getSortedTaskComps(tasks, getTaskShiftsComp)}</Stack>
             </Paper>
-            <Dialog open={!!taskFormDefaultValues} onClose={() => setTaskFormDefaultValues(null)}>
+            <Dialog
+                fullWidth
+                maxWidth="xl"
+                open={!!taskFormDefaultValues}
+                onClose={() => setTaskFormDefaultValues(null)}
+            >
                 <Form
                     name={GlobalConstants.TASK}
                     action={createNewTask}

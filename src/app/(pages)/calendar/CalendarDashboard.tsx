@@ -115,7 +115,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
                 </Stack>
                 {getCalendarGrid()}
             </Stack>
-            <Dialog maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
+            <Dialog fullWidth maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
                 <DialogContent>
                     <Form
                         name={GlobalConstants.EVENT}

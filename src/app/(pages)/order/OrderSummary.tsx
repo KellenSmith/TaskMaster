@@ -66,11 +66,16 @@ const OrderSummary = async ({ order }: OrderSummaryProps) => {
                                             <Stack>
                                                 <Typography variant="body1" component="div">
                                                     {item.product.name}
-                                                    {item.product.membership && (
-                                                        <Typography variant="body2" color="warning">
-                                                            Log in again to use your new membership!
-                                                        </Typography>
-                                                    )}
+                                                    {item.product.membership &&
+                                                        order.status === OrderStatus.completed && (
+                                                            <Typography
+                                                                variant="body2"
+                                                                color="warning"
+                                                            >
+                                                                Log in again to use your new
+                                                                membership!
+                                                            </Typography>
+                                                        )}
                                                 </Typography>
                                             </Stack>
                                         </TableCell>

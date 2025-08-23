@@ -9,7 +9,7 @@ const GlobalConstants = {
     PROFILE: "profile",
     RECEIPT: "receipt",
     MEMBERS: "members",
-    ORGANIZATION_SETTINGS: "organization-settings",
+    ORGANIZATION_SETTINGS: "settings",
     CREATE: "create",
     CALENDAR: "calendar",
     SENDOUT: "sendout",

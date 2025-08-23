@@ -84,7 +84,7 @@ const DraggableTask = ({
                     <Typography variant="body2">{formatDate(task.endTime)}</Typography>
                 </Stack>
             </Card>
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+            <Dialog fullWidth maxWidth="xl" open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <Form
                     name={GlobalConstants.TASK}
                     defaultValues={task}
