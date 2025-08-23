@@ -35,31 +35,38 @@ export const OrderStatusSchema = z.enum(OrderStatus);
 // ORGANIZATION SETTINGS SCHEMAS
 // =============================================================================
 
-export const OrganizationSettingsCreateSchema = z.object({
-    remindMembershipExpiresInDays: z.coerce.number().int().positive().default(7),
-    organizationName: z.string().default("Task Master"),
-    purgeMembersAfterDaysUnvalidated: z.coerce.number().int().positive().default(180),
-    email: z.email().default("kellensmith407@gmail.com"),
-});
+export const OrganizationSettingsCreateSchema = z
+    .object({
+        id: z.string().optional(),
+        remindMembershipExpiresInDays: z.coerce.number().int().positive().default(7),
+        organizationName: z.string().default("Task Master"),
+        purgeMembersAfterDaysUnvalidated: z.coerce.number().int().positive().default(180),
+        email: z.email().default("kellensmith407@gmail.com"),
+    })
+    .omit({ id: true });
 
 export const OrganizationSettingsUpdateSchema: z.ZodType<Prisma.OrganizationSettingsUpdateInput> =
-    OrganizationSettingsCreateSchema.partial();
+    OrganizationSettingsCreateSchema.partial().extend({
+        id: z.string().optional(),
+    });
 
 // =============================================================================
 // USER SCHEMAS
 // =============================================================================
 
-export const UserCreateSchema = z.object({
-    id: z.string().optional(),
-    firstName: z.string().default(""),
-    surName: z.string().default(""),
-    nickname: z.string().optional(),
-    pronoun: z.string().nullable().default("they/them"),
-    email: z.email(),
-    phone: z.string().nullable().default(""),
-    consentToNewsletters: z.coerce.boolean(),
-    role: UserRoleSchema.default(UserRole.member),
-});
+export const UserCreateSchema = z
+    .object({
+        id: z.string().optional(),
+        firstName: z.string().default(""),
+        surName: z.string().default(""),
+        nickname: z.string().optional(),
+        pronoun: z.string().nullable().default("they/them"),
+        email: z.email(),
+        phone: z.string().nullable().default(""),
+        consentToNewsletters: z.coerce.boolean(),
+        role: UserRoleSchema.default(UserRole.member),
+    })
+    .omit({ id: true });
 
 export const UserUpdateSchema = UserCreateSchema.partial().extend({
     id: z.string().optional(),
@@ -69,12 +76,14 @@ export const UserUpdateSchema = UserCreateSchema.partial().extend({
 // USER CREDENTIALS SCHEMAS
 // =============================================================================
 
-export const UserCredentialsCreateSchema = z.object({
-    id: z.string().optional(),
-    email: z.email(),
-    salt: z.string(),
-    hashedPassword: z.string(),
-});
+export const UserCredentialsCreateSchema = z
+    .object({
+        id: z.string().optional(),
+        email: z.email(),
+        salt: z.string(),
+        hashedPassword: z.string(),
+    })
+    .omit({ id: true });
 
 export const UserCredentialsUpdateSchema = UserCredentialsCreateSchema.partial().extend({
     id: z.string().optional(),
@@ -84,15 +93,18 @@ export const UserCredentialsUpdateSchema = UserCredentialsCreateSchema.partial()
 // EVENT SCHEMAS
 // =============================================================================
 
-export const EventCreateSchema = z.object({
-    title: z.string().default(""),
-    location: z.string().default(""),
-    startTime: stringToISODate,
-    endTime: stringToISODate,
-    description: z.string().default(""),
-    maxParticipants: z.coerce.number().int().positive().nullable(),
-    status: EventStatusSchema.default(EventStatus.draft),
-});
+export const EventCreateSchema = z
+    .object({
+        id: z.string().optional(),
+        title: z.string().default(""),
+        location: z.string().default(""),
+        startTime: stringToISODate,
+        endTime: stringToISODate,
+        description: z.string().default(""),
+        maxParticipants: z.coerce.number().int().positive().nullable(),
+        status: EventStatusSchema.default(EventStatus.draft),
+    })
+    .omit({ id: true });
 
 export const EventUpdateSchema = EventCreateSchema.partial().extend({
     id: z.string().optional(),
@@ -126,44 +138,46 @@ export const ReserveInEventUpdateSchema = ReserveInEventCreateSchema;
 // TASK SCHEMAS
 // =============================================================================
 
-export const TaskCreateSchema = z.object({
-    id: z.string().optional(),
-    phase: TaskPhaseSchema.default(TaskPhase.before),
-    name: z.string().default(""),
-    status: TaskStatusSchema.default(TaskStatus.toDo),
-    eventId: z.string().nullable().optional(),
-    assigneeId: z.string().nullable(),
-    reviewerId: z.string().nullable(),
-    tags: z
-        .string()
-        .transform((val) => val.split(","))
-        .default([]),
-    startTime: stringToISODate.nullable(),
-    endTime: stringToISODate.nullable(),
-    description: z.string().default(""),
-});
+export const TaskCreateSchema = z
+    .object({
+        id: z.string().optional(),
+        phase: TaskPhaseSchema.default(TaskPhase.before),
+        name: z.string().default(""),
+        status: TaskStatusSchema.default(TaskStatus.toDo),
+        eventId: z.string().nullable().optional(),
+        assigneeId: z.string().nullable(),
+        reviewerId: z.string().nullable(),
+        tags: z
+            .string()
+            .transform((val) => (val ? val.split(",") : []))
+            .default([]),
+        startTime: stringToISODate.nullable(),
+        endTime: stringToISODate.nullable(),
+        description: z.string().default(""),
+    })
+    .omit({ id: true });
 
-export const TaskUpdateSchema = TaskCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+export const TaskUpdateSchema = TaskCreateSchema.partial();
 
 // =============================================================================
 // PRODUCT SCHEMAS
 // =============================================================================
 
-export const ProductCreateSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().default(""),
-    description: z.string().default(""),
-    price: z.coerce
-        .number()
-        .nonnegative()
-        .default(0)
-        .transform((val) => Math.round(val * 100)),
-    stock: z.coerce.number().int().nonnegative().nullable().default(0),
-    unlimitedStock: z.coerce.boolean().default(false),
-    imageUrl: z.string().optional(),
-});
+export const ProductCreateSchema = z
+    .object({
+        id: z.string().optional(),
+        name: z.string().default(""),
+        description: z.string().default(""),
+        price: z.coerce
+            .number()
+            .nonnegative()
+            .default(0)
+            .transform((val) => Math.round(val * 100)),
+        stock: z.coerce.number().int().nonnegative().nullable().default(0),
+        unlimitedStock: z.coerce.boolean().default(false),
+        imageUrl: z.string().optional(),
+    })
+    .omit({ id: true });
 
 export const ProductUpdateSchema = ProductCreateSchema.partial().extend({
     id: z.string().optional(),
@@ -216,14 +230,16 @@ export const TicketUpdateSchema = TicketCreateSchema;
 // ORDER SCHEMAS
 // =============================================================================
 
-export const OrderCreateSchema = z.object({
-    id: z.string().optional(),
-    status: OrderStatusSchema.default(OrderStatus.pending),
-    totalAmount: z.number().nonnegative().default(0.0),
-    paymentRequestId: z.string().nullable(),
-    payeeRef: z.string().nullable(),
-    userId: z.string(),
-});
+export const OrderCreateSchema = z
+    .object({
+        id: z.string().optional(),
+        status: OrderStatusSchema.default(OrderStatus.pending),
+        totalAmount: z.number().nonnegative().default(0.0),
+        paymentRequestId: z.string().nullable(),
+        payeeRef: z.string().nullable(),
+        userId: z.string(),
+    })
+    .omit({ id: true });
 
 export const OrderUpdateSchema = OrderCreateSchema.partial().extend({
     id: z.string().optional(),

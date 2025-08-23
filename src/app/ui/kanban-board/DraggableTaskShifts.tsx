@@ -1,6 +1,14 @@
 "use client";
 
-import { Accordion, AccordionSummary, Button, Card, Stack, Typography } from "@mui/material";
+import {
+    Accordion,
+    AccordionSummary,
+    Button,
+    Card,
+    Divider,
+    Stack,
+    Typography,
+} from "@mui/material";
 import { formatDate } from "../utils";
 import { ExpandMore } from "@mui/icons-material";
 import { getEarliestStartTime, sortTasks } from "../../(pages)/event/event-utils";
@@ -60,17 +68,38 @@ const DraggableTaskShifts = ({
         newTaskShift.endTime = dayjs(newTaskShift.startTime)
             .add(organizationSettings.defaultTaskShiftLength, "hour")
             .toDate();
-        console.log(
-            newTaskShift.startTime,
-            newTaskShift.endTime,
-            organizationSettings.defaultTaskShiftLength,
-        );
         return newTaskShift;
     };
 
+    const getAddShiftButton = () => {
+        if (readOnly) return null;
+        return (
+            <Button
+                fullWidth
+                onClick={() => openCreateTaskDialog(getDefaultValuesForTaskShift(taskList[0]))}
+            >
+                add shift
+            </Button>
+        );
+    };
+
+    if (taskList.length === 0) return null;
+    if (taskList.length < 2)
+        return (
+            <Card>
+                <DraggableTask
+                    key={taskList[0].id}
+                    readOnly={readOnly}
+                    task={taskList[0]}
+                    setDraggedTask={setDraggedTask}
+                    activeMembersPromise={activeMembersPromise}
+                />
+                {getAddShiftButton()}
+            </Card>
+        );
     return (
-        <Card key={taskList[0][GlobalConstants.NAME]}>
-            <Stack paddingLeft={2} paddingTop={2} direction="row" justifyContent="space-between">
+        <Card key={taskList[0].id}>
+            <Stack padding="1rem 1rem 0rem 1rem" direction="row" justifyContent="space-between">
                 <Typography variant="body1">{taskList[0][GlobalConstants.NAME]}</Typography>
                 <Typography variant="body1">
                     {formatDate(getEarliestStartTime(taskList)) +
@@ -85,25 +114,20 @@ const DraggableTaskShifts = ({
                     </AccordionSummary>
                     <Stack paddingLeft={2}>
                         {taskList.sort(sortTasks).map((task) => (
-                            <DraggableTask
-                                key={task[GlobalConstants.ID]}
-                                readOnly={readOnly}
-                                task={task}
-                                setDraggedTask={setDraggedTask}
-                                activeMembersPromise={activeMembersPromise}
-                            />
+                            <Stack key={task.id}>
+                                <Divider />
+                                <DraggableTask
+                                    readOnly={readOnly}
+                                    task={task}
+                                    setDraggedTask={setDraggedTask}
+                                    activeMembersPromise={activeMembersPromise}
+                                />
+                            </Stack>
                         ))}
                     </Stack>
                 </Accordion>
             )}
-            {!readOnly && (
-                <Button
-                    fullWidth
-                    onClick={() => openCreateTaskDialog(getDefaultValuesForTaskShift(taskList[0]))}
-                >
-                    add shift
-                </Button>
-            )}
+            {getAddShiftButton()}
         </Card>
     );
 };

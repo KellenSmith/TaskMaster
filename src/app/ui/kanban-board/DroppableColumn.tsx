@@ -79,6 +79,7 @@ const DroppableColumn = ({
     ) => {
         return (
             <DraggableTaskShifts
+                key={taskList.map((task) => task.id).join("-")}
                 readOnly={readOnly}
                 taskList={taskList}
                 activeMembersPromise={activeMembersPromise}
@@ -129,7 +130,7 @@ const DroppableColumn = ({
         parsedFieldValues: z.infer<typeof TaskCreateSchema>,
     ): Promise<string> => {
         const eventIdInput = event ? event.id : null;
-        await createTask({ ...taskFormDefaultValues, ...parsedFieldValues, eventId: eventIdInput });
+        await createTask({ ...parsedFieldValues, eventId: eventIdInput });
         setTaskFormDefaultValues(null);
         return "Created task";
     };

@@ -24,6 +24,8 @@ const GlobalConstants = {
     APPLY: "apply",
     // Org settings
     ORGANIZATION_NAME: "organizationName",
+    ORGANIZATION_EMAIL: "organizationEmail",
+    DEFAULT_TASK_SHIFT_LENGTH: "defaultTaskShiftLength",
     REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remindMembershipExpiresInDays",
     PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purgeMembersAfterDaysUnvalidated",
     // User

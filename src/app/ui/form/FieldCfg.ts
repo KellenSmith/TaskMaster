@@ -87,9 +87,9 @@ export const RenderedFields = {
     // Org settings
     [GlobalConstants.ORGANIZATION_SETTINGS]: [
         GlobalConstants.ORGANIZATION_NAME,
+        GlobalConstants.ORGANIZATION_EMAIL,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
-        GlobalConstants.EMAIL,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -127,8 +127,8 @@ export const RenderedFields = {
         GlobalConstants.REVIEWER_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
-        GlobalConstants.DESCRIPTION,
         GlobalConstants.TAGS,
+        GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
     [GlobalConstants.PRODUCT]: [
