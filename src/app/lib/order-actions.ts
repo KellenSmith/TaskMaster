@@ -31,14 +31,14 @@ export const getOrderById = async (
     }
 };
 
-export type AllOrdersType = Prisma.OrderGetPayload<{
-    include: {
-        user: { select: { nickname: true } };
-        orderItems: { include: { product: true } };
-    };
-}>;
-
-export const getAllOrders = async (): Promise<AllOrdersType[]> => {
+export const getAllOrders = async (): Promise<
+    Prisma.OrderGetPayload<{
+        include: {
+            user: { select: { nickname: true } };
+            orderItems: { include: { product: true } };
+        };
+    }>[]
+> => {
     try {
         return prisma.order.findMany({
             include: {

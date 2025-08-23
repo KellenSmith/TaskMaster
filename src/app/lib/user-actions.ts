@@ -55,12 +55,14 @@ export const createUser = async (
 };
 
 export const getAllUsers = async (): Promise<
-    Prisma.UserGetPayload<{ include: { userCredentials: true; userMembership: true } }>[]
+    Prisma.UserGetPayload<{
+        include: { userCredentials: { select: { id: true } }; userMembership: true };
+    }>[]
 > => {
     try {
         return await prisma.user.findMany({
             include: {
-                userCredentials: true,
+                userCredentials: { select: { id: true } },
                 userMembership: true,
             },
         });

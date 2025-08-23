@@ -20,7 +20,9 @@ import { FC } from "react";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
-        Prisma.UserGetPayload<{ include: { userCredentials: true; userMembership: true } }>[]
+        Prisma.UserGetPayload<{
+            include: { userCredentials: { select: { id: true } }; userMembership: true };
+        }>[]
     >;
 }
 

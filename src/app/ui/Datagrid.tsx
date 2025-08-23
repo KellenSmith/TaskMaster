@@ -13,7 +13,6 @@ import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
 import z from "zod";
-import { AllOrdersType } from "../lib/order-actions";
 
 export interface RowActionProps {
     name: string;
@@ -26,10 +25,15 @@ export interface RowActionProps {
 
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
-          include: { userCredentials: true; userMembership: true };
+          include: { userCredentials: { select: { id: true } }; userMembership: true };
       }>
     | Product
-    | AllOrdersType;
+    | Prisma.OrderGetPayload<{
+          include: {
+              user: { select: { nickname: true } };
+              orderItems: { include: { product: true } };
+          };
+      }>;
 
 interface DatagridProps {
     allowAddNew?: boolean;

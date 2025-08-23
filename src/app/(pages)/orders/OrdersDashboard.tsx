@@ -3,11 +3,18 @@ import { Stack } from "@mui/material";
 import Datagrid, { ImplementedDatagridEntities } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { OrderUpdateSchema } from "../../lib/zod-schemas";
-import { AllOrdersType } from "../../lib/order-actions";
 import { GridColDef } from "@mui/x-data-grid";
+import { Prisma } from "@prisma/client";
 
 interface OrdersDashboardProps {
-    ordersPromise: Promise<AllOrdersType[]>;
+    ordersPromise: Promise<
+        Prisma.OrderGetPayload<{
+            include: {
+                user: { select: { nickname: true } };
+                orderItems: { include: { product: true } };
+            };
+        }>[]
+    >;
 }
 
 const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
@@ -16,7 +23,14 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
             field: GlobalConstants.NICKNAME,
             headerName: "Member nickname",
             valueGetter: (_, order: ImplementedDatagridEntities) =>
-                (order as AllOrdersType).user.nickname,
+                (
+                    order as Prisma.OrderGetPayload<{
+                        include: {
+                            user: { select: { nickname: true } };
+                            orderItems: { include: { product: true } };
+                        };
+                    }>
+                ).user.nickname,
         },
     ];
     const hiddenColumns = [
