@@ -1,6 +1,6 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 

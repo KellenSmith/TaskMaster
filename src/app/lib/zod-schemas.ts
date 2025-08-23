@@ -58,7 +58,7 @@ export const UserCreateSchema = z.object({
     email: z.email(),
     phone: z.string().nullable().default(""),
     consentToNewsletters: z.coerce.boolean(),
-    role: UserRoleSchema.default(UserRole.user),
+    role: UserRoleSchema.default(UserRole.member),
 });
 
 export const UserUpdateSchema = UserCreateSchema.partial().extend({

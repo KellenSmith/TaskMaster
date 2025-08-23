@@ -21,7 +21,7 @@ model OrganizationSettings {
 }
 
 enum UserRole {
-    user
+    member
     admin
 }
 
@@ -35,7 +35,7 @@ model User {
     phone                String?  @default("")
     createdAt            DateTime @default(now())
     consentToNewsletters Boolean  @default(true)
-    role                 UserRole @default(user)
+    role                 UserRole @default(member)
 
     userCredentials UserCredentials?
     userMembership  UserMembership?

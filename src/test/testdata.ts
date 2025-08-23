@@ -10,7 +10,7 @@ const testdata = {
         pronoun: "they/them",
         nickname: "Test User",
         email: "test@example.com",
-        role: UserRole.user,
+        role: UserRole.member,
         consentToNewsletters: true,
         phone: "123-456-7890",
         createdAt: dayjs().subtract(1, "year").toDate(),

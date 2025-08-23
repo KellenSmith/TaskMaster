@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 import GlobalConstants from "./../GlobalConstants";
 import { Prisma } from "@prisma/client";
-import { prisma } from "./../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";

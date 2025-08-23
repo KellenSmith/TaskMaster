@@ -4,7 +4,7 @@ import React from "react";
 import OrderSummary from "./OrderSummary";
 import PaymentHandler from "../../ui/payment/PaymentHandler";
 import { getLoggedInUser } from "../../lib/user-actions";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../../../prisma/prisma-client";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
@@ -26,7 +26,9 @@ const OrderPage = async ({ searchParams }: OrderPageProps) => {
 
     const order = await prisma.order.findUnique({
         where: { id: orderId },
-        include: { orderItems: { include: { product: true } } },
+        include: {
+            orderItems: { include: { product: { include: { membership: true, ticket: true } } } },
+        },
     });
     const loggedInUser = await getLoggedInUser();
 

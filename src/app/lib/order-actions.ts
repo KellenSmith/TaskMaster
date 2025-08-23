@@ -1,7 +1,7 @@
 "use server";
 
 import { OrderStatus, Prisma } from "@prisma/client";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import { processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
 import { sendOrderConfirmation } from "./mail-service/mail-service";

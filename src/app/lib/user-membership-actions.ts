@@ -2,7 +2,7 @@
 
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
 

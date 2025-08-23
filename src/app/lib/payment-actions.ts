@@ -3,7 +3,7 @@ import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById, progressOrder } from "./order-actions";
 import { OrderStatus } from "@prisma/client";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";

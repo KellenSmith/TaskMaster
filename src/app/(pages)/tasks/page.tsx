@@ -9,7 +9,6 @@ const TasksPage = () => {
     const tasksPromise = unstable_cache(getFilteredTasks, [], { tags: [GlobalConstants.TASK] })({
         eventId: null,
     });
-
     const activeMembersPromise = unstable_cache(getActiveMembers, [], {
         tags: [GlobalConstants.USER],
     })();

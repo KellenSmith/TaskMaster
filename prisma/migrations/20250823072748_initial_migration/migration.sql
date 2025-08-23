@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "public"."UserRole" AS ENUM ('user', 'admin');
+CREATE TYPE "public"."UserRole" AS ENUM ('member', 'admin');
 
 -- CreateEnum
 CREATE TYPE "public"."EventStatus" AS ENUM ('draft', 'published', 'cancelled');
@@ -39,7 +39,7 @@ CREATE TABLE "public"."users" (
     "phone" TEXT DEFAULT '',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "consentToNewsletters" BOOLEAN NOT NULL DEFAULT true,
-    "role" "public"."UserRole" NOT NULL DEFAULT 'user',
+    "role" "public"."UserRole" NOT NULL DEFAULT 'member',
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );

@@ -15,7 +15,11 @@ import { OrderStatus, Prisma } from "@prisma/client";
 import { formatPrice } from "../../ui/utils";
 
 interface OrderSummaryProps {
-    order: Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>;
+    order: Prisma.OrderGetPayload<{
+        include: {
+            orderItems: { include: { product: { include: { membership: true; ticket: true } } } };
+        };
+    }>;
 }
 
 const OrderSummary = async ({ order }: OrderSummaryProps) => {
@@ -62,6 +66,11 @@ const OrderSummary = async ({ order }: OrderSummaryProps) => {
                                             <Stack>
                                                 <Typography variant="body1">
                                                     {item.product.name}
+                                                    {item.product.membership && (
+                                                        <Typography variant="body2" color="warning">
+                                                            Log in again to use your new membership!
+                                                        </Typography>
+                                                    )}
                                                 </Typography>
                                             </Stack>
                                         </TableCell>

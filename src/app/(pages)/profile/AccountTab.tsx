@@ -4,10 +4,21 @@ import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
 import { useUserContext } from "../../context/UserContext";
 import { deleteUser, updateUser } from "../../lib/user-actions";
-import { Button, Card, CardContent, Stack, Typography, useTheme } from "@mui/material";
+import {
+    Button,
+    Card,
+    CardContent,
+    Stack,
+    Typography,
+    useTheme,
+    Box,
+    Chip,
+    Divider,
+} from "@mui/material";
 import { isMembershipExpired, isUserAdmin } from "../../lib/definitions";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { allowRedirectException, formatDate, navigateToRoute } from "../../ui/utils";
+import { Person, Schedule, AdminPanelSettings, Warning, CheckCircle } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { deleteUserCookieAndRedirectToHome } from "../../lib/auth";
@@ -67,21 +78,6 @@ const AccountTab = () => {
 
     return (
         <Stack>
-            <Card>
-                <CardContent sx={{ color: theme.palette.secondary.main }}>
-                    {isMembershipExpired(user) ? (
-                        <Typography>Your membership is expired!</Typography>
-                    ) : (
-                        <>
-                            <Typography>{`Member since ${formatDate(user.createdAt)}`}</Typography>
-                            <Typography>
-                                {`Your membership expires ${formatDate(dayjs(user.userMembership.expiresAt))}`}
-                            </Typography>
-                            {isUserAdmin(user) && <Typography>You are an admin</Typography>}
-                        </>
-                    )}
-                </CardContent>
-            </Card>
             <Form
                 name={GlobalConstants.PROFILE}
                 buttonLabel="save"
@@ -95,6 +91,103 @@ const AccountTab = () => {
                 action={validateAndUpdateCredentials}
                 validationSchema={UpdateCredentialsSchema}
             ></Form>
+            <Card elevation={3}>
+                <CardContent>
+                    <Stack spacing={3}>
+                        {/* Header */}
+                        <Box display="flex" alignItems="center" justifyContent="space-between">
+                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                Membership Status
+                            </Typography>
+                            {isMembershipExpired(user) ? (
+                                <Chip
+                                    icon={<Warning />}
+                                    label="Expired"
+                                    color="error"
+                                    size="small"
+                                />
+                            ) : (
+                                <Chip
+                                    icon={<CheckCircle />}
+                                    label="Active"
+                                    color="success"
+                                    size="small"
+                                />
+                            )}
+                        </Box>
+
+                        <Divider />
+
+                        {/* Membership Info */}
+                        {isMembershipExpired(user) ? (
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    borderRadius: 2,
+                                    backgroundColor: theme.palette.error.light + "20",
+                                    border: `1px solid ${theme.palette.error.light}`,
+                                }}
+                            >
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        color: theme.palette.error.main,
+                                        fontWeight: 500,
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    {user.userMembership
+                                        ? "Your membership has expired and needs renewal"
+                                        : "Welcome! Activate your membership to get started"}
+                                </Typography>
+                            </Box>
+                        ) : (
+                            <Stack spacing={2}>
+                                {/* Member Since */}
+                                <Box display="flex" alignItems="center" gap={2}>
+                                    <Person color="primary" />
+                                    <Box>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Member since
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {formatDate(user.createdAt)}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+
+                                {/* Expiration Date */}
+                                <Box display="flex" alignItems="center" gap={2}>
+                                    <Schedule color="primary" />
+                                    <Box>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Membership expires
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {formatDate(dayjs(user.userMembership.expiresAt))}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+
+                                {/* Admin Status */}
+                                {isUserAdmin(user) && (
+                                    <Box display="flex" alignItems="center" gap={2}>
+                                        <AdminPanelSettings color="primary" />
+                                        <Box>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Role
+                                            </Typography>
+                                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                                Administrator
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                )}
+                            </Stack>
+                        )}
+                    </Stack>
+                </CardContent>
+            </Card>
             <Button onClick={activateMembership} disabled={isPending}>
                 {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
             </Button>

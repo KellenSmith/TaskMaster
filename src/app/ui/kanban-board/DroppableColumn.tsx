@@ -55,7 +55,7 @@ const DroppableColumn = ({
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [taskFormDefaultValues, setTaskFormDefaultValues] = useState(null);
-    const activeMembers = use(activeMembersPromise || Promise.resolve([]));
+    const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
 
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {

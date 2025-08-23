@@ -1,7 +1,7 @@
 "use server";
 
 import { Prisma, UserRole } from "@prisma/client";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { decryptJWT, getUserCookie } from "./auth";
 import dayjs from "dayjs";

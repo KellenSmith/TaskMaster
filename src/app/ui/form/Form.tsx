@@ -159,7 +159,7 @@ const Form: FC<FormProps> = ({
                         <Checkbox
                             name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                            defaultChecked={getDefaultValue(fieldId)}
+                            defaultChecked={getDefaultValue(fieldId) || false}
                         />
                     }
                     label={FieldLabels[fieldId]}

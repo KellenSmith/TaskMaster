@@ -1,4 +1,4 @@
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../../../prisma/prisma-client";
 import GlobalConstants from "../../GlobalConstants";
 import dayjs from "dayjs";
 import { remindExpiringMembers } from "../../lib/mail-service/mail-service";

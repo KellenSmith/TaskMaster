@@ -2,7 +2,7 @@
 
 import { EventStatus, Prisma, TicketType } from "@prisma/client";
 import { z } from "zod";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
 import { informOfCancelledEvent } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
