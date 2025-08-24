@@ -11,67 +11,66 @@ import { revalidateTag } from "next/cache";
 import { NextURL } from "next/dist/server/web/next-url";
 import { redirect } from "next/navigation";
 import { isUserHost } from "./definitions";
+import { allowRedirectException } from "../ui/utils";
 
 export const createEvent = async (
     parsedFieldValues: z.infer<typeof EventCreateSchema>,
 ): Promise<void> => {
-    let createdEventId: string;
-
     try {
         const loggedInUser = await getLoggedInUser();
-        const createdEvent = await prisma.event.create({
-            data: {
-                ...parsedFieldValues,
-                host: {
-                    connect: {
-                        id: loggedInUser.id,
+        const createdEvent = await prisma.$transaction(async (tx) => {
+            // Create event with ticket
+            const createdEvent = await tx.event.create({
+                data: {
+                    ...parsedFieldValues,
+                    host: {
+                        connect: {
+                            id: loggedInUser.id,
+                        },
                     },
-                },
-                tickets: {
-                    create: {
-                        type: TicketType.volunteer,
-                        product: {
-                            create: {
-                                name: `Volunteer ticket for ${parsedFieldValues.title}`,
-                                description:
-                                    "Admittance for one member signed up for at least one volunteer task",
-                                stock: parsedFieldValues.maxParticipants,
+                    tickets: {
+                        create: {
+                            type: TicketType.volunteer,
+                            product: {
+                                create: {
+                                    name: `Volunteer ticket for ${parsedFieldValues.title}`,
+                                    description:
+                                        "Admittance for one member signed up for at least one volunteer task",
+                                    stock: parsedFieldValues.maxParticipants - 1,
+                                },
                             },
                         },
                     },
                 },
-            },
-            include: {
-                tickets: true,
-            },
-        });
+                include: {
+                    tickets: true,
+                },
+            });
 
-        // Add the host as a participant with the volunteer ticket
-        const volunteerTicket = createdEvent.tickets.find(
-            (ticket) => ticket.type === TicketType.volunteer,
-        );
-        if (volunteerTicket) {
-            await prisma.eventParticipant.create({
+            // Create event participant
+            const volunteerTicket = createdEvent.tickets[0]; // Since we just created one ticket
+            await tx.eventParticipant.create({
                 data: {
                     userId: loggedInUser.id,
                     eventId: createdEvent.id,
                     ticketId: volunteerTicket.id,
                 },
             });
-        }
 
-        createdEventId = createdEvent.id;
+            return createdEvent;
+        });
+
         revalidateTag(GlobalConstants.EVENT);
-    } catch {
-        throw new Error("Failed to create event");
-    }
-    createdEventId &&
         redirect(
             new NextURL(
-                `/${GlobalConstants.EVENT}?eventId=${createdEventId}`,
+                `/${GlobalConstants.EVENT}?eventId=${createdEvent.id}`,
                 process.env.VERCEL_URL,
             ).toString(),
         );
+    } catch (error) {
+        allowRedirectException(error);
+        throw new Error("Failed to create event");
+    }
 };
 
 export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> => {

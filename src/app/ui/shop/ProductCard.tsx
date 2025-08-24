@@ -220,7 +220,7 @@ export default function ProductCard({
                                 !isAvailable || (!product.unlimitedStock && product.stock === 0)
                             }
                         >
-                            Buy
+                            {product.price === 0 ? "claim" : "buy"}
                         </Button>
                     )}
                 </DialogActions>

@@ -95,7 +95,6 @@ export const EventCreateSchema: z.ZodType<Prisma.EventCreateWithoutHostInput> = 
         endTime: stringToISODate,
         description: z.string().optional(),
         maxParticipants: z.coerce.number().int().positive(),
-        status: EventStatusSchema,
     })
     .omit({
         id: true,
@@ -195,7 +194,7 @@ export const MembershipUpdateSchema: z.ZodType<Prisma.MembershipUpdateWithoutPro
 // Extract only the common properties from the three Prisma ticket types
 type CommonTicketKeys = keyof Prisma.TicketCreateWithoutEventInput &
     keyof Prisma.TicketCreateWithoutProductInput &
-    keyof Prisma.TicketCreateWithoutParticipantInEventInput;
+    keyof Prisma.TicketCreateWithoutEventParticipantsInput;
 
 export type TicketWithoutRelations = Pick<Prisma.TicketCreateWithoutEventInput, CommonTicketKeys>;
 

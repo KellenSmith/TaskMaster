@@ -39,6 +39,7 @@ export const renewUserMembership = async (userId: string, membershipId: string):
             },
         });
         // TODO: See if revalidating the user tag is possible here since it's not cached in the serverContext
+        // Or re-encrypt the jwt
     } catch (error) {
         console.error("Failed to renew user membership:", error);
         throw new Error("Failed to renew membership");

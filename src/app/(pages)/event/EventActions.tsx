@@ -110,6 +110,7 @@ const EventActions: FC<IEventActions> = ({
                 <ConfirmButton
                     key="publish"
                     color="success"
+                    confirmText="This event will now be visible to all members. Are you sure?"
                     disabled={isPending}
                     onClick={publishEvent}
                 >

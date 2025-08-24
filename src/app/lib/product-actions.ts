@@ -12,6 +12,7 @@ import { renewUserMembership } from "./user-membership-actions";
 import z from "zod";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
+import { addEventParticipant } from "./event-participant-actions";
 
 export const getAllProducts = async (): Promise<Product[]> => {
     try {
@@ -124,13 +125,7 @@ export const processOrderedProduct = async (
         } else if (orderItem.product.ticket) {
             // Add user as participant for the ticket
             try {
-                await prisma.eventParticipant.create({
-                    data: {
-                        userId,
-                        eventId: orderItem.product.ticket.eventId,
-                        ticketId: orderItem.product.ticket.id,
-                    },
-                });
+                await addEventParticipant(userId, orderItem.product.ticket.id);
                 // Don't revalidate tag GlobalConstants.PARTICIPANT_USERS
                 // This function is run during render where it's not allowed
             } catch (error) {
