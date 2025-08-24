@@ -24,6 +24,7 @@ const OrderPage = async ({ searchParams }: OrderPageProps) => {
         // If payment status check fails, still show the order page
     }
 
+    // TODO: Go through the "page" components and minimize the fetched data
     const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {

@@ -129,8 +129,7 @@ const processOrderItems = async (orderId: string): Promise<void> => {
         for (const orderItem of order.orderItems) {
             await processOrderedProduct(order.userId, orderItem);
         }
-    } catch (error) {
-        console.log(error);
+    } catch {
         throw new Error(`Failed to process order items`);
     }
 };
@@ -155,8 +154,6 @@ export const progressOrder = async (
             where: { id: orderId },
         });
 
-        console.log(1, order.status, newStatus);
-
         // Pending to paid
         if (order.status === OrderStatus.pending) {
             order = await prisma.order.update({
@@ -164,18 +161,15 @@ export const progressOrder = async (
                 data: { status: OrderStatus.paid },
             });
         }
-        console.log(2, order.status);
         // Paid to shipped
         if (order.status === OrderStatus.paid) {
             await processOrderItems(orderId);
-            console.log("procecssed order items");
             order = await prisma.order.update({
                 where: { id: orderId },
                 data: { status: OrderStatus.shipped },
             });
             await sendOrderConfirmation(orderId);
         }
-        console.log(3, order.status);
         // Shipped to completed
         if (order.status === OrderStatus.shipped) {
             needsCapture && (await capturePaymentFunds(orderId));
@@ -184,7 +178,6 @@ export const progressOrder = async (
                 data: { status: OrderStatus.completed },
             });
         }
-        console.log("final order status: ", order.status);
         revalidateTag(GlobalConstants.ORDER);
     } catch {
         throw new Error("Failed to progress order");

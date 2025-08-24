@@ -26,7 +26,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
     // Helper function to get user status
     const getStatusChipColor = () => {
         if (isUserHost(user, event)) return theme.palette.secondary.main;
-        if (isUserParticipant(user, event.eventParticipants)) return theme.palette.primary.main;
+        if (isUserParticipant(user, event.eventParticipants)) return theme.palette.success.main;
         if (isUserReserve(user, event.eventReserves)) return theme.palette.warning.main;
         return theme.palette.info.main;
     };
@@ -59,6 +59,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             {!isEventPublished(event) && (
                                 <Chip
+                                    sx={{ border: `1px solid ${getStatusChipColor()}` }}
                                     label="Draft"
                                     size="small"
                                     color="warning"
@@ -66,24 +67,26 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                                 />
                             )}
                             <Chip
-                                sx={{ color: getStatusChipColor() }}
+                                sx={{
+                                    color: getStatusChipColor(),
+                                    border: `1px solid ${getStatusChipColor()}`,
+                                }}
                                 label={getStatusLabel()}
                                 size="small"
-                                variant="filled"
                             />
                         </Box>
                     </Stack>
 
                     {/* Event details */}
                     <Stack spacing={1}>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography color="text.secondary">
                             <strong>Start:</strong> {formatDate(event.startTime)}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography color="text.secondary">
                             <strong>End:</strong> {formatDate(event.endTime)}
                         </Typography>
                         {event.location && (
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography color="text.secondary">
                                 <strong>Location:</strong> {event.location}
                             </Typography>
                         )}

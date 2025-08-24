@@ -302,30 +302,3 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
         throw new Error("Failed to add user to event reserves");
     }
 };
-
-export const deleteEventParticipant = async (userId: string, eventId: string): Promise<void> => {
-    try {
-        await prisma.eventParticipant.deleteMany({
-            where: {
-                AND: [{ userId: userId }, { eventId: eventId }],
-            } as Prisma.EventParticipantWhereInput,
-        });
-        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-    } catch {
-        throw new Error("Failed to remove user from event participants");
-    }
-};
-
-export const deleteEventReserve = async (userId: string, eventId: string): Promise<void> => {
-    try {
-        await prisma.eventReserve.deleteMany({
-            where: {
-                AND: [{ userId: userId }, { eventId: eventId }],
-            } as Prisma.EventReserveWhereInput,
-        });
-        revalidateTag(GlobalConstants.RESERVE_USERS);
-    } catch (error) {
-        console.error(error);
-        throw new Error("Failed to delete event reserve");
-    }
-};

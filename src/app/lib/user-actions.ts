@@ -3,7 +3,7 @@
 import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { decryptJWT, getUserCookie } from "./auth";
+import { decryptJWT, encryptJWT, getUserCookie } from "./auth";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
@@ -29,7 +29,7 @@ let userCache: {
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | null;
     timestamp: number;
 } | null = null;
-const CACHE_DURATION = 10000; // Cache for 10 seconds - short enough to stay fresh, long enough to prevent race conditions
+const CACHE_DURATION = 5000; // Cache for 5 seconds - short enough to stay fresh, long enough to prevent race conditions
 
 export const getUserById = async (
     userId: string,
@@ -138,6 +138,8 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
             where: { id: jwtPayload.id },
             include: { userMembership: true },
         });
+        // TODO: Check if this works
+        // await encryptJWT(user); // Refresh JWT to extend session
 
         // Step 4: Cache the successful result
         userCache = { user, timestamp: now };
