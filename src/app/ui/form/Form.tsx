@@ -70,11 +70,11 @@ const Form: FC<FormProps> = ({
     const { addNotification } = useNotificationContext();
     const renderedFields = useMemo(
         () => [...RenderedFields[name], ...customIncludedFields],
-        [name],
+        [name, customIncludedFields],
     );
     const requiredFields = useMemo(
         () => [...(name in RequiredFields ? RequiredFields[name] : []), ...customRequiredFields],
-        [name, customIncludedFields],
+        [name, customRequiredFields],
     );
 
     const validateFormData = (formData: FormData): z.infer<typeof validationSchema> | null => {
@@ -134,7 +134,6 @@ const Form: FC<FormProps> = ({
             return (
                 <AutocompleteWrapper
                     key={fieldId}
-                    name={name}
                     fieldId={fieldId}
                     label={FieldLabels[fieldId]}
                     editMode={editMode}

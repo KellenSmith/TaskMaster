@@ -2,7 +2,7 @@
 
 import { Autocomplete, TextField } from "@mui/material";
 import { FC, useCallback, useMemo, useState } from "react";
-import { allowSelectMultiple, FieldLabels, RequiredFields, selectFieldOptions } from "./FieldCfg";
+import { allowSelectMultiple, FieldLabels, selectFieldOptions } from "./FieldCfg";
 
 export interface CustomOptionProps {
     id: string;
@@ -11,7 +11,6 @@ export interface CustomOptionProps {
 
 interface AutocompleteWrapperProps {
     fieldId: string;
-    name: string;
     label: string;
     defaultValue: string | string[];
     editMode: boolean;
@@ -22,7 +21,6 @@ interface AutocompleteWrapperProps {
 
 const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
     fieldId,
-    name,
     label,
     defaultValue,
     editMode,
