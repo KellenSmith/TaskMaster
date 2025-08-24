@@ -101,12 +101,6 @@ const OrderSummary = async ({ order }: OrderSummaryProps) => {
                             </TableBody>
                         </Table>
                     </TableContainer>
-
-                    <Stack spacing={1}>
-                        <Typography variant="body2" color="primary">
-                            Order ID: {order.id}
-                        </Typography>
-                    </Stack>
                 </Stack>
                 <Typography color="primary">{getStatusMessage(order.status)}</Typography>
             </CardContent>
