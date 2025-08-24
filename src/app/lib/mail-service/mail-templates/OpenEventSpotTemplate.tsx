@@ -20,6 +20,7 @@ const OpenEventSpotTemplate: FC<IOpenEventSpotTemplateProps> = ({ organizationNa
 
     const eventUrl = new NextURL(GlobalConstants.EVENT, process.env.VERCEL_URL);
     eventUrl.searchParams.set(GlobalConstants.EVENT_ID, event.id);
+    eventUrl.searchParams.set("tab", "Tickets");
 
     return (
         <MailTemplate organizationName={organizationName}>

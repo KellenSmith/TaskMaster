@@ -1,7 +1,7 @@
-import { createTransport } from "nodemailer";
+import { createTransport, Transporter } from "nodemailer";
 import { getOrganizationSettings } from "../organization-settings-actions";
 
-const globalMailService = global as unknown as { mailTransport: any };
+const globalMailService = global as unknown as { mailTransport: Transporter };
 
 const orgSettings = await getOrganizationSettings();
 

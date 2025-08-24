@@ -1,6 +1,8 @@
 "use server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "../../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
+import GlobalConstants from "../GlobalConstants";
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
     try {
@@ -98,14 +100,33 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
         });
 
         // TODO: unassign from tasks happening during the event
-        // TODO: notify people on the reserve list
 
         await prisma.$transaction([deleteParticipantPromise, incrementTicketStockPromise]);
-
-        await notifyEventReserves(eventId);
-        // Don't revalidate the event participants since they are not cached
-    } catch (error) {
-        console.log(error);
+    } catch {
         throw new Error("Failed to delete event participant");
+    }
+
+    try {
+        await notifyEventReserves(eventId);
+    } catch {
+        throw new Error("Failed to notify event reserves");
+    }
+};
+
+export const getEventParticipantEmails = async (eventId: string): Promise<string[]> => {
+    try {
+        const participants = await prisma.eventParticipant.findMany({
+            where: { ticket: { eventId } },
+            select: {
+                user: {
+                    select: {
+                        email: true,
+                    },
+                },
+            },
+        });
+        return participants.map((participant) => participant.user.email);
+    } catch {
+        throw new Error("Failed to get event participant emails");
     }
 };

@@ -14,6 +14,8 @@ import { getOrganizationName, getOrganizationSettings } from "../organization-se
 import { EmailSendoutSchema } from "../zod-schemas";
 import z from "zod";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
+import { getEventParticipantEmails } from "../event-participant-actions";
+import { getEventReservesEmails } from "../event-reserve-actions";
 
 interface EmailPayload {
     from: string;
@@ -68,13 +70,10 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
         organizationSettings: orgSettings,
     });
     const mailResponse = await mailTransport.sendMail(
-        userEmails.map(
-            async (userEmail) =>
-                await getEmailPayload(
-                    [userEmail],
-                    `Your ${orgSettings?.organizationName || "Task Master"} membership is about to expire`,
-                    mailContent,
-                ),
+        await getEmailPayload(
+            userEmails,
+            `Your ${orgSettings?.organizationName || "Task Master"} membership is about to expire`,
+            mailContent,
         ),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
@@ -92,26 +91,11 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
         event,
     });
 
-    const reserveEmails = (
-        await prisma.eventReserve.findMany({
-            where: { eventId },
-            select: {
-                user: {
-                    select: {
-                        email: true,
-                    },
-                },
-            },
-        })
-    ).map((eventReserve) => eventReserve.user.email);
     const mailResponse = await mailTransport.sendMail(
-        reserveEmails.map(
-            async (userEmail) =>
-                await getEmailPayload(
-                    [userEmail],
-                    `A spot has opened up for the event: ${event.title}`,
-                    mailContent,
-                ),
+        await getEmailPayload(
+            await getEventReservesEmails(eventId),
+            `A spot has opened up for the event: ${event.title}`,
+            mailContent,
         ),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
@@ -123,30 +107,6 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
  */
 export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
     try {
-        const participantEmails = (
-            await prisma.eventParticipant.findMany({
-                where: { ticket: { eventId } },
-                select: {
-                    user: {
-                        select: {
-                            email: true,
-                        },
-                    },
-                },
-            })
-        ).map((participant) => participant.user.email);
-        const reservesEmails = (
-            await prisma.eventReserve.findMany({
-                where: { eventId },
-                select: {
-                    user: {
-                        select: {
-                            email: true,
-                        },
-                    },
-                },
-            })
-        ).map((reserve) => reserve.user.email);
         const event = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
             select: { id: true, title: true },
@@ -157,7 +117,10 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
         });
 
         const mailPayload = await getEmailPayload(
-            [...participantEmails, ...reservesEmails],
+            [
+                ...(await getEventParticipantEmails(eventId)),
+                ...(await getEventReservesEmails(eventId)),
+            ],
             `Event ${event.title} cancelled`,
             mailContent,
         );
@@ -182,7 +145,7 @@ export const getEmailRecipientCount = async (
         });
         return recipientCount;
     } catch {
-        return 0;
+        throw new Error("Failed to get email recipient count");
     }
 };
 

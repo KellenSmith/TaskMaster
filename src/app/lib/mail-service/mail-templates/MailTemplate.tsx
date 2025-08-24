@@ -58,7 +58,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName 
                     >
                         {organizationName}
                     </Heading>
-                    <Container style={{ color: mailTheme.palette.text.primary }}>
+                    <Container style={{ color: mailTheme.palette.text.primary, padding: "16px" }}>
                         {children}
                         {renderHtml()}
                     </Container>

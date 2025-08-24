@@ -34,3 +34,21 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
         throw new Error("Failed to delete event reserve");
     }
 };
+
+export const getEventReservesEmails = async (eventId: string): Promise<string[]> => {
+    try {
+        const reserves = await prisma.eventReserve.findMany({
+            where: { eventId },
+            select: {
+                user: {
+                    select: {
+                        email: true,
+                    },
+                },
+            },
+        });
+        return reserves.map((reserve) => reserve.user.email);
+    } catch {
+        throw new Error("Failed to get event reserves emails");
+    }
+};
