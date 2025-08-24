@@ -1,20 +1,29 @@
 "use client";
 import GlobalConstants from "../../GlobalConstants";
-import { createUser } from "../../lib/user-actions";
+import { submitMemberApplication } from "../../lib/user-actions";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import Form from "../../ui/form/Form";
-import { UserCreateSchema } from "../../lib/zod-schemas";
+import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import { navigateToRoute } from "../../ui/utils";
 import { useRouter } from "next/navigation";
+import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
+import { useMemo } from "react";
+import { Card, Stack, Typography } from "@mui/material";
 
 const ApplyPage = () => {
     const router = useRouter();
+    const { organizationSettings } = useOrganizationSettingsContext();
+    const shouldIncludeApplicationPrompt = useMemo(
+        (): boolean => !!organizationSettings.memberApplicationPrompt,
+        [organizationSettings],
+    );
 
-    const submitApplication = async (fieldValues: z.infer<typeof UserCreateSchema>) => {
+    const submitApplication = async (
+        parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
+    ) => {
         try {
-            await createUser(fieldValues);
-            // TODO: Send email notification to organization
+            await submitMemberApplication(parsedFieldValues);
             navigateToRoute(router, [GlobalConstants.LOGIN]);
             return "Application submitted successfully";
         } catch {
@@ -23,14 +32,34 @@ const ApplyPage = () => {
     };
 
     return (
-        <Form
-            name={GlobalConstants.APPLY}
-            buttonLabel={FieldLabels[GlobalConstants.APPLY]}
-            action={submitApplication}
-            validationSchema={UserCreateSchema}
-            readOnly={false}
-            editable={false}
-        />
+        <Stack spacing={1}>
+            {shouldIncludeApplicationPrompt && (
+                <Card
+                    sx={{
+                        padding: 3,
+                    }}
+                >
+                    {organizationSettings.memberApplicationPrompt.split("\n").map((line) => (
+                        <Typography variant="h6" color="primary">
+                            {line}
+                        </Typography>
+                    ))}
+                </Card>
+            )}
+            <Form
+                name={GlobalConstants.APPLY}
+                buttonLabel={FieldLabels[GlobalConstants.APPLY]}
+                action={submitApplication}
+                validationSchema={MembershipApplicationSchema}
+                customIncludedFields={
+                    shouldIncludeApplicationPrompt
+                        ? [GlobalConstants.MEMBER_APPLICATION_PROMPT]
+                        : []
+                }
+                readOnly={false}
+                editable={false}
+            />
+        </Stack>
     );
 };
 

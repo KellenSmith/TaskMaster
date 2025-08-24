@@ -14,6 +14,7 @@ export const FieldLabels = {
     [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind before membership expires [days]",
     [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]:
         "Purge Members After Time Unvalidated [days]",
+    [GlobalConstants.MEMBER_APPLICATION_PROMPT]: "Send us a message",
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
     // User
@@ -91,6 +92,7 @@ export const RenderedFields = {
         GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
+        GlobalConstants.MEMBER_APPLICATION_PROMPT,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -169,7 +171,8 @@ export const RequiredFields = {
         GlobalConstants.ORGANIZATION_NAME,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
-        GlobalConstants.EMAIL,
+        GlobalConstants.ORGANIZATION_EMAIL,
+        GlobalConstants.MEMBER_APPLICATION_PROMPT,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -276,3 +279,5 @@ export const getUserSelectOptions = (
         label: user.nickname,
     }));
 };
+
+export const multiLineTextFields = [GlobalConstants.MEMBER_APPLICATION_PROMPT];

@@ -8,7 +8,8 @@ import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
 import z from "zod";
-import { UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
+import { MembershipApplicationSchema, UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
+import { notifyOfMembershipApplication } from "./mail-service/mail-service";
 
 /**
  * Simple in-memory cache for the logged-in user to prevent race conditions and reduce redundant calls.
@@ -73,6 +74,27 @@ export const createUser = async (
         throw new Error("Failed validating user membership");
     }
     revalidateTag(GlobalConstants.USER);
+};
+
+export const submitMemberApplication = async (
+    parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
+) => {
+    try {
+        const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
+        await createUser(userFieldValues);
+
+        if (parsedFieldValues.memberApplicationPrompt) {
+            // Send membership application to organization email
+            await notifyOfMembershipApplication(
+                userFieldValues,
+                parsedFieldValues.memberApplicationPrompt,
+            );
+        }
+
+        revalidateTag(GlobalConstants.USER);
+    } catch {
+        throw new Error("Failed to submit membership application");
+    }
 };
 
 export const getAllUsers = async (): Promise<

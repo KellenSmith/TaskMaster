@@ -11,11 +11,12 @@ import { Prisma } from "@prisma/client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
-import { EmailSendoutSchema } from "../zod-schemas";
+import { EmailSendoutSchema, UserCreateSchema } from "../zod-schemas";
 import z from "zod";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 import { getEventParticipantEmails } from "../event-participant-actions";
 import { getEventReservesEmails } from "../event-reserve-actions";
+import MembershipApplicationTemplate from "./mail-templates/MembershipApplicationTemplate";
 
 interface EmailPayload {
     from: string;
@@ -36,6 +37,31 @@ const getEmailPayload = async (
         subject: subject,
         html: await render(mailContent),
     };
+};
+
+export const notifyOfMembershipApplication = async (
+    parsedUserFieldValues: z.infer<typeof UserCreateSchema>,
+    applicationMessage: string,
+): Promise<void> => {
+    try {
+        const organizationSettings = await getOrganizationSettings();
+        const mailContent = createElement(MembershipApplicationTemplate, {
+            organizationName: organizationSettings.organizationName,
+            user: parsedUserFieldValues,
+            applicationMessage,
+        });
+
+        const mailResponse = await mailTransport.sendMail(
+            await getEmailPayload(
+                [organizationSettings.organizationEmail],
+                `New membership application received`,
+                mailContent,
+            ),
+        );
+        if (mailResponse.error) throw new Error(mailResponse.error.message);
+    } catch {
+        throw new Error("Failed to notify of membership application");
+    }
 };
 
 /**

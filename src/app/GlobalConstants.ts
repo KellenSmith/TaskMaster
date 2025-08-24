@@ -28,6 +28,7 @@ const GlobalConstants = {
     DEFAULT_TASK_SHIFT_LENGTH: "defaultTaskShiftLength",
     REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remindMembershipExpiresInDays",
     PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purgeMembersAfterDaysUnvalidated",
+    MEMBER_APPLICATION_PROMPT: "memberApplicationPrompt",
     // User
     USER: "user",
     USER_ID: "userId",

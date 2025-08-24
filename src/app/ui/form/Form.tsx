@@ -23,6 +23,7 @@ import {
     checkboxFields,
     passwordFields,
     priceFields,
+    multiLineTextFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import GlobalConstants from "../../GlobalConstants";
@@ -42,6 +43,7 @@ interface FormProps {
     defaultValues?: any;
     customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
+    customIncludedFields?: string[]; // Include extra fields which are not preconfigured in FieldCfg.ts
     readOnly?: boolean;
     editable?: boolean;
 }
@@ -54,6 +56,7 @@ const Form: FC<FormProps> = ({
     defaultValues,
     customOptions = {},
     customReadOnlyFields = [],
+    customIncludedFields = [],
     readOnly = true,
     editable = true,
 }) => {
@@ -185,6 +188,7 @@ const Form: FC<FormProps> = ({
                 {...(passwordFields.includes(fieldId) && {
                     type: GlobalConstants.PASSWORD,
                 })}
+                multiline={multiLineTextFields.includes(fieldId)}
             />
         );
     };
@@ -204,7 +208,9 @@ const Form: FC<FormProps> = ({
 
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
-                    {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
+                    {[...RenderedFields[name], ...customIncludedFields].map((fieldId) =>
+                        getFieldComp(fieldId),
+                    )}
                     {validationError && <Typography color="error">{validationError}</Typography>}
                 </Stack>
                 {editMode && (

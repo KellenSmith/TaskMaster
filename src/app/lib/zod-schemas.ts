@@ -42,7 +42,7 @@ export const OrderStatusSchema = z.enum(OrderStatus);
 
 // Organization settings are never created from forms, only updated
 
-export const OrganizationSettingsUpdateSchema: z.ZodType<Prisma.OrganizationSettingsUpdateInput> = z
+export const OrganizationSettingsUpdateSchema = z
     .object({
         id: z.string().optional(),
         organizationName: z.string().optional(),
@@ -50,6 +50,7 @@ export const OrganizationSettingsUpdateSchema: z.ZodType<Prisma.OrganizationSett
         remindMembershipExpiresInDays: z.coerce.number().int().positive().optional(),
         purgeMembersAfterDaysUnvalidated: z.coerce.number().int().positive().optional(),
         defaultTaskShiftLength: z.coerce.number().int().positive().optional(),
+        memberApplicationPrompt: z.string().optional(),
     })
     .omit({ id: true });
 
@@ -57,7 +58,7 @@ export const OrganizationSettingsUpdateSchema: z.ZodType<Prisma.OrganizationSett
 // USER SCHEMAS
 // =============================================================================
 
-export const UserCreateSchema: z.ZodType<Prisma.UserCreateInput> = z
+export const UserCreateSchema = z
     .object({
         id: z.string().optional(),
         email: z.email(),
@@ -69,10 +70,10 @@ export const UserCreateSchema: z.ZodType<Prisma.UserCreateInput> = z
         surName: z.string().optional(),
         pronoun: z.string().optional(),
         phone: z.string().optional(),
+
+        memberApplicationPrompt: z.string().optional(),
     })
-    .omit({
-        id: true,
-    });
+    .omit({ memberApplicationPrompt: true });
 
 export const UserUpdateSchema: z.ZodType<Prisma.UserUpdateInput> = UserCreateSchema;
 
@@ -86,7 +87,7 @@ export const UserUpdateSchema: z.ZodType<Prisma.UserUpdateInput> = UserCreateSch
 // EVENT SCHEMAS
 // =============================================================================
 
-export const EventCreateSchema: z.ZodType<Prisma.EventCreateWithoutHostInput> = z
+export const EventCreateSchema = z
     .object({
         id: z.string().optional(),
         title: z.string(),
@@ -100,7 +101,7 @@ export const EventCreateSchema: z.ZodType<Prisma.EventCreateWithoutHostInput> = 
         id: true,
     });
 
-export const EventUpdateSchema: z.ZodType<Prisma.EventUpdateInput> = EventCreateSchema;
+export const EventUpdateSchema = EventCreateSchema;
 
 // =============================================================================
 // PARTICIPANT IN EVENT SCHEMAS
@@ -118,9 +119,7 @@ export const EventUpdateSchema: z.ZodType<Prisma.EventUpdateInput> = EventCreate
 // TASK SCHEMAS
 // =============================================================================
 
-export const TaskCreateSchema: z.ZodType<
-    Prisma.TaskCreateInput & { assigneeId?: string; reviewerId?: string }
-> = z
+export const TaskCreateSchema = z
     .object({
         id: z.string().optional(),
         phase: TaskPhaseSchema.optional(),
@@ -141,15 +140,13 @@ export const TaskCreateSchema: z.ZodType<
     })
     .omit({ id: true, eventId: true });
 
-export const TaskUpdateSchema: z.ZodType<
-    Prisma.TaskUpdateInput & { assigneeId?: string; reviewerId?: string }
-> = TaskCreateSchema;
+export const TaskUpdateSchema = TaskCreateSchema;
 
 // =============================================================================
 // PRODUCT SCHEMAS
 // =============================================================================
 
-export const ProductCreateSchema: z.ZodType<Prisma.ProductCreateInput> = z
+export const ProductCreateSchema = z
     .object({
         id: z.string().optional(),
         name: z.string(),
@@ -161,25 +158,28 @@ export const ProductCreateSchema: z.ZodType<Prisma.ProductCreateInput> = z
     })
     .omit({ id: true });
 
-export const ProductUpdateSchema: z.ZodType<Prisma.ProductUpdateInput> = ProductCreateSchema;
+export const ProductUpdateSchema = ProductCreateSchema;
 
 // =============================================================================
 // MEMBERSHIP SCHEMAS
 // =============================================================================
 
-export const MembershipWithoutProductSchema: z.ZodType<Prisma.MembershipCreateWithoutProductInput> =
-    z
-        .object({
-            id: z.string().optional(),
-            duration: z.number().int().positive(), // days
-        })
-        .omit({ id: true });
+export const MembershipWithoutProductSchema = z
+    .object({
+        id: z.string().optional(),
+        duration: z.number().int().positive(), // days
+    })
+    .omit({ id: true });
 
-export const MembershipCreateSchema: z.ZodType<Prisma.MembershipCreateWithoutProductInput> =
-    z.union([MembershipWithoutProductSchema, ProductCreateSchema]);
+export const MembershipCreateSchema = z.union([
+    MembershipWithoutProductSchema,
+    ProductCreateSchema,
+]);
 
-export const MembershipUpdateSchema: z.ZodType<Prisma.MembershipUpdateWithoutProductInput> =
-    z.union([MembershipWithoutProductSchema, ProductUpdateSchema]);
+export const MembershipUpdateSchema = z.union([
+    MembershipWithoutProductSchema,
+    ProductUpdateSchema,
+]);
 
 // =============================================================================
 // USER MEMBERSHIP SCHEMAS
@@ -198,7 +198,7 @@ type CommonTicketKeys = keyof Prisma.TicketCreateWithoutEventInput &
 
 export type TicketWithoutRelations = Pick<Prisma.TicketCreateWithoutEventInput, CommonTicketKeys>;
 
-export const TicketWithoutRelationsSchema: z.ZodType<TicketWithoutRelations> = z
+export const TicketWithoutRelationsSchema = z
     .object({
         id: z.string().optional(),
         type: TicketTypeSchema,
@@ -218,7 +218,7 @@ export const TicketUpdateSchema = z.union([TicketWithoutRelationsSchema, Product
 
 // Orders are never created from forms and thus don't need validation
 
-export const OrderUpdateSchema: z.ZodType<Prisma.OrderUpdateInput> = z.object({
+export const OrderUpdateSchema = z.object({
     status: OrderStatusSchema,
 });
 
@@ -247,6 +247,10 @@ export const TextContentUpdateSchema = TextContentCreateSchema.partial().extend(
 // =============================================================================
 // CUSTOM SCHEMAS
 // =============================================================================
+
+export const MembershipApplicationSchema = UserCreateSchema.partial().extend({
+    memberApplicationPrompt: z.string().optional(),
+});
 
 export const LoginSchema = z.object({
     email: z.email(),
