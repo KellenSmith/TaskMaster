@@ -19,6 +19,8 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
 
     const goToEventPage = () =>
         navigateToRoute(router, [GlobalConstants.EVENT], { eventId: event.id });
+
+    // TODO: mark green if participating
     return (
         <Tooltip title={`${formatDate(event.startTime)} - ${formatDate(event.endTime)}`}>
             <Card
