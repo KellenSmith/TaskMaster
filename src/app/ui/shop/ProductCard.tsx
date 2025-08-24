@@ -21,6 +21,7 @@ import { Lock } from "@mui/icons-material";
 import { formatPrice } from "../utils";
 import RichTextField from "../form/RichTextField";
 
+// TODO: Exchange for prisma type
 interface Product {
     id: string;
     name: string;
@@ -212,12 +213,16 @@ export default function ProductCard({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setIsOpen(false)}>Close</Button>
-                    <Button
-                        onClick={() => onAddToCart(product.id)}
-                        disabled={!isAvailable || (!product.unlimitedStock && product.stock === 0)}
-                    >
-                        buy
-                    </Button>
+                    {onAddToCart && (
+                        <Button
+                            onClick={() => onAddToCart(product.id)}
+                            disabled={
+                                !isAvailable || (!product.unlimitedStock && product.stock === 0)
+                            }
+                        >
+                            Buy
+                        </Button>
+                    )}
                 </DialogActions>
             </Dialog>
         </>

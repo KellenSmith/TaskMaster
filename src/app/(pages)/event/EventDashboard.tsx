@@ -20,12 +20,12 @@ interface EventDashboardProps {
         Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>
     >;
     eventParticipantsPromise: Promise<
-        Prisma.ParticipantInEventGetPayload<{
+        Prisma.EventParticipantGetPayload<{
             include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;
     eventReservesPromise: Promise<
-        Prisma.ReserveInEventGetPayload<{
+        Prisma.EventReserveGetPayload<{
             include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;
@@ -59,6 +59,7 @@ const EventDashboard = ({
     const event = use(eventPromise);
     const eventParticipants = use(eventParticipantsPromise);
     const eventReserves = use(eventReservesPromise);
+
     // Tab is available if it has a label
     const eventTabs = useMemo(() => {
         const tabs = {
@@ -90,8 +91,10 @@ const EventDashboard = ({
             case eventTabs.tickets:
                 if (
                     isUserHost(user, event) ||
-                    (!isUserParticipant(user, eventParticipants) &&
-                        !isUserReserve(user, eventReserves))
+                    !(
+                        isUserParticipant(user, eventParticipants) ||
+                        isUserReserve(user, eventReserves)
+                    )
                 )
                     return (
                         <TicketShop
@@ -101,7 +104,13 @@ const EventDashboard = ({
                             goToOrganizeTab={goToOrganizeTab}
                         />
                     );
-                if (isUserParticipant(user, eventParticipants)) return <TicketDashboard />;
+                if (isUserParticipant(user, eventParticipants))
+                    return (
+                        <TicketDashboard
+                            eventParticipantsPromise={eventParticipantsPromise}
+                            ticketsPromise={eventTicketsPromise}
+                        />
+                    );
                 if (isUserReserve(user, eventReserves)) return <ReserveDashboard />;
                 throw new Error("User is both participant and reserve");
 

@@ -8,7 +8,7 @@ export const isEventPublished = (
 
 export const isUserParticipant = (
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
-    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+    eventParticipants: Prisma.EventParticipantGetPayload<{
         include: { user: { select: { id: true } } };
     }>[],
 ) => !!eventParticipants.find((participant) => participant.user.id === user[GlobalConstants.ID]);
@@ -16,7 +16,7 @@ export const isUserParticipant = (
 export // Helper function to check if user is on reserve list
 const isUserReserve = (
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
-    eventReserves: Prisma.ReserveInEventGetPayload<{
+    eventReserves: Prisma.EventReserveGetPayload<{
         include: { user: { select: { id: true } } };
     }>[],
 ): boolean => {
@@ -89,7 +89,7 @@ export const getSortedTaskComps = (
 
 export const isEventSoldOut = (
     event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>,
-    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+    eventParticipants: Prisma.EventParticipantGetPayload<{
         include: { user: { select: { id: true; nickname: true } } };
     }>[],
 ) => event && eventParticipants.length >= event.maxParticipants;

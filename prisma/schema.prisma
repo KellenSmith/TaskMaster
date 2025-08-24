@@ -42,8 +42,8 @@ model User {
     userMembership  UserMembership?
 
     hostingEvents     Event[]
-    participantEvents ParticipantInEvent[]
-    reserveEvents     ReserveInEvent[]
+    participantEvents EventParticipant[]
+    reserveEvents     EventReserve[]
 
     assignedTasks Task[] @relation("assignee")
     reviewerTasks Task[] @relation("reviewer")
@@ -85,10 +85,10 @@ model Event {
     host   User   @relation(fields: [hostId], references: [id])
     hostId String
 
-    participantUsers ParticipantInEvent[]
-    reserveUsers     ReserveInEvent[]
-    tasks            Task[]
-    tickets          Ticket[]
+    eventParticipants EventParticipant[]
+    eventReserves     EventReserve[]
+    tasks             Task[]
+    tickets           Ticket[]
 
     @@map("events")
 }
@@ -96,7 +96,7 @@ model Event {
 // Many-to-many relation btw users and events
 // Each user can participate in multiple events
 // Each event can have multiple participants
-model ParticipantInEvent {
+model EventParticipant {
     user     User   @relation(fields: [userId], references: [id])
     userId   String
     event    Event  @relation(fields: [eventId], references: [id])
@@ -104,13 +104,15 @@ model ParticipantInEvent {
     ticket   Ticket @relation(fields: [ticketId], references: [id])
     ticketId String // All participants must have a ticket
 
-    @@id([userId, eventId, ticketId])
+    // This combination is unique. A user can only have one ticket per event
+    @@id([userId, eventId])
+    @@map("event_participants")
 }
 
 // Many-to-many relation btw users and events
 // Each user can be on reserveList in multiple events
 // Each event can have multiple reserve users
-model ReserveInEvent {
+model EventReserve {
     user          User     @relation(fields: [userId], references: [id])
     userId        String
     event         Event    @relation(fields: [eventId], references: [id])
@@ -118,6 +120,7 @@ model ReserveInEvent {
     queueingSince DateTime @default(now())
 
     @@id([userId, eventId])
+    @@map("event_reserves")
 }
 
 enum TaskStatus {
@@ -201,13 +204,13 @@ enum TicketType {
 }
 
 model Ticket {
-    id                 String               @id @default(uuid())
-    type               TicketType           @default(standard)
-    product            Product              @relation(fields: [productId], references: [id])
-    productId          String               @unique
-    event              Event                @relation(fields: [eventId], references: [id])
+    id                 String             @id @default(uuid())
+    type               TicketType         @default(standard)
+    product            Product            @relation(fields: [productId], references: [id])
+    productId          String             @unique
+    event              Event              @relation(fields: [eventId], references: [id])
     eventId            String
-    participantInEvent ParticipantInEvent[]
+    participantInEvent EventParticipant[]
 
     @@map("tickets")
 }

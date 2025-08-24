@@ -38,7 +38,7 @@ export const renewUserMembership = async (userId: string, membershipId: string):
                 expiresAt: newExpiryDate,
             },
         });
-        // TODO: revalidate user data after renewing membership such that user context is refreshed
+        // TODO: See if revalidating the user tag is possible here since it's not cached in the serverContext
     } catch (error) {
         console.error("Failed to renew user membership:", error);
         throw new Error("Failed to renew membership");

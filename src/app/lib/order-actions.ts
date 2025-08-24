@@ -129,14 +129,11 @@ const processOrderItems = async (orderId: string): Promise<void> => {
         for (const orderItem of order.orderItems) {
             await processOrderedProduct(order.userId, orderItem);
         }
-    } catch {
+    } catch (error) {
+        console.log(error);
         throw new Error(`Failed to process order items`);
     }
 };
-
-// Only allow progression of orders, not regression
-const isStatusTransitionValid = (orderStatus: OrderStatus, newStatus: OrderStatus) =>
-    Object.keys(OrderStatus).indexOf(orderStatus) <= Object.keys(OrderStatus).indexOf(newStatus);
 
 export const progressOrder = async (
     orderId: string,
@@ -158,9 +155,7 @@ export const progressOrder = async (
             where: { id: orderId },
         });
 
-        if (!isStatusTransitionValid(order.status, newStatus)) {
-            throw new Error("Invalid order status transition");
-        }
+        console.log(1, order.status, newStatus);
 
         // Pending to paid
         if (order.status === OrderStatus.pending) {
@@ -169,15 +164,18 @@ export const progressOrder = async (
                 data: { status: OrderStatus.paid },
             });
         }
+        console.log(2, order.status);
         // Paid to shipped
         if (order.status === OrderStatus.paid) {
             await processOrderItems(orderId);
+            console.log("procecssed order items");
             order = await prisma.order.update({
                 where: { id: orderId },
                 data: { status: OrderStatus.shipped },
             });
             await sendOrderConfirmation(orderId);
         }
+        console.log(3, order.status);
         // Shipped to completed
         if (order.status === OrderStatus.shipped) {
             needsCapture && (await capturePaymentFunds(orderId));
@@ -186,6 +184,7 @@ export const progressOrder = async (
                 data: { status: OrderStatus.completed },
             });
         }
+        console.log("final order status: ", order.status);
         revalidateTag(GlobalConstants.ORDER);
     } catch {
         throw new Error("Failed to progress order");

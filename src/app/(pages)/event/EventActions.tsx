@@ -24,12 +24,12 @@ interface IEventActions {
         include: { host: { select: { id: true; nickname: true } } };
     }>;
     eventParticipantsPromise: Promise<
-        Prisma.ParticipantInEventGetPayload<{
+        Prisma.EventParticipantGetPayload<{
             include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;
     eventReservesPromise: Promise<
-        Prisma.ReserveInEventGetPayload<{
+        Prisma.EventReserveGetPayload<{
             include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;

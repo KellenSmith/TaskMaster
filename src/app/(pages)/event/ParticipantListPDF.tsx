@@ -11,7 +11,7 @@ interface ParticipantListPDFProps {
     event: Prisma.EventGetPayload<{
         include: { host: { select: { id: true; nickname: true } } };
     }>;
-    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+    eventParticipants: Prisma.EventParticipantGetPayload<{
         include: { user: { select: { id: true; nickname: true } } };
     }>[];
 }
@@ -36,7 +36,7 @@ const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProp
         if (eventParticipants.length < 1) return null;
         return eventParticipants.map(
             (
-                participant: Prisma.ParticipantInEventGetPayload<{
+                participant: Prisma.EventParticipantGetPayload<{
                     include: { user: { select: { id: true; nickname: true } } };
                 }>,
             ) => (

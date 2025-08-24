@@ -124,13 +124,15 @@ export const processOrderedProduct = async (
         } else if (orderItem.product.ticket) {
             // Add user as participant for the ticket
             try {
-                await prisma.participantInEvent.create({
+                await prisma.eventParticipant.create({
                     data: {
                         userId,
                         eventId: orderItem.product.ticket.eventId,
                         ticketId: orderItem.product.ticket.id,
                     },
                 });
+                // Don't revalidate tag GlobalConstants.PARTICIPANT_USERS
+                // This function is run during render where it's not allowed
             } catch (error) {
                 failedProducts.push(
                     `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.eventId}: ${error.message}`,

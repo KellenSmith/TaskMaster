@@ -217,7 +217,11 @@ export const TicketUpdateSchema = z.union([TicketWithoutRelationsSchema, Product
 // ORDER SCHEMAS
 // =============================================================================
 
-// Orders are never created or updated from forms and thus don't need validation
+// Orders are never created from forms and thus don't need validation
+
+export const OrderUpdateSchema: z.ZodType<Prisma.OrderUpdateInput> = z.object({
+    status: OrderStatusSchema,
+});
 
 // =============================================================================
 // ORDER ITEM SCHEMAS

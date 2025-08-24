@@ -184,12 +184,12 @@ export const deleteUser = async (userId: string): Promise<void> => {
     }
 
     try {
-        const deleteReservedInEventsPromise = prisma.reserveInEvent.deleteMany({
+        const deleteReservedInEventsPromise = prisma.eventReserve.deleteMany({
             where: {
                 userId: userId,
             },
         });
-        const deleteParticipantInEventsPromise = prisma.participantInEvent.deleteMany({
+        const deleteParticipantInEventsPromise = prisma.eventParticipant.deleteMany({
             where: {
                 userId: userId,
             },

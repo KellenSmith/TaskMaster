@@ -22,7 +22,7 @@ export const createEventTicket = async (
                 id: eventId,
             },
             include: {
-                participantUsers: true,
+                eventParticipants: true,
             },
         });
         const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
@@ -34,7 +34,7 @@ export const createEventTicket = async (
                 product: {
                     create: {
                         ...productFieldValues,
-                        stock: event.maxParticipants - event.participantUsers.length,
+                        stock: event.maxParticipants - event.eventParticipants.length,
                     },
                 },
                 event: {

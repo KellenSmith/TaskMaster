@@ -86,7 +86,7 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
 export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
     try {
         const participantEmails = (
-            await prisma.participantInEvent.findMany({
+            await prisma.eventParticipant.findMany({
                 where: { eventId },
                 select: {
                     user: {
@@ -98,7 +98,7 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
             })
         ).map((participant) => participant.user.email);
         const reservesEmails = (
-            await prisma.reserveInEvent.findMany({
+            await prisma.eventReserve.findMany({
                 where: { eventId },
                 select: {
                     user: {
@@ -228,5 +228,6 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
         return mailResponse;
     } catch (error) {
         console.error(`Failed to send order confirmation email for order ${orderId}: `, error);
+        throw new Error("Failed to send order confirmation email");
     }
 };

@@ -18,10 +18,11 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventPromise = unstable_cache(getEventById, [eventId], {
         tags: [GlobalConstants.EVENT],
     })(eventId);
-    const eventParticipantsPromise = unstable_cache(getEventParticipants, [eventId], {
-        tags: [GlobalConstants.PARTICIPANT_USERS],
-    })(eventId);
-    const aventReservesPromise = unstable_cache(getEventReserves, [eventId], {
+
+    // Don't cache participants. They must change during render of a paid order
+    // where the EventParticipant is created.
+    const eventParticipantsPromise = getEventParticipants(eventId);
+    const eventReservesPromise = unstable_cache(getEventReserves, [eventId], {
         tags: [GlobalConstants.RESERVE_USERS],
     })(eventId);
     const eventTasksPromise = unstable_cache(getFilteredTasks, [eventId], {
@@ -39,7 +40,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
             <EventDashboard
                 eventPromise={eventPromise}
                 eventParticipantsPromise={eventParticipantsPromise}
-                eventReservesPromise={aventReservesPromise}
+                eventReservesPromise={eventReservesPromise}
                 eventTasksPromise={eventTasksPromise}
                 eventTicketsPromise={eventTicketsPromise}
                 activeMembersPromise={activeMembersPromise}

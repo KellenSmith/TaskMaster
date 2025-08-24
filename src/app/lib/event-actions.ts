@@ -51,7 +51,7 @@ export const createEvent = async (
             (ticket) => ticket.type === TicketType.volunteer,
         );
         if (volunteerTicket) {
-            await prisma.participantInEvent.create({
+            await prisma.eventParticipant.create({
                 data: {
                     userId: loggedInUser.id,
                     eventId: createdEvent.id,
@@ -89,8 +89,8 @@ export const getFilteredEvents = async (
     Prisma.EventGetPayload<{
         include: {
             host: { select: { id: true; nickname: true } };
-            participantUsers: { include: { user: { select: { id: true; nickname: true } } } };
-            reserveUsers: { include: { user: { select: { id: true; nickname: true } } } };
+            eventParticipants: { include: { user: { select: { id: true; nickname: true } } } };
+            eventReserves: { include: { user: { select: { id: true; nickname: true } } } };
         };
     }>[]
 > => {
@@ -104,7 +104,7 @@ export const getFilteredEvents = async (
                         nickname: true,
                     },
                 },
-                participantUsers: {
+                eventParticipants: {
                     include: {
                         user: {
                             select: {
@@ -114,7 +114,7 @@ export const getFilteredEvents = async (
                         },
                     },
                 },
-                reserveUsers: {
+                eventReserves: {
                     include: {
                         user: {
                             select: {
@@ -167,12 +167,12 @@ export const getEventById = async (
 export const getEventParticipants = async (
     eventId: string,
 ): Promise<
-    Prisma.ParticipantInEventGetPayload<{
+    Prisma.EventParticipantGetPayload<{
         include: { user: { select: { id: true; nickname: true } } };
     }>[]
 > => {
     try {
-        const participants = await prisma.participantInEvent.findMany({
+        const participants = await prisma.eventParticipant.findMany({
             where: {
                 eventId: eventId,
             },
@@ -194,12 +194,12 @@ export const getEventParticipants = async (
 export const getEventReserves = async (
     eventId: string,
 ): Promise<
-    Prisma.ReserveInEventGetPayload<{
+    Prisma.EventReserveGetPayload<{
         include: { user: { select: { id: true; nickname: true } } };
     }>[]
 > => {
     try {
-        const reserves = await prisma.reserveInEvent.findMany({
+        const reserves = await prisma.eventReserve.findMany({
             where: {
                 eventId: eventId,
             },
@@ -252,7 +252,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         const event = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
             include: {
-                participantUsers: {
+                eventParticipants: {
                     select: {
                         userId: true,
                     },
@@ -261,8 +261,8 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         });
 
         const onlyHostIsParticipating =
-            event.participantUsers.length === 1 &&
-            event.participantUsers[0].userId === event.hostId;
+            event.eventParticipants.length === 1 &&
+            event.eventParticipants[0].userId === event.hostId;
 
         if (!onlyHostIsParticipating)
             throw new Error(
@@ -270,10 +270,10 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             );
 
         await prisma.$transaction([
-            prisma.reserveInEvent.deleteMany({
+            prisma.eventReserve.deleteMany({
                 where: { eventId },
             }),
-            prisma.participantInEvent.deleteMany({
+            prisma.eventParticipant.deleteMany({
                 where: { eventId },
             }),
             prisma.ticket.deleteMany({
@@ -291,7 +291,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 
 export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
     try {
-        await prisma.reserveInEvent.create({
+        await prisma.eventReserve.create({
             data: {
                 userId: userId,
                 eventId: eventId,
@@ -305,10 +305,10 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
 
 export const deleteEventParticipant = async (userId: string, eventId: string): Promise<void> => {
     try {
-        await prisma.participantInEvent.deleteMany({
+        await prisma.eventParticipant.deleteMany({
             where: {
                 AND: [{ userId: userId }, { eventId: eventId }],
-            } as Prisma.ParticipantInEventWhereInput,
+            } as Prisma.EventParticipantWhereInput,
         });
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
     } catch {
@@ -318,10 +318,10 @@ export const deleteEventParticipant = async (userId: string, eventId: string): P
 
 export const deleteEventReserve = async (userId: string, eventId: string): Promise<void> => {
     try {
-        await prisma.reserveInEvent.deleteMany({
+        await prisma.eventReserve.deleteMany({
             where: {
                 AND: [{ userId: userId }, { eventId: eventId }],
-            } as Prisma.ReserveInEventWhereInput,
+            } as Prisma.EventReserveWhereInput,
         });
         revalidateTag(GlobalConstants.RESERVE_USERS);
     } catch (error) {
