@@ -13,6 +13,7 @@ import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplat
 import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
 import { EmailSendoutSchema } from "../zod-schemas";
 import z from "zod";
+import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 
 interface EmailPayload {
     from: string;
@@ -83,11 +84,48 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
 /**
  * @throws Error if email fails
  */
+export const notifyEventReserves = async (eventId: string): Promise<string> => {
+    const orgSettings = await getOrganizationSettings();
+    const event = await prisma.event.findUniqueOrThrow({ where: { id: eventId } });
+    const mailContent = createElement(OpenEventSpotTemplate, {
+        organizationName: orgSettings?.organizationName,
+        event,
+    });
+
+    const reserveEmails = (
+        await prisma.eventReserve.findMany({
+            where: { eventId },
+            select: {
+                user: {
+                    select: {
+                        email: true,
+                    },
+                },
+            },
+        })
+    ).map((eventReserve) => eventReserve.user.email);
+    const mailResponse = await mailTransport.sendMail(
+        reserveEmails.map(
+            async (userEmail) =>
+                await getEmailPayload(
+                    [userEmail],
+                    `A spot has opened up for the event: ${event.title}`,
+                    mailContent,
+                ),
+        ),
+    );
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    return mailResponse;
+};
+
+/**
+ * @throws Error if email fails
+ */
 export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
     try {
         const participantEmails = (
             await prisma.eventParticipant.findMany({
-                where: { eventId },
+                where: { ticket: { eventId } },
                 select: {
                     user: {
                         select: {

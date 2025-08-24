@@ -1,6 +1,5 @@
 import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
-import GlobalConstants from "../../../GlobalConstants";
 import mailTheme from "../mail-theme";
 import DOMPurify from "isomorphic-dompurify";
 
@@ -63,10 +62,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName 
                         {children}
                         {renderHtml()}
                     </Container>
-                    <Button
-                        style={mailTheme.components.button}
-                        href={`${process.env.VERCEL_URL}/${GlobalConstants.LOGIN}`}
-                    >
+                    <Button style={mailTheme.components.button} href={process.env.VERCEL_URL}>
                         visit us
                     </Button>
                 </Container>

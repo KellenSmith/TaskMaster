@@ -1,5 +1,7 @@
 "use server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
+import { notifyEventReserves } from "./mail-service/mail-service";
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
     try {
@@ -49,11 +51,6 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
                             id: ticketId,
                         },
                     },
-                    event: {
-                        connect: {
-                            id: ticket.eventId,
-                        },
-                    },
                 },
             });
         });
@@ -64,11 +61,22 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
     try {
+        // Find the ticket the user holds to the event
+        const ticket = await prisma.ticket.findFirstOrThrow({
+            where: {
+                eventId: eventId,
+                eventParticipants: {
+                    some: {
+                        userId: userId,
+                    },
+                },
+            },
+        });
         const deleteParticipantPromise = prisma.eventParticipant.delete({
             where: {
-                userId_eventId: {
+                userId_ticketId: {
                     userId,
-                    eventId,
+                    ticketId: ticket.id,
                 },
             },
         });
@@ -94,6 +102,8 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
         // TODO: notify people on the reserve list
 
         await prisma.$transaction([deleteParticipantPromise, incrementTicketStockPromise]);
+
+        await notifyEventReserves(eventId);
         // Don't revalidate the event participants since they are not cached
     } catch (error) {
         console.log(error);
