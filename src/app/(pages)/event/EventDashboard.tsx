@@ -116,7 +116,7 @@ const EventDashboard = ({
         <Stack>
             <Stack padding="0 24px 0 24px" spacing={2}>
                 {event.status === EventStatus.draft && (
-                    <Typography variant="h4" color="warning">
+                    <Typography variant="h4" color={theme.palette.warning.light}>
                         This is an event draft and is only visible to the host
                     </Typography>
                 )}

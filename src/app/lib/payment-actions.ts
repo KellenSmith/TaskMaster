@@ -7,6 +7,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
+import { revalidateTag } from "next/cache";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -158,7 +159,7 @@ export const capturePaymentFunds = async (orderId: string) => {
             {
                 transaction: {
                     description: "Capturing authorized payment",
-                    amount: order.totalAmount * 100, // Convert to smallest currency unit
+                    amount: order.totalAmount, // Convert to smallest currency unit
                     vatAmount: 0,
                     payeeReference: capturePayeeRef, // Unique reference for capture operation
                 },
@@ -204,6 +205,8 @@ export const checkPaymentStatus = async (orderId: string): Promise<void> => {
                 `https://api.externalintegration.payex.com${order.paymentRequestId}?$expand=paid`,
             );
             if (!paymentStatusResponse.ok) {
+                progressOrder(orderId, OrderStatus.error);
+                revalidateTag(GlobalConstants.ORDER);
                 throw new Error("Failed to check payment status");
             }
             const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
@@ -213,6 +216,7 @@ export const checkPaymentStatus = async (orderId: string): Promise<void> => {
                 paymentStatusData.paymentOrder.paid.transactionType ===
                 TransactionType.Authorization;
             await progressOrder(orderId, newOrderStatus, needsCapture);
+            revalidateTag(GlobalConstants.ORDER);
         }
     } catch {
         throw new Error("Failed to check payment status");

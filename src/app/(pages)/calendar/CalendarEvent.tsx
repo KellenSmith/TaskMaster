@@ -26,7 +26,7 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
                 sx={{
                     backgroundColor:
                         event.status === EventStatus.draft
-                            ? theme.palette.primary.light
+                            ? theme.palette.warning.light
                             : event.status === EventStatus.published
                               ? theme.palette.primary.dark
                               : theme.palette.error.dark,

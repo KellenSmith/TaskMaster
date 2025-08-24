@@ -44,7 +44,7 @@ const OrderSummary = async ({ order }: OrderSummaryProps) => {
                 <Stack spacing={3}>
                     <Stack direction="row" justifyContent="space-between">
                         <Typography variant="h5">Order Summary</Typography>
-                        <Typography variant="h6" color="primary">
+                        <Typography textTransform="capitalize" variant="h6" color="primary">
                             Status: {order.status}
                         </Typography>
                     </Stack>

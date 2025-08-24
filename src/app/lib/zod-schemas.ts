@@ -69,7 +69,6 @@ export const UserCreateSchema: z.ZodType<Prisma.UserCreateInput> = z
         surName: z.string().optional(),
         pronoun: z.string().optional(),
         phone: z.string().optional(),
-        createdAt: stringToISODate,
     })
     .omit({
         id: true,

@@ -6,6 +6,8 @@ import { generateSalt, hashPassword } from "./auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import { ResetCredentialsSchema, UpdateCredentialsSchema } from "./zod-schemas";
+import { revalidateTag } from "next/cache";
+import GlobalConstants from "../GlobalConstants";
 
 export const validateUserMembership = async (userId: string): Promise<void> => {
     const generatedPassword = await generateSalt();
@@ -25,6 +27,7 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
                 hashedPassword,
             },
         });
+        revalidateTag(GlobalConstants.USER);
     } catch (error) {
         console.error(error);
         throw new Error(`Failed creating user credentials`);
@@ -42,9 +45,9 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
 };
 
 export const resetUserCredentials = async (
-    fieldValues: z.infer<typeof ResetCredentialsSchema>,
+    parsedFieldValues: z.infer<typeof ResetCredentialsSchema>,
 ): Promise<void> => {
-    const userEmail: string = fieldValues.email as unknown as string;
+    const userEmail: string = parsedFieldValues.email as unknown as string;
     const generatedPassword = await generateSalt();
     try {
         const user = await prisma.user.findUnique({
@@ -63,6 +66,7 @@ export const resetUserCredentials = async (
             },
         });
     } catch {
+        console.error("Could not reset credentials for email: ", userEmail);
         throw new Error("Could not reset credentials");
     }
 

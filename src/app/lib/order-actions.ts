@@ -174,10 +174,10 @@ export const progressOrder = async (
                 where: { id: orderId },
                 data: { status: OrderStatus.shipped },
             });
+            await sendOrderConfirmation(orderId);
         }
         // Shipped to completed
         if (order.status === OrderStatus.shipped) {
-            await sendOrderConfirmation(orderId);
             needsCapture && (await capturePaymentFunds(orderId));
             order = await prisma.order.update({
                 where: { id: orderId },

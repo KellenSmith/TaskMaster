@@ -8,9 +8,13 @@ import { resetUserCredentials } from "../../lib/user-credentials-actions";
 import { ResetCredentialsSchema } from "../../lib/zod-schemas";
 import z from "zod";
 
-const LoginForm: FC = () => {
+const ResetPage: FC = () => {
     const handleReset = async (values: z.infer<typeof ResetCredentialsSchema>) => {
-        await resetUserCredentials(values);
+        try {
+            await resetUserCredentials(values);
+        } catch {
+            // Don't show errors here
+        }
         // Return ambiguous error message to prevent revealing if the email is registered or not.
         return "New credentials sent to your email if we have it on record";
     };
@@ -28,4 +32,4 @@ const LoginForm: FC = () => {
     );
 };
 
-export default LoginForm;
+export default ResetPage;

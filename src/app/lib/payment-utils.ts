@@ -59,7 +59,7 @@ export type PaymentOrderResponse = {
 export const getNewOrderStatus = (paymentState: PaymentStateType): OrderStatus => {
     switch (paymentState) {
         case PaymentState.Paid:
-            return OrderStatus.paid;
+            return OrderStatus.completed;
         case PaymentState.Failed:
         case PaymentState.Cancelled:
         case PaymentState.Aborted:
