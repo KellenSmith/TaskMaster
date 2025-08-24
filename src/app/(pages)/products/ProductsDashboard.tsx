@@ -16,7 +16,7 @@ const ProductsDashboard = ({ productsPromise }) => {
         return "Updated product";
     };
     const deleteAction = async (product: ImplementedDatagridEntities) => {
-        await deleteProduct(product as Product);
+        await deleteProduct(product.id);
         return "Deleted product";
     };
 

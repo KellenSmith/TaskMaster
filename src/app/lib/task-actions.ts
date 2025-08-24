@@ -23,11 +23,12 @@ export const deleteTask = async (taskId: string): Promise<void> => {
 export const updateTaskById = async (
     taskId: string,
     parsedFieldValues: z.infer<typeof TaskUpdateSchema>,
+    eventId: string | null,
 ): Promise<void> => {
     try {
         // TODO: send email notification to reviewer if task goes from
         // in progress to review or from assigned to unassigned
-        const { reviewerId, assigneeId, eventId, ...tasksWithoutUsers } = parsedFieldValues;
+        const { reviewerId, assigneeId, ...tasksWithoutUsers } = parsedFieldValues;
         await prisma.task.update({
             where: {
                 id: taskId,
@@ -66,9 +67,10 @@ export const updateTaskById = async (
 
 export const createTask = async (
     parsedFieldValues: z.infer<typeof TaskCreateSchema>,
+    eventId: string | null,
 ): Promise<void> => {
     try {
-        const { reviewerId, assigneeId, eventId, ...tasksWithoutUsers } = parsedFieldValues;
+        const { reviewerId, assigneeId, ...tasksWithoutUsers } = parsedFieldValues;
         await prisma.task.create({
             data: {
                 ...tasksWithoutUsers,

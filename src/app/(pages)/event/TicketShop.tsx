@@ -1,0 +1,174 @@
+"use client";
+import { use, useState } from "react";
+import { Stack, Typography, useTheme, Button, Dialog } from "@mui/material";
+import { Prisma, TicketType } from "@prisma/client";
+import { useUserContext } from "../../context/UserContext";
+import { createOrder } from "../../lib/order-actions";
+import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";
+import { isUserHost } from "../../lib/definitions";
+import { isUserVolunteer } from "./event-utils";
+import ProductCard from "../../ui/shop/ProductCard";
+import Form from "../../ui/form/Form";
+import GlobalConstants from "../../GlobalConstants";
+import z from "zod";
+import { TicketCreateSchema, TicketUpdateSchema } from "../../lib/zod-schemas";
+import { allowRedirectException } from "../../ui/utils";
+import { useNotificationContext } from "../../context/NotificationContext";
+import ConfirmButton from "../../ui/ConfirmButton";
+
+interface TicketShopProps {
+    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true } } } }>;
+    eventTicketsPromise: Promise<
+        Prisma.TicketGetPayload<{
+            include: { product: true };
+        }>[]
+    >;
+    eventTasksPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } } };
+        }>[]
+    >;
+    eventParticipants: Prisma.ParticipantInEventGetPayload<{
+        include: { user: { select: { id: true } } };
+    }>[];
+    goToOrganizeTab: () => void;
+}
+
+const TicketShop = ({
+    event,
+    eventTicketsPromise,
+    eventTasksPromise,
+    eventParticipants,
+    goToOrganizeTab,
+}: TicketShopProps) => {
+    const { user } = useUserContext();
+    const { addNotification } = useNotificationContext();
+    const theme = useTheme();
+    const tickets = use(eventTicketsPromise);
+    const tasks = use(eventTasksPromise);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
+
+    const createTicketOrder = async (productId: string) => {
+        const ticketOrderItems: Prisma.OrderItemCreateManyOrderInput = {
+            productId: productId,
+            quantity: 1,
+        };
+        try {
+            await createOrder([ticketOrderItems]);
+        } catch (error) {
+            allowRedirectException(error);
+            addNotification("Failed to create ticket order", "error");
+        }
+    };
+
+    const createTicketAction = async (parsedFieldValues: z.infer<typeof TicketCreateSchema>) => {
+        await createEventTicket(event.id, parsedFieldValues);
+        setDialogOpen(false);
+        return "Created ticket";
+    };
+
+    const updateTicketAction = async (parsedFieldValues: z.infer<typeof TicketUpdateSchema>) => {
+        console.log(parsedFieldValues);
+        await updateEventTicket(editingTicketId, parsedFieldValues);
+        setDialogOpen(false);
+        return "Updated ticket";
+    };
+
+    const deleteTicketAction = async (ticketId: string) => {
+        const ticket = tickets.find((t) => t.id === ticketId);
+        try {
+            await deleteEventTicket(ticket.id);
+            addNotification("Deleted ticket", "success");
+        } catch {
+            addNotification("Failed to delete ticket", "error");
+        }
+    };
+
+    const isVolunteerTicketAvailable = () => {
+        const tasksAssignedToUser = tasks.filter((task) => task.assigneeId === user.id);
+        return tasksAssignedToUser.length > 0;
+    };
+
+    const handleEditTicket = (ticketId: string) => {
+        setEditingTicketId(ticketId);
+        setDialogOpen(true);
+    };
+
+    const getFormDefaultValues = () => {
+        if (!editingTicketId) return null;
+        const ticket = tickets.find((t) => t.id === editingTicketId);
+        if (!ticket) return null;
+        return { ...ticket, ...ticket.product };
+    };
+
+    console.log(getFormDefaultValues());
+
+    return (
+        <Stack spacing={2} sx={{ padding: 2 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6" color={theme.palette.primary.main}>
+                    Tickets
+                </Typography>
+                {isUserHost(user, event) && (
+                    <Button variant="contained" onClick={() => setDialogOpen(true)} size="small">
+                        add ticket
+                    </Button>
+                )}
+            </Stack>
+
+            {tickets.length === 0 ? (
+                <Typography color="primary">Sorry, no tickets available for this event.</Typography>
+            ) : (
+                <Stack direction="row" flexWrap="wrap" gap={2}>
+                    {tickets.map((ticket) => (
+                        <Stack key={ticket.id}>
+                            <ProductCard
+                                key={ticket.id}
+                                product={ticket.product}
+                                onAddToCart={createTicketOrder}
+                                {...(ticket.type === TicketType.volunteer && {
+                                    isAvailable: isVolunteerTicketAvailable(),
+                                    makeAvailableText:
+                                        "Unlock the volunteer ticket by helping organize the event",
+                                    onClick: isUserVolunteer(user, tasks)
+                                        ? undefined
+                                        : goToOrganizeTab,
+                                })}
+                            />
+                            {isUserHost(user, event) && (
+                                <Stack>
+                                    <Button onClick={() => handleEditTicket(ticket.id)}>
+                                        edit
+                                    </Button>
+                                    <ConfirmButton
+                                        color="error"
+                                        onClick={() => deleteTicketAction(ticket.id)}
+                                    >
+                                        delete
+                                    </ConfirmButton>
+                                </Stack>
+                            )}
+                        </Stack>
+                    ))}
+                </Stack>
+            )}
+
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xl" fullWidth>
+                <Form
+                    name={GlobalConstants.TICKET}
+                    action={editingTicketId ? updateTicketAction : createTicketAction}
+                    defaultValues={getFormDefaultValues()}
+                    buttonLabel="save"
+                    readOnly={false}
+                    editable={false}
+                />
+                <Button onClick={() => setDialogOpen(false)} sx={{ m: 2 }}>
+                    Cancel
+                </Button>
+            </Dialog>
+        </Stack>
+    );
+};
+
+export default TicketShop;

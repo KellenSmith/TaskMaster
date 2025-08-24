@@ -60,9 +60,13 @@ const DroppableColumn = ({
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {
             try {
-                await updateTaskById(draggedTask.id, {
-                    status,
-                });
+                await updateTaskById(
+                    draggedTask.id,
+                    {
+                        status,
+                    },
+                    draggedTask.eventId,
+                );
                 addNotification(`Task set to "${FieldLabels[status]}"`, "success");
             } catch {
                 addNotification(`Failed to transition task`, "error");
@@ -129,8 +133,7 @@ const DroppableColumn = ({
     const createNewTask = async (
         parsedFieldValues: z.infer<typeof TaskCreateSchema>,
     ): Promise<string> => {
-        const eventIdInput = event ? event.id : null;
-        await createTask({ ...parsedFieldValues, eventId: eventIdInput });
+        await createTask({ ...parsedFieldValues }, event ? event.id : null);
         setTaskFormDefaultValues(null);
         return "Created task";
     };

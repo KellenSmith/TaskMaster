@@ -4,13 +4,16 @@ import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import { useState, use, useMemo } from "react";
 import { isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
-import { isEventCancelled, isEventSoldOut } from "./event-utils";
+import { isEventCancelled, isEventSoldOut, isUserParticipant, isUserReserve } from "./event-utils";
 import EventDetails from "./EventDetails";
 import { EventStatus, Prisma } from "@prisma/client";
-import TicketShop from "./(tasks)/TicketShop";
+import TicketShop from "./TicketShop";
 import EventActions from "./EventActions";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import TicketDashboard from "./TicketDashboard";
+import ParticipantDashboard from "./ParticipantDashboard";
+import ReserveDashboard from "./ReserveDashboard";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -53,90 +56,48 @@ const EventDashboard = ({
 }: EventDashboardProps) => {
     const theme = useTheme();
     const { user } = useUserContext();
-    const eventTabs = useMemo(
-        () => ({
+    const event = use(eventPromise);
+    const eventParticipants = use(eventParticipantsPromise);
+    const eventReserves = use(eventReservesPromise);
+    // Tab is available if it has a label
+    const eventTabs = useMemo(() => {
+        const tabs = {
             details: "Details",
             organize: "Organize",
             tickets: "Tickets",
-        }),
-        [],
-    );
-
+            participants: null,
+        };
+        if (isUserHost(user, event)) {
+            tabs.participants = "Participants";
+        }
+        return tabs;
+    }, []);
     const [openTab, setOpenTab] = useState(eventTabs.details);
-    const event = use(eventPromise);
-    const eventParticipants = use(eventParticipantsPromise);
 
     const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
 
-    return (
-        user && (
-            <Stack>
-                <Stack padding="0 24px 0 24px" spacing={2}>
-                    {event.status === EventStatus.draft && (
-                        <Typography variant="h4" color="warning">
-                            This is an event draft and is only visible to the host
-                        </Typography>
-                    )}
-                    <Typography
-                        variant="h4"
-                        sx={{
-                            color: isEventCancelled(event)
-                                ? theme.palette.error.main
-                                : theme.palette.primary.main,
-                            textDecoration: isEventCancelled(event) ? "line-through" : "none",
-                        }}
-                    >
-                        {`${event.title} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event, eventParticipants) ? "(SOLD OUT)" : ""}`}
-                    </Typography>
-                </Stack>
+    const getTicketTabComp = () => {
+        if (isUserHost(user, event)) return;
+    };
 
-                <Stack
-                    direction="row"
-                    padding="0 24px 0 24px "
-                    justifyContent="space-between"
-                    spacing={2}
-                >
-                    <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
-                        {Object.keys(eventTabs).map((tab) => (
-                            <Tab
-                                key={eventTabs[tab]}
-                                value={eventTabs[tab]}
-                                label={eventTabs[tab]}
-                            />
-                        ))}
-                    </Tabs>
-                    {isUserHost(user, event) && (
-                        <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
-                            <EventActions
-                                event={event}
-                                eventParticipants={eventParticipants}
-                                eventReservesPromise={eventReservesPromise}
-                            />
-                        </ErrorBoundarySuspense>
-                    )}
-                </Stack>
-
-                {openTab === eventTabs.details && (
-                    <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
-                        <EventDetails
-                            event={event}
-                            eventParticipants={eventParticipants}
-                            eventReservesPromise={eventReservesPromise}
-                        />
-                    </ErrorBoundarySuspense>
-                )}
-                {openTab === eventTabs.organize && (
-                    <ErrorBoundarySuspense errorMessage="Failed to load tasks">
-                        <KanBanBoard
-                            readOnly={!isUserHost(user, event)}
-                            event={event}
-                            tasksPromise={eventTasksPromise}
-                            activeMembersPromise={activeMembersPromise}
-                        />
-                    </ErrorBoundarySuspense>
-                )}
-                {openTab === eventTabs.tickets && (
-                    <ErrorBoundarySuspense errorMessage="Failed to load event tickets">
+    const getOpenTabComp = () => {
+        switch (openTab) {
+            case eventTabs.organize:
+                return (
+                    <KanBanBoard
+                        readOnly={!isUserHost(user, event)}
+                        event={event}
+                        tasksPromise={eventTasksPromise}
+                        activeMembersPromise={activeMembersPromise}
+                    />
+                );
+            case eventTabs.tickets:
+                if (
+                    isUserHost(user, event) ||
+                    (!isUserParticipant(user, eventParticipants) &&
+                        !isUserReserve(user, eventReserves))
+                )
+                    return (
                         <TicketShop
                             event={event}
                             eventTicketsPromise={eventTicketsPromise}
@@ -144,10 +105,70 @@ const EventDashboard = ({
                             goToOrganizeTab={goToOrganizeTab}
                             eventParticipants={eventParticipants}
                         />
+                    );
+                if (isUserParticipant(user, eventParticipants)) return <TicketDashboard />;
+                if (isUserReserve(user, eventReserves)) return <ReserveDashboard />;
+                throw new Error("User is both participant and reserve");
+
+            case eventTabs.participants:
+                return <ParticipantDashboard />;
+            default:
+                return (
+                    <EventDetails
+                        event={event}
+                        eventParticipants={eventParticipants}
+                        eventReservesPromise={eventReservesPromise}
+                    />
+                );
+        }
+    };
+
+    return (
+        <Stack>
+            <Stack padding="0 24px 0 24px" spacing={2}>
+                {event.status === EventStatus.draft && (
+                    <Typography variant="h4" color="warning">
+                        This is an event draft and is only visible to the host
+                    </Typography>
+                )}
+                <Typography
+                    variant="h4"
+                    sx={{
+                        color: isEventCancelled(event)
+                            ? theme.palette.error.main
+                            : theme.palette.primary.main,
+                        textDecoration: isEventCancelled(event) ? "line-through" : "none",
+                    }}
+                >
+                    {`${event.title} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event, eventParticipants) ? "(SOLD OUT)" : ""}`}
+                </Typography>
+            </Stack>
+
+            <Stack
+                direction="row"
+                padding="0 24px 0 24px "
+                justifyContent="space-between"
+                spacing={2}
+            >
+                <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
+                    {Object.entries(eventTabs).map(
+                        ([key, label]) => label && <Tab key={key} value={label} label={label} />,
+                    )}
+                </Tabs>
+                {isUserHost(user, event) && (
+                    <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
+                        <EventActions
+                            event={event}
+                            eventParticipants={eventParticipants}
+                            eventReservesPromise={eventReservesPromise}
+                        />
                     </ErrorBoundarySuspense>
                 )}
             </Stack>
-        )
+            <ErrorBoundarySuspense errorMessage="Failed to load event details">
+                {getOpenTabComp()}
+            </ErrorBoundarySuspense>
+        </Stack>
     );
 };
 export default EventDashboard;

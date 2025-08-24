@@ -16,12 +16,21 @@ export const isUserParticipant = (
 export // Helper function to check if user is on reserve list
 const isUserReserve = (
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
-    event: Prisma.EventGetPayload<{
-        include: { reserveUsers: { include: { user: { select: { id: true } } } } };
-    }>,
+    eventReserves: Prisma.ReserveInEventGetPayload<{
+        include: { user: { select: { id: true } } };
+    }>[],
+): boolean => {
+    if (!eventReserves || !user) return false;
+    return !!eventReserves.find((reserve) => reserve.user.id === user.id);
+};
+
+// User is volunteer if assigned to at least one task
+export const isUserVolunteer = (
+    user: Prisma.UserGetPayload<true>,
+    eventTasks: Prisma.TaskGetPayload<true>[],
 ) => {
-    if (!event.reserveUsers || !user) return false;
-    return event.reserveUsers.adminRoute((reserve) => reserve.user.id === user.id);
+    if (!eventTasks || !user) return false;
+    return !!eventTasks.find((task) => task.assigneeId === user.id);
 };
 
 export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>

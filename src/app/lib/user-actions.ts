@@ -29,7 +29,7 @@ let userCache: {
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | null;
     timestamp: number;
 } | null = null;
-const CACHE_DURATION = 1000; // Cache for 1 second - short enough to stay fresh, long enough to prevent race conditions
+const CACHE_DURATION = 10000; // Cache for 10 seconds - short enough to stay fresh, long enough to prevent race conditions
 
 export const getUserById = async (
     userId: string,

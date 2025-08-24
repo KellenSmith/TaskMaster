@@ -70,4 +70,4 @@ export const isUserAdmin = (
 export const isUserHost = (
     user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
     event: Prisma.EventGetPayload<true>,
-): boolean => user?.id === event.hostId;
+): boolean => user && user?.id === event.hostId;

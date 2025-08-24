@@ -4,9 +4,9 @@ import { Prisma, Product } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import {
     MembershipCreateSchema,
+    MembershipWithoutProductSchema,
     ProductCreateSchema,
     ProductUpdateSchema,
-    UserMembershipWithoutProductSchema,
 } from "./zod-schemas";
 import { renewUserMembership } from "./user-membership-actions";
 import z from "zod";
@@ -38,7 +38,7 @@ export const createMembershipProduct = async (
     parsedFieldValues: z.infer<typeof MembershipCreateSchema>,
 ): Promise<void> => {
     try {
-        const membershipValues = UserMembershipWithoutProductSchema.parse(parsedFieldValues);
+        const membershipValues = MembershipWithoutProductSchema.parse(parsedFieldValues);
         const productValues = ProductCreateSchema.parse(parsedFieldValues);
         await prisma.membership.create({
             data: {
@@ -70,36 +70,38 @@ export const updateProduct = async (
     }
 };
 
-export const deleteProduct = async (product: Product): Promise<void> => {
+export const deleteProduct = async (productId: string): Promise<void> => {
     try {
         const membership = await prisma.membership.findUnique({
-            where: { productId: product.id },
+            where: { productId },
         });
         const ticket = await prisma.ticket.findUnique({
-            where: { productId: product.id },
+            where: { productId },
         });
 
         const deleteRelationsPromises = [];
         if (membership)
             deleteRelationsPromises.push(
                 prisma.membership.delete({
-                    where: { productId: product.id },
+                    where: { productId },
                 }),
             );
         if (ticket)
             deleteRelationsPromises.push(
                 prisma.ticket.delete({
-                    where: { productId: product.id },
+                    where: { productId },
                 }),
             );
 
         await prisma.$transaction([
             ...deleteRelationsPromises,
             prisma.product.delete({
-                where: { id: product.id },
+                where: { id: productId },
             }),
         ]);
         revalidateTag(GlobalConstants.PRODUCT);
+        revalidateTag(GlobalConstants.TICKET);
+        revalidateTag(GlobalConstants.MEMBERSHIP);
     } catch {
         throw new Error(`Failed deleting product`);
     }

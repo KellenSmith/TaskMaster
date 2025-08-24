@@ -50,7 +50,7 @@ const DraggableTask = ({
     };
 
     const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
-        await updateTaskById(task.id, parsedFieldValues);
+        await updateTaskById(task.id, parsedFieldValues, task.eventId);
         return "Updated task";
     };
 
@@ -93,6 +93,7 @@ const DraggableTask = ({
                         [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(activeMembers),
                     }}
                     action={updateTaskAction}
+                    validationSchema={TaskUpdateSchema}
                     buttonLabel="save task"
                     readOnly={true}
                     editable={!readOnly}

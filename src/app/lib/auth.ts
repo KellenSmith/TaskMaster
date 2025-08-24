@@ -131,7 +131,6 @@ export const decryptJWT = async (
         const jwtPayload = result?.payload as Prisma.UserGetPayload<{
             include: { userMembership: true };
         }>;
-
         // The user is authenticated. Current database state still unclear
         return jwtPayload;
     } catch {

@@ -75,7 +75,6 @@ const Form: FC<FormProps> = ({
                 if (zodIssues.length > 0) {
                     const errorField = zodIssues[0]?.path[0];
                     const errorMessage = error.issues[0]?.message;
-                    console.log(formDataObject, formData.get("tags"));
                     setValidationError(
                         `Error in field ${FieldLabels[errorField as string]}: ${errorMessage}`,
                     );

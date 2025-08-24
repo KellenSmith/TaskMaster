@@ -22,7 +22,6 @@ export const navigateToRoute = (
     searchParams: { [key: string]: string } = {},
 ) => {
     const url = new NextURL(`/${route.join("/")}`, window.location.origin);
-    console.log(route, url.toString());
     for (let [key, value] of Object.entries(searchParams)) {
         url.searchParams.set(key, value);
     }

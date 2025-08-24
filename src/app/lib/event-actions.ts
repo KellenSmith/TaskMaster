@@ -10,6 +10,7 @@ import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { NextURL } from "next/dist/server/web/next-url";
 import { redirect } from "next/navigation";
+import { isUserHost } from "./definitions";
 
 export const createEvent = async (
     parsedFieldValues: z.infer<typeof EventCreateSchema>,
@@ -137,7 +138,7 @@ export const getEventById = async (
     Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>
 > => {
     try {
-        return await prisma.event.findUniqueOrThrow({
+        const event = await prisma.event.findUniqueOrThrow({
             where: {
                 id: eventId,
             },
@@ -150,6 +151,14 @@ export const getEventById = async (
                 },
             },
         });
+
+        // Only event hosts can see event drafts
+        const loggedInUser = await getLoggedInUser();
+        if (event.status === EventStatus.draft && !isUserHost(loggedInUser, event)) {
+            throw new Error("You are not authorized to view this event");
+        }
+
+        return event;
     } catch {
         throw new Error("Failed to fetch event");
     }

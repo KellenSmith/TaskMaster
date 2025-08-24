@@ -27,14 +27,14 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
     const getStatusChipColor = () => {
         if (isUserHost(user, event)) return theme.palette.secondary.main;
         if (isUserParticipant(user, event.participantUsers)) return theme.palette.primary.main;
-        if (isUserReserve(user, event)) return theme.palette.warning.main;
+        if (isUserReserve(user, event.reserveUsers)) return theme.palette.warning.main;
         return theme.palette.info.main;
     };
 
     const getStatusLabel = () => {
         if (isUserHost(user, event)) return "Host";
         if (isUserParticipant(user, event.participantUsers)) return "Participant";
-        if (isUserReserve(user, event)) return "Reserve";
+        if (isUserReserve(user, event.reserveUsers)) return "Reserve";
         return "Unknown";
     };
 
