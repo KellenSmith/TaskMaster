@@ -17,6 +17,7 @@ interface AutocompleteWrapperProps {
     editMode: boolean;
     customReadOnlyFields?: string[];
     customOptions?: CustomOptionProps[];
+    required?: boolean;
 }
 
 const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
@@ -27,6 +28,7 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
     editMode,
     customReadOnlyFields,
     customOptions,
+    required,
 }) => {
     const multiple = useMemo(() => allowSelectMultiple.includes(fieldId), [fieldId]);
     const options = useMemo<CustomOptionProps[]>(() => {
@@ -73,17 +75,10 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
                 value={selectedOption}
                 onChange={(_: any, newValue: any) => setSelectedOption(newValue)}
                 renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label={label}
-                        required={name in RequiredFields && RequiredFields[name].includes(fieldId)}
-                    />
+                    <TextField {...params} label={label} required={required} />
                 )}
                 options={options}
-                autoSelect={
-                    (name in RequiredFields && RequiredFields[name].includes(fieldId)) ||
-                    allowSelectMultiple.includes(fieldId)
-                }
+                autoSelect={required}
                 multiple={allowSelectMultiple.includes(fieldId)}
                 disabled={!editMode || customReadOnlyFields?.includes(fieldId)}
             />

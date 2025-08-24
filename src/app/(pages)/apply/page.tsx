@@ -34,11 +34,7 @@ const ApplyPage = () => {
     return (
         <Stack spacing={1}>
             {shouldIncludeApplicationPrompt && (
-                <Card
-                    sx={{
-                        padding: 3,
-                    }}
-                >
+                <Card>
                     {organizationSettings.memberApplicationPrompt.split("\n").map((line, index) => (
                         <Typography key={index} variant="h6" color="primary">
                             {line}
@@ -56,6 +52,7 @@ const ApplyPage = () => {
                         ? [GlobalConstants.MEMBER_APPLICATION_PROMPT]
                         : []
                 }
+                customRequiredFields={[GlobalConstants.MEMBER_APPLICATION_PROMPT]}
                 readOnly={false}
                 editable={false}
             />

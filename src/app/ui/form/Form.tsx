@@ -6,13 +6,14 @@ import {
     CardContent,
     CardHeader,
     Checkbox,
+    Divider,
     FormControlLabel,
     IconButton,
     Stack,
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, FC, useTransition, FormEvent } from "react";
+import { useState, FC, useTransition, FormEvent, useMemo } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -24,6 +25,7 @@ import {
     passwordFields,
     priceFields,
     multiLineTextFields,
+    explanatoryTexts,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import GlobalConstants from "../../GlobalConstants";
@@ -44,6 +46,7 @@ interface FormProps {
     customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
     customIncludedFields?: string[]; // Include extra fields which are not preconfigured in FieldCfg.ts
+    customRequiredFields?: string[]; // Include extra fields which are required but not preconfigured in FieldCfg.ts
     readOnly?: boolean;
     editable?: boolean;
 }
@@ -57,6 +60,7 @@ const Form: FC<FormProps> = ({
     customOptions = {},
     customReadOnlyFields = [],
     customIncludedFields = [],
+    customRequiredFields = [],
     readOnly = true,
     editable = true,
 }) => {
@@ -64,6 +68,14 @@ const Form: FC<FormProps> = ({
     const [isPending, startTransition] = useTransition();
     const [editMode, setEditMode] = useState(!readOnly);
     const { addNotification } = useNotificationContext();
+    const renderedFields = useMemo(
+        () => [...RenderedFields[name], ...customIncludedFields],
+        [name],
+    );
+    const requiredFields = useMemo(
+        () => [...(name in RequiredFields ? RequiredFields[name] : []), ...customRequiredFields],
+        [name, customIncludedFields],
+    );
 
     const validateFormData = (formData: FormData): z.infer<typeof validationSchema> | null => {
         const formDataObject = Object.fromEntries(formData);
@@ -112,9 +124,7 @@ const Form: FC<FormProps> = ({
         }
 
         if (datePickerFields.includes(fieldId))
-            return RequiredFields[name].includes(fieldId)
-                ? dayjs().hour(18).minute(0).second(0)
-                : null;
+            return requiredFields.includes(fieldId) ? dayjs().hour(18).minute(0).second(0) : null;
         if (checkboxFields.includes(fieldId)) return false;
         return "";
     };
@@ -131,21 +141,22 @@ const Form: FC<FormProps> = ({
                     defaultValue={defaultValues?.[fieldId]}
                     customReadOnlyFields={customReadOnlyFields}
                     customOptions={customOptions[fieldId]}
+                    required={requiredFields.includes(fieldId)}
                 />
             );
         }
         if (datePickerFields.includes(fieldId)) {
             return (
                 <DateTimePicker
-                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
                     name={fieldId}
+                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId]}
                     defaultValue={getDefaultValue(fieldId)}
                     slotProps={{
                         textField: {
                             name: fieldId,
-                            required: RequiredFields[name].includes(fieldId),
+                            required: requiredFields.includes(fieldId),
                         },
                         actionBar: { actions: ["clear", "accept"] },
                     }}
@@ -156,7 +167,7 @@ const Form: FC<FormProps> = ({
             return (
                 <FormControlLabel
                     key={fieldId}
-                    required={RequiredFields[name].includes(fieldId)}
+                    required={requiredFields.includes(fieldId)}
                     control={
                         <Checkbox
                             name={fieldId}
@@ -184,7 +195,7 @@ const Form: FC<FormProps> = ({
                 label={FieldLabels[fieldId]}
                 name={fieldId}
                 defaultValue={getDefaultValue(fieldId)}
-                required={RequiredFields[name].includes(fieldId)}
+                required={requiredFields.includes(fieldId)}
                 {...(passwordFields.includes(fieldId) && {
                     type: GlobalConstants.PASSWORD,
                 })}
@@ -208,9 +219,29 @@ const Form: FC<FormProps> = ({
 
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
-                    {[...RenderedFields[name], ...customIncludedFields].map((fieldId) =>
-                        getFieldComp(fieldId),
-                    )}
+                    {renderedFields.map((fieldId) => (
+                        <Stack key={fieldId}>
+                            {getFieldComp(fieldId)}
+                            {fieldId in explanatoryTexts && (
+                                <>
+                                    <Card sx={{ py: 1 }}>
+                                        {explanatoryTexts[fieldId]
+                                            .split("\n")
+                                            .map((line, index) => (
+                                                <Typography
+                                                    key={index}
+                                                    variant="subtitle2"
+                                                    color="primary"
+                                                >
+                                                    {line}
+                                                </Typography>
+                                            ))}
+                                    </Card>
+                                    <Divider />
+                                </>
+                            )}
+                        </Stack>
+                    ))}
                     {validationError && <Typography color="error">{validationError}</Typography>}
                 </Stack>
                 {editMode && (

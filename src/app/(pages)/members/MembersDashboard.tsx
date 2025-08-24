@@ -159,7 +159,6 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
         GlobalConstants.USER_MEMBERSHIP,
     ];
 
-    // TODO: If on mobile, just show list of pending members, viewable and validatable
     return (
         <Stack sx={{ height: "100%" }}>
             <Datagrid

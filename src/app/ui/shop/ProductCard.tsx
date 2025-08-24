@@ -20,20 +20,10 @@ import {
 import { Lock } from "@mui/icons-material";
 import { formatPrice } from "../utils";
 import RichTextField from "../form/RichTextField";
-
-// TODO: Exchange for prisma type
-interface Product {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    stock?: number | null;
-    unlimitedStock: boolean;
-    imageUrl: string;
-}
+import { Prisma } from "@prisma/client";
 
 interface ProductCardProps {
-    product: Product;
+    product: Prisma.ProductGetPayload<true>;
     onAddToCart?: (productId: string) => void; // eslint-disable-line no-unused-vars
     isAvailable?: boolean;
     makeAvailableText?: string;

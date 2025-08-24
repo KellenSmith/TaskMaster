@@ -40,11 +40,12 @@ const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = (
                 </Row>
             </Section>
             <Section style={{ textAlign: "left" }}>
-                {applicationMessage.split("\n").map((line, index) => (
-                    <Text key={index} style={{ marginTop: "10px" }}>
-                        {line}
-                    </Text>
-                ))}
+                {applicationMessage &&
+                    applicationMessage.split("\n").map((line, index) => (
+                        <Text key={index} style={{ marginTop: "10px" }}>
+                            {line}
+                        </Text>
+                    ))}
             </Section>
             <Button
                 style={mailTheme.components.button}

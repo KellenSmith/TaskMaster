@@ -17,7 +17,6 @@ const OrganizationSettingsPage = () => {
         return "Updated organization settings";
     };
 
-    // TODO: Add explanatory texts for settings fields
     return (
         <Form
             name={GlobalConstants.ORGANIZATION_SETTINGS}
