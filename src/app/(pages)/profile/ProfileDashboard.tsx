@@ -21,9 +21,8 @@ interface ProfileDashboardProps {
     eventsPromise: Promise<
         Prisma.EventGetPayload<{
             include: {
-                host: { select: { id: true; nickname: true } };
-                eventParticipants: { include: { user: { select: { id: true; nickname: true } } } };
-                eventReserves: { include: { user: { select: { id: true; nickname: true } } } };
+                tickets: { include: { eventParticipants: true } };
+                eventReserves: true;
             };
         }>[]
     >;

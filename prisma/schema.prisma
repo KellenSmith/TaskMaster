@@ -85,10 +85,9 @@ model Event {
     host   User   @relation(fields: [hostId], references: [id])
     hostId String
 
-    eventParticipants EventParticipant[]
-    eventReserves     EventReserve[]
-    tasks             Task[]
-    tickets           Ticket[]
+    eventReserves EventReserve[]
+    tasks         Task[]
+    tickets       Ticket[]
 
     @@map("events")
 }
@@ -99,14 +98,11 @@ model Event {
 model EventParticipant {
     user     User   @relation(fields: [userId], references: [id])
     userId   String
-    // TODO: eliminate eventId - the ticketId is enough to link the user to the event
-    event    Event  @relation(fields: [eventId], references: [id])
-    eventId  String
     ticket   Ticket @relation(fields: [ticketId], references: [id])
     ticketId String // All participants must have a ticket
 
     // This combination is unique. A user can only have one ticket per event
-    @@id([userId, eventId])
+    @@id([userId, ticketId])
     @@map("event_participants")
 }
 

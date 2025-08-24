@@ -3,37 +3,22 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-actions";
 import { use } from "react";
-import {
-    Stack,
-    Typography,
-    Card,
-    CardContent,
-    Divider,
-    Chip,
-    useTheme,
-    alpha,
-} from "@mui/material";
+import { Stack, Typography, Card, CardContent, Divider, Chip, useTheme } from "@mui/material";
 import { CheckCircle, ExitToApp, PersonAdd } from "@mui/icons-material";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { isUserReserve } from "./event-utils";
 
 interface ReserveDashboardProps {
-    eventPromise: Promise<Prisma.EventGetPayload<true>>;
-    eventReservesPromise: Promise<
-        Prisma.EventReserveGetPayload<{
-            include: { user: { select: { id: true } } };
-        }>[]
-    >;
+    eventPromise: Promise<Prisma.EventGetPayload<{ include: { eventReserves: true } }>>;
 }
 
-const ReserveDashboard = ({ eventPromise, eventReservesPromise }: ReserveDashboardProps) => {
+const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const event = use(eventPromise);
-    const eventReserves = use(eventReservesPromise);
 
-    const isReserve = isUserReserve(user, eventReserves);
+    const isReserve = isUserReserve(user, event);
 
     const joinReserveList = async () => {
         try {

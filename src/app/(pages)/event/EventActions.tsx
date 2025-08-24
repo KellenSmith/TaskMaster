@@ -6,7 +6,12 @@ import { useUserContext } from "../../context/UserContext";
 import { Button, Dialog, Menu, Stack } from "@mui/material";
 import { EventStatus, Prisma } from "@prisma/client";
 import Form from "../../ui/form/Form";
-import { cancelEvent, deleteEvent, updateEvent } from "../../lib/event-actions";
+import {
+    cancelEvent,
+    deleteEvent,
+    getEventParticipants,
+    updateEvent,
+} from "../../lib/event-actions";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { navigateToRoute } from "../../ui/utils";
 import { useRouter } from "next/navigation";
@@ -18,20 +23,13 @@ import { MoreHoriz } from "@mui/icons-material";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z from "zod";
 import { EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
+import { getEventParticipantCount } from "./event-utils";
 
 interface IEventActions {
-    event: Prisma.EventGetPayload<{
-        include: { host: { select: { id: true; nickname: true } } };
-    }>;
-    eventParticipantsPromise: Promise<
-        Prisma.EventParticipantGetPayload<{
-            include: { user: { select: { id: true; nickname: true } } };
-        }>[]
-    >;
-    eventReservesPromise: Promise<
-        Prisma.EventReserveGetPayload<{
-            include: { user: { select: { id: true; nickname: true } } };
-        }>[]
+    eventPromise: Promise<
+        Prisma.EventGetPayload<{
+            include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
+        }>
     >;
 }
 
@@ -41,18 +39,13 @@ const sendoutToOptions = {
     Reserves: "Reserves",
 };
 
-const EventActions: FC<IEventActions> = ({
-    event,
-    eventParticipantsPromise,
-    eventReservesPromise,
-}) => {
+const EventActions: FC<IEventActions> = ({ eventPromise }) => {
     const { user } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(null);
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
-    const eventParticipants = use(eventParticipantsPromise);
-    const eventReserves = use(eventReservesPromise);
+    const event = use(eventPromise);
 
     const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All);
     const router = useRouter();
@@ -94,12 +87,19 @@ const EventActions: FC<IEventActions> = ({
     };
 
     const printParticipantList = async () => {
-        closeActionMenu();
-        const taskSchedule = await pdf(
-            <ParticipantListPDF event={event} eventParticipants={eventParticipants} />,
-        ).toBlob();
-        const url = URL.createObjectURL(taskSchedule);
-        window.open(url, "_blank");
+        startTransition(async () => {
+            try {
+                const eventParticipants = await getEventParticipants(event.id);
+                const taskSchedule = await pdf(
+                    <ParticipantListPDF event={event} eventParticipants={eventParticipants} />,
+                ).toBlob();
+                const url = URL.createObjectURL(taskSchedule);
+                window.open(url, "_blank");
+                closeActionMenu();
+            } catch {
+                addNotification("Failed to print participant list", "error");
+            }
+        });
     };
 
     const getActionButtons = () => {
@@ -148,7 +148,7 @@ const EventActions: FC<IEventActions> = ({
                     key="cancel"
                     color="error"
                     disabled={isPending}
-                    confirmText={`An info email will be sent to all ${eventParticipants.length} participants. Are you sure?`}
+                    confirmText={`An info email will be sent to all ${getEventParticipantCount(event)} participants. Are you sure?`}
                     onClick={cancelThisEvent}
                 >
                     cancel event
@@ -156,7 +156,10 @@ const EventActions: FC<IEventActions> = ({
             );
 
         // Only allow deleting events that only the host is participating in
-        if (eventParticipants.length === 1 && eventParticipants[0].userId === user.id) {
+        if (
+            getEventParticipantCount(event) === 1 &&
+            event.tickets[0].eventParticipants[0].userId === user.id
+        ) {
             ActionButtons.push(
                 <ConfirmButton
                     key="delete"
@@ -179,16 +182,16 @@ const EventActions: FC<IEventActions> = ({
     };
 
     const sendoutToEventUsers = async (parsedFieldValues: z.infer<typeof EmailSendoutSchema>) => {
-        const recipientIds = [];
+        const recipientIds: string[] = [];
         if (sendoutTo === sendoutToOptions.Participants || sendoutTo === sendoutToOptions.All) {
-            eventParticipants.forEach((participant: any) => {
-                recipientIds.push(participant.user.id);
-            });
+            const eventParticipants = event.tickets
+                .map((ticket) => ticket.eventParticipants)
+                .flat();
+
+            recipientIds.push(...eventParticipants.map((ep) => ep.userId));
         }
         if (sendoutTo === sendoutToOptions.Reserves || sendoutTo === sendoutToOptions.All)
-            eventReserves.forEach((reserve: any) => {
-                recipientIds.push(reserve.user.id);
-            });
+            recipientIds.push(...event.eventReserves.map((er) => er.userId));
 
         const recipientCriteria: Prisma.UserWhereInput = {
             id: {
@@ -219,9 +222,9 @@ const EventActions: FC<IEventActions> = ({
                 />
             );
 
-        let recipientCount = eventParticipants.length;
-        if (sendoutTo === sendoutToOptions.Reserves) recipientCount = eventReserves.length;
-        else if (sendoutTo === sendoutToOptions.All) recipientCount += eventReserves.length;
+        let recipientCount = getEventParticipantCount(event);
+        if (sendoutTo === sendoutToOptions.Reserves) recipientCount = event.eventReserves.length;
+        else if (sendoutTo === sendoutToOptions.All) recipientCount += event.eventReserves.length;
 
         return (
             <>

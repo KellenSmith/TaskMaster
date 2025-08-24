@@ -1,16 +1,16 @@
-import { CalendarMonth, LocationOn, Person } from "@mui/icons-material";
+import { CalendarMonth, LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import RichTextField from "../../ui/form/RichTextField";
 import { Prisma } from "@prisma/client";
+import { use } from "react";
 
 interface EventDetailsProps {
-    event: Prisma.EventGetPayload<{
-        include: { host: { select: { id: true; nickname: true } } };
-    }>;
+    eventPromise: Promise<Prisma.EventGetPayload<true>>;
 }
 
-const EventDetails = ({ event }: EventDetailsProps) => {
+const EventDetails = ({ eventPromise }: EventDetailsProps) => {
+    const event = use(eventPromise);
     return (
         <Stack spacing={3} sx={{ p: 3 }}>
             <Paper elevation={3} sx={{ p: 3 }}>
@@ -31,10 +31,6 @@ const EventDetails = ({ event }: EventDetailsProps) => {
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                         <LocationOn color="primary" />
                         <Typography>{event.location}</Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                        <Person color="primary" />
-                        <Typography>Host: {event.host.nickname}</Typography>
                     </Stack>
                     <RichTextField editMode={false} defaultValue={event.description} />
                 </Stack>

@@ -5,7 +5,7 @@ import { use, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
-import { isEventCancelled, isEventSoldOut, isUserParticipant, isUserReserve } from "./event-utils";
+import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
 import EventDetails from "./EventDetails";
 import { EventStatus, Prisma } from "@prisma/client";
 import TicketShop from "./TicketShop";
@@ -19,17 +19,9 @@ import { navigateToRoute } from "../../ui/utils";
 
 interface EventDashboardProps {
     eventPromise: Promise<
-        Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>
-    >;
-    eventParticipantsPromise: Promise<
-        Prisma.EventParticipantGetPayload<{
-            include: { user: { select: { id: true; nickname: true } } };
-        }>[]
-    >;
-    eventReservesPromise: Promise<
-        Prisma.EventReserveGetPayload<{
-            include: { user: { select: { id: true; nickname: true } } };
-        }>[]
+        Prisma.EventGetPayload<{
+            include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
+        }>
     >;
     eventTasksPromise: Promise<
         Prisma.TaskGetPayload<{
@@ -50,8 +42,6 @@ interface EventDashboardProps {
 
 const EventDashboard = ({
     eventPromise,
-    eventParticipantsPromise,
-    eventReservesPromise,
     eventTasksPromise,
     eventTicketsPromise,
     activeMembersPromise,
@@ -62,7 +52,6 @@ const EventDashboard = ({
     const searchParams = useSearchParams();
     const { user } = useUserContext();
     const event = use(eventPromise);
-    const eventParticipants = use(eventParticipantsPromise);
 
     // Tab is available if it has a label
     const eventTabs = useMemo(() => {
@@ -76,7 +65,7 @@ const EventDashboard = ({
         if (isUserHost(user, event)) {
             tabs.participants = "Participants";
         }
-        if (isEventSoldOut(event, eventParticipants) && !isUserParticipant(user, eventParticipants))
+        if (isEventSoldOut(event) && !isUserParticipant(user, event))
             tabs.reserveList = "Reserve List";
         return tabs;
     }, []);
@@ -99,23 +88,22 @@ const EventDashboard = ({
                 return (
                     <KanBanBoard
                         readOnly={!isUserHost(user, event)}
-                        event={event}
+                        eventPromise={eventPromise}
                         tasksPromise={eventTasksPromise}
                         activeMembersPromise={activeMembersPromise}
                     />
                 );
             case eventTabs.tickets:
-                if (!isUserHost(user, event) && isUserParticipant(user, eventParticipants))
+                if (!isUserHost(user, event) && isUserParticipant(user, event))
                     return (
                         <TicketDashboard
                             eventPromise={eventPromise}
-                            eventParticipantsPromise={eventParticipantsPromise}
                             ticketsPromise={eventTicketsPromise}
                         />
                     );
                 return (
                     <TicketShop
-                        event={event}
+                        eventPromise={eventPromise}
                         eventTicketsPromise={eventTicketsPromise}
                         eventTasksPromise={eventTasksPromise}
                         goToOrganizeTab={goToOrganizeTab}
@@ -125,14 +113,9 @@ const EventDashboard = ({
             case eventTabs.participants:
                 return <ParticipantDashboard />;
             case eventTabs.reserveList:
-                return (
-                    <ReserveDashboard
-                        eventPromise={eventPromise}
-                        eventReservesPromise={eventReservesPromise}
-                    />
-                );
+                return <ReserveDashboard eventPromise={eventPromise} />;
             default:
-                return <EventDetails event={event} />;
+                return <EventDetails eventPromise={eventPromise} />;
         }
     };
 
@@ -153,7 +136,7 @@ const EventDashboard = ({
                         textDecoration: isEventCancelled(event) ? "line-through" : "none",
                     }}
                 >
-                    {`${event.title} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event, eventParticipants) ? "(SOLD OUT)" : ""}`}
+                    {`${event.title} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
                 </Typography>
             </Stack>
 
@@ -170,11 +153,7 @@ const EventDashboard = ({
                 </Tabs>
                 {isUserHost(user, event) && (
                     <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
-                        <EventActions
-                            event={event}
-                            eventParticipantsPromise={eventParticipantsPromise}
-                            eventReservesPromise={eventReservesPromise}
-                        />
+                        <EventActions eventPromise={eventPromise} />
                     </ErrorBoundarySuspense>
                 )}
             </Stack>

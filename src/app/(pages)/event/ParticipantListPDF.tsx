@@ -8,9 +8,7 @@ import dayjs from "dayjs";
 import { Prisma } from "@prisma/client";
 
 interface ParticipantListPDFProps {
-    event: Prisma.EventGetPayload<{
-        include: { host: { select: { id: true; nickname: true } } };
-    }>;
+    event: Prisma.EventGetPayload<true>;
     eventParticipants: Prisma.EventParticipantGetPayload<{
         include: { user: { select: { id: true; nickname: true } } };
     }>[];

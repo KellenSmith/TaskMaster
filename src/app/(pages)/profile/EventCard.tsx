@@ -11,9 +11,8 @@ import { Prisma } from "@prisma/client";
 interface EventCardProps {
     event: Prisma.EventGetPayload<{
         include: {
-            host: { select: { id: true; nickname: true } };
-            eventParticipants: { include: { user: { select: { id: true; nickname: true } } } };
-            eventReserves: { include: { user: { select: { id: true; nickname: true } } } };
+            tickets: { include: { eventParticipants: true } };
+            eventReserves: true;
         };
     }>;
 }
@@ -26,15 +25,15 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
     // Helper function to get user status
     const getStatusChipColor = () => {
         if (isUserHost(user, event)) return theme.palette.secondary.main;
-        if (isUserParticipant(user, event.eventParticipants)) return theme.palette.success.main;
-        if (isUserReserve(user, event.eventReserves)) return theme.palette.warning.main;
+        if (isUserParticipant(user, event)) return theme.palette.success.main;
+        if (isUserReserve(user, event)) return theme.palette.warning.main;
         return theme.palette.info.main;
     };
 
     const getStatusLabel = () => {
         if (isUserHost(user, event)) return "Host";
-        if (isUserParticipant(user, event.eventParticipants)) return "Participant";
-        if (isUserReserve(user, event.eventReserves)) return "Reserve";
+        if (isUserParticipant(user, event)) return "Participant";
+        if (isUserReserve(user, event)) return "Reserve";
         return "Unknown";
     };
 

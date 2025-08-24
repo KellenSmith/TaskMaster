@@ -17,16 +17,23 @@ export const createEventTicket = async (
     parsedFieldValues: z.infer<typeof TicketCreateSchema>,
 ) => {
     try {
-        const event = await prisma.event.findUniqueOrThrow({
+        const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
+        const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
+
+        // Find the number of participants in the event
+        const eventParticipantsCount = await prisma.eventParticipant.count({
+            where: {
+                ticket: {
+                    eventId,
+                },
+            },
+        });
+        const event = await prisma.event.findFirstOrThrow({
             where: {
                 id: eventId,
             },
-            include: {
-                eventParticipants: true,
-            },
+            select: { maxParticipants: true },
         });
-        const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
-        const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
 
         await prisma.ticket.create({
             data: {
@@ -34,7 +41,7 @@ export const createEventTicket = async (
                 product: {
                     create: {
                         ...productFieldValues,
-                        stock: event.maxParticipants - event.eventParticipants.length,
+                        stock: event.maxParticipants - eventParticipantsCount,
                     },
                 },
                 event: {
@@ -103,6 +110,7 @@ export const getEventTickets = async (eventId: string) => {
             },
             include: {
                 product: true,
+                eventParticipants: true,
             },
         });
     } catch {

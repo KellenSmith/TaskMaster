@@ -25,9 +25,11 @@ import { Prisma, TaskStatus } from "@prisma/client";
 
 interface KanBanBoardProps {
     readOnly: boolean;
-    event?: Prisma.EventGetPayload<{
-        include: { host: { select: { id: true; nickname: true } } };
-    }> | null;
+    eventPromise?: Promise<
+        Prisma.EventGetPayload<{
+            include: { tickets: { include: { eventParticipants: true } } };
+        }>
+    >;
     tasksPromise: Promise<
         Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };
@@ -40,13 +42,14 @@ interface KanBanBoardProps {
 
 const KanBanBoard = ({
     readOnly = true,
-    event,
+    eventPromise,
     tasksPromise,
     activeMembersPromise,
 }: KanBanBoardProps) => {
     const { user } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
+    const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
 
     const getUniqueFilterOptions = (filterId) => {
@@ -166,7 +169,7 @@ const KanBanBoard = ({
                     <Grid2 size={1} key={status} height="100%">
                         <DroppableColumn
                             readOnly={readOnly}
-                            event={event}
+                            eventPromise={eventPromise}
                             status={status}
                             tasks={applyBoardFilter(tasks, filters).filter(
                                 (task) => task[GlobalConstants.STATUS] === status,

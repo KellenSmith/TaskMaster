@@ -22,7 +22,7 @@ const ProfilePage = async () => {
     })({
         OR: [
             { hostId: loggedInUser.id },
-            { eventParticipants: { some: { userId: loggedInUser.id } } },
+            {},
             { eventReserves: { some: { userId: loggedInUser.id } } },
         ],
     });

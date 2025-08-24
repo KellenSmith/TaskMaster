@@ -17,7 +17,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 
 interface TicketShopProps {
-    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true } } } }>;
+    eventPromise: Promise<Prisma.EventGetPayload<true>>;
     eventTicketsPromise: Promise<
         Prisma.TicketGetPayload<{
             include: { product: true };
@@ -32,7 +32,7 @@ interface TicketShopProps {
 }
 
 const TicketShop = ({
-    event,
+    eventPromise,
     eventTicketsPromise,
     eventTasksPromise,
     goToOrganizeTab,
@@ -40,6 +40,7 @@ const TicketShop = ({
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
+    const event = use(eventPromise);
     const tickets = use(eventTicketsPromise);
     const tasks = use(eventTasksPromise);
     const [dialogOpen, setDialogOpen] = useState(false);

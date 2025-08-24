@@ -52,7 +52,6 @@ export const createEvent = async (
             await tx.eventParticipant.create({
                 data: {
                     userId: loggedInUser.id,
-                    eventId: createdEvent.id,
                     ticketId: volunteerTicket.id,
                 },
             });
@@ -87,9 +86,8 @@ export const getFilteredEvents = async (
 ): Promise<
     Prisma.EventGetPayload<{
         include: {
-            host: { select: { id: true; nickname: true } };
-            eventParticipants: { include: { user: { select: { id: true; nickname: true } } } };
-            eventReserves: { include: { user: { select: { id: true; nickname: true } } } };
+            tickets: { include: { eventParticipants: true } };
+            eventReserves: true;
         };
     }>[]
 > => {
@@ -100,29 +98,14 @@ export const getFilteredEvents = async (
                 host: {
                     select: {
                         id: true,
-                        nickname: true,
                     },
                 },
-                eventParticipants: {
+                tickets: {
                     include: {
-                        user: {
-                            select: {
-                                id: true,
-                                nickname: true,
-                            },
-                        },
+                        eventParticipants: true,
                     },
                 },
-                eventReserves: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                nickname: true,
-                            },
-                        },
-                    },
-                },
+                eventReserves: true,
             },
         });
         return events;
@@ -134,7 +117,9 @@ export const getFilteredEvents = async (
 export const getEventById = async (
     eventId: string,
 ): Promise<
-    Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>
+    Prisma.EventGetPayload<{
+        include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
+    }>
 > => {
     try {
         const event = await prisma.event.findUniqueOrThrow({
@@ -142,12 +127,12 @@ export const getEventById = async (
                 id: eventId,
             },
             include: {
-                host: {
-                    select: {
-                        id: true,
-                        nickname: true,
+                tickets: {
+                    include: {
+                        eventParticipants: true,
                     },
                 },
+                eventReserves: true,
             },
         });
 
@@ -173,7 +158,9 @@ export const getEventParticipants = async (
     try {
         const participants = await prisma.eventParticipant.findMany({
             where: {
-                eventId: eventId,
+                ticket: {
+                    eventId: eventId,
+                },
             },
             include: {
                 user: {
@@ -251,18 +238,17 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         const event = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
             include: {
-                eventParticipants: {
-                    select: {
-                        userId: true,
+                tickets: {
+                    include: {
+                        eventParticipants: true,
                     },
                 },
             },
         });
 
+        const eventParticipants = await getEventParticipants(eventId);
         const onlyHostIsParticipating =
-            event.eventParticipants.length === 1 &&
-            event.eventParticipants[0].userId === event.hostId;
-
+            eventParticipants.length === 1 && eventParticipants[0].userId === event.hostId;
         if (!onlyHostIsParticipating)
             throw new Error(
                 "The event has participants and cannot be deleted. Cancel the event instead",
@@ -273,7 +259,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
                 where: { eventId },
             }),
             prisma.eventParticipant.deleteMany({
-                where: { eventId },
+                where: { ticket: { eventId } },
             }),
             prisma.ticket.deleteMany({
                 where: { eventId },

@@ -1,27 +1,28 @@
 import dayjs from "dayjs";
-import GlobalConstants from "../../GlobalConstants";
 import { EventStatus, Prisma, Task } from "@prisma/client";
 
-export const isEventPublished = (
-    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>,
-) => event.status === EventStatus.published;
+export const isEventPublished = (event: Prisma.EventGetPayload<true>) =>
+    event.status === EventStatus.published;
 
 export const isUserParticipant = (
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
-    eventParticipants: Prisma.EventParticipantGetPayload<{
-        include: { user: { select: { id: true } } };
-    }>[],
-) => !!eventParticipants.find((participant) => participant.user.id === user[GlobalConstants.ID]);
+    event: Prisma.EventGetPayload<{
+        include: { tickets: { include: { eventParticipants: true } } };
+    }>,
+) =>
+    !!event.tickets.find((ticket) =>
+        ticket.eventParticipants.find((participant) => participant.userId === user.id),
+    );
 
 export // Helper function to check if user is on reserve list
 const isUserReserve = (
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
-    eventReserves: Prisma.EventReserveGetPayload<{
-        include: { user: { select: { id: true } } };
-    }>[],
+    event: Prisma.EventGetPayload<{
+        include: { eventReserves: true };
+    }>,
 ): boolean => {
-    if (!eventReserves || !user) return false;
-    return !!eventReserves.find((reserve) => reserve.user.id === user.id);
+    if (!event.eventReserves || !user) return false;
+    return !!event.eventReserves.find((reserve) => reserve.userId === user.id);
 };
 
 // User is volunteer if assigned to at least one task
@@ -86,14 +87,17 @@ export const getSortedTaskComps = (
     );
     return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
 };
+export const getEventParticipantCount = (
+    event: Prisma.EventGetPayload<{
+        include: { tickets: { include: { eventParticipants: true } } };
+    }>,
+) => event?.tickets.reduce((acc, ticket) => acc + ticket.eventParticipants.length, 0);
 
 export const isEventSoldOut = (
-    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>,
-    eventParticipants: Prisma.EventParticipantGetPayload<{
-        include: { user: { select: { id: true; nickname: true } } };
-    }>[],
-) => event && eventParticipants.length >= event.maxParticipants;
+    event: Prisma.EventGetPayload<{
+        include: { tickets: { include: { eventParticipants: true } } };
+    }>,
+) => !!(getEventParticipantCount(event) >= event.maxParticipants);
 
-export const isEventCancelled = (
-    event: Prisma.EventGetPayload<{ include: { host: { select: { id: true; nickname: true } } } }>,
-) => event && event.status === EventStatus.cancelled;
+export const isEventCancelled = (event: Prisma.EventGetPayload<true>) =>
+    event && event.status === EventStatus.cancelled;

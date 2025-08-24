@@ -1,5 +1,5 @@
 "use server";
-import { getEventById, getEventParticipants, getEventReserves } from "../../lib/event-actions";
+import { getEventById } from "../../lib/event-actions";
 import { getFilteredTasks } from "../../lib/task-actions";
 import { getActiveMembers } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
@@ -18,13 +18,6 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventPromise = unstable_cache(getEventById, [eventId], {
         tags: [GlobalConstants.EVENT],
     })(eventId);
-
-    // Don't cache participants. They must change during render of a paid order
-    // where the EventParticipant is created.
-    const eventParticipantsPromise = getEventParticipants(eventId);
-    const eventReservesPromise = unstable_cache(getEventReserves, [eventId], {
-        tags: [GlobalConstants.RESERVE_USERS],
-    })(eventId);
     const eventTasksPromise = unstable_cache(getFilteredTasks, [eventId], {
         tags: [GlobalConstants.TASK],
     })({ eventId });
@@ -39,8 +32,6 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
         <ErrorBoundarySuspense errorMessage="Failed to load event">
             <EventDashboard
                 eventPromise={eventPromise}
-                eventParticipantsPromise={eventParticipantsPromise}
-                eventReservesPromise={eventReservesPromise}
                 eventTasksPromise={eventTasksPromise}
                 eventTicketsPromise={eventTicketsPromise}
                 activeMembersPromise={activeMembersPromise}

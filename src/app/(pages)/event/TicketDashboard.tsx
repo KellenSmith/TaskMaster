@@ -20,13 +20,9 @@ import { deleteEventParticipant } from "../../lib/event-participant-actions";
 import { useRouter } from "next/navigation";
 
 interface TicketDashboardProps {
-    eventPromise: Promise<Prisma.EventGetPayload<true>>;
-    eventParticipantsPromise: Promise<
-        Prisma.EventParticipantGetPayload<{
-            include: { user: { select: { id: true; nickname: true } } };
-        }>[]
+    eventPromise: Promise<
+        Prisma.EventGetPayload<{ include: { tickets: { include: { eventParticipants: true } } } }>
     >;
-
     ticketsPromise: Promise<
         Prisma.TicketGetPayload<{
             include: { product: true };
@@ -34,22 +30,20 @@ interface TicketDashboardProps {
     >;
 }
 
-const TicketDashboard = ({
-    eventPromise,
-    eventParticipantsPromise,
-    ticketsPromise,
-}: TicketDashboardProps) => {
+const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps) => {
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
     const theme = useTheme();
     const event = use(eventPromise);
-    const eventParticipants = use(eventParticipantsPromise);
     const tickets = use(ticketsPromise);
     const ticket = useMemo(() => {
-        const eventParticipant = eventParticipants.find((ep) => ep.user.id === user?.id);
-        return tickets.find((ticket) => ticket.id === eventParticipant?.ticketId);
-    }, [eventParticipants, tickets, user]);
+        const participantTicket = event.tickets.find((t) =>
+            t.eventParticipants.find((ep) => ep.userId === user.id),
+        );
+        if (!participantTicket) return null;
+        return tickets.find((ticket) => ticket.id === participantTicket?.id);
+    }, [tickets, user]);
 
     const leaveParticipantList = async () => {
         try {

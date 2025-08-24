@@ -16,9 +16,7 @@ import DraggableTaskShifts from "./DraggableTaskShifts";
 
 interface DroppableColumnProps {
     readOnly: boolean;
-    event: Prisma.EventGetPayload<{
-        include: { host: { select: { id: true; nickname: true } } };
-    }> | null;
+    eventPromise?: Promise<Prisma.EventGetPayload<true>>;
     status: TaskStatus;
     tasks: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } } };
@@ -42,7 +40,7 @@ interface DroppableColumnProps {
 
 const DroppableColumn = ({
     readOnly,
-    event = null,
+    eventPromise,
     status,
     tasks,
     activeMembersPromise,
@@ -55,6 +53,7 @@ const DroppableColumn = ({
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [taskFormDefaultValues, setTaskFormDefaultValues] = useState(null);
+    const event = eventPromise ? use(eventPromise) : null;
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
 
     const handleDrop = async (status: TaskStatus) => {
