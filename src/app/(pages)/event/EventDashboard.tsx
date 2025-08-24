@@ -1,7 +1,8 @@
 "use client";
 
 import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
-import { useState, use, useMemo } from "react";
+import { use, useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut, isUserParticipant, isUserReserve } from "./event-utils";
@@ -14,6 +15,7 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import ParticipantDashboard from "./ParticipantDashboard";
 import ReserveDashboard from "./ReserveDashboard";
 import TicketDashboard from "./TicketDashboard";
+import { navigateToRoute } from "../../ui/utils";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -55,6 +57,9 @@ const EventDashboard = ({
     activeMembersPromise,
 }: EventDashboardProps) => {
     const theme = useTheme();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { user } = useUserContext();
     const event = use(eventPromise);
     const eventParticipants = use(eventParticipantsPromise);
@@ -73,7 +78,16 @@ const EventDashboard = ({
         }
         return tabs;
     }, []);
-    const [openTab, setOpenTab] = useState(eventTabs.details);
+
+    // Get current tab from search params, default to details
+    const openTab = useMemo(
+        () => searchParams.get("tab") || eventTabs.details,
+        [searchParams, eventTabs],
+    );
+
+    const setOpenTab = (tab: string) => {
+        navigateToRoute(router, [pathname], { eventId: event.id, tab });
+    };
 
     const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
 
@@ -107,6 +121,7 @@ const EventDashboard = ({
                 if (isUserParticipant(user, eventParticipants))
                     return (
                         <TicketDashboard
+                            eventPromise={eventPromise}
                             eventParticipantsPromise={eventParticipantsPromise}
                             ticketsPromise={eventTicketsPromise}
                         />
