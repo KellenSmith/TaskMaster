@@ -20,6 +20,11 @@ const stringToISODate = z
 
 const passwordSchema = z.string().min(6).max(100);
 
+const priceSchema = z.coerce
+    .number()
+    .nonnegative()
+    .transform((val) => Math.round(val * 100));
+
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
 // =============================================================================
@@ -35,231 +40,191 @@ export const OrderStatusSchema = z.enum(OrderStatus);
 // ORGANIZATION SETTINGS SCHEMAS
 // =============================================================================
 
-export const OrganizationSettingsCreateSchema = z
+// Organization settings are never created from forms, only updated
+
+export const OrganizationSettingsUpdateSchema: z.ZodType<Prisma.OrganizationSettingsUpdateInput> = z
     .object({
         id: z.string().optional(),
-        remindMembershipExpiresInDays: z.coerce.number().int().positive().default(7),
-        organizationName: z.string().default("Task Master"),
-        purgeMembersAfterDaysUnvalidated: z.coerce.number().int().positive().default(180),
-        email: z.email().default("kellensmith407@gmail.com"),
+        organizationName: z.string().optional(),
+        organizationEmail: z.email().optional(),
+        remindMembershipExpiresInDays: z.coerce.number().int().positive().optional(),
+        purgeMembersAfterDaysUnvalidated: z.coerce.number().int().positive().optional(),
+        defaultTaskShiftLength: z.coerce.number().int().positive().optional(),
     })
     .omit({ id: true });
-
-export const OrganizationSettingsUpdateSchema: z.ZodType<Prisma.OrganizationSettingsUpdateInput> =
-    OrganizationSettingsCreateSchema.partial().extend({
-        id: z.string().optional(),
-    });
 
 // =============================================================================
 // USER SCHEMAS
 // =============================================================================
 
-export const UserCreateSchema = z
+export const UserCreateSchema: z.ZodType<Prisma.UserCreateInput> = z
     .object({
         id: z.string().optional(),
-        firstName: z.string().default(""),
-        surName: z.string().default(""),
-        nickname: z.string().optional(),
-        pronoun: z.string().nullable().default("they/them"),
         email: z.email(),
-        phone: z.string().nullable().default(""),
-        consentToNewsletters: z.coerce.boolean(),
-        role: UserRoleSchema.default(UserRole.member),
-    })
-    .omit({ id: true });
+        nickname: z.string().optional(),
+        role: UserRoleSchema.optional(),
+        consentToNewsletters: z.coerce.boolean().optional(),
 
-export const UserUpdateSchema = UserCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+        firstName: z.string().optional(),
+        surName: z.string().optional(),
+        pronoun: z.string().optional(),
+        phone: z.string().optional(),
+        createdAt: stringToISODate,
+    })
+    .omit({
+        id: true,
+    });
+
+export const UserUpdateSchema: z.ZodType<Prisma.UserUpdateInput> = UserCreateSchema;
 
 // =============================================================================
 // USER CREDENTIALS SCHEMAS
 // =============================================================================
 
-export const UserCredentialsCreateSchema = z
-    .object({
-        id: z.string().optional(),
-        email: z.email(),
-        salt: z.string(),
-        hashedPassword: z.string(),
-    })
-    .omit({ id: true });
-
-export const UserCredentialsUpdateSchema = UserCredentialsCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+// UserCredentials are never created from forms and thus don't need validation
 
 // =============================================================================
 // EVENT SCHEMAS
 // =============================================================================
 
-export const EventCreateSchema = z
+export const EventCreateSchema: z.ZodType<Prisma.EventCreateWithoutHostInput> = z
     .object({
         id: z.string().optional(),
-        title: z.string().default(""),
-        location: z.string().default(""),
+        title: z.string(),
+        location: z.string(),
         startTime: stringToISODate,
         endTime: stringToISODate,
-        description: z.string().default(""),
-        maxParticipants: z.coerce.number().int().positive().nullable(),
-        status: EventStatusSchema.default(EventStatus.draft),
+        description: z.string().optional(),
+        maxParticipants: z.coerce.number().int().positive(),
+        status: EventStatusSchema,
     })
-    .omit({ id: true });
+    .omit({
+        id: true,
+    });
 
-export const EventUpdateSchema = EventCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+export const EventUpdateSchema: z.ZodType<Prisma.EventUpdateInput> = EventCreateSchema;
 
 // =============================================================================
 // PARTICIPANT IN EVENT SCHEMAS
 // =============================================================================
 
-export const ParticipantInEventCreateSchema = z.object({
-    userId: z.string(),
-    eventId: z.string(),
-    ticketId: z.string(),
-});
-
-export const ParticipantInEventUpdateSchema = ParticipantInEventCreateSchema;
+// Event participants are never created from forms and thus don't need validation
 
 // =============================================================================
 // RESERVE IN EVENT SCHEMAS
 // =============================================================================
 
-export const ReserveInEventCreateSchema = z.object({
-    userId: z.string(),
-    eventId: z.string(),
-    queueingSince: stringToISODate.default(dayjs().toISOString()),
-});
-
-export const ReserveInEventUpdateSchema = ReserveInEventCreateSchema;
+// Event reserves are never created from forms and thus don't need validation
 
 // =============================================================================
 // TASK SCHEMAS
 // =============================================================================
 
-export const TaskCreateSchema = z
+export const TaskCreateSchema: z.ZodType<
+    Prisma.TaskCreateInput & { assigneeId?: string; reviewerId?: string }
+> = z
     .object({
         id: z.string().optional(),
-        phase: TaskPhaseSchema.default(TaskPhase.before),
-        name: z.string().default(""),
-        status: TaskStatusSchema.default(TaskStatus.toDo),
-        eventId: z.string().nullable().optional(),
-        assigneeId: z.string().nullable(),
-        reviewerId: z.string().nullable(),
+        phase: TaskPhaseSchema.optional(),
+        name: z.string(),
+        status: TaskStatusSchema.optional(),
+        startTime: stringToISODate,
+        endTime: stringToISODate,
+        description: z.string(),
         tags: z
             .string()
             .transform((val) => (val ? val.split(",") : []))
-            .default([]),
-        startTime: stringToISODate.nullable(),
-        endTime: stringToISODate.nullable(),
-        description: z.string().default(""),
-    })
-    .omit({ id: true });
+            .optional(),
 
-export const TaskUpdateSchema = TaskCreateSchema.partial();
+        assigneeId: z.string().nullable(),
+        reviewerId: z.string().nullable(),
+
+        eventId: z.string().nullable().optional(),
+    })
+    .omit({ id: true, eventId: true });
+
+export const TaskUpdateSchema: z.ZodType<
+    Prisma.TaskUpdateInput & { assigneeId?: string; reviewerId?: string }
+> = TaskCreateSchema;
 
 // =============================================================================
 // PRODUCT SCHEMAS
 // =============================================================================
 
-export const ProductCreateSchema = z
+export const ProductCreateSchema: z.ZodType<Prisma.ProductCreateInput> = z
     .object({
         id: z.string().optional(),
-        name: z.string().default(""),
-        description: z.string().default(""),
-        price: z.coerce
-            .number()
-            .nonnegative()
-            .default(0)
-            .transform((val) => Math.round(val * 100)),
-        stock: z.coerce.number().int().nonnegative().nullable().default(0),
-        unlimitedStock: z.coerce.boolean().default(false),
+        name: z.string(),
+        description: z.string().optional(),
+        price: priceSchema.optional(),
+        stock: z.coerce.number().int().nonnegative().nullable().optional(),
+        unlimitedStock: z.coerce.boolean().optional(),
         imageUrl: z.string().optional(),
     })
     .omit({ id: true });
 
-export const ProductUpdateSchema = ProductCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+export const ProductUpdateSchema: z.ZodType<Prisma.ProductUpdateInput> = ProductCreateSchema;
 
 // =============================================================================
 // MEMBERSHIP SCHEMAS
 // =============================================================================
 
-export const MembershipCreateSchema = z.object({
-    id: z.string().optional(),
-    productId: z.string(),
-    duration: z.number().int().positive().default(365), // days
-});
+export const MembershipWithoutProductSchema: z.ZodType<Prisma.MembershipCreateWithoutProductInput> =
+    z
+        .object({
+            id: z.string().optional(),
+            duration: z.number().int().positive(), // days
+        })
+        .omit({ id: true });
 
-export const MembershipUpdateSchema = MembershipCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+export const MembershipCreateSchema: z.ZodType<Prisma.MembershipCreateWithoutProductInput> =
+    z.union([MembershipWithoutProductSchema, ProductCreateSchema]);
+
+export const MembershipUpdateSchema: z.ZodType<Prisma.MembershipUpdateWithoutProductInput> =
+    z.union([MembershipWithoutProductSchema, ProductUpdateSchema]);
 
 // =============================================================================
 // USER MEMBERSHIP SCHEMAS
 // =============================================================================
 
-export const UserMembershipWithoutProductSchema = z.object({ expiresAt: stringToISODate });
-
-export const UserMembershipCreateSchema = z.union([
-    UserMembershipWithoutProductSchema,
-    ProductCreateSchema,
-]);
-
-export const UserMembershipUpdateSchema = UserMembershipCreateSchema;
+// User memberships are never created from forms and thus don't need validation
 
 // =============================================================================
 // TICKET SCHEMAS
 // =============================================================================
 
-export const TicketWithoutProductSchema = z.object({
-    id: z.string().optional(),
-    type: TicketTypeSchema.default(TicketType.standard),
-});
+// Extract only the common properties from the three Prisma ticket types
+type CommonTicketKeys = keyof Prisma.TicketCreateWithoutEventInput &
+    keyof Prisma.TicketCreateWithoutProductInput &
+    keyof Prisma.TicketCreateWithoutParticipantInEventInput;
 
-export const TicketCreateSchema = z.union([
-    TicketWithoutProductSchema,
-    ProductCreateSchema.omit({ stock: true, unlimitedStock: true }),
-]);
+export type TicketWithoutRelations = Pick<Prisma.TicketCreateWithoutEventInput, CommonTicketKeys>;
 
-export const TicketUpdateSchema = TicketCreateSchema;
+export const TicketWithoutRelationsSchema: z.ZodType<TicketWithoutRelations> = z
+    .object({
+        id: z.string().optional(),
+        type: TicketTypeSchema,
+
+        product: ProductCreateSchema.optional(),
+        event: EventCreateSchema.optional(),
+    })
+    .omit({ id: true });
+
+export const TicketCreateSchema = z.union([TicketWithoutRelationsSchema, ProductCreateSchema]);
+
+export const TicketUpdateSchema = z.union([TicketWithoutRelationsSchema, ProductUpdateSchema]);
 
 // =============================================================================
 // ORDER SCHEMAS
 // =============================================================================
 
-export const OrderCreateSchema = z
-    .object({
-        id: z.string().optional(),
-        status: OrderStatusSchema.default(OrderStatus.pending),
-        totalAmount: z.number().nonnegative().default(0.0),
-        paymentRequestId: z.string().nullable(),
-        payeeRef: z.string().nullable(),
-        userId: z.string(),
-    })
-    .omit({ id: true });
-
-export const OrderUpdateSchema = OrderCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+// Orders are never created from forms and thus don't need validation
 
 // =============================================================================
 // ORDER ITEM SCHEMAS
 // =============================================================================
 
-export const OrderItemCreateSchema = z.object({
-    id: z.string().optional(),
-    quantity: z.number().int().positive().default(1),
-    price: z.number().nonnegative().default(0),
-    orderId: z.string(),
-    productId: z.string(),
-});
-
-export const OrderItemUpdateSchema = OrderItemCreateSchema.partial().extend({
-    id: z.string().optional(),
-});
+// Order items are never created from forms and thus don't need validation
 
 // =============================================================================
 // TEXT CONTENT SCHEMAS
@@ -269,7 +234,7 @@ export const TextContentCreateSchema = z.object({
     id: z.string(),
     language: z.string(),
     content: z.string(),
-    category: z.string().nullable().default("organization"),
+    category: z.string().nullable(),
 });
 
 export const TextContentUpdateSchema = TextContentCreateSchema.partial().extend({

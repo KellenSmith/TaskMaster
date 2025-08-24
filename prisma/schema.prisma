@@ -27,15 +27,16 @@ enum UserRole {
 
 model User {
     id                   String   @id @default(uuid())
-    firstName            String   @default("")
-    surName              String   @default("")
-    nickname             String   @unique @default(uuid())
-    pronoun              String?  @default("they/them")
     email                String   @unique
-    phone                String?  @default("")
-    createdAt            DateTime @default(now())
-    consentToNewsletters Boolean  @default(true)
+    nickname             String   @unique @default(uuid())
     role                 UserRole @default(member)
+    consentToNewsletters Boolean  @default(true)
+
+    firstName String?
+    surName   String?
+    pronoun   String?  @default("they/them")
+    phone     String?
+    createdAt DateTime @default(now())
 
     userCredentials UserCredentials?
     userMembership  UserMembership?
@@ -47,7 +48,7 @@ model User {
     assignedTasks Task[] @relation("assignee")
     reviewerTasks Task[] @relation("reviewer")
 
-    order Order[]
+    orders Order[]
 
     @@map("users") // Map to table named "users"
 }
@@ -56,10 +57,11 @@ model User {
 // Admins can validate membership to create credentials for user.
 model UserCredentials {
     id             String @id @default(uuid())
-    user           User   @relation(fields: [userId], references: [id])
-    userId         String @unique
     salt           String
     hashedPassword String
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String @unique
 
     @@map("user_credentials")
 }
@@ -76,8 +78,8 @@ model Event {
     location        String      @default("")
     startTime       DateTime
     endTime         DateTime
-    description     String      @default("")
-    maxParticipants Int? // null if unlimited
+    description     String?
+    maxParticipants Int
     status          EventStatus @default(draft)
 
     host   User   @relation(fields: [hostId], references: [id])
@@ -132,33 +134,34 @@ enum TaskPhase {
 }
 
 model Task {
-    id         String  @id @default(uuid())
-    event      Event?  @relation(fields: [eventId], references: [id])
-    eventId    String?
+    id          String     @id @default(uuid())
+    phase       TaskPhase  @default(before)
+    name        String
+    status      TaskStatus @default(toDo)
+    startTime   DateTime
+    endTime     DateTime
+    description String?
+    tags        String[]   @default([])
+
     assignee   User?   @relation("assignee", fields: [assigneeId], references: [id])
     assigneeId String?
     reviewer   User?   @relation("reviewer", fields: [reviewerId], references: [id])
     reviewerId String?
 
-    phase       TaskPhase  @default(before)
-    name        String     @default("")
-    status      TaskStatus @default(toDo)
-    tags        String[]   @default([])
-    startTime   DateTime?
-    endTime     DateTime?
-    description String     @default("")
+    event   Event?  @relation(fields: [eventId], references: [id])
+    eventId String?
 
     @@map("tasks")
 }
 
 model Product {
     id             String  @id @default(uuid())
-    name           String  @default("")
-    description    String  @default("")
+    name           String
+    description    String?
     price          Float   @default(0)
-    stock          Int?    @default(0)
+    stock          Int?
     unlimitedStock Boolean @default(false)
-    imageUrl       String  @default("")
+    imageUrl       String?
 
     membership Membership?
     ticket     Ticket?
@@ -174,7 +177,7 @@ model Membership {
     productId String  @unique
     duration  Int     @default(365) // in days
 
-    userMemberships UserMembership[]
+    users UserMembership[]
 
     @@map("memberships")
 }
@@ -192,7 +195,6 @@ model UserMembership {
 }
 
 enum TicketType {
-    earlyBird
     volunteer
     standard
 }
@@ -221,12 +223,13 @@ enum OrderStatus {
 
 model Order {
     id               String      @id @default(uuid())
-    createdAt        DateTime    @default(now())
-    updatedAt        DateTime    @updatedAt
     status           OrderStatus @default(pending)
     totalAmount      Float       @default(0.0) // Total amount in the smallest currency unit (e.g., öre)
     paymentRequestId String?     @unique
     payeeRef         String?     @unique // Reference to the payment provider's transaction
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     user   User   @relation(fields: [userId], references: [id])
     userId String
