@@ -206,7 +206,6 @@ export const checkPaymentStatus = async (orderId: string): Promise<void> => {
             );
             if (!paymentStatusResponse.ok) {
                 progressOrder(orderId, OrderStatus.error);
-                revalidateTag(GlobalConstants.ORDER);
                 throw new Error("Failed to check payment status");
             }
             const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
@@ -216,7 +215,6 @@ export const checkPaymentStatus = async (orderId: string): Promise<void> => {
                 paymentStatusData.paymentOrder.paid.transactionType ===
                 TransactionType.Authorization;
             await progressOrder(orderId, newOrderStatus, needsCapture);
-            revalidateTag(GlobalConstants.ORDER);
         }
     } catch {
         throw new Error("Failed to check payment status");

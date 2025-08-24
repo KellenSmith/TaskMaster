@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
+import { revalidateTag } from "next/cache";
 
 export const getOrderById = async (
     orderId: string,
@@ -149,6 +150,7 @@ export const progressOrder = async (
                 where: { id: orderId },
                 data: { status: newStatus },
             });
+            revalidateTag(GlobalConstants.ORDER);
             return;
         }
 
@@ -184,6 +186,7 @@ export const progressOrder = async (
                 data: { status: OrderStatus.completed },
             });
         }
+        revalidateTag(GlobalConstants.ORDER);
     } catch {
         throw new Error("Failed to progress order");
     }
