@@ -2,10 +2,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { isUserAuthorized, pathToRoute, routeToPath } from "./app/lib/definitions";
+import { isUserAuthorized, routeToPath } from "./app/lib/definitions";
 import { decryptJWT } from "./app/lib/auth";
 import { Prisma } from "@prisma/client";
-import { NextURL } from "next/dist/server/web/next-url";
 
 export const config = {
     // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
