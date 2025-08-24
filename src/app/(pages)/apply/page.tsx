@@ -39,8 +39,8 @@ const ApplyPage = () => {
                         padding: 3,
                     }}
                 >
-                    {organizationSettings.memberApplicationPrompt.split("\n").map((line) => (
-                        <Typography variant="h6" color="primary">
+                    {organizationSettings.memberApplicationPrompt.split("\n").map((line, index) => (
+                        <Typography key={index} variant="h6" color="primary">
                             {line}
                         </Typography>
                     ))}

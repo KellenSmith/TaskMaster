@@ -24,6 +24,7 @@ const mockOrganizationSettingsContextValue = {
         remindMembershipExpiresInDays: 7,
         purgeMembersAfterDaysUnvalidated: 180,
         defaultTaskShiftLength: 2,
+        memberApplicationPrompt: "Please provide a brief introduction about yourself.",
     },
 };
 

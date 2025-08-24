@@ -101,7 +101,9 @@ export const EventCreateSchema = z
         id: true,
     });
 
-export const EventUpdateSchema = EventCreateSchema;
+export const EventUpdateSchema = EventCreateSchema.partial().extend({
+    status: EventStatusSchema.optional(),
+});
 
 // =============================================================================
 // PARTICIPANT IN EVENT SCHEMAS
@@ -119,7 +121,9 @@ export const EventUpdateSchema = EventCreateSchema;
 // TASK SCHEMAS
 // =============================================================================
 
-export const TaskCreateSchema = z
+export const TaskCreateSchema: z.ZodType<
+    Prisma.TaskCreateInput & { assigneeId?: string; reviewerId?: string }
+> = z
     .object({
         id: z.string().optional(),
         phase: TaskPhaseSchema.optional(),
@@ -140,7 +144,9 @@ export const TaskCreateSchema = z
     })
     .omit({ id: true, eventId: true });
 
-export const TaskUpdateSchema = TaskCreateSchema;
+export const TaskUpdateSchema: z.ZodType<
+    Prisma.TaskUpdateInput & { assigneeId?: string; reviewerId?: string }
+> = TaskCreateSchema;
 
 // =============================================================================
 // PRODUCT SCHEMAS
@@ -198,7 +204,7 @@ type CommonTicketKeys = keyof Prisma.TicketCreateWithoutEventInput &
 
 export type TicketWithoutRelations = Pick<Prisma.TicketCreateWithoutEventInput, CommonTicketKeys>;
 
-export const TicketWithoutRelationsSchema = z
+export const TicketWithoutRelationsSchema: z.ZodType<TicketWithoutRelations> = z
     .object({
         id: z.string().optional(),
         type: TicketTypeSchema,
