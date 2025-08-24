@@ -1,5 +1,4 @@
 "use server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 

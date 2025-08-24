@@ -68,7 +68,7 @@ const EventDashboard = ({
         if (isEventSoldOut(event) && !isUserParticipant(user, event))
             tabs.reserveList = "Reserve List";
         return tabs;
-    }, []);
+    }, [event, user]);
 
     // Get current tab from search params, default to details
     const openTab = useMemo(

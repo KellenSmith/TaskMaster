@@ -69,7 +69,7 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                                 color="text.secondary"
                                 sx={{ fontWeight: 400, lineHeight: 1.6 }}
                             >
-                                If a spot opens up, you'll be notified.
+                                {"If a spot opens up, you'll be notified."}
                             </Typography>
                         )}
                     </Stack>

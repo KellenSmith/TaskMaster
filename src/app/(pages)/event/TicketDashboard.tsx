@@ -43,7 +43,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
         );
         if (!participantTicket) return null;
         return tickets.find((ticket) => ticket.id === participantTicket?.id);
-    }, [tickets, user]);
+    }, [tickets, user, event]);
 
     const leaveParticipantList = async () => {
         try {
@@ -98,14 +98,14 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                 />
                             </Stack>
                             <Typography variant="h4" color="primary" gutterBottom>
-                                You're All Set!
+                                {"You're All Set!"}
                             </Typography>
                             <Typography
                                 variant="h6"
                                 color="text.secondary"
                                 sx={{ fontWeight: 400, lineHeight: 1.6 }}
                             >
-                                You have a ticket to this event. We can't wait to see you there!
+                                {"You have a ticket to this event. We can't wait to see you there!"}
                             </Typography>
                         </Stack>
 
@@ -126,7 +126,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                     textAlign="center"
                                     sx={{ mb: 2, fontWeight: 500 }}
                                 >
-                                    Can't make it after all?
+                                    {"Can't make it after all?"}
                                 </Typography>
                                 <Typography
                                     variant="body2"
@@ -134,8 +134,9 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                     textAlign="center"
                                     sx={{ mb: 3, opacity: 0.8 }}
                                 >
-                                    Leave the participant list to free up your spot for someone
-                                    else.
+                                    {
+                                        "Leave the participant list to free up your spot for someone else."
+                                    }
                                 </Typography>
                                 <ConfirmButton
                                     color="error"

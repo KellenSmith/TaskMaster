@@ -269,7 +269,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             }),
         ]);
         revalidateTag(GlobalConstants.EVENT);
-    } catch (error) {
+    } catch {
         throw new Error("Failed to delete event");
     }
 };

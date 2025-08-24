@@ -7,7 +7,6 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
-import { revalidateTag } from "next/cache";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {

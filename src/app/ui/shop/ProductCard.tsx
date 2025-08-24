@@ -66,8 +66,6 @@ export default function ProductCard({
         return `warning`;
     };
 
-    const isEditButtonAvailable = () => {};
-
     return (
         <>
             <Tooltip

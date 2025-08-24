@@ -3,7 +3,7 @@
 import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { decryptJWT, encryptJWT, getUserCookie } from "./auth";
+import { decryptJWT, getUserCookie } from "./auth";
 import dayjs from "dayjs";
 import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
@@ -144,7 +144,7 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
         // Step 4: Cache the successful result
         userCache = { user, timestamp: now };
         return user;
-    } catch (error) {
+    } catch {
         // Cache failed attempts to prevent repeated database calls on errors
         userCache = { user: null, timestamp: now };
         return null;
