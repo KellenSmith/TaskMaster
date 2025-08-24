@@ -9,6 +9,16 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
                     id: ticketId,
                 },
             });
+
+            // Delete the event reserve entry if it exists (within transaction)
+            // DON'T USE THE deleteEventReserve FUNCTION
+            await tx.eventReserve.deleteMany({
+                where: {
+                    userId: userId,
+                    eventId: ticket.eventId,
+                },
+            });
+
             // Decrement the product stock of all tickets with limited stock belonging to the same event
             // Ticket product stock reflects the total number of available tickets across all types
             await tx.product.updateMany({
@@ -27,7 +37,7 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
                 },
             });
             // Create the participant and connect it to the user, ticket, and event
-            await prisma.eventParticipant.create({
+            await tx.eventParticipant.create({
                 data: {
                     user: {
                         connect: {
@@ -81,6 +91,7 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
         });
 
         // TODO: unassign from tasks happening during the event
+        // TODO: notify people on the reserve list
 
         await prisma.$transaction([deleteParticipantPromise, incrementTicketStockPromise]);
         // Don't revalidate the event participants since they are not cached

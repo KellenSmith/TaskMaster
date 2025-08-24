@@ -63,7 +63,6 @@ const EventDashboard = ({
     const { user } = useUserContext();
     const event = use(eventPromise);
     const eventParticipants = use(eventParticipantsPromise);
-    const eventReserves = use(eventReservesPromise);
 
     // Tab is available if it has a label
     const eventTabs = useMemo(() => {
@@ -72,10 +71,13 @@ const EventDashboard = ({
             organize: "Organize",
             tickets: "Tickets",
             participants: null,
+            reserveList: null,
         };
         if (isUserHost(user, event)) {
             tabs.participants = "Participants";
         }
+        if (isEventSoldOut(event, eventParticipants) && !isUserParticipant(user, eventParticipants))
+            tabs.reserveList = "Reserve List";
         return tabs;
     }, []);
 
@@ -103,22 +105,7 @@ const EventDashboard = ({
                     />
                 );
             case eventTabs.tickets:
-                if (
-                    isUserHost(user, event) ||
-                    !(
-                        isUserParticipant(user, eventParticipants) ||
-                        isUserReserve(user, eventReserves)
-                    )
-                )
-                    return (
-                        <TicketShop
-                            event={event}
-                            eventTicketsPromise={eventTicketsPromise}
-                            eventTasksPromise={eventTasksPromise}
-                            goToOrganizeTab={goToOrganizeTab}
-                        />
-                    );
-                if (isUserParticipant(user, eventParticipants))
+                if (!isUserHost(user, event) && isUserParticipant(user, eventParticipants))
                     return (
                         <TicketDashboard
                             eventPromise={eventPromise}
@@ -126,11 +113,24 @@ const EventDashboard = ({
                             ticketsPromise={eventTicketsPromise}
                         />
                     );
-                if (isUserReserve(user, eventReserves)) return <ReserveDashboard />;
-                throw new Error("User is both participant and reserve");
+                return (
+                    <TicketShop
+                        event={event}
+                        eventTicketsPromise={eventTicketsPromise}
+                        eventTasksPromise={eventTasksPromise}
+                        goToOrganizeTab={goToOrganizeTab}
+                    />
+                );
 
             case eventTabs.participants:
                 return <ParticipantDashboard />;
+            case eventTabs.reserveList:
+                return (
+                    <ReserveDashboard
+                        eventPromise={eventPromise}
+                        eventReservesPromise={eventReservesPromise}
+                    />
+                );
             default:
                 return <EventDetails event={event} />;
         }

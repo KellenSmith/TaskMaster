@@ -287,17 +287,3 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         throw new Error("Failed to delete event");
     }
 };
-
-export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
-    try {
-        await prisma.eventReserve.create({
-            data: {
-                userId: userId,
-                eventId: eventId,
-            },
-        });
-        revalidateTag(GlobalConstants.RESERVE_USERS);
-    } catch {
-        throw new Error("Failed to add user to event reserves");
-    }
-};
