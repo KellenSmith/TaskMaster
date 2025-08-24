@@ -194,6 +194,7 @@ model UserMembership {
     @@map("user_memberships")
 }
 
+// Order of ticket types determines order of appearance in the ticket shop
 enum TicketType {
     volunteer
     standard

@@ -57,12 +57,6 @@ export const updateEventTicket = async (
     try {
         const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
         const productFieldValues = ProductUpdateSchema.parse(parsedFieldValues);
-        console.log(
-            "ticketFieldValues",
-            ticketFieldValues,
-            "productFieldValues: ",
-            productFieldValues,
-        );
         await prisma.ticket.update({
             where: {
                 id: ticketId,

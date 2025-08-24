@@ -11,9 +11,9 @@ import TicketShop from "./TicketShop";
 import EventActions from "./EventActions";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import TicketDashboard from "./TicketDashboard";
 import ParticipantDashboard from "./ParticipantDashboard";
 import ReserveDashboard from "./ReserveDashboard";
+import TicketDashboard from "./TicketDashboard";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -76,10 +76,6 @@ const EventDashboard = ({
 
     const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
 
-    const getTicketTabComp = () => {
-        if (isUserHost(user, event)) return;
-    };
-
     const getOpenTabComp = () => {
         switch (openTab) {
             case eventTabs.organize:
@@ -103,7 +99,6 @@ const EventDashboard = ({
                             eventTicketsPromise={eventTicketsPromise}
                             eventTasksPromise={eventTasksPromise}
                             goToOrganizeTab={goToOrganizeTab}
-                            eventParticipants={eventParticipants}
                         />
                     );
                 if (isUserParticipant(user, eventParticipants)) return <TicketDashboard />;
@@ -113,13 +108,7 @@ const EventDashboard = ({
             case eventTabs.participants:
                 return <ParticipantDashboard />;
             default:
-                return (
-                    <EventDetails
-                        event={event}
-                        eventParticipants={eventParticipants}
-                        eventReservesPromise={eventReservesPromise}
-                    />
-                );
+                return <EventDetails event={event} />;
         }
     };
 
@@ -159,7 +148,7 @@ const EventDashboard = ({
                     <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
                         <EventActions
                             event={event}
-                            eventParticipants={eventParticipants}
+                            eventParticipantsPromise={eventParticipantsPromise}
                             eventReservesPromise={eventReservesPromise}
                         />
                     </ErrorBoundarySuspense>

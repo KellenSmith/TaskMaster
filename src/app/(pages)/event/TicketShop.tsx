@@ -28,9 +28,6 @@ interface TicketShopProps {
             include: { assignee: { select: { id: true; nickname: true } } };
         }>[]
     >;
-    eventParticipants: Prisma.ParticipantInEventGetPayload<{
-        include: { user: { select: { id: true } } };
-    }>[];
     goToOrganizeTab: () => void;
 }
 
@@ -38,7 +35,6 @@ const TicketShop = ({
     event,
     eventTicketsPromise,
     eventTasksPromise,
-    eventParticipants,
     goToOrganizeTab,
 }: TicketShopProps) => {
     const { user } = useUserContext();
@@ -69,9 +65,9 @@ const TicketShop = ({
     };
 
     const updateTicketAction = async (parsedFieldValues: z.infer<typeof TicketUpdateSchema>) => {
-        console.log(parsedFieldValues);
         await updateEventTicket(editingTicketId, parsedFieldValues);
         setDialogOpen(false);
+        setEditingTicketId(null);
         return "Updated ticket";
     };
 
@@ -102,7 +98,19 @@ const TicketShop = ({
         return { ...ticket, ...ticket.product };
     };
 
-    console.log(getFormDefaultValues());
+    const getSortedTickets = () => {
+        return tickets.sort((ticket1, ticket2) => {
+            // First sort by ticket type order (by enum index)
+            if (ticket1.type !== ticket2.type) {
+                const typeOrder = Object.values(TicketType);
+                const index1 = typeOrder.indexOf(ticket1.type);
+                const index2 = typeOrder.indexOf(ticket2.type);
+                return index1 - index2;
+            }
+            // Then sort by price (ascending) within each type group
+            return ticket1.product.price - ticket2.product.price;
+        });
+    };
 
     return (
         <Stack spacing={2} sx={{ padding: 2 }}>
@@ -121,7 +129,7 @@ const TicketShop = ({
                 <Typography color="primary">Sorry, no tickets available for this event.</Typography>
             ) : (
                 <Stack direction="row" flexWrap="wrap" gap={2}>
-                    {tickets.map((ticket) => (
+                    {getSortedTickets().map((ticket) => (
                         <Stack key={ticket.id}>
                             <ProductCard
                                 key={ticket.id}

@@ -23,9 +23,11 @@ interface IEventActions {
     event: Prisma.EventGetPayload<{
         include: { host: { select: { id: true; nickname: true } } };
     }>;
-    eventParticipants: Prisma.ParticipantInEventGetPayload<{
-        include: { user: { select: { id: true; nickname: true } } };
-    }>[];
+    eventParticipantsPromise: Promise<
+        Prisma.ParticipantInEventGetPayload<{
+            include: { user: { select: { id: true; nickname: true } } };
+        }>[]
+    >;
     eventReservesPromise: Promise<
         Prisma.ReserveInEventGetPayload<{
             include: { user: { select: { id: true; nickname: true } } };
@@ -39,12 +41,17 @@ const sendoutToOptions = {
     Reserves: "Reserves",
 };
 
-const EventActions: FC<IEventActions> = ({ event, eventParticipants, eventReservesPromise }) => {
+const EventActions: FC<IEventActions> = ({
+    event,
+    eventParticipantsPromise,
+    eventReservesPromise,
+}) => {
     const { user } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(null);
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
+    const eventParticipants = use(eventParticipantsPromise);
     const eventReserves = use(eventReservesPromise);
 
     const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All);

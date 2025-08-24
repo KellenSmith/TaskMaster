@@ -9,8 +9,6 @@ import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
-import z from "zod";
-import { OrderUpdateSchema } from "./zod-schemas";
 
 export const getOrderById = async (
     orderId: string,
@@ -188,20 +186,6 @@ export const progressOrder = async (
         }
     } catch {
         throw new Error("Failed to progress order");
-    }
-};
-
-export const updateOrder = async (
-    orderId: string,
-    parsedFieldValues: z.infer<typeof OrderUpdateSchema>,
-): Promise<void> => {
-    try {
-        await prisma.order.update({
-            where: { id: orderId },
-            data: parsedFieldValues,
-        });
-    } catch {
-        throw new Error("Failed updating order");
     }
 };
 
