@@ -83,7 +83,7 @@ export const deleteEventTicket = async (ticketId: string) => {
                 id: ticketId,
             },
         });
-        const deleteProduct = prisma.product.deleteMany({
+        const deleteProduct = prisma.product.delete({
             where: {
                 id: ticketId,
             },

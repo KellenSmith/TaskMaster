@@ -1,3 +1,4 @@
+"use client";
 import { Prisma } from "@prisma/client";
 import { use, useMemo } from "react";
 import { useUserContext } from "../../context/UserContext";
@@ -15,8 +16,11 @@ import { CheckCircle, ExitToApp } from "@mui/icons-material";
 import ProductCard from "../../ui/shop/ProductCard";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { useNotificationContext } from "../../context/NotificationContext";
+import { deleteEventParticipant } from "../../lib/event-participant-actions";
+import { useRouter } from "next/navigation";
 
 interface TicketDashboardProps {
+    eventPromise: Promise<Prisma.EventGetPayload<true>>;
     eventParticipantsPromise: Promise<
         Prisma.EventParticipantGetPayload<{
             include: { user: { select: { id: true; nickname: true } } };
@@ -30,10 +34,16 @@ interface TicketDashboardProps {
     >;
 }
 
-const TicketDashboard = ({ eventParticipantsPromise, ticketsPromise }: TicketDashboardProps) => {
+const TicketDashboard = ({
+    eventPromise,
+    eventParticipantsPromise,
+    ticketsPromise,
+}: TicketDashboardProps) => {
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
+    const router = useRouter();
     const theme = useTheme();
+    const event = use(eventPromise);
     const eventParticipants = use(eventParticipantsPromise);
     const tickets = use(ticketsPromise);
     const ticket = useMemo(() => {
@@ -41,8 +51,14 @@ const TicketDashboard = ({ eventParticipantsPromise, ticketsPromise }: TicketDas
         return tickets.find((ticket) => ticket.id === eventParticipant?.ticketId);
     }, [eventParticipants, tickets, user]);
 
-    const leaveParticipantList = () => {
-        addNotification("You have left the event", "success");
+    const leaveParticipantList = async () => {
+        try {
+            await deleteEventParticipant(event.id, user.id);
+            addNotification("You have left the event", "success");
+            router.refresh();
+        } catch {
+            addNotification("Failed to leave the event", "error");
+        }
     };
 
     return (
