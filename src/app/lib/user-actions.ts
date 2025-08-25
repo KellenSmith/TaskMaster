@@ -30,7 +30,7 @@ let userCache: {
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | null;
     timestamp: number;
 } | null = null;
-const CACHE_DURATION = 5000; // Cache for 5 seconds - short enough to stay fresh, long enough to prevent race conditions
+const CACHE_DURATION = 10000; // Cache for 10 seconds - short enough to stay fresh, long enough to prevent race conditions
 
 export const getUserById = async (
     userId: string,
@@ -248,11 +248,12 @@ export const deleteUser = async (userId: string): Promise<void> => {
             deleteCredentialsPromise,
             deleteUser,
         ]);
+
+        // TODO: Check revalidation tags for all caches
         revalidateTag(GlobalConstants.USER);
-        revalidateTag(GlobalConstants.USER_CREDENTIALS);
         revalidateTag(GlobalConstants.USER_MEMBERSHIP);
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-        revalidateTag(GlobalConstants.RESERVE_USERS);
+        revalidateTag(GlobalConstants.EVENT);
     } catch {
         throw new Error("Failed to delete user");
     }

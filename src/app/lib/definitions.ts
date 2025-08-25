@@ -7,8 +7,13 @@ import { NextURL } from "next/dist/server/web/next-url";
 // Convention: "path"=`/${route}`
 export const routeToPath = (route: string) => `/${route}`;
 export const pathToRoute = (path: string) => (path ? path.slice(1) : ""); // Remove leading "/"
-export const serverRedirect = (route: string) =>
-    redirect(new NextURL(routeToPath(route), process.env.VERCEL_URL).toString());
+export const serverRedirect = (route: string, searchParams: { [key: string]: string } = {}) => {
+    const url = new NextURL(routeToPath(route), process.env.VERCEL_URL);
+    for (let [key, value] of Object.entries(searchParams)) {
+        url.searchParams.set(key, value);
+    }
+    redirect(url.toString());
+};
 
 export const applicationRoutes = {
     [GlobalConstants.PUBLIC]: [

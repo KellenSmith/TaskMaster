@@ -72,6 +72,14 @@ const TicketShop = ({
         return "Updated ticket";
     };
 
+    const allowDeleteTicket = (ticket: Prisma.TicketGetPayload<true>) => {
+        if (!isUserHost(user, event)) return false;
+        // There must always be at least one volunteer ticket
+        if (ticket.type === TicketType.volunteer)
+            return tickets.filter((ticket) => ticket.type === TicketType.volunteer).length >= 2;
+        return true;
+    };
+
     const deleteTicketAction = async (ticketId: string) => {
         const ticket = tickets.find((t) => t.id === ticketId);
         try {
@@ -150,12 +158,14 @@ const TicketShop = ({
                                     <Button onClick={() => handleEditTicket(ticket.id)}>
                                         edit
                                     </Button>
-                                    <ConfirmButton
-                                        color="error"
-                                        onClick={() => deleteTicketAction(ticket.id)}
-                                    >
-                                        delete
-                                    </ConfirmButton>
+                                    {allowDeleteTicket(ticket) && (
+                                        <ConfirmButton
+                                            color="error"
+                                            onClick={() => deleteTicketAction(ticket.id)}
+                                        >
+                                            delete
+                                        </ConfirmButton>
+                                    )}
                                 </Stack>
                             )}
                         </Stack>

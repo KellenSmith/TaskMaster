@@ -3,18 +3,18 @@
 import { FC, use, useState, useTransition } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
-import { Button, Dialog, Menu, Stack } from "@mui/material";
+import { Button, Dialog, Menu, MenuItem, MenuList, Stack } from "@mui/material";
 import { EventStatus, Prisma } from "@prisma/client";
 import Form from "../../ui/form/Form";
 import {
     cancelEvent,
+    cloneEvent,
     deleteEvent,
     getEventParticipants,
     updateEvent,
 } from "../../lib/event-actions";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { navigateToRoute } from "../../ui/utils";
-import { useRouter } from "next/navigation";
+import { allowRedirectException } from "../../ui/utils";
 import { sendMassEmail } from "../../lib/mail-service/mail-service";
 import AccordionRadioGroup from "../../ui/AccordionRadioGroup";
 import { pdf } from "@react-pdf/renderer";
@@ -24,6 +24,8 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import z from "zod";
 import { EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
+import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
+import { isUserHost } from "../../lib/definitions";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -48,7 +50,6 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
     const event = use(eventPromise);
 
     const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All);
-    const router = useRouter();
 
     const publishEvent = () => {
         startTransition(async () => {
@@ -64,7 +65,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
         });
     };
 
-    const cancelThisEvent = () =>
+    const cancelAction = () =>
         startTransition(async () => {
             try {
                 await cancelEvent(event.id);
@@ -75,13 +76,24 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
             }
         });
 
-    const deleteThisEvent = () => {
+    const deleteAction = () => {
         startTransition(async () => {
             try {
                 await deleteEvent(event.id);
-                navigateToRoute(router, [GlobalConstants.CALENDAR]);
-            } catch {
+            } catch (error) {
+                allowRedirectException(error);
                 addNotification("Failed to delete event", "error");
+            }
+        });
+    };
+
+    const cloneAction = () => {
+        startTransition(async () => {
+            try {
+                await cloneEvent(event.id);
+            } catch (error) {
+                allowRedirectException(error);
+                addNotification("Failed to clone event", "error");
             }
         });
     };
@@ -102,75 +114,81 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
         });
     };
 
-    const getActionButtons = () => {
-        const ActionButtons = [];
-
-        if (event.status === EventStatus.draft)
-            ActionButtons.push(
+    const getMenuItems = () => {
+        const ActionButtons = [
+            <MenuItem key="clone">
                 <ConfirmButton
-                    key="publish"
-                    color="success"
-                    confirmText="This event will now be visible to all members. Are you sure?"
-                    disabled={isPending}
-                    onClick={publishEvent}
+                    onClick={cloneAction}
+                    confirmText="Are you sure you want to clone this event?"
                 >
-                    publish event
-                </ConfirmButton>,
-            );
+                    clone event
+                </ConfirmButton>
+            </MenuItem>,
+        ];
 
-        ActionButtons.push(
-            <Button
-                key="edit"
-                onClick={() => {
-                    closeActionMenu();
-                    setDialogOpen(GlobalConstants.EVENT);
-                }}
-            >
-                edit event details
-            </Button>,
-            <Button
-                key={GlobalConstants.SENDOUT}
-                onClick={() => {
-                    closeActionMenu();
-                    setDialogOpen(GlobalConstants.SENDOUT);
-                }}
-            >
-                send mail to users
-            </Button>,
-            <Button key="print" onClick={printParticipantList}>
-                print participant list
-            </Button>,
-        );
-
-        if (event.status === EventStatus.published)
-            ActionButtons.push(
-                <ConfirmButton
-                    key="cancel"
-                    color="error"
-                    disabled={isPending}
-                    confirmText={`An info email will be sent to all ${getEventParticipantCount(event)} participants. Are you sure?`}
-                    onClick={cancelThisEvent}
-                >
-                    cancel event
-                </ConfirmButton>,
-            );
+        if (!isUserHost(user, event)) return ActionButtons;
 
         // Only allow deleting events that only the host is participating in
         if (
             getEventParticipantCount(event) === 1 &&
             event.tickets[0].eventParticipants[0].userId === user.id
         ) {
-            ActionButtons.push(
-                <ConfirmButton
-                    key="delete"
-                    color="error"
-                    disabled={isPending}
-                    onClick={deleteThisEvent}
-                >
-                    delete
-                </ConfirmButton>,
+            ActionButtons.unshift(
+                <MenuItem key="delete">
+                    <ConfirmButton color="error" onClick={deleteAction}>
+                        delete event
+                    </ConfirmButton>
+                </MenuItem>,
             );
         }
+
+        ActionButtons.unshift(
+            <MenuItem key="statusAction">
+                {event.status === EventStatus.published ? (
+                    <ConfirmButton
+                        color="error"
+                        confirmText={`An info email will be sent to all ${getEventParticipantCount(event)} participants. Are you sure?`}
+                        onClick={cancelAction}
+                    >
+                        cancel event
+                    </ConfirmButton>
+                ) : (
+                    <ConfirmButton
+                        color="success"
+                        confirmText="This event will now be visible to all members. Are you sure?"
+                        onClick={publishEvent}
+                    >
+                        publish event
+                    </ConfirmButton>
+                )}
+            </MenuItem>,
+        );
+
+        ActionButtons.unshift(
+            <MenuItem key="edit">
+                <Button
+                    onClick={() => {
+                        closeActionMenu();
+                        setDialogOpen(GlobalConstants.EVENT);
+                    }}
+                >
+                    edit event details
+                </Button>
+            </MenuItem>,
+            <MenuItem key="sendout">
+                <Button
+                    onClick={() => {
+                        closeActionMenu();
+                        setDialogOpen(GlobalConstants.SENDOUT);
+                    }}
+                >
+                    send mail to users
+                </Button>
+            </MenuItem>,
+            <MenuItem key="print">
+                <Button onClick={printParticipantList}>print participant list</Button>
+            </MenuItem>,
+        );
 
         return ActionButtons;
     };
@@ -255,7 +273,6 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
             <Button
                 aria-controls="simple-menu"
                 aria-haspopup="true"
-                sx={{ marginRight: 4 }}
                 onClick={(event) => {
                     setActionMenuAnchorEl(event.currentTarget);
                 }}
@@ -264,12 +281,21 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
             </Button>
             <Menu
                 id="simple-menu"
+                sx={{ display: "flex", flexDirection: "column" }}
                 anchorEl={actionMenuAnchorEl}
                 keepMounted
                 open={Boolean(actionMenuAnchorEl)}
                 onClose={closeActionMenu}
             >
-                <Stack>{getActionButtons()}</Stack>
+                <MenuList>
+                    {isPending ? (
+                        <Stack height={300} width={300}>
+                            <LoadingFallback />
+                        </Stack>
+                    ) : (
+                        getMenuItems()
+                    )}
+                </MenuList>
             </Menu>
             <Dialog open={!!dialogOpen} onClose={() => setDialogOpen(null)} fullWidth maxWidth="xl">
                 {getDialogForm()}

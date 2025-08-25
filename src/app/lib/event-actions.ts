@@ -10,8 +10,9 @@ import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { NextURL } from "next/dist/server/web/next-url";
 import { redirect } from "next/navigation";
-import { isUserHost } from "./definitions";
+import { isUserHost, serverRedirect } from "./definitions";
 import { allowRedirectException } from "../ui/utils";
+import dayjs from "dayjs";
 
 export const createEvent = async (
     parsedFieldValues: z.infer<typeof EventCreateSchema>,
@@ -36,6 +37,7 @@ export const createEvent = async (
                                     name: `Volunteer ticket for ${parsedFieldValues.title}`,
                                     description:
                                         "Admittance for one member signed up for at least one volunteer task",
+                                    // The event host is a participant
                                     stock: parsedFieldValues.maxParticipants - 1,
                                 },
                             },
@@ -177,33 +179,6 @@ export const getEventParticipants = async (
     }
 };
 
-export const getEventReserves = async (
-    eventId: string,
-): Promise<
-    Prisma.EventReserveGetPayload<{
-        include: { user: { select: { id: true; nickname: true } } };
-    }>[]
-> => {
-    try {
-        const reserves = await prisma.eventReserve.findMany({
-            where: {
-                eventId: eventId,
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        nickname: true,
-                    },
-                },
-            },
-        });
-        return reserves;
-    } catch {
-        throw new Error("Failed to fetch event reserves");
-    }
-};
-
 export const updateEvent = async (
     eventId: string,
     parsedFieldValues: z.infer<typeof EventUpdateSchema>,
@@ -269,7 +244,116 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             }),
         ]);
         revalidateTag(GlobalConstants.EVENT);
-    } catch {
+        serverRedirect(GlobalConstants.CALENDAR);
+    } catch (error) {
+        allowRedirectException(error);
         throw new Error("Failed to delete event");
+    }
+};
+
+export const cloneEvent = async (eventId: string) => {
+    try {
+        const loggedInUser = await getLoggedInUser();
+        const {
+            id: eventIdToOmit,
+            hostId: hostIdToOmit,
+            ...eventData
+        } = await prisma.event.findUniqueOrThrow({
+            where: { id: eventId },
+        });
+        const tickets = await prisma.ticket.findMany({
+            where: { eventId },
+            include: { product: true },
+        });
+        const tasks = await prisma.task.findMany({
+            where: { eventId },
+        });
+
+        const eventClone = await prisma.$transaction(async (tx) => {
+            // Copy event itself with default values
+            const createdEvent = await tx.event.create({
+                data: {
+                    ...{
+                        ...eventData,
+                        status: EventStatus.draft,
+                        title: `${eventData.title} (Clone)`,
+                        startTime: dayjs().hour(18).minute(0).toDate(),
+                        endTime: dayjs().hour(22).minute(0).toDate(),
+                    },
+                    host: {
+                        connect: { id: loggedInUser.id },
+                    },
+                },
+            });
+
+            // Copy tickets
+            const clonedTickets = await Promise.all(
+                tickets.map(async (ticket) => {
+                    const {
+                        id: ticketIdToOmit,
+                        eventId: eventIdToOmit,
+                        productId: ticketProductIdToOmit,
+                        product,
+                        ...ticketData
+                    } = ticket;
+                    const { id: productIdToOmit, ...productData } = product;
+                    return tx.ticket.create({
+                        data: {
+                            ...ticketData,
+                            type: ticket.type,
+                            product: {
+                                create: {
+                                    ...productData,
+                                    // The event host is a participant
+                                    stock: eventData.maxParticipants - 1,
+                                },
+                            },
+                            event: {
+                                connect: { id: createdEvent.id },
+                            },
+                        },
+                    });
+                }),
+            );
+
+            // Add the event host as participant
+            const volunteerTicket = clonedTickets.find((t) => t.type === TicketType.volunteer);
+            await tx.eventParticipant.create({
+                data: {
+                    user: {
+                        connect: { id: loggedInUser.id },
+                    },
+                    ticket: {
+                        connect: { id: volunteerTicket.id },
+                    },
+                },
+            });
+
+            // Copy tasks
+            await tx.task.createMany({
+                data: tasks.map((task) => {
+                    const {
+                        id: taskIdToOmit,
+                        // Create the tasks as unassigned
+                        assigneeId: taskAssigneeIdToOmit,
+                        reviewerId: taskReviewerIdToOmit,
+                        ...taskData
+                    } = task;
+                    return {
+                        ...taskData,
+                        eventId: createdEvent.id,
+                        // Add logged in user as reviewer
+                        reviewerId: loggedInUser.id,
+                    } as Prisma.TaskCreateManyInput;
+                }),
+            });
+            return createdEvent;
+        });
+
+        revalidateTag(GlobalConstants.EVENT);
+        serverRedirect(GlobalConstants.EVENT, { [GlobalConstants.EVENT_ID]: eventClone.id });
+    } catch (error) {
+        allowRedirectException(error);
+        throw new Error("Failed to clone event");
     }
 };
