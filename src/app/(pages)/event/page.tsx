@@ -1,7 +1,7 @@
 "use server";
 import { getEventById } from "../../lib/event-actions";
 import { getFilteredTasks } from "../../lib/task-actions";
-import { getActiveMembers } from "../../lib/user-actions";
+import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
 import { unstable_cache } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
@@ -14,6 +14,11 @@ interface EventPageProps {
 
 const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventId = (await searchParams).eventId;
+
+    // Make sure the user is available before fetching the event
+    // When cloning events the user goes from possibly not host to host
+    // of the shown event which causes timing issues
+    await getLoggedInUser();
 
     const eventPromise = unstable_cache(getEventById, [eventId], {
         tags: [GlobalConstants.EVENT],
