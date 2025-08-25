@@ -44,20 +44,28 @@ export const updateTextContent = async (
     category?: string,
 ): Promise<void> => {
     try {
-        await prisma.textContent.update({
+        await prisma.textContent.upsert({
             where: {
                 id_language: {
                     id,
                     language,
                 },
             },
-            data: {
+            create: {
+                id,
+                language,
+                content,
+                category: category || null,
+            },
+            update: {
+                language,
                 content,
                 category: category || null,
             },
         });
         revalidateTag(GlobalConstants.TEXT_CONTENT);
-    } catch {
+    } catch (error) {
+        console.error(error);
         throw new Error("Failed to update text content");
     }
 };

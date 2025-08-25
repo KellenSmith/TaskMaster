@@ -83,13 +83,11 @@ export const submitMemberApplication = async (
         const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
         await createUser(userFieldValues);
 
-        if (parsedFieldValues.memberApplicationPrompt) {
-            // Send membership application to organization email
-            await notifyOfMembershipApplication(
-                userFieldValues,
-                parsedFieldValues.memberApplicationPrompt,
-            );
-        }
+        // Send membership application to organization email
+        await notifyOfMembershipApplication(
+            userFieldValues,
+            parsedFieldValues.memberApplicationPrompt,
+        );
 
         revalidateTag(GlobalConstants.USER);
     } catch {
