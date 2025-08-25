@@ -1,10 +1,10 @@
 "use server";
 
-import { EventStatus, Prisma, TicketType } from "@prisma/client";
+import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
-import { informOfCancelledEvent } from "./mail-service/mail-service";
+import { informOfCancelledEvent, notifyEventReserves } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
@@ -183,6 +183,7 @@ export const updateEvent = async (
     eventId: string,
     parsedFieldValues: z.infer<typeof EventUpdateSchema>,
 ): Promise<void> => {
+    let notifyEventReservesPromise;
     try {
         const eventToUpdate = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
@@ -203,7 +204,7 @@ export const updateEvent = async (
             // deltaMaxParticipants might be negative
             const deltaMaxParticipants =
                 parsedFieldValues.maxParticipants - eventToUpdate.maxParticipants;
-            if (deltaMaxParticipants !== 0) {
+            if (Math.abs(deltaMaxParticipants)) {
                 const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
                 await tx.product.updateMany({
                     where: { id: { in: productsToUpdate.map((product) => product.id) } },
@@ -213,6 +214,8 @@ export const updateEvent = async (
                         },
                     },
                 });
+                if (deltaMaxParticipants > 0)
+                    notifyEventReservesPromise = notifyEventReserves(eventId);
             }
         });
         await prisma.event.update({
@@ -221,8 +224,15 @@ export const updateEvent = async (
         });
         revalidateTag(GlobalConstants.EVENT);
         revalidateTag(GlobalConstants.TICKET);
-    } catch {
+    } catch (error) {
+        console.error("Failed to update event:", error.message);
         throw new Error("Failed to update event");
+    }
+
+    try {
+        if (notifyEventReservesPromise) await notifyEventReservesPromise;
+    } catch {
+        console.error("Failed to notify reserves in event of extra available tickets");
     }
 };
 
@@ -376,6 +386,8 @@ export const cloneEvent = async (eventId: string) => {
                         eventId: createdEvent.id,
                         // Add logged in user as reviewer
                         reviewerId: loggedInUser.id,
+                        // Create tasks as "To Do"
+                        status: TaskStatus.toDo,
                     } as Prisma.TaskCreateManyInput;
                 }),
             });

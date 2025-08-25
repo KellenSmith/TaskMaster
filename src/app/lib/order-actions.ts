@@ -13,7 +13,11 @@ import { revalidateTag } from "next/cache";
 
 export const getOrderById = async (
     orderId: string,
-): Promise<Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>> => {
+): Promise<
+    Prisma.OrderGetPayload<{
+        include: { orderItems: { include: { product: true } } };
+    }>
+> => {
     try {
         return await prisma.order.findUniqueOrThrow({
             where: { id: orderId },

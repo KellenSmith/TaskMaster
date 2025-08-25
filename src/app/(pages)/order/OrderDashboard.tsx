@@ -13,7 +13,9 @@ import { checkPaymentStatus } from "../../lib/payment-actions";
 
 interface OrderDashboardProps {
     orderPromise: Promise<
-        Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>
+        Prisma.OrderGetPayload<{
+            include: { orderItems: { include: { product: true } } };
+        }>
     >;
 }
 

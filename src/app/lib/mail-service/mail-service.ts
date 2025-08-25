@@ -17,6 +17,7 @@ import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 import { getEventParticipantEmails } from "../event-participant-actions";
 import { getEventReservesEmails } from "../event-reserve-actions";
 import MembershipApplicationTemplate from "./mail-templates/MembershipApplicationTemplate";
+import TaskUpdateTemplate from "./mail-templates/TaskUpdateTemplate";
 
 interface EmailPayload {
     from: string;
@@ -108,6 +109,9 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
  * @throws Error if email fails
  */
 export const notifyEventReserves = async (eventId: string): Promise<string> => {
+    const reserveEmails = await getEventReservesEmails(eventId);
+    if (reserveEmails.length === 0) return;
+
     const orgSettings = await getOrganizationSettings();
     const event = await prisma.event.findUniqueOrThrow({ where: { id: eventId } });
     const mailContent = createElement(OpenEventSpotTemplate, {
@@ -117,7 +121,7 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
 
     const mailResponse = await mailTransport.sendMail(
         await getEmailPayload(
-            await getEventReservesEmails(eventId),
+            reserveEmails,
             `A spot has opened up for the event: ${event.title}`,
             mailContent,
         ),
@@ -131,6 +135,10 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
  */
 export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
     try {
+        const participantEmails = await getEventParticipantEmails(eventId);
+        const reserveEmails = await getEventReservesEmails(eventId);
+        if (participantEmails.length === 0 && reserveEmails.length === 0) return;
+
         const event = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
             select: { id: true, title: true },
@@ -141,11 +149,8 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
         });
 
         const mailPayload = await getEmailPayload(
-            [
-                ...(await getEventParticipantEmails(eventId)),
-                ...(await getEventReservesEmails(eventId)),
-            ],
-            `Event ${event.title} cancelled`,
+            [...participantEmails, ...reserveEmails],
+            `Cancelled event: ${event.title}`,
             mailContent,
         );
         const mailResponse = await mailTransport.sendMail(mailPayload);
@@ -255,4 +260,21 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
         console.error(`Failed to send order confirmation email for order ${orderId}: `, error);
         throw new Error("Failed to send order confirmation email");
     }
+};
+
+export const notifyTaskReviewer = async (
+    reviewerEmail: string,
+    taskName: string,
+    notificationMessage: string,
+) => {
+    const organizationName = await getOrganizationName();
+    const mailContent = createElement(TaskUpdateTemplate, {
+        organizationName,
+        taskName,
+        notificationMessage,
+    });
+
+    return mailTransport.sendMail(
+        await getEmailPayload([reviewerEmail], `Task updated - ${organizationName}`, mailContent),
+    );
 };

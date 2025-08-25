@@ -169,13 +169,11 @@ const EventDashboard = ({
                         ([key, label]) => label && <Tab key={key} value={label} label={label} />,
                     )}
                 </Tabs>
-                {isUserHost(user, event) && (
-                    <Stack width={50}>
-                        <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
-                            <EventActions eventPromise={eventPromise} />
-                        </ErrorBoundarySuspense>
-                    </Stack>
-                )}
+                <Stack width={50}>
+                    <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
+                        <EventActions eventPromise={eventPromise} />
+                    </ErrorBoundarySuspense>
+                </Stack>
             </Stack>
             <ErrorBoundarySuspense errorMessage="Failed to load event details">
                 {getOpenTabComp()}

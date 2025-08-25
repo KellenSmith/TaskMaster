@@ -142,27 +142,28 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
             );
         }
 
-        ActionButtons.unshift(
-            <MenuItem key="statusAction">
-                {event.status === EventStatus.published ? (
-                    <ConfirmButton
-                        color="error"
-                        confirmText={`An info email will be sent to all ${getEventParticipantCount(event)} participants. Are you sure?`}
-                        onClick={cancelAction}
-                    >
-                        cancel event
-                    </ConfirmButton>
-                ) : (
-                    <ConfirmButton
-                        color="success"
-                        confirmText="This event will now be visible to all members. Are you sure?"
-                        onClick={publishEvent}
-                    >
-                        publish event
-                    </ConfirmButton>
-                )}
-            </MenuItem>,
-        );
+        if (event.status !== EventStatus.cancelled)
+            ActionButtons.unshift(
+                <MenuItem key="statusAction">
+                    {event.status === EventStatus.published ? (
+                        <ConfirmButton
+                            color="error"
+                            confirmText={`An info email will be sent to all ${getEventParticipantCount(event)} participants. Are you sure?`}
+                            onClick={cancelAction}
+                        >
+                            cancel event
+                        </ConfirmButton>
+                    ) : (
+                        <ConfirmButton
+                            color="success"
+                            confirmText="This event will now be visible to all members. Are you sure?"
+                            onClick={publishEvent}
+                        >
+                            publish event
+                        </ConfirmButton>
+                    )}
+                </MenuItem>,
+            );
 
         ActionButtons.unshift(
             <MenuItem key="edit">

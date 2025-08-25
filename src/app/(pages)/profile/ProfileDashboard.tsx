@@ -1,6 +1,7 @@
 "use client";
 import { Stack, Tab, Tabs } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
 import { isMembershipExpired } from "../../lib/definitions";
@@ -8,6 +9,8 @@ import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import { navigateToRoute } from "../../ui/utils";
+import GlobalConstants from "../../GlobalConstants";
 
 interface ProfileDashboardProps {
     tasksPromise: Promise<
@@ -30,14 +33,23 @@ interface ProfileDashboardProps {
 
 const ProfileDashboard = ({ tasksPromise, eventsPromise }: ProfileDashboardProps) => {
     const { user } = useUserContext();
-    const tabs = useMemo(
-        () => ({
+    const tabs = useMemo(() => {
+        const availableTabs = {
             account: "Account",
-            ...(!isMembershipExpired(user) && { events: "Events", tasks: "Tasks" }),
-        }),
-        [user],
-    );
-    const [openTab, setOpenTab] = useState<string>(tabs.account);
+            events: null,
+            tasks: null,
+        };
+        if (!isMembershipExpired(user)) {
+            availableTabs.events = "Events";
+            availableTabs.tasks = "Tasks";
+        }
+        return availableTabs;
+    }, [user]);
+
+    const searchParams = useSearchParams();
+    const openTab = useMemo(() => searchParams.get("tab") || tabs.account, [searchParams]);
+    const setOpenTab = (tab: string) => navigateToRoute(router, [GlobalConstants.PROFILE], { tab });
+    const router = useRouter();
 
     const getTabComp = () => {
         switch (openTab) {
@@ -53,9 +65,11 @@ const ProfileDashboard = ({ tasksPromise, eventsPromise }: ProfileDashboardProps
     return (
         <Stack>
             <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
-                {Object.keys(tabs).map((tab) => (
-                    <Tab key={tabs[tab]} value={tabs[tab]} label={tabs[tab]} />
-                ))}
+                {Object.keys(tabs).map((tabKey) =>
+                    tabs[tabKey] ? (
+                        <Tab key={tabKey} value={tabs[tabKey]} label={tabs[tabKey]} />
+                    ) : null,
+                )}
             </Tabs>
             <ErrorBoundarySuspense>{getTabComp()}</ErrorBoundarySuspense>
         </Stack>

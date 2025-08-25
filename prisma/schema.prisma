@@ -15,8 +15,10 @@ model OrganizationSettings {
     remindMembershipExpiresInDays    Int @default(7)
     purgeMembersAfterDaysUnvalidated Int @default(180)
 
+    defaultTaskShiftLength Int @default(2)
+
     memberApplicationPrompt String?
-    defaultTaskShiftLength  Int     @default(2)
+    ticketInstructions      String?
 
     @@map("organization_settings")
 }

@@ -1,11 +1,12 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, TaskStatus } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import z from "zod";
 import { TaskCreateSchema, TaskUpdateSchema } from "./zod-schemas";
+import { notifyTaskReviewer } from "./mail-service/mail-service";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     try {
@@ -28,8 +29,15 @@ export const updateTaskById = async (
     try {
         // TODO: send email notification to reviewer if task goes from
         // in progress to review or from assigned to unassigned
+
+        const oldTask = await prisma.task.findUniqueOrThrow({
+            where: {
+                id: taskId,
+            },
+        });
+
         const { reviewerId, assigneeId, ...tasksWithoutUsers } = parsedFieldValues;
-        await prisma.task.update({
+        const updatedTask = await prisma.task.update({
             where: {
                 id: taskId,
             },
@@ -58,7 +66,35 @@ export const updateTaskById = async (
                     },
                 }),
             },
+            include: { reviewer: true },
         });
+
+        // Notify reviewer if assigned of:
+        // task ready for review
+        // unassigned if not status to do
+        let notificationMessage = "";
+        if (updatedTask.reviewerId) {
+            if (
+                updatedTask.status === TaskStatus.inReview &&
+                oldTask.status !== TaskStatus.inReview
+            ) {
+                notificationMessage = `\nTask "${updatedTask.name}" is ready for review`;
+            }
+            if (
+                !updatedTask.assigneeId &&
+                oldTask.assigneeId &&
+                updatedTask.status !== TaskStatus.toDo
+            ) {
+                notificationMessage = `\nTask "${updatedTask.name}" has been unassigned`;
+            }
+            if (notificationMessage)
+                await notifyTaskReviewer(
+                    updatedTask.reviewer.email,
+                    updatedTask.name,
+                    notificationMessage,
+                );
+        }
+
         revalidateTag(GlobalConstants.TASK);
     } catch {
         throw new Error("Failed to update task");

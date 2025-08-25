@@ -18,7 +18,7 @@ interface OrderSummaryProps {
     order: Prisma.OrderGetPayload<{
         include: {
             orderItems: {
-                include: { product: { include: { membership: true; ticket: true } } };
+                include: { product: true };
             };
         };
     }>;
@@ -68,16 +68,6 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                             <Stack>
                                                 <Typography variant="body1" component="div">
                                                     {item.product.name}
-                                                    {item.product.membership &&
-                                                        order.status === OrderStatus.completed && (
-                                                            <Typography
-                                                                variant="body2"
-                                                                color="warning"
-                                                            >
-                                                                Log in again to use your new
-                                                                membership!
-                                                            </Typography>
-                                                        )}
                                                 </Typography>
                                             </Stack>
                                         </TableCell>

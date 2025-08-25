@@ -57,6 +57,8 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
             });
         });
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
+        revalidateTag(GlobalConstants.EVENT);
+        revalidateTag(GlobalConstants.TICKET);
     } catch {
         throw new Error("Failed to add event participant");
     }
@@ -105,13 +107,16 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
 
         await prisma.$transaction([deleteParticipantPromise, incrementTicketStockPromise]);
         revalidateTag(GlobalConstants.PARTICIPANT_USERS);
+        revalidateTag(GlobalConstants.EVENT);
+        revalidateTag(GlobalConstants.TICKET);
     } catch {
         throw new Error("Failed to delete event participant");
     }
 
     try {
         await notifyEventReserves(eventId);
-    } catch {
+    } catch (error) {
+        console.log(error);
         throw new Error("Failed to notify event reserves");
     }
 };

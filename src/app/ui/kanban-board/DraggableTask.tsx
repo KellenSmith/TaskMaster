@@ -11,8 +11,10 @@ import { Prisma } from "@prisma/client";
 import z from "zod";
 import { TaskUpdateSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
+import { isUserHost } from "../../lib/definitions";
 
 interface DraggableTaskProps {
+    eventPromise: Promise<Prisma.EventGetPayload<true>> | undefined;
     readOnly: boolean;
     task: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } } };
@@ -29,6 +31,7 @@ interface DraggableTaskProps {
 }
 
 const DraggableTask = ({
+    eventPromise,
     readOnly,
     task,
     activeMembersPromise,
@@ -36,7 +39,8 @@ const DraggableTask = ({
 }: DraggableTaskProps) => {
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
-    const activeMembers = use(activeMembersPromise);
+    const event = eventPromise ? use(eventPromise) : null;
+    const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const deleteTaskAction = async () => {
@@ -95,7 +99,7 @@ const DraggableTask = ({
                     action={updateTaskAction}
                     validationSchema={TaskUpdateSchema}
                     buttonLabel="save task"
-                    readOnly={true}
+                    readOnly={isUserHost(user, event) || task.reviewerId === user.id}
                     editable={!readOnly}
                 />
                 <Button onClick={assignTaskToMe} disabled={task.assigneeId === user.id}>
