@@ -23,8 +23,9 @@ CREATE TABLE "public"."organization_settings" (
     "organizationEmail" TEXT NOT NULL DEFAULT 'kellensmith407@gmail.com',
     "remindMembershipExpiresInDays" INTEGER NOT NULL DEFAULT 7,
     "purgeMembersAfterDaysUnvalidated" INTEGER NOT NULL DEFAULT 180,
-    "memberApplicationPrompt" TEXT,
     "defaultTaskShiftLength" INTEGER NOT NULL DEFAULT 2,
+    "memberApplicationPrompt" TEXT,
+    "ticketInstructions" TEXT,
 
     CONSTRAINT "organization_settings_pkey" PRIMARY KEY ("id")
 );
