@@ -104,7 +104,6 @@ export const encryptJWT = async (
         .sign(getEncryptionKey());
     const cookieStore = await cookies();
     cookieStore.set(GlobalConstants.USER, jwt, {
-        httpOnly: true,
         secure: true,
         expires: expiresAt,
     });
