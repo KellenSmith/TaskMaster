@@ -38,6 +38,16 @@ interface EventDashboardProps {
             select: { id: true; nickname: true };
         }>[]
     >;
+    eventParticipantsPromise: Promise<
+        Prisma.EventParticipantGetPayload<{
+            include: { user: { select: { id: true; nickname: true } } };
+        }>[]
+    >;
+    eventReservesPromise: Promise<
+        Prisma.EventReserveGetPayload<{
+            include: { user: { select: { id: true; nickname: true } } };
+        }>[]
+    >;
 }
 
 const EventDashboard = ({
@@ -45,6 +55,8 @@ const EventDashboard = ({
     eventTasksPromise,
     eventTicketsPromise,
     activeMembersPromise,
+    eventParticipantsPromise,
+    eventReservesPromise,
 }: EventDashboardProps) => {
     const theme = useTheme();
     const router = useRouter();
@@ -111,7 +123,13 @@ const EventDashboard = ({
                 );
 
             case eventTabs.participants:
-                return <ParticipantDashboard />;
+                return (
+                    <ParticipantDashboard
+                        eventPromise={eventPromise}
+                        eventParticipantsPromise={eventParticipantsPromise}
+                        eventReservesPromise={eventReservesPromise}
+                    />
+                );
             case eventTabs.reserveList:
                 return <ReserveDashboard eventPromise={eventPromise} />;
             default:

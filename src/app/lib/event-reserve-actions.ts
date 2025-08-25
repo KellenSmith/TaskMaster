@@ -13,6 +13,8 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
             },
         });
         revalidateTag(GlobalConstants.RESERVE_USERS);
+        // Event reserves with limited data is cached with the event
+        revalidateTag(GlobalConstants.EVENT);
     } catch {
         throw new Error("Failed to add user to event reserves");
     }
@@ -30,8 +32,28 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
             },
         });
         revalidateTag(GlobalConstants.RESERVE_USERS);
+        // Event reserves with limited data is cached with the event
+        revalidateTag(GlobalConstants.EVENT);
     } catch {
         throw new Error("Failed to delete event reserve");
+    }
+};
+
+export const getEventReserves = async (eventId: string) => {
+    try {
+        return await prisma.eventReserve.findMany({
+            where: { eventId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+            },
+        });
+    } catch {
+        throw new Error("Failed to get event reserves");
     }
 };
 

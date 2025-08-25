@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "../../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
+import { Prisma } from "@prisma/client";
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
     try {
@@ -103,6 +104,7 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
         // TODO: unassign from tasks happening during the event
 
         await prisma.$transaction([deleteParticipantPromise, incrementTicketStockPromise]);
+        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
     } catch {
         throw new Error("Failed to delete event participant");
     }
@@ -111,6 +113,30 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
         await notifyEventReserves(eventId);
     } catch {
         throw new Error("Failed to notify event reserves");
+    }
+};
+
+export const getEventParticipants = async (
+    eventId: string,
+): Promise<
+    Prisma.EventParticipantGetPayload<{
+        include: { user: { select: { id: true; nickname: true } } };
+    }>[]
+> => {
+    try {
+        return await prisma.eventParticipant.findMany({
+            where: { ticket: { eventId } },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                    },
+                },
+            },
+        });
+    } catch {
+        throw new Error("Failed to get event participant emails");
     }
 };
 

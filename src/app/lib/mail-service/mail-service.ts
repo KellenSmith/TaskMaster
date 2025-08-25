@@ -11,7 +11,7 @@ import { Prisma } from "@prisma/client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
-import { EmailSendoutSchema, MembershipApplicationSchema, UserCreateSchema } from "../zod-schemas";
+import { EmailSendoutSchema, MembershipApplicationSchema } from "../zod-schemas";
 import z from "zod";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 import { getEventParticipantEmails } from "../event-participant-actions";
