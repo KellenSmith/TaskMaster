@@ -1,18 +1,15 @@
 "use server";
 import { unstable_cache } from "next/cache";
-import { redirect } from "next/navigation";
 import { getLoggedInUser } from "../../lib/user-actions";
 import ProfileDashboard from "./ProfileDashboard";
 import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { getFilteredEvents } from "../../lib/event-actions";
-import { NextURL } from "next/dist/server/web/next-url";
+import { serverRedirect } from "../../lib/definitions";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
-
-    if (!loggedInUser)
-        redirect(new NextURL(`${GlobalConstants.LOGIN}`, process.env.VERCEL_URL).toString());
+    if (!loggedInUser) serverRedirect(GlobalConstants.LOGIN);
 
     const tasksPromise = unstable_cache(getFilteredTasks, [loggedInUser.id], {
         tags: [GlobalConstants.TASK],
