@@ -1,5 +1,9 @@
 const GlobalConstants = {
+    // Node env
+    DEVELOPMENT: "development",
+    PRODUCTION: "production",
     // Routes
+    PAYMENT_CALLBACK: "api/payment-callback",
     PUBLIC: "public",
     PRIVATE: "private",
     ADMIN: "admin",
@@ -9,7 +13,7 @@ const GlobalConstants = {
     PROFILE: "profile",
     RECEIPT: "receipt",
     MEMBERS: "members",
-    ORGANIZATION_SETTINGS: "organization-settings",
+    ORGANIZATION_SETTINGS: "settings",
     CREATE: "create",
     CALENDAR: "calendar",
     SENDOUT: "sendout",
@@ -23,10 +27,12 @@ const GlobalConstants = {
     VALIDATE_MEMBERSHIP: "validateMembership",
     APPLY: "apply",
     // Org settings
-
     ORGANIZATION_NAME: "organizationName",
+    ORGANIZATION_EMAIL: "organizationEmail",
+    DEFAULT_TASK_SHIFT_LENGTH: "defaultTaskShiftLength",
     REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remindMembershipExpiresInDays",
     PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purgeMembersAfterDaysUnvalidated",
+    MEMBER_APPLICATION_PROMPT: "memberApplicationPrompt",
     // User
     USER: "user",
     USER_ID: "userId",
@@ -41,6 +47,7 @@ const GlobalConstants = {
     ACTIVE: "active",
     EXPIRED: "expired",
     CREATED_AT: "createdAt",
+    UPDATED_AT: "updatedAt",
     CONSENT_TO_NEWSLETTERS: "consentToNewsletters",
     CONSENT_GDPR: "consentGDPR",
     HOSTING_EVENTS: "hostingEvents",
@@ -75,6 +82,9 @@ const GlobalConstants = {
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueingSince",
+    // Ticket
+    TICKET: "ticket",
+    TICKET_TYPE: "type",
     // Product
     PRODUCT: "product",
     PRICE: "price",
@@ -90,13 +100,13 @@ const GlobalConstants = {
     ORDER_ID: "orderId",
     TOTAL_AMOUNT: "totalAmount",
     ORDER_ITEMS: "orderItems",
-    UPDATED_AT: "updatedAt",
     // Task
     TASK: "task",
+    TASKS: "tasks",
     TASK_ID: "taskId",
-    ASSIGNEE: "Assignee",
+    ASSIGNEE: "assignee",
     ASSIGNEE_ID: "assigneeId",
-    REVIEWER: "Reviewer",
+    REVIEWER: "reviewer",
     REVIEWER_ID: "reviewerId",
     TAGS: "tags",
     PHASE: "phase",
@@ -112,6 +122,7 @@ const GlobalConstants = {
     CONTENT: "content",
     RECIPIENT_CRITERIA: "recipientCriteria",
     // TextContent
+    TEXT_CONTENT: "textContent",
     LANGUAGE: "language",
     ENGLISH: "english",
     CATEGORY: "category",

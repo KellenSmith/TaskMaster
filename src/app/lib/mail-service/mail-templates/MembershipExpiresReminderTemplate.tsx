@@ -1,14 +1,14 @@
 import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
-import { OrganizationSettings } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 /**
  * Props for the MembershipExpiresReminderTemplate component.
  * @property organizationSettings - The settings of the organization.
  */
 interface IMembershipExpiresReminderTemplateProps {
-    organizationSettings: OrganizationSettings;
+    organizationSettings: Prisma.OrganizationSettingsGetPayload<true>;
 }
 
 const MembershipExpiresReminderTemplate: FC<IMembershipExpiresReminderTemplateProps> = ({

@@ -1,32 +1,18 @@
-"use client";
-import { Stack } from "@mui/material";
-import Datagrid, { RowActionProps } from "../../ui/Datagrid";
+import ProductsDashboard from "./ProductsDashboard";
+import { unstable_cache } from "next/cache";
+import { getAllProducts } from "../../lib/product-actions";
 import GlobalConstants from "../../GlobalConstants";
-import { deleteProduct, getAllProducts, updateProduct } from "../../lib/product-actions";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const ProductsPage = () => {
-    const rowActions: RowActionProps[] = [
-        {
-            name: GlobalConstants.DELETE,
-            serverAction: deleteProduct,
-            available: () => true,
-            buttonColor: "error",
-        },
-    ];
+    const productsPromise = unstable_cache(getAllProducts, [], {
+        tags: [GlobalConstants.PRODUCT],
+    })();
 
-    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.DESCRIPTION];
-
-    // TODO: If on mobile, just show list of pending members, viewable and validatable
     return (
-        <Stack sx={{ height: "100%" }}>
-            <Datagrid
-                name={GlobalConstants.PRODUCT}
-                fetchData={getAllProducts}
-                updateAction={updateProduct}
-                rowActions={rowActions}
-                hiddenColumns={hiddenColumns}
-            />
-        </Stack>
+        <ErrorBoundarySuspense errorMessage="Failed to load products">
+            <ProductsDashboard productsPromise={productsPromise} />
+        </ErrorBoundarySuspense>
     );
 };
 

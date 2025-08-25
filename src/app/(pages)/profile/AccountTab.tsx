@@ -1,140 +1,204 @@
 "use client";
 
 import GlobalConstants from "../../GlobalConstants";
-import Form, { getFormActionMsg } from "../../ui/form/Form";
+import Form from "../../ui/form/Form";
 import { useUserContext } from "../../context/UserContext";
-import { deleteUser, updateUser, updateUserCredentials } from "../../lib/user-actions";
-import { login } from "../../lib/auth/auth";
-import { useState } from "react";
-import { Button, Card, CardContent, Stack, Typography, useTheme } from "@mui/material";
+import { deleteUser, updateUser } from "../../lib/user-actions";
 import {
-    defaultFormActionState,
-    FormActionState,
-    isMembershipExpired,
-    isUserAdmin,
-    LoginSchema,
-    UpdateCredentialsSchema,
-} from "../../lib/definitions";
-import { Prisma } from "@prisma/client";
+    Button,
+    Card,
+    CardContent,
+    Stack,
+    Typography,
+    useTheme,
+    Chip,
+    Divider,
+} from "@mui/material";
+import { isMembershipExpired, clientRedirect } from "../../lib/definitions";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { formatDate } from "../../ui/utils";
+import { allowRedirectException, formatDate } from "../../ui/utils";
+import { Person, Schedule, AdminPanelSettings, Warning, CheckCircle } from "@mui/icons-material";
 import dayjs from "dayjs";
-import { createMembershipOrder } from "../../lib/order-actions";
 import { useRouter } from "next/navigation";
-import { NextURL } from "next/dist/server/web/next-url";
+import { logout } from "../../lib/auth";
+import { useNotificationContext } from "../../context/NotificationContext";
+import { UpdateCredentialsSchema, UserUpdateSchema } from "../../lib/zod-schemas";
+import { updateUserCredentials } from "../../lib/user-credentials-actions";
+import { createMembershipOrder } from "../../lib/user-membership-actions";
+import z from "zod";
+import { useTransition } from "react";
 
 const AccountTab = () => {
     const theme = useTheme();
     const router = useRouter();
-    const { user, updateLoggedInUser, logOut } = useUserContext();
-    const [accountActionState, setAccountActionState] = useState(defaultFormActionState);
+    const { user } = useUserContext();
+    const { addNotification } = useNotificationContext();
+    const [isPending, startTransition] = useTransition();
 
-    const updateUserProfile = async (
-        currentActionState: FormActionState,
-        fieldValues: Prisma.UserUpdateInput,
-    ) => {
-        const updateUserState = await updateUser(
-            user[GlobalConstants.ID],
-            currentActionState,
-            fieldValues,
-        );
-        await updateLoggedInUser();
-        return updateUserState;
+    const updateUserProfile = async (parsedFieldValues: z.infer<typeof UserUpdateSchema>) => {
+        await updateUser(user.id, parsedFieldValues);
+        return "Successfully updated profile";
     };
 
     const validateAndUpdateCredentials = async (
-        currentActionState: FormActionState,
-        fieldValues: UpdateCredentialsSchema,
+        parsedFieldValues: z.infer<typeof UpdateCredentialsSchema>,
     ) => {
-        const newActionState = { ...currentActionState };
-        // Check new and repeated passwords match
-        if (fieldValues.newPassword !== fieldValues.repeatPassword) {
-            newActionState.status = 500;
-            newActionState.result = "";
-            newActionState.errorMsg = "Passwords do not match";
-            return newActionState;
+        if (parsedFieldValues.newPassword !== parsedFieldValues.repeatPassword) {
+            throw new Error("New password and repeat password do not match");
         }
-        // Check current password
-        const validatedCurrentPassword: LoginSchema = {
-            email: user.email,
-            password: fieldValues.currentPassword,
-        };
-        const validateCurrentResult = await login(currentActionState, validatedCurrentPassword);
-        if (validateCurrentResult.status !== 200) return validateCurrentResult;
-
-        // Update credentials
-        const updatedPassWord = {
-            email: user.email,
-            password: fieldValues.newPassword,
-        };
-        const updateCredentialsState = await updateUserCredentials(
-            currentActionState,
-            updatedPassWord,
-        );
-        return updateCredentialsState;
+        await updateUserCredentials(parsedFieldValues);
+        return "Successfully updated password";
     };
 
-    const deleteMyAccount = async () => {
-        const deleteState = await deleteUser(user, defaultFormActionState);
-        if (deleteState.status === 200) logOut();
-        setAccountActionState(deleteState);
-    };
+    const deleteMyAccount = async () =>
+        startTransition(async () => {
+            try {
+                await deleteUser(user.id);
+                try {
+                    await logout();
+                } catch {
+                    clientRedirect(router, [GlobalConstants.HOME]);
+                }
+            } catch {
+                addNotification("Failed to delete account", "error");
+            }
+        });
 
-    const payMembership = async () => {
-        const createMembershipOrderResult = await createMembershipOrder(defaultFormActionState);
-        if (createMembershipOrderResult.status === 201) {
-            const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, window.location.origin);
-            orderUrl.searchParams.set(GlobalConstants.ORDER_ID, createMembershipOrderResult.result);
-            router.push(orderUrl.toString());
-            createMembershipOrderResult.result = "Redirecting to payment...";
-        }
-        setAccountActionState(createMembershipOrderResult);
-    };
-
-    // TODO: Renew access token when membership has been validated
+    const activateMembership = async () =>
+        startTransition(async () => {
+            try {
+                await createMembershipOrder();
+            } catch (error) {
+                allowRedirectException(error);
+                // Show notification for all other errors
+                addNotification("Failed to activate membership", "error");
+            }
+        });
 
     return (
-        user && (
-            <>
-                <Stack>
-                    <Card>
-                        <CardContent sx={{ color: theme.palette.secondary.main }}>
+        <Stack>
+            <Form
+                name={GlobalConstants.PROFILE}
+                buttonLabel="save"
+                action={updateUserProfile}
+                validationSchema={UserUpdateSchema}
+                defaultValues={user}
+            ></Form>
+            <Form
+                name={GlobalConstants.USER_CREDENTIALS}
+                buttonLabel="save"
+                action={validateAndUpdateCredentials}
+                validationSchema={UpdateCredentialsSchema}
+            ></Form>
+            <Card elevation={3}>
+                <CardContent>
+                    <Stack spacing={3}>
+                        {/* Header */}
+                        <Stack
+                            display="flex"
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                        >
+                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                Membership
+                            </Typography>
                             {isMembershipExpired(user) ? (
-                                <>
-                                    <Typography>Your membership is expired!</Typography>
-                                </>
+                                <Chip
+                                    icon={<Warning />}
+                                    label="Expired"
+                                    color="error"
+                                    size="small"
+                                />
                             ) : (
-                                <>
-                                    <Typography>{`Member since ${formatDate(user.created)}`}</Typography>
-                                    <Typography>
-                                        {`Your membership expires ${formatDate(dayjs(user.userMembership.expiresAt))}`}
-                                    </Typography>
-                                    {isUserAdmin(user) && <Typography>You are an admin</Typography>}
-                                </>
+                                <Chip
+                                    icon={<CheckCircle />}
+                                    label="Active"
+                                    color="success"
+                                    size="small"
+                                />
                             )}
-                        </CardContent>
-                    </Card>
-                    <Form
-                        name={GlobalConstants.PROFILE}
-                        buttonLabel="save"
-                        action={updateUserProfile}
-                        defaultValues={user}
-                    ></Form>
-                    <Form
-                        name={GlobalConstants.USER_CREDENTIALS}
-                        buttonLabel="save"
-                        action={validateAndUpdateCredentials}
-                    ></Form>
-                    {getFormActionMsg(accountActionState)}
-                    <Button onClick={payMembership}>
-                        {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
-                    </Button>
-                    <ConfirmButton color="error" onClick={deleteMyAccount}>
-                        Delete My Account
-                    </ConfirmButton>
-                </Stack>
-            </>
-        )
+                        </Stack>
+
+                        <Divider />
+
+                        {/* Membership Info */}
+                        {isMembershipExpired(user) ? (
+                            <Stack
+                                sx={{
+                                    p: 2,
+                                    borderRadius: 2,
+                                    backgroundColor: theme.palette.error.light + "20",
+                                    border: `1px solid ${theme.palette.error.light}`,
+                                }}
+                            >
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        color: theme.palette.error.main,
+                                        fontWeight: 500,
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    {user.userMembership
+                                        ? "Your membership has expired and needs renewal"
+                                        : "Welcome! Activate your membership to get started"}
+                                </Typography>
+                            </Stack>
+                        ) : (
+                            <Stack spacing={2}>
+                                {/* Member Since */}
+                                <Stack direction="row" alignItems="center" spacing={2}>
+                                    <Person color="primary" />
+                                    <Stack>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Member since
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {formatDate(user.createdAt)}
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+
+                                {/* Expiration Date */}
+                                <Stack direction="row" alignItems="center" spacing={2}>
+                                    <Schedule color="primary" />
+                                    <Stack>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Membership expires
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {formatDate(dayjs(user.userMembership.expiresAt))}
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <AdminPanelSettings color="primary" />
+                                    <Stack>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Role
+                                        </Typography>
+                                        <Typography
+                                            variant="body1"
+                                            sx={{ fontWeight: 500, textTransform: "capitalize" }}
+                                        >
+                                            {user.role}
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+                            </Stack>
+                        )}
+                    </Stack>
+                </CardContent>
+            </Card>
+            <Button onClick={activateMembership} disabled={isPending}>
+                {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
+            </Button>
+            <ConfirmButton color="error" onClick={deleteMyAccount} disabled={isPending}>
+                Delete My Account
+            </ConfirmButton>
+        </Stack>
     );
 };
 

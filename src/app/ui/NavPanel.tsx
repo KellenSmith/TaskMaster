@@ -1,62 +1,91 @@
 "use client";
 
 import React, { useState } from "react";
-import { AppBar, Toolbar, Typography, Drawer, List, ListItem, Button } from "@mui/material";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Drawer,
+    List,
+    ListItem,
+    Button,
+    Tooltip,
+    ListSubheader,
+    Stack,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAuthorized, routes, routesToPath } from "../lib/definitions";
-import { Article } from "@mui/icons-material";
+import {
+    isUserAdmin,
+    isUserAuthorized,
+    applicationRoutes,
+    routeToPath,
+    clientRedirect,
+} from "../lib/definitions";
+import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { navigateToRoute } from "./utils";
+import { allowRedirectException, openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
+import { useNotificationContext } from "../context/NotificationContext";
+import { logout } from "../lib/auth";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { user, logOut } = useUserContext();
+    const { user, editMode, setEditMode } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
+    const { addNotification } = useNotificationContext();
     const router = useRouter();
 
     const toggleDrawerOpen = () => {
         setDrawerOpen((prev) => !prev);
     };
 
-    const openReadme = () => {
-        window.open("/README.pdf", "_blank");
+    const logOutAction = async () => {
+        try {
+            await logout();
+            addNotification("Logged out", "success");
+        } catch (error) {
+            allowRedirectException(error);
+            addNotification("Failed to log out", "error");
+        }
     };
 
+    const hiddenRoutes = [
+        GlobalConstants.LOGIN,
+        GlobalConstants.RESET,
+        GlobalConstants.APPLY,
+        GlobalConstants.ORDER,
+    ];
+
     const getLinkGroup = (privacyStatus: string) => {
+        const authorizedRoutes = applicationRoutes[privacyStatus]
+            .filter((route) => !hiddenRoutes.includes(route))
+            .filter((route) => isUserAuthorized(routeToPath(route), user));
+        if (authorizedRoutes.length === 0) return null;
         return (
-            <List>
-                {routesToPath(
-                    routes[privacyStatus].filter(
-                        (route) =>
-                            ![
-                                GlobalConstants.LOGIN,
-                                GlobalConstants.RESET,
-                                GlobalConstants.APPLY,
-                                GlobalConstants.ORDER,
-                                "order/complete",
-                            ].includes(route),
-                    ),
-                )
-                    .filter((route) => isUserAuthorized(route, user))
-                    .map((route) => (
-                        <ListItem key={route}>
-                            <Button
-                                onClick={() => {
-                                    setDrawerOpen(false);
-                                    navigateToRoute(route, router);
-                                }}
-                            >
-                                {route.replace(/^\/+/, "").replace(/-/g, " ")}
-                            </Button>
-                        </ListItem>
-                    ))}
-            </List>
+            <Stack key={privacyStatus}>
+                {privacyStatus !== GlobalConstants.PUBLIC && (
+                    <ListSubheader sx={{ textTransform: "capitalize" }}>
+                        {privacyStatus}s only
+                    </ListSubheader>
+                )}
+                {authorizedRoutes.map((route) => (
+                    <ListItem key={route} dense>
+                        <Button
+                            onClick={() => {
+                                setDrawerOpen(false);
+                                clientRedirect(router, [route]);
+                            }}
+                        >
+                            {route}
+                        </Button>
+                    </ListItem>
+                ))}
+            </Stack>
         );
     };
 
@@ -70,33 +99,42 @@ const NavPanel = () => {
                     <Typography
                         variant="h6"
                         style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
-                        onClick={() => navigateToRoute("/", router)}
+                        onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                     >
                         {organizationSettings?.organizationName || "Organization Name"}
                     </Typography>
-                    <Button onClick={openReadme}>
-                        <Article />
-                    </Button>
+                    <Tooltip title="Open README.md">
+                        <Button onClick={() => openResourceInNewTab("/README.pdf")}>
+                            <Article />
+                        </Button>
+                    </Tooltip>
+                    {isUserAdmin(user) && (
+                        <Tooltip title={`${editMode ? "Disable" : "Enable"} website edit mode`}>
+                            <Button onClick={() => setEditMode((prev: boolean) => !prev)}>
+                                {editMode ? <Cancel /> : <Edit />}
+                            </Button>
+                        </Tooltip>
+                    )}
                     {user ? (
-                        <Button onClick={logOut}>
+                        <Button onClick={logOutAction}>
                             <LogoutIcon />
                         </Button>
                     ) : (
-                        <Button
-                            onClick={() => navigateToRoute(`/${GlobalConstants.LOGIN}`, router)}
-                        >
+                        <Button onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}>
                             <LoginIcon />
                         </Button>
                     )}
                 </Toolbar>
             </AppBar>
             <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
-                <Button onClick={toggleDrawerOpen}>
+                <Button sx={{ justifyContent: "flex-end" }} onClick={toggleDrawerOpen}>
                     <MenuOpenIcon />
                 </Button>
-                {getLinkGroup(GlobalConstants.PUBLIC)}
-                {getLinkGroup(GlobalConstants.PRIVATE)}
-                {getLinkGroup(GlobalConstants.ADMIN)}
+                <List>
+                    {Object.keys(applicationRoutes).map((privacyStatus) =>
+                        getLinkGroup(privacyStatus),
+                    )}
+                </List>
             </Drawer>
         </>
     );

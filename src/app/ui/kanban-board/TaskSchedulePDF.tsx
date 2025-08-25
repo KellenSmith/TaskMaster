@@ -1,7 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../utils";
-import { sortGroupedTasks } from "../../(pages)/calendar/event/event-utils";
+import { sortGroupedTasks } from "../../(pages)/event/event-utils";
 import dayjs from "dayjs";
 import { styles } from "../pdf-styles";
 
@@ -35,7 +35,7 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
                 {formatDate(task[GlobalConstants.END_TIME])}
             </Text>
             <Text style={{ ...styles.tableCell, ...customStyles.columnAssignee }}>
-                {task.Assignee?.nickname}
+                {task.assignee?.nickname}
             </Text>
         </View>
     );

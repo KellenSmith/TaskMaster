@@ -1,35 +1,47 @@
 "use client";
-
 import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
-import { useUserContext } from "../../context/UserContext";
 import { Button, Stack } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
-import { navigateToRoute } from "../../ui/utils";
+import { login } from "../../lib/auth";
+import { allowRedirectException } from "../../ui/utils";
+import { LoginSchema } from "../../lib/zod-schemas";
+import z from "zod";
+import { clientRedirect } from "../../lib/definitions";
 
-const LoginForm: FC = () => {
-    const { login } = useUserContext();
+const LoginPage: FC = () => {
     const router = useRouter();
+
+    const handleLogin = async (parsedFieldValues: z.infer<typeof LoginSchema>) => {
+        try {
+            await login(parsedFieldValues);
+            return "Logged in successfully. Redirecting...";
+        } catch (error) {
+            allowRedirectException(error);
+            throw new Error(error.message);
+        }
+    };
 
     return (
         <Stack>
             <Form
                 name={GlobalConstants.LOGIN}
                 buttonLabel={GlobalConstants.LOGIN}
-                action={login}
+                validationSchema={LoginSchema}
+                action={handleLogin}
                 readOnly={false}
                 editable={false}
             />
-            <Button onClick={() => navigateToRoute(`/${GlobalConstants.RESET}`, router)}>
+            <Button onClick={() => clientRedirect(router, [GlobalConstants.RESET])}>
                 reset password
             </Button>
-            <Button onClick={() => navigateToRoute(`/${GlobalConstants.APPLY}`, router)}>
+            <Button onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}>
                 {FieldLabels[GlobalConstants.APPLY]}
             </Button>
         </Stack>
     );
 };
 
-export default LoginForm;
+export default LoginPage;

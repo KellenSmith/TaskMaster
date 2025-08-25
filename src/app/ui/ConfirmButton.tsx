@@ -1,3 +1,4 @@
+"use client";
 import {
     Button,
     Dialog,
@@ -6,13 +7,21 @@ import {
     DialogContentText,
     DialogTitle,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) => {
     const [open, setOpen] = useState(false);
+    const [isPending, startTransition] = useTransition();
+
+    const wrappedOnClick = async () => {
+        startTransition(async () => {
+            await onClick();
+            setOpen(false);
+        });
+    };
     return (
         <>
-            <Button onClick={() => setOpen(true)} {...buttonProps}>
+            <Button disabled={isPending} onClick={() => setOpen(true)} {...buttonProps}>
                 {children}
             </Button>
             <Dialog open={open} onClose={() => setOpen(false)}>
@@ -23,8 +32,12 @@ const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) 
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onClick}>yes, proceed</Button>
-                    <Button onClick={() => setOpen(false)}> cancel</Button>
+                    <Button disabled={isPending} onClick={wrappedOnClick}>
+                        yes, proceed
+                    </Button>
+                    <Button disabled={isPending} onClick={() => setOpen(false)}>
+                        cancel
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>

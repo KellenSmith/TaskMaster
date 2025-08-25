@@ -1,36 +1,40 @@
-"use client";
+"use server";
+import { unstable_cache } from "next/cache";
+import { getLoggedInUser } from "../../lib/user-actions";
+import ProfileDashboard from "./ProfileDashboard";
+import { getFilteredTasks } from "../../lib/task-actions";
+import GlobalConstants from "../../GlobalConstants";
+import { getFilteredEvents } from "../../lib/event-actions";
+import { serverRedirect } from "../../lib/definitions";
 
-import { Stack, Tab, Tabs } from "@mui/material";
-import { useMemo, useState } from "react";
-import AccountTab from "./AccountTab";
-import EventsTab from "./EventsTab";
-import TasksTab from "./TasksTab";
-import { isMembershipExpired } from "../../lib/definitions";
-import { useUserContext } from "../../context/UserContext";
+const ProfilePage = async () => {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) serverRedirect([GlobalConstants.LOGIN]);
 
-const ProfilePage = () => {
-    const { user } = useUserContext();
-    const tabs = useMemo(
-        () => ({
-            account: "Account",
-            ...(!isMembershipExpired(user) && { events: "Events", tasks: "Tasks" }),
-        }),
-        [user],
-    );
-    const [openTab, setOpenTab] = useState<string>(tabs.account);
+    const tasksPromise = unstable_cache(getFilteredTasks, [loggedInUser.id], {
+        tags: [GlobalConstants.TASK],
+    })({ assigneeId: loggedInUser.id, reviewerId: loggedInUser.id });
+    const eventsPromise = unstable_cache(getFilteredEvents, [loggedInUser.id], {
+        tags: [GlobalConstants.EVENT],
+    })({
+        OR: [
+            { hostId: loggedInUser.id },
+            {
+                tickets: {
+                    some: {
+                        eventParticipants: {
+                            some: {
+                                userId: loggedInUser.id,
+                            },
+                        },
+                    },
+                },
+            },
+            { eventReserves: { some: { userId: loggedInUser.id } } },
+        ],
+    });
 
-    return (
-        <Stack>
-            <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
-                {Object.keys(tabs).map((tab) => (
-                    <Tab key={tabs[tab]} value={tabs[tab]} label={tabs[tab]} />
-                ))}
-            </Tabs>
-            {openTab === tabs.account && <AccountTab />}
-            {openTab === tabs.events && <EventsTab />}
-            {openTab === tabs.tasks && <TasksTab />}
-        </Stack>
-    );
+    return <ProfileDashboard tasksPromise={tasksPromise} eventsPromise={eventsPromise} />;
 };
 
 export default ProfilePage;

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateOrderStatus } from "../../lib/order-actions";
+import { progressOrder } from "../../lib/order-actions";
 import { getNewOrderStatus, PaymentStateType } from "../../lib/payment-utils";
-import { defaultFormActionState } from "../../lib/definitions";
 
 interface PaymentCallbackRequestBody {
     paymentorder: string;
@@ -104,21 +103,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const transactionState = requestBody.authorization.transaction.state;
         const newOrderStatus = getNewOrderStatus(transactionState);
 
-        const updateOrderStatusResult = await updateOrderStatus(
-            orderId,
-            defaultFormActionState,
-            newOrderStatus,
-        );
-
-        if (updateOrderStatusResult.status !== 200) {
-            console.error(`Failed to update order ${orderId}: ${updateOrderStatusResult.errorMsg}`);
-            throw new Error(updateOrderStatusResult.errorMsg || "Failed to update order status");
+        try {
+            await progressOrder(orderId, newOrderStatus);
+        } catch (error) {
+            console.error(`Failed to update order ${orderId}: ${error.message}`);
         }
 
         return new NextResponse("OK", { status: 200 });
     } catch (error) {
         console.error(`Payment callback error from IP ${clientIp}:`, error);
-
         // Don't expose internal error details to external callers
         return new NextResponse("Internal Server Error", { status: 500 });
     }

@@ -29,4 +29,6 @@ export async function GET(request: NextRequest) {
     return new NextResponse("OK", {
         status: 200,
     });
+
+    // TODO: Remind about tasks due soon
 }

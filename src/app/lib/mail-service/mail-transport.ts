@@ -1,7 +1,7 @@
-import { createTransport } from "nodemailer";
+import { createTransport, Transporter } from "nodemailer";
 import { getOrganizationSettings } from "../organization-settings-actions";
 
-const globalMailService = global as unknown as { mailTransport: any };
+const globalMailService = global as unknown as { mailTransport: Transporter };
 
 const orgSettings = await getOrganizationSettings();
 
@@ -12,7 +12,7 @@ const mailTransport =
         port: parseInt(process.env.SMTP_PORT),
         secure: parseInt(process.env.SMTP_PORT) === 465, // true for port 465, false for other ports
         auth: {
-            user: orgSettings?.email,
+            user: orgSettings?.organizationEmail,
             pass: process.env.EMAIL_PASSWORD,
         },
         tls: {

@@ -1,4 +1,4 @@
-import { FC, useRef } from "react";
+import { FC, useRef, useState } from "react";
 import {
     LinkBubbleMenu,
     RichTextEditor,
@@ -12,30 +12,41 @@ import { Card } from "@mui/material";
 
 interface RichTextFieldProps {
     fieldId?: string;
-    editMode: boolean;
-    value: string;
-    changeFieldValue?: Function;
+    editMode?: boolean;
+    defaultValue: string;
 }
 
-const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode, value, changeFieldValue }) => {
+const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode = false, defaultValue }) => {
     const extensions = useExtensions();
     const rteRef = useRef<RichTextEditorRef>(null);
 
-    return editMode ? (
-        <RichTextEditor
-            ref={rteRef}
-            immediatelyRender={false}
-            extensions={extensions}
-            content={value || FieldLabels[fieldId]}
-            onUpdate={({ editor }) => changeFieldValue(fieldId, editor.getHTML())}
-            renderControls={() => <RichTextFieldControls />}
-        >
-            {() => <LinkBubbleMenu />}
-        </RichTextEditor>
-    ) : (
-        <Card>
-            <RichTextReadOnly immediatelyRender={false} content={value} extensions={extensions} />
-        </Card>
+    const [content, setContent] = useState(defaultValue || FieldLabels[fieldId] || "");
+
+    return (
+        <>
+            {/* Hidden input for form submission */}
+            <input type="hidden" name={fieldId} value={content} />
+            {editMode ? (
+                <RichTextEditor
+                    ref={rteRef}
+                    immediatelyRender={false}
+                    extensions={extensions}
+                    content={content}
+                    onUpdate={({ editor }) => setContent(editor.getHTML())}
+                    renderControls={() => <RichTextFieldControls />}
+                >
+                    {() => <LinkBubbleMenu />}
+                </RichTextEditor>
+            ) : (
+                <Card>
+                    <RichTextReadOnly
+                        immediatelyRender={false}
+                        content={content}
+                        extensions={extensions}
+                    />
+                </Card>
+            )}
+        </>
     );
 };
 

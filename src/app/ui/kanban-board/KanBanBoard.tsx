@@ -1,11 +1,10 @@
 "use client";
 
-import React, { startTransition, useEffect, useState } from "react";
+import React, { use, useState } from "react";
 import {
     Accordion,
     AccordionSummary,
     Button,
-    CircularProgress,
     FormControl,
     FormControlLabel,
     FormGroup,
@@ -13,35 +12,49 @@ import {
     Grid2,
     Stack,
     Switch,
+    Typography,
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { getFormActionMsg } from "../form/Form";
 import DroppableColumn from "./DroppableColumn";
-import { FieldLabels, selectFieldOptions } from "../form/FieldCfg";
+import { FieldLabels } from "../form/FieldCfg";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
-import { getActiveMembers } from "../../lib/user-actions";
-import { defaultDatagridActionState, defaultFormActionState } from "../../lib/definitions";
+import { Prisma, TaskStatus } from "@prisma/client";
 
-const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOnly = true }) => {
+interface KanBanBoardProps {
+    readOnly: boolean;
+    eventPromise?: Promise<
+        Prisma.EventGetPayload<{
+            include: { tickets: { include: { eventParticipants: true } } };
+        }>
+    >;
+    tasksPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } } };
+        }>[]
+    >;
+    activeMembersPromise?: Promise<
+        Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+    >;
+}
+
+const KanBanBoard = ({
+    readOnly = true,
+    eventPromise,
+    tasksPromise,
+    activeMembersPromise,
+}: KanBanBoardProps) => {
     const { user } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
-    const [taskActionState, setTaskActionState] = useState(defaultFormActionState);
-    const [activeMembers, setActiveMembers] = useState<string[]>(null);
-
-    useEffect(() => {
-        startTransition(async () => {
-            const result = await getActiveMembers(defaultDatagridActionState);
-            setActiveMembers(result.result);
-        });
-    }, []);
+    const event = eventPromise ? use(eventPromise) : null;
+    const tasks = use(tasksPromise);
 
     const getUniqueFilterOptions = (filterId) => {
-        if (filterId === GlobalConstants.ASSIGNEE_ID) return [user[GlobalConstants.ID], null];
-        if (filterId === GlobalConstants.REVIEWER_ID) return [user[GlobalConstants.ID]];
+        if (filterId === GlobalConstants.ASSIGNEE_ID) return [user.id, null];
+        if (filterId === GlobalConstants.REVIEWER_ID) return [user.id];
         const existingFilterOptions = [];
         for (let task of tasks) {
             if (Array.isArray(task[filterId]))
@@ -80,7 +93,7 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
             if (filterOption === null) return "Unassigned";
             return "Assigned to me";
         }
-        if (filterId === GlobalConstants.REVIEWER_ID) return "For me to review";
+        if (filterId === GlobalConstants.REVIEWER_ID) return "Reports to me";
 
         return FieldLabels[filterOption] || filterOption;
     };
@@ -108,7 +121,12 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
         </FormControl>
     );
 
-    const filterTasks = (tasks, filters) => {
+    const applyBoardFilter = (
+        tasks: Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } } };
+        }>[],
+        filters,
+    ) => {
         return tasks.filter((task) => {
             return Object.keys(filters).every((filterId) => {
                 if (filters[filterId].length === 0) return true;
@@ -124,50 +142,47 @@ const KanBanBoard = ({ event = null, tasks, fetchDbTasks, isTasksPending, readOn
 
     const printVisibleTasksToPdf = async () => {
         const taskSchedule = await pdf(
-            <TaskSchedulePDF event={event} tasks={filterTasks(tasks, filters)} />,
+            <TaskSchedulePDF event={event} tasks={applyBoardFilter(tasks, filters)} />,
         ).toBlob();
         const url = URL.createObjectURL(taskSchedule);
         window.open(url, "_blank");
     };
 
     return (
-        <Stack spacing={2} justifyContent="center">
+        <Stack spacing={2} justifyContent="center" height="100%">
+            {event && (
+                <Typography textAlign="center" variant="h4" color="primary">
+                    Assign yourself to tasks and shifts to help make the event happen
+                </Typography>
+            )}
             <Accordion>
                 <AccordionSummary expandIcon={<ExpandMore />}>Filters</AccordionSummary>
-                <Stack direction="row" spacing={2}>
+                <Stack direction="row" spacing={2} padding={4}>
                     {Object.keys(filters).map((filterId) => getSwitchGroup(filterId))}
                 </Stack>
                 <Button fullWidth onClick={printVisibleTasksToPdf}>
                     print task schedule
                 </Button>
             </Accordion>
-            {getFormActionMsg(taskActionState)}
-            {isTasksPending ? (
-                <CircularProgress sx={{ alignSelf: "center", padding: 10 }} />
-            ) : (
-                <Grid2 container spacing={2} columns={4}>
-                    {selectFieldOptions[GlobalConstants.STATUS].map((status) => (
-                        <Grid2 size={1} key={status}>
-                            <DroppableColumn
-                                event={event}
-                                status={status}
-                                tasks={filterTasks(tasks, filters).filter(
-                                    (task) => task[GlobalConstants.STATUS] === status,
-                                )}
-                                fetchDbTasks={fetchDbTasks}
-                                taskActionState={taskActionState}
-                                setTaskActionState={setTaskActionState}
-                                readOnly={readOnly}
-                                draggedTask={draggedTask}
-                                setDraggedTask={setDraggedTask}
-                                draggedOverColumn={draggedOverColumn}
-                                setDraggedOverColumn={setDraggedOverColumn}
-                                activeMembers={activeMembers}
-                            />
-                        </Grid2>
-                    ))}
-                </Grid2>
-            )}
+            <Grid2 container spacing={2} columns={4} height="100%">
+                {Object.values(TaskStatus).map((status) => (
+                    <Grid2 size={1} key={status} height="100%">
+                        <DroppableColumn
+                            readOnly={readOnly}
+                            eventPromise={eventPromise}
+                            status={status}
+                            tasks={applyBoardFilter(tasks, filters).filter(
+                                (task) => task[GlobalConstants.STATUS] === status,
+                            )}
+                            activeMembersPromise={activeMembersPromise}
+                            draggedTask={draggedTask}
+                            setDraggedTask={setDraggedTask}
+                            draggedOverColumn={draggedOverColumn}
+                            setDraggedOverColumn={setDraggedOverColumn}
+                        />
+                    </Grid2>
+                ))}
+            </Grid2>
         </Stack>
     );
 };

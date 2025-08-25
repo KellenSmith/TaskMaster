@@ -1,18 +1,42 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { Prisma } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
+import { redirect } from "next/navigation";
+import { NextURL } from "next/dist/server/web/next-url";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 // Convention: "path"=`/${route}`
 
-export const routes = {
-    [GlobalConstants.ADMIN]: [
-        GlobalConstants.SENDOUT,
-        GlobalConstants.MEMBERS,
-        GlobalConstants.PRODUCTS,
-        GlobalConstants.ORDERS,
-        GlobalConstants.ORGANIZATION_SETTINGS,
-    ],
-    [GlobalConstants.PRIVATE]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
+export const getUrl = (
+    pathSegments: string[] = [],
+    searchParams: { [key: string]: string } = {},
+): string => {
+    const baseUrl = process.env.VERCEL_URL
+        ? "https://" + process.env.VERCEL_URL
+        : window.location.origin;
+    const url = new NextURL([GlobalConstants.HOME, ...pathSegments].join("/"), baseUrl);
+    for (let [key, value] of Object.entries(searchParams)) {
+        url.searchParams.set(key, value);
+    }
+    return url.toString();
+};
+export const routeToPath = (route: string) => `/${route}`;
+export const pathToRoute = (path: string) => (path ? path.slice(1) : ""); // Remove leading "/"
+export const serverRedirect = (
+    pathSegments: string[],
+    searchParams: { [key: string]: string } = {},
+) => {
+    redirect(getUrl(pathSegments, searchParams));
+};
+export const clientRedirect = (
+    router: AppRouterInstance,
+    pathSegments: string[],
+    searchParams: { [key: string]: string } = {},
+) => {
+    router.push(getUrl(pathSegments, searchParams));
+};
+
+export const applicationRoutes = {
     [GlobalConstants.PUBLIC]: [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
@@ -20,26 +44,38 @@ export const routes = {
         GlobalConstants.APPLY,
         GlobalConstants.CONTACT,
         GlobalConstants.ORDER,
-        "order/complete",
+    ],
+    [UserRole.member]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
+    [UserRole.admin]: [
+        GlobalConstants.TASKS,
+        GlobalConstants.SENDOUT,
+        GlobalConstants.MEMBERS,
+        GlobalConstants.PRODUCTS,
+        GlobalConstants.ORDERS,
+        GlobalConstants.ORGANIZATION_SETTINGS,
     ],
 };
 
-export const routesToPath = (routeList: string[]) => routeList.map((route) => `/${route}`);
-
-export const isUserAuthorized = (path: string, user: any): boolean => {
+export const isUserAuthorized = (
+    pathname: string,
+    user: Prisma.UserGetPayload<{
+        include: { userMembership: true };
+    }> | null,
+): boolean => {
+    const requestedRoute = pathToRoute(pathname);
     // Only allow non-logged in users access to public routes
-    if (!user) return routesToPath(routes[GlobalConstants.PUBLIC]).includes(path);
+    if (!user) return applicationRoutes[GlobalConstants.PUBLIC].includes(requestedRoute);
     // Only allow users with expired memberships access to public pages and their own profile
     if (isMembershipExpired(user))
-        return routesToPath([...routes[GlobalConstants.PUBLIC], GlobalConstants.PROFILE]).includes(
-            path,
+        return [...applicationRoutes[GlobalConstants.PUBLIC], GlobalConstants.PROFILE].includes(
+            requestedRoute,
         );
-
     // Allow admins access to all routes
-    if (user[GlobalConstants.ROLE] === GlobalConstants.ADMIN) return true;
+    if (user.role === UserRole.admin) return true;
     // Allow regular users access to everything except admin paths.
-    const adminPaths = routesToPath(routes[GlobalConstants.ADMIN]);
-    return !adminPaths.some((adminPath) => path.startsWith(adminPath));
+    const adminRoutes = applicationRoutes[UserRole.admin];
+
+    return !adminRoutes.some((adminRoute) => requestedRoute.startsWith(adminRoute));
 };
 
 export const isMembershipExpired = (
@@ -48,50 +84,16 @@ export const isMembershipExpired = (
     }> | null,
 ): boolean => {
     const membershipExpiresAt = user?.userMembership?.expiresAt;
-    return !membershipExpiresAt || dayjs(membershipExpiresAt).isBefore(dayjs());
+    return !membershipExpiresAt || dayjs().isAfter(dayjs(membershipExpiresAt));
 };
 
-export const isUserAdmin = (user: any): boolean =>
-    user && user[GlobalConstants.ROLE] === GlobalConstants.ADMIN;
+export const isUserAdmin = (
+    user: Prisma.UserGetPayload<{
+        include: { userMembership: true };
+    }> | null,
+): boolean => user?.role === UserRole.admin;
 
-export const isUserHost = (user: any, event: any): boolean =>
-    user && user[GlobalConstants.ID] === event[GlobalConstants.HOST_ID];
-
-export interface LoginSchema {
-    email: string;
-    password: string;
-}
-
-export interface ResetCredentialsSchema {
-    email: string;
-}
-
-export interface UpdateCredentialsSchema {
-    currentPassword: string;
-    newPassword: string;
-    repeatPassword: string;
-}
-
-export interface FormActionState {
-    status: number;
-    errorMsg: string;
-    result: string;
-}
-
-export const defaultFormActionState: FormActionState = {
-    status: 200,
-    errorMsg: "",
-    result: "",
-};
-
-export interface DatagridActionState {
-    status: number;
-    errorMsg: string;
-    result: any[];
-}
-
-export const defaultDatagridActionState: DatagridActionState = {
-    status: 200,
-    errorMsg: "",
-    result: [],
-};
+export const isUserHost = (
+    user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
+    event: Prisma.EventGetPayload<true> | null,
+): boolean => user && event && user?.id === event?.hostId;

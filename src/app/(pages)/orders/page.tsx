@@ -1,40 +1,16 @@
-"use client";
-import { Stack } from "@mui/material";
-import Datagrid from "../../ui/Datagrid";
-import GlobalConstants from "../../GlobalConstants";
+"use server";
+import OrdersDashboard from "./OrdersDashboard";
+import { unstable_cache } from "next/cache";
 import { getAllOrders } from "../../lib/order-actions";
-import { GridColDef } from "@mui/x-data-grid";
-import { Prisma } from "@prisma/client";
+import GlobalConstants from "../../GlobalConstants";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const OrdersPage = () => {
-    const hiddenColumns = [
-        GlobalConstants.ID,
-        GlobalConstants.USER_CREDENTIALS,
-        GlobalConstants.CONSENT_TO_NEWSLETTERS,
-        GlobalConstants.ORDER_ITEMS,
-    ];
-
-    const customColumns: GridColDef[] = [
-        {
-            field: "order-items",
-            headerName: "orderItems",
-            valueGetter: (_, row: Prisma.OrderGetPayload<{ include: { orderItems: true } }>) => {
-                return row.orderItems?.length || 0;
-            },
-        },
-    ];
-
-    // TODO: If on mobile, just show list of pending members, viewable and validatable
+    const ordersPromise = unstable_cache(getAllOrders, [], { tags: [GlobalConstants.ORDER] })();
     return (
-        <Stack sx={{ height: "100%" }}>
-            <Datagrid
-                name={GlobalConstants.USER}
-                fetchData={getAllOrders}
-                rowActions={[]}
-                hiddenColumns={hiddenColumns}
-                customColumns={customColumns}
-            />
-        </Stack>
+        <ErrorBoundarySuspense errorMessage="Failed to load orders">
+            <OrdersDashboard ordersPromise={ordersPromise} />
+        </ErrorBoundarySuspense>
     );
 };
 

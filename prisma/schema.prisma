@@ -1,0 +1,271 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model OrganizationSettings {
+    id                String @id @default(uuid())
+    organizationName  String @unique @default("Task Master")
+    organizationEmail String @default("kellensmith407@gmail.com")
+
+    remindMembershipExpiresInDays    Int @default(7)
+    purgeMembersAfterDaysUnvalidated Int @default(180)
+
+    defaultTaskShiftLength Int @default(2)
+
+    memberApplicationPrompt String?
+    //TODO: configure fields for ticket inctructions
+    ticketInstructions      String?
+
+    @@map("organization_settings")
+}
+
+enum UserRole {
+    member
+    admin
+}
+
+model User {
+    id                   String   @id @default(uuid())
+    email                String   @unique
+    nickname             String   @unique @default(uuid())
+    role                 UserRole @default(member)
+    consentToNewsletters Boolean  @default(true)
+
+    firstName String?
+    surName   String?
+    pronoun   String?  @default("they/them")
+    phone     String?
+    createdAt DateTime @default(now())
+
+    userCredentials UserCredentials?
+    userMembership  UserMembership?
+
+    hostingEvents     Event[]
+    participantEvents EventParticipant[]
+    reserveEvents     EventReserve[]
+
+    assignedTasks Task[] @relation("assignee")
+    reviewerTasks Task[] @relation("reviewer")
+
+    orders Order[]
+
+    @@map("users") // Map to table named "users"
+}
+
+// No users can log in without credentials.
+// Admins can validate membership to create credentials for user.
+model UserCredentials {
+    id             String @id @default(uuid())
+    salt           String
+    hashedPassword String
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String @unique
+
+    @@map("user_credentials")
+}
+
+enum EventStatus {
+    draft
+    published
+    cancelled
+}
+
+model Event {
+    id              String      @id @default(uuid())
+    title           String      @default("")
+    location        String      @default("")
+    startTime       DateTime
+    endTime         DateTime
+    description     String?
+    maxParticipants Int
+    status          EventStatus @default(draft)
+
+    host   User   @relation(fields: [hostId], references: [id])
+    hostId String
+
+    eventReserves EventReserve[]
+    tasks         Task[]
+    tickets       Ticket[]
+
+    @@map("events")
+}
+
+// Many-to-many relation btw users and events
+// Each user can participate in multiple events
+// Each event can have multiple participants
+model EventParticipant {
+    user     User   @relation(fields: [userId], references: [id])
+    userId   String
+    ticket   Ticket @relation(fields: [ticketId], references: [id])
+    ticketId String // All participants must have a ticket
+
+    // This combination is unique. A user can only have one ticket per event
+    @@id([userId, ticketId])
+    @@map("event_participants")
+}
+
+// Many-to-many relation btw users and events
+// Each user can be on reserveList in multiple events
+// Each event can have multiple reserve users
+model EventReserve {
+    user          User     @relation(fields: [userId], references: [id])
+    userId        String
+    event         Event    @relation(fields: [eventId], references: [id])
+    eventId       String
+    queueingSince DateTime @default(now())
+
+    @@id([userId, eventId])
+    @@map("event_reserves")
+}
+
+enum TaskStatus {
+    toDo
+    inProgress
+    inReview
+    done
+}
+
+// TODO: Ditch the task phase and filter tasks by start/end datetime range instead
+enum TaskPhase {
+    before
+    during
+    after
+}
+
+model Task {
+    id          String     @id @default(uuid())
+    phase       TaskPhase  @default(before)
+    name        String
+    status      TaskStatus @default(toDo)
+    startTime   DateTime
+    endTime     DateTime
+    description String?
+    tags        String[]   @default([])
+
+    assignee   User?   @relation("assignee", fields: [assigneeId], references: [id])
+    assigneeId String?
+    reviewer   User?   @relation("reviewer", fields: [reviewerId], references: [id])
+    reviewerId String?
+
+    event   Event?  @relation(fields: [eventId], references: [id])
+    eventId String?
+
+    @@map("tasks")
+}
+
+model Product {
+    id             String  @id @default(uuid())
+    name           String
+    description    String?
+    price          Float   @default(0)
+    stock          Int?
+    unlimitedStock Boolean @default(false)
+    imageUrl       String?
+
+    membership Membership?
+    ticket     Ticket?
+
+    orderItems OrderItem[]
+
+    @@map("products")
+}
+
+model Membership {
+    id        String  @id @default(uuid())
+    product   Product @relation(fields: [productId], references: [id])
+    productId String  @unique
+    duration  Int     @default(365) // in days
+
+    users UserMembership[]
+
+    @@map("memberships")
+}
+
+model UserMembership {
+    id           String     @id @default(uuid())
+    user         User       @relation(fields: [userId], references: [id])
+    userId       String     @unique // One membership per user
+    membership   Membership @relation(fields: [membershipId], references: [id])
+    membershipId String
+
+    expiresAt DateTime
+
+    @@map("user_memberships")
+}
+
+// Order of ticket types determines order of appearance in the ticket shop
+enum TicketType {
+    volunteer
+    standard
+}
+
+model Ticket {
+    id                String             @id @default(uuid())
+    type              TicketType         @default(standard)
+    product           Product            @relation(fields: [productId], references: [id])
+    productId         String             @unique
+    event             Event              @relation(fields: [eventId], references: [id])
+    eventId           String
+    eventParticipants EventParticipant[]
+
+    @@map("tickets")
+}
+
+// Defined in order of progression. Transitions backwards are never allowed
+enum OrderStatus {
+    pending
+    paid
+    shipped
+    completed
+    cancelled
+    error
+}
+
+model Order {
+    id               String      @id @default(uuid())
+    status           OrderStatus @default(pending)
+    totalAmount      Float       @default(0.0) // Total amount in the smallest currency unit (e.g., öre)
+    paymentRequestId String?     @unique
+    payeeRef         String?     @unique // Reference to the payment provider's transaction
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String
+
+    orderItems OrderItem[]
+
+    @@map("orders")
+}
+
+model OrderItem {
+    id       String @id @default(uuid())
+    quantity Int    @default(1)
+    price    Float  @default(0)
+
+    order   Order  @relation(fields: [orderId], references: [id])
+    orderId String
+
+    product   Product @relation(fields: [productId], references: [id])
+    productId String
+
+    @@map("order_items")
+}
+
+model TextContent {
+    id       String  @id
+    language String
+    content  String
+    category String? @default("organization") // ui, email, help, etc.
+
+    @@unique([id, language])
+    @@map("text_contents")
+}

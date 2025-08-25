@@ -9,17 +9,22 @@ expect.extend(matchers as any);
 
 beforeEach(() => {
     vi.resetAllMocks(); // Mock the Prisma module
-    vi.mock("@prisma/client", () => ({
-        PrismaClient: vi.fn(() => mockContext.prisma),
-        OrderStatus: mockContext.OrderStatus,
-    })); // Mock your lib/prisma file
-    vi.mock("../lib/prisma", () => ({
+    // Mock the prisma-client file used in the app
+    // to ensure the tests are insulated from the database
+    vi.mock("../../prisma/prisma-client", () => ({
         prisma: mockContext.prisma,
     }));
-
-    // Mock the prisma-client file used in the app
-    vi.mock("../prisma/prisma-client", () => ({
-        prisma: mockContext.prisma,
+    // Mock the nodemailer transport
+    vi.mock("../app/lib/mail-service/mail-transport", () => ({
+        mailTransport: {
+            sendMail: vi.fn().mockResolvedValue(undefined),
+        },
+    }));
+    vi.mock("next/cache", () => ({
+        unstable_cache: (fn: any) => {
+            // return a wrapper that just calls the original function (no Next caching)
+            return (...args: any[]) => fn(...args);
+        },
     }));
 });
 

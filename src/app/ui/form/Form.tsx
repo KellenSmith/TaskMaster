@@ -1,18 +1,19 @@
 "use client";
 
 import {
-    Autocomplete,
     Button,
     Card,
     CardContent,
     CardHeader,
     Checkbox,
+    Divider,
     FormControlLabel,
+    IconButton,
     Stack,
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, FC, ChangeEvent, ReactElement, useEffect } from "react";
+import { useState, FC, useTransition, FormEvent, useMemo } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -20,181 +21,141 @@ import {
     RequiredFields,
     datePickerFields,
     richTextFields,
-    allowSelectMultiple,
     checkboxFields,
     passwordFields,
+    priceFields,
+    multiLineTextFields,
+    explanatoryTexts,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import RichTextField from "./RichTextField";
-import { defaultFormActionState, FormActionState } from "../../lib/definitions";
-
-export const getFormActionMsg = (formActionState: FormActionState): ReactElement | null =>
-    (formActionState.errorMsg || formActionState.result) && (
-        <Card sx={{ padding: 2 }}>
-            {formActionState.errorMsg && (
-                <Typography color="error" textAlign="center">
-                    {formActionState.errorMsg}
-                </Typography>
-            )}
-            {formActionState.result && (
-                <Typography color="success" textAlign="center">
-                    {formActionState.result}
-                </Typography>
-            )}
-        </Card>
-    );
+import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
+import { useNotificationContext } from "../../context/NotificationContext";
+import z, { ZodType, ZodError } from "zod";
+import { allowRedirectException, formatPrice } from "../utils";
+import dayjs from "dayjs";
 
 interface FormProps {
     name: string;
     buttonLabel?: string;
-    action?: (currentActionState: FormActionState, fieldValues: any) => Promise<FormActionState>; // eslint-disable-line no-unused-vars
+    action?: (fieldValues: any) => Promise<string>; // eslint-disable-line no-unused-vars
+    validationSchema?: ZodType<any>;
     defaultValues?: any;
-    customOptions?: Object; // Additional options for Autocomplete field , if needed
+    customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
+    customIncludedFields?: string[]; // Include extra fields which are not preconfigured in FieldCfg.ts
+    customRequiredFields?: string[]; // Include extra fields which are required but not preconfigured in FieldCfg.ts
     readOnly?: boolean;
     editable?: boolean;
 }
 
-const getFieldValues = (formName: string, defaultValues: any) => {
-    const fieldValues = {};
-    for (let fieldId of RenderedFields[formName]) {
-        if (defaultValues && fieldId in defaultValues)
-            fieldValues[fieldId] = defaultValues[fieldId];
-        else {
-            if (fieldId in selectFieldOptions) {
-                if (RequiredFields[formName].includes(fieldId)) {
-                    const defaultOption = selectFieldOptions[fieldId][0];
-                    fieldValues[fieldId] = allowSelectMultiple.includes(fieldId)
-                        ? [defaultOption]
-                        : defaultOption;
-                } else fieldValues[fieldId] = allowSelectMultiple.includes(fieldId) ? [] : "";
-            } else if (checkboxFields.includes(fieldId)) {
-                fieldValues[fieldId] = false;
-            } else if (datePickerFields.includes(fieldId)) {
-                fieldValues[fieldId] = null;
-            } else fieldValues[fieldId] = "";
-        }
-    }
-    return fieldValues;
-};
-
 const Form: FC<FormProps> = ({
     name,
-    buttonLabel,
+    buttonLabel = "save",
     action,
+    validationSchema,
     defaultValues,
     customOptions = {},
     customReadOnlyFields = [],
+    customIncludedFields = [],
+    customRequiredFields = [],
     readOnly = true,
     editable = true,
 }) => {
-    const [fieldValues, setFieldValues] = useState<{ [key: string]: string | string[] | boolean }>(
-        getFieldValues(name, defaultValues),
-    );
-    const [loading, setLoading] = useState(false);
-    const [actionState, setActionState] = useState(defaultFormActionState);
+    const [validationError, setValidationError] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
     const [editMode, setEditMode] = useState(!readOnly);
+    const { addNotification } = useNotificationContext();
+    const renderedFields = useMemo(
+        () => [...RenderedFields[name], ...customIncludedFields],
+        [name, customIncludedFields],
+    );
+    const requiredFields = useMemo(
+        () => [...(name in RequiredFields ? RequiredFields[name] : []), ...customRequiredFields],
+        [name, customRequiredFields],
+    );
 
-    useEffect(() => {
-        setEditMode(!readOnly);
-    }, [readOnly]);
-
-    const changeFieldValue = (fieldId: string, value: string | string[] | boolean) => {
-        setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
+    const validateFormData = (formData: FormData): z.infer<typeof validationSchema> | null => {
+        const formDataObject = Object.fromEntries(formData);
+        if (!validationSchema) return formDataObject;
+        try {
+            const parsedFieldValues = validationSchema.parse(formDataObject);
+            setValidationError(null);
+            return parsedFieldValues;
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const zodIssues = error.issues;
+                if (zodIssues.length > 0) {
+                    const errorField = zodIssues[0]?.path[0];
+                    const errorMessage = error.issues[0]?.message;
+                    setValidationError(
+                        `Error in field ${FieldLabels[errorField as string]}: ${errorMessage}`,
+                    );
+                } else setValidationError("Unknown validation error");
+            }
+            return null;
+        }
     };
 
-    const submitForm = async (event) => {
+    const submitForm = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setLoading(true);
-        const newActionState = await action(actionState, fieldValues);
-        setActionState(newActionState);
-        setLoading(false);
-        editable && newActionState.status === 200 && setEditMode(false);
+        const formData = new FormData(event.currentTarget);
+        const parsedFieldValues = validateFormData(formData);
+        if (parsedFieldValues)
+            startTransition(async () => {
+                try {
+                    const submitResult = await action(parsedFieldValues);
+                    addNotification(submitResult, "success");
+                    editable && setEditMode(false);
+                } catch (error) {
+                    allowRedirectException(error);
+                    addNotification(error.message, "error");
+                }
+            });
+    };
+
+    const getDefaultValue = (fieldId: string) => {
+        if (defaultValues && fieldId in defaultValues) {
+            if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId]);
+            if (datePickerFields.includes(fieldId)) return dayjs(defaultValues[fieldId]);
+            return defaultValues[fieldId];
+        }
+
+        if (datePickerFields.includes(fieldId))
+            return requiredFields.includes(fieldId) ? dayjs().hour(18).minute(0).second(0) : null;
+        if (checkboxFields.includes(fieldId)) return false;
+        return "";
     };
 
     const getFieldComp = (fieldId: string) => {
-        if (fieldId in selectFieldOptions) {
+        if (fieldId in selectFieldOptions || customOptions[fieldId]) {
             return (
-                <Autocomplete
-                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
+                <AutocompleteWrapper
                     key={fieldId}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            label={FieldLabels[fieldId]}
-                            required={
-                                name in RequiredFields && RequiredFields[name].includes(fieldId)
-                            }
-                        />
-                    )}
-                    autoSelect={name in RequiredFields && RequiredFields[name].includes(fieldId)}
-                    options={customOptions[fieldId] || selectFieldOptions[fieldId]}
-                    value={
-                        allowSelectMultiple.includes(fieldId)
-                            ? (customOptions[fieldId] || selectFieldOptions[fieldId]).filter(
-                                  (option) =>
-                                      Array.isArray(fieldValues[fieldId]) &&
-                                      (fieldValues[fieldId] as string[]).includes(
-                                          typeof option === "object" ? option.value : option,
-                                      ),
-                              )
-                            : (customOptions[fieldId] || selectFieldOptions[fieldId]).find(
-                                  (option) =>
-                                      typeof option === "object"
-                                          ? option.value === fieldValues[fieldId]
-                                          : option === fieldValues[fieldId],
-                              )
-                    }
-                    onChange={(_, selectedOption) => {
-                        if (Array.isArray(selectedOption)) {
-                            // Handle multiple selection
-                            changeFieldValue(
-                                fieldId,
-                                selectedOption.map((option) =>
-                                    typeof option === "object" ? option.value : option,
-                                ),
-                            );
-                        } else if (selectedOption) {
-                            // Handle single selection
-                            changeFieldValue(
-                                fieldId,
-                                typeof selectedOption === "object"
-                                    ? selectedOption.value
-                                    : selectedOption,
-                            );
-                        } else {
-                            // Handle clearing the selection
-                            changeFieldValue(
-                                fieldId,
-                                allowSelectMultiple.includes(fieldId) ? [] : null,
-                            );
-                        }
-                    }}
-                    multiple={allowSelectMultiple.includes(fieldId)}
+                    fieldId={fieldId}
+                    label={FieldLabels[fieldId]}
+                    editMode={editMode}
+                    defaultValue={defaultValues?.[fieldId]}
+                    customReadOnlyFields={customReadOnlyFields}
+                    customOptions={customOptions[fieldId]}
+                    required={requiredFields.includes(fieldId)}
                 />
             );
         }
         if (datePickerFields.includes(fieldId)) {
             return (
                 <DateTimePicker
-                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     key={fieldId}
+                    name={fieldId}
+                    disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId]}
-                    value={
-                        dayjs(fieldValues[fieldId] as string).isValid()
-                            ? dayjs(fieldValues[fieldId] as string)
-                            : null
-                    }
-                    onChange={(newValue) =>
-                        dayjs(newValue).isValid() &&
-                        changeFieldValue(fieldId, newValue.toISOString())
-                    }
+                    defaultValue={getDefaultValue(fieldId)}
                     slotProps={{
                         textField: {
-                            required: RequiredFields[name].includes(fieldId),
+                            name: fieldId,
+                            required: requiredFields.includes(fieldId),
                         },
                         actionBar: { actions: ["clear", "accept"] },
                     }}
@@ -205,14 +166,12 @@ const Form: FC<FormProps> = ({
             return (
                 <FormControlLabel
                     key={fieldId}
-                    required={RequiredFields[name].includes(fieldId)}
+                    required={requiredFields.includes(fieldId)}
                     control={
                         <Checkbox
+                            name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                            checked={fieldValues[fieldId] as boolean}
-                            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                                changeFieldValue(fieldId, event.target.checked)
-                            }
+                            defaultChecked={getDefaultValue(fieldId) || false}
                         />
                     }
                     label={FieldLabels[fieldId]}
@@ -224,8 +183,7 @@ const Form: FC<FormProps> = ({
                     key={fieldId}
                     fieldId={fieldId}
                     editMode={editMode || customReadOnlyFields.includes(fieldId)}
-                    value={fieldValues[fieldId] as string}
-                    changeFieldValue={changeFieldValue}
+                    defaultValue={defaultValues?.[fieldId] || ""}
                 />
             );
         }
@@ -235,43 +193,58 @@ const Form: FC<FormProps> = ({
                 key={fieldId}
                 label={FieldLabels[fieldId]}
                 name={fieldId}
-                required={RequiredFields[name].includes(fieldId)}
-                value={fieldValues[fieldId]}
-                onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    changeFieldValue(fieldId, event.target.value);
-                }}
+                defaultValue={getDefaultValue(fieldId)}
+                required={requiredFields.includes(fieldId)}
                 {...(passwordFields.includes(fieldId) && {
                     type: GlobalConstants.PASSWORD,
                 })}
+                multiline={multiLineTextFields.includes(fieldId)}
             />
         );
     };
 
     return (
-        <Card component="form" onSubmit={submitForm}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <CardHeader title={FieldLabels[name]} />
-                {editable &&
-                    (editMode ? (
-                        <Cancel
-                            sx={{ padding: 2, cursor: "pointer" }}
-                            onClick={() => {
-                                setFieldValues(getFieldValues(name, defaultValues));
-                                setEditMode(false);
-                            }}
-                        />
-                    ) : (
-                        <Edit sx={{ padding: 2 }} onClick={() => setEditMode(true)} />
-                    ))}
-            </Stack>
+        <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto" }}>
+            {(editable || FieldLabels[name]) && (
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <CardHeader title={FieldLabels[name]} />
+                    {editable && (
+                        <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
+                            {editMode ? <Cancel /> : <Edit />}
+                        </IconButton>
+                    )}
+                </Stack>
+            )}
 
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
-                    {RenderedFields[name].map((fieldId) => getFieldComp(fieldId))}
+                    {renderedFields.map((fieldId) => (
+                        <Stack key={fieldId}>
+                            {getFieldComp(fieldId)}
+                            {fieldId in explanatoryTexts && (
+                                <>
+                                    <Card sx={{ py: 1 }}>
+                                        {explanatoryTexts[fieldId]
+                                            .split("\n")
+                                            .map((line, index) => (
+                                                <Typography
+                                                    key={index}
+                                                    variant="subtitle2"
+                                                    color="primary"
+                                                >
+                                                    {line}
+                                                </Typography>
+                                            ))}
+                                    </Card>
+                                    <Divider />
+                                </>
+                            )}
+                        </Stack>
+                    ))}
+                    {validationError && <Typography color="error">{validationError}</Typography>}
                 </Stack>
-                {getFormActionMsg(actionState)}
                 {editMode && (
-                    <Button type="submit" variant="contained" disabled={loading}>
+                    <Button type="submit" variant="contained" disabled={isPending}>
                         {buttonLabel}
                     </Button>
                 )}

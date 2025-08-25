@@ -1,6 +1,7 @@
 import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
+import { formatPrice } from "../../../ui/utils";
 
 /**
  * Props for the OrderConfirmationTemplate component.
@@ -36,7 +37,8 @@ const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
             {orderItems.map((item, index) => (
                 <div key={index} style={{ marginLeft: "20px", marginBottom: "10px" }}>
                     <Text>
-                        • {item.product.name} (Quantity: {item.quantity}) - ${item.price.toFixed(2)}
+                        • {item.product.name} (Quantity: {item.quantity}) -{" "}
+                        {formatPrice(item.price)} SEK
                     </Text>
                     {item.product.description && (
                         <Text style={{ marginLeft: "20px", fontSize: "14px", color: "#666" }}>
@@ -46,7 +48,7 @@ const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
                 </div>
             ))}
             <Text style={{ fontWeight: "bold", marginTop: "20px" }}>
-                Total: ${(totalAmount / 100).toFixed(2)}
+                Total: ${formatPrice(totalAmount)} SEK
             </Text>
             <Text style={{ marginTop: "20px" }}>
                 Thank you for your purchase with {organizationName}!

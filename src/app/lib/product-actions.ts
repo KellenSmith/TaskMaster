@@ -1,313 +1,138 @@
 "use server";
 
-import { Prisma, Product, TicketType } from "@prisma/client";
-import { prisma } from "../../prisma/prisma-client";
+import { Prisma, Product } from "@prisma/client";
+import { prisma } from "../../../prisma/prisma-client";
 import {
-    createMembershipProductSchema,
-    createProductSchema,
-    updateProductSchema,
+    MembershipCreateSchema,
+    MembershipWithoutProductSchema,
+    ProductCreateSchema,
+    ProductUpdateSchema,
 } from "./zod-schemas";
+import { renewUserMembership } from "./user-membership-actions";
+import z from "zod";
+import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { renewUserMembership } from "./user-actions";
-import dayjs from "dayjs";
-import { DatagridActionState, FormActionState } from "./definitions";
+import { addEventParticipant } from "./event-participant-actions";
 
-export const getProductById = async (
-    currentState: DatagridActionState,
-    productId: string,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+export const getAllProducts = async (): Promise<Product[]> => {
     try {
-        const product = await prisma.product.findUniqueOrThrow({
-            where: { id: productId },
-        });
-        newActionState.status = 200;
-        newActionState.result = [product];
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+        return await prisma.product.findMany();
+    } catch {
+        throw new Error(`Failed fetching products`);
     }
-    return newActionState;
-};
-
-export const getAllProducts = async (
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
-    try {
-        const products = await prisma.product.findMany();
-        newActionState.status = 200;
-        newActionState.result = products;
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
-};
-
-export const getAllMembershipProducts = async (
-    currentActionState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        const membershipProducts = await prisma.product.findMany({
-            where: { Membership: { isNot: null } },
-            include: {
-                Membership: true, // Include membership details
-            },
-        });
-        newActionState.status = 200;
-        newActionState.result = membershipProducts;
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
 };
 
 export const createProduct = async (
-    currentActionState: FormActionState,
-    fieldValues: Prisma.ProductCreateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof ProductCreateSchema>,
+): Promise<void> => {
     try {
-        const parsedFieldValues = createProductSchema.parse(fieldValues);
-        const createdProduct = await prisma.product.create({
+        await prisma.product.create({
             data: parsedFieldValues,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 201;
-        newActionState.result = `Product #${createdProduct.id} ${createdProduct.name} created successfully`;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        revalidateTag(GlobalConstants.PRODUCT);
+    } catch {
+        throw new Error(`Failed creating product`);
     }
-    return newActionState;
 };
 
 export const createMembershipProduct = async (
-    currentActionState: FormActionState,
-    fieldValues: Prisma.ProductCreateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof MembershipCreateSchema>,
+): Promise<void> => {
     try {
-        const parsedFieldValues = createMembershipProductSchema.parse(fieldValues);
-        const createdMembershipProduct = await prisma.product.create({
+        const membershipValues = MembershipWithoutProductSchema.parse(parsedFieldValues);
+        const productValues = ProductCreateSchema.parse(parsedFieldValues);
+        await prisma.membership.create({
             data: {
-                ...parsedFieldValues,
-                Membership: {
-                    create: {
-                        duration: parsedFieldValues.duration as number,
-                    },
+                ...membershipValues,
+                product: {
+                    create: productValues,
                 },
             },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 201;
-        newActionState.result = `Membership Product #${createdMembershipProduct.id} ${createdMembershipProduct.name} created successfully`;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        revalidateTag(GlobalConstants.PRODUCT);
+        revalidateTag(GlobalConstants.MEMBERSHIP);
+    } catch {
+        throw new Error("Failed to create membership");
     }
-
-    return newActionState;
 };
 
 export const updateProduct = async (
     productId: string,
-    currentActionState: FormActionState,
-    fieldValues: Prisma.ProductUpdateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof ProductUpdateSchema>,
+): Promise<void> => {
     try {
-        const parsedFieldValues = updateProductSchema.parse(fieldValues);
         await prisma.product.update({
             where: { id: productId },
             data: parsedFieldValues,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Updated successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        revalidateTag(GlobalConstants.PRODUCT);
+    } catch {
+        throw new Error(`Failed updating product`);
     }
-    return newActionState;
 };
 
-export const updateMembershipProduct = async (
-    productId: string,
-    currentActionState: FormActionState,
-    fieldValues: Prisma.ProductUpdateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+export const deleteProduct = async (productId: string): Promise<void> => {
     try {
-        const parsedFieldValues = updateProductSchema.parse(fieldValues);
-        await prisma.product.update({
-            where: { id: productId },
-            data: {
-                ...parsedFieldValues,
-                Membership: {
-                    update: {
-                        duration: parsedFieldValues.duration as number,
-                    },
-                },
-            },
+        const membership = await prisma.membership.findUnique({
+            where: { productId },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Membership updated successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-export const deleteProduct = async (
-    product: Product,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        await prisma.product.delete({
-            where: { id: product.id },
-        });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Deleted successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-export const getMembershipProductId = async (): Promise<string> => {
-    try {
-        // Try to find existing membership product
-        const membershipProduct = await prisma.membership.findFirst({
-            select: {
-                productId: true,
-            },
+        const ticket = await prisma.ticket.findUnique({
+            where: { productId },
         });
 
-        if (membershipProduct) {
-            return membershipProduct.productId;
-        }
+        const deleteRelationsPromises = [];
+        if (membership)
+            deleteRelationsPromises.push(
+                prisma.membership.delete({
+                    where: { productId },
+                }),
+            );
+        if (ticket)
+            deleteRelationsPromises.push(
+                prisma.ticket.delete({
+                    where: { productId },
+                }),
+            );
 
-        // If no membership product exists, create it
-        const newMembershipProduct = await prisma.product.create({
-            data: {
-                name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
-                description: "Annual membership",
-                price: 0,
-                unlimitedStock: true,
-                Membership: {
-                    create: {
-                        duration: 365,
-                    },
-                },
-            },
-        });
-
-        return newMembershipProduct.id;
-    } catch (error) {
-        throw new Error(`Failed to get/create membership product: ${error.message}`);
+        await prisma.$transaction([
+            ...deleteRelationsPromises,
+            prisma.product.delete({
+                where: { id: productId },
+            }),
+        ]);
+        revalidateTag(GlobalConstants.PRODUCT);
+        revalidateTag(GlobalConstants.TICKET);
+        revalidateTag(GlobalConstants.MEMBERSHIP);
+    } catch {
+        throw new Error(`Failed deleting product`);
     }
 };
 
 export const processOrderedProduct = async (
-    productId: string,
-    quantity: number,
     userId: string,
-    currentActionState: FormActionState,
+    orderItem: Prisma.OrderItemGetPayload<{
+        include: { product: { include: { membership: true; ticket: true } } };
+    }>,
 ) => {
-    const newActionState = { ...currentActionState };
-    const product = await prisma.product.findUniqueOrThrow({
-        where: { id: productId },
-        include: { Membership: true, Ticket: true },
-    });
     const failedProducts: string[] = [];
-    for (let i = 0; i < quantity; i++) {
-        if (product.Membership) {
-            const renewMembershipResult = await renewUserMembership(
-                userId,
-                product.Membership.id,
-                currentActionState,
-            );
-            if (renewMembershipResult.status !== 200) {
-                failedProducts.push(`Membership renewal failed for user ${userId}`);
-            }
-        } else if (product.Ticket) {
-            // Add user as participant for the ticket
+    for (let i = 0; i < orderItem.quantity; i++) {
+        if (orderItem.product.membership) {
             try {
-                await prisma.participantInEvent.create({
-                    data: {
-                        userId,
-                        eventId: product.Ticket.eventId,
-                        ticketId: product.Ticket.id,
-                    },
-                });
+                await renewUserMembership(userId, orderItem.product.membership.id);
+            } catch {
+                failedProducts.push(`Failed to renew membership for user ${userId}`);
+            }
+        } else if (orderItem.product.ticket) {
+            try {
+                await addEventParticipant(userId, orderItem.product.ticket.id);
             } catch (error) {
                 failedProducts.push(
-                    `Failed to create participant for user ${userId} in event ${product.Ticket.eventId}: ${error.message}`,
+                    `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.eventId}: ${error.message}`,
                 );
             }
         }
     }
-    newActionState.status = 200;
-    newActionState.errorMsg = "";
-    newActionState.result = `Processed ${quantity} of product ${productId} for user ${userId}`;
     if (failedProducts.length > 0) {
-        newActionState.status = 500;
-        newActionState.errorMsg = failedProducts.join(", ");
-        newActionState.result = "";
-        return newActionState;
+        throw new Error(failedProducts.join(", "));
     }
-    return newActionState;
-};
-
-export const getEventTickets = async (
-    eventId: string,
-    selectedTaskIds: string[],
-    currentActionState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        const eligibleTicketTypes: TicketType[] = [TicketType.standard];
-        if (selectedTaskIds.length > 0) eligibleTicketTypes.push(TicketType.volunteer);
-        const event = await prisma.event.findUniqueOrThrow({
-            where: { id: eventId },
-            select: { startTime: true },
-        });
-        const eventStartTime = event.startTime;
-        if (dayjs(eventStartTime).subtract(14, "d").isAfter(dayjs()))
-            eligibleTicketTypes.push(TicketType.earlyBird);
-
-        const tickets = await prisma.ticket.findMany({
-            where: { eventId, type: { in: eligibleTicketTypes } },
-            include: {
-                Product: true,
-            },
-        });
-        newActionState.status = 200;
-        newActionState.result = tickets;
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
 };

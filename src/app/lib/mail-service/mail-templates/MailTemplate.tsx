@@ -1,8 +1,8 @@
 import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
-import GlobalConstants from "../../../GlobalConstants";
 import mailTheme from "../mail-theme";
 import DOMPurify from "isomorphic-dompurify";
+import { getUrl } from "../../definitions";
 
 interface MailTemplateProps {
     children?: ReactNode;
@@ -59,14 +59,11 @@ const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName 
                     >
                         {organizationName}
                     </Heading>
-                    <Container style={{ color: mailTheme.palette.text.primary }}>
+                    <Container style={{ color: mailTheme.palette.text.primary, padding: "16px" }}>
                         {children}
                         {renderHtml()}
                     </Container>
-                    <Button
-                        style={mailTheme.components.button}
-                        href={`${process.env.VERCEL_URL}/${GlobalConstants.LOGIN}`}
-                    >
+                    <Button style={mailTheme.components.button} href={getUrl()}>
                         visit us
                     </Button>
                 </Container>

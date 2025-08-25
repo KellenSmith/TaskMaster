@@ -1,3 +1,4 @@
+import { Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 
 export const FieldLabels = {
@@ -9,8 +10,11 @@ export const FieldLabels = {
     // Organization settings
     [GlobalConstants.ORGANIZATION_SETTINGS]: "Settings",
     [GlobalConstants.ORGANIZATION_NAME]: "Organization Name",
-    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind Membership Expires In Days",
-    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]: "Purge Members After Days Unvalidated",
+    [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]: "Default Task Shift Length [hours]",
+    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind before membership expires [days]",
+    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]:
+        "Purge Members After Time Unvalidated [days]",
+    [GlobalConstants.MEMBER_APPLICATION_PROMPT]: "Send us a message",
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
     // User
@@ -23,6 +27,7 @@ export const FieldLabels = {
     [GlobalConstants.PHONE]: "Phone",
     [GlobalConstants.ROLE]: "Role",
     [GlobalConstants.CREATED_AT]: "Created At",
+    [GlobalConstants.UPDATED_AT]: "Updated At",
     [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters`,
     [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the member registry",
     [GlobalConstants.PENDING]: "Pending",
@@ -75,16 +80,34 @@ export const FieldLabels = {
     [GlobalConstants.PRICE]: "Price",
     [GlobalConstants.STOCK]: "Stock",
     [GlobalConstants.UNLIMITED_STOCK]: "Unlimited Stock",
-    [GlobalConstants.IMAGE_URL]: "Image URL",
+    [GlobalConstants.TICKET]: "Ticket",
+    [GlobalConstants.TICKET_TYPE]: "Type",
+};
+
+export const explanatoryTexts = {
+    [GlobalConstants.ORGANIZATION_NAME]:
+        "The name of the organization which will be displayed all over the application",
+    [GlobalConstants.ORGANIZATION_EMAIL]:
+        "The email address which automated emails are sent from and should be monitored for replies",
+    [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]:
+        "The default length of task shifts when added from a task board belonging to an event",
+    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]:
+        "Members whose membership expires in X days will automatically be sent an email reminder",
+    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]:
+        "Members whose membership has not been validated after X days will automatically be purged from the database",
+    [GlobalConstants.MEMBER_APPLICATION_PROMPT]:
+        "If given, this text will be displayed as a prompt for member applications and applications can not be submitted without a message. If this field is left empty, applications can be submitted without a message.",
 };
 
 export const RenderedFields = {
     // Org settings
     [GlobalConstants.ORGANIZATION_SETTINGS]: [
         GlobalConstants.ORGANIZATION_NAME,
+        GlobalConstants.ORGANIZATION_EMAIL,
+        GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
-        GlobalConstants.EMAIL,
+        GlobalConstants.MEMBER_APPLICATION_PROMPT,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -112,18 +135,18 @@ export const RenderedFields = {
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.MAX_PARTICIPANTS,
-        GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
+        GlobalConstants.STATUS,
         GlobalConstants.PHASE,
         GlobalConstants.ASSIGNEE_ID,
         GlobalConstants.REVIEWER_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
-        GlobalConstants.DESCRIPTION,
         GlobalConstants.TAGS,
+        GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
     [GlobalConstants.PRODUCT]: [
@@ -131,10 +154,17 @@ export const RenderedFields = {
         GlobalConstants.PRICE,
         GlobalConstants.STOCK,
         GlobalConstants.UNLIMITED_STOCK,
-        GlobalConstants.IMAGE_URL,
         GlobalConstants.DESCRIPTION,
     ],
+    [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],
+    [GlobalConstants.ORDER]: [GlobalConstants.STATUS],
 };
+RenderedFields[GlobalConstants.TICKET] = [
+    GlobalConstants.TICKET_TYPE,
+    ...RenderedFields[GlobalConstants.PRODUCT].filter(
+        (fieldId) => ![GlobalConstants.STOCK, GlobalConstants.UNLIMITED_STOCK].includes(fieldId),
+    ),
+];
 RenderedFields[GlobalConstants.MEMBERSHIP] = [
     ...RenderedFields[GlobalConstants.PRODUCT],
     GlobalConstants.DURATION,
@@ -156,7 +186,7 @@ export const RequiredFields = {
         GlobalConstants.ORGANIZATION_NAME,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
-        GlobalConstants.EMAIL,
+        GlobalConstants.ORGANIZATION_EMAIL,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -184,10 +214,18 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
-    [GlobalConstants.TASK]: [GlobalConstants.NAME, GlobalConstants.REVIEWER],
+    [GlobalConstants.TASK]: [
+        GlobalConstants.NAME,
+        GlobalConstants.STATUS,
+        GlobalConstants.REVIEWER,
+    ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
-    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.STOCK],
+    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE],
 };
+RequiredFields[GlobalConstants.TICKET] = [
+    ...RequiredFields[GlobalConstants.PRODUCT],
+    GlobalConstants.TICKET_TYPE,
+];
 // Apply
 RequiredFields[GlobalConstants.APPLY] = [
     ...RequiredFields[GlobalConstants.PROFILE],
@@ -212,35 +250,20 @@ export const passwordFields = [
 
 export const selectFieldOptions = {
     // User
-    [GlobalConstants.ROLE]: [GlobalConstants.USER, GlobalConstants.ADMIN],
+    [GlobalConstants.ROLE]: Object.values(UserRole),
     [GlobalConstants.PHASE]: [
         GlobalConstants.BEFORE,
         GlobalConstants.DURING,
         GlobalConstants.AFTER,
     ],
-    [GlobalConstants.STATUS]: [
-        GlobalConstants.TO_DO,
-        GlobalConstants.IN_PROGRESS,
-        GlobalConstants.IN_REVIEW,
-        GlobalConstants.DONE,
-    ],
+    [GlobalConstants.STATUS]: Object.values(TaskStatus),
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
-    [GlobalConstants.ASSIGNEE_ID]: ["Custom"],
-    [GlobalConstants.REVIEWER_ID]: ["Custom"],
-};
-
-export const formatAssigneeOptions = (activeMembers: any[]) => {
-    if (!activeMembers || activeMembers.length < 1) return [];
-    return activeMembers.map((member) => ({
-        value: member[GlobalConstants.ID],
-        label: member[GlobalConstants.NICKNAME],
-    }));
-};
+    [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
+} as { [key: string]: string[] };
 
 export const allowSelectMultiple = [GlobalConstants.TAGS];
 
 export const datePickerFields = [
-    // User
     GlobalConstants.CREATED_AT,
     GlobalConstants.UPDATED_AT,
     GlobalConstants.START_TIME,
@@ -259,3 +282,16 @@ export const checkboxFields = [
     GlobalConstants.CONSENT_GDPR,
     GlobalConstants.UNLIMITED_STOCK,
 ];
+
+export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT];
+
+export const getUserSelectOptions = (
+    users: Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[],
+) => {
+    return users.map((user) => ({
+        id: user.id,
+        label: user.nickname,
+    }));
+};
+
+export const multiLineTextFields = [GlobalConstants.MEMBER_APPLICATION_PROMPT];

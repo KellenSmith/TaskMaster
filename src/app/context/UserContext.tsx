@@ -1,86 +1,43 @@
 "use client";
 
-import {
-    createContext,
-    FC,
-    ReactNode,
-    startTransition,
-    useContext,
-    useEffect,
-    useState,
-} from "react";
-import { getLoggedInUser } from "../lib/user-actions";
-import { deleteUserCookie, login } from "../lib/auth/auth";
-import { useRouter } from "next/navigation";
-import { defaultFormActionState, FormActionState, LoginSchema } from "../lib/definitions";
-import { navigateToRoute } from "../ui/utils";
+import { createContext, FC, ReactNode, useContext, useState } from "react";
 import GlobalConstants from "../GlobalConstants";
+import { Prisma } from "@prisma/client";
 
-export const UserContext = createContext(null);
+interface UserContextValue {
+    user: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
+    language: string;
+    setLanguage: (language: string) => void; // eslint-disable-line no-unused-vars
+    editMode: boolean;
+    setEditMode: (editMode: boolean | ((prev: boolean) => boolean)) => void; // eslint-disable-line no-unused-vars
+}
 
-export const useUserContext = () => {
+export const UserContext = createContext<UserContextValue | null>(null);
+
+export const useUserContext = (): UserContextValue => {
     const context = useContext(UserContext);
     if (!context) throw new Error("useUserContext must be used within UserContextProvider");
     return context;
 };
 
 interface UserContextProviderProps {
+    loggedInUser: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
     children: ReactNode;
 }
 
-const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
-    const [user, setUser] = useState(null);
+const UserContextProvider: FC<UserContextProviderProps> = ({ loggedInUser, children }) => {
     const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
-    const router = useRouter();
+    const [editMode, setEditMode] = useState(false);
 
-    const updateLoggedInUser = async () => {
-        const serverResponse = await getLoggedInUser(defaultFormActionState);
-        if (serverResponse.status === 200) {
-            const loggedInUser = JSON.parse(serverResponse.result);
-            setUser(loggedInUser);
-            return loggedInUser;
-        }
+    const contextValue: UserContextValue = {
+        user: loggedInUser,
+        language,
+        setLanguage,
+        editMode,
+        setEditMode,
     };
 
-    const loginAndUpdateUser = async (
-        currentActionState: FormActionState,
-        fieldValues: LoginSchema,
-    ) => {
-        const logInActionState = await login(currentActionState, fieldValues);
-        if (logInActionState.status === 200) {
-            setUser(JSON.parse(logInActionState.result));
-            logInActionState.result = "Logged in successfully. Wait to be redirected";
-            navigateToRoute("/", router);
-        }
-        return logInActionState;
-    };
-
-    const logOut = async () => {
-        setUser(null);
-        startTransition(async () => {
-            await deleteUserCookie();
-        });
-        navigateToRoute("/", router);
-    };
-
-    useEffect(() => {
-        updateLoggedInUser();
-    }, []);
-
-    return (
-        <UserContext.Provider
-            value={{
-                user,
-                logOut,
-                login: loginAndUpdateUser,
-                updateLoggedInUser,
-                language,
-                setLanguage,
-            }}
-        >
-            {children}
-        </UserContext.Provider>
-    );
+    return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };
 
 export default UserContextProvider;

@@ -1,0 +1,73 @@
+"id","phase","name","status","startTime","endTime","description","tags","assigneeId","reviewerId","eventId"
+"002ee88b-3d1d-4653-8c20-5f92a58e065b","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","df77632d-31dc-4657-b3fd-e4be18e64371"
+"04a248a9-8d1b-4a8c-9061-ce89132fd0d9","before","In progress task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","c79ea244-0731-416e-b4f3-b3aaf95f6827"
+"0808a268-0705-448c-ab76-cddad02aa230","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","c79ea244-0731-416e-b4f3-b3aaf95f6827"
+"11aaa14e-b21f-4949-9830-2637c666aadd","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"16250716-b600-4a4a-a0b8-2c8ef81935df","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"1928aae9-bb29-400d-83f5-0b5efe4df350","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"1a18aeca-2387-4734-b53d-d1ef3c3d5021","before","Done task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","ad8bfde2-138c-4d7a-b777-77fcfc84a903"
+"1d92fcb3-4025-4392-b09f-4a1354c35b97","before","In progress task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","2a82f05e-268d-4e33-9775-2372651d708f"
+"281b75b1-e60e-4102-8194-9d498df5aea8","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"2e43d2c5-d5e8-4e59-8775-c822f722d473","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","2a82f05e-268d-4e33-9775-2372651d708f"
+"30f99c1c-c2c1-4103-a861-b3c2d2920f02","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"32f8d347-bed6-4ee7-9d4d-89e096c540cb","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"36c7e1c0-d481-456d-865d-45c664458122","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"36cf5504-1844-4871-8782-aa6595b329a6","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]","c59d5d50-964f-464e-914b-db2466c1b85f","495796c7-c5f0-4e25-a949-4d0db3966480","df77632d-31dc-4657-b3fd-e4be18e64371"
+"38252d40-726b-4131-b632-3a878697cf25","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"3b49a020-c0e1-4632-ac3e-342fa6b4d00a","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"3f6e6c19-4de5-45b2-bb45-28511311ea39","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"45445700-2b22-4d25-b147-61966a56bbc5","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"45f46e90-1c9d-4aad-a564-e46340a4acf1","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"47a35876-cc78-48cc-b178-e3f48c9a2cdd","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"4fa746e9-d98f-48af-bdcf-9499dec5f511","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"5632b211-6cc5-47a2-b00a-91e39a8112d9","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]","511b206c-1046-4aaa-a6bd-9a5fe1f3970f","495796c7-c5f0-4e25-a949-4d0db3966480","df77632d-31dc-4657-b3fd-e4be18e64371"
+"5ca2bd81-0e5a-4bb6-b8a8-9db7907fb99f","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]","511b206c-1046-4aaa-a6bd-9a5fe1f3970f","495796c7-c5f0-4e25-a949-4d0db3966480","df77632d-31dc-4657-b3fd-e4be18e64371"
+"6495b958-fe37-49c2-8ac5-ce0cac94d0c6","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"6599566b-8d0d-4994-85f3-8eccbc3519f8","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","9249e96a-7ec5-47d2-9226-fe2aeb5e22f6"
+"6a98dc34-32dc-4f88-a499-46d46511cb34","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"6ce9ab79-3d56-4590-8d83-bb7698088bee","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","c79ea244-0731-416e-b4f3-b3aaf95f6827"
+"6d100c24-49fd-4aaf-b8ec-4b658fa4e704","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"6ecde0a0-527d-422f-a01e-a142db7d4128","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"7050b676-297b-4296-911a-478579cabd08","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]","495796c7-c5f0-4e25-a949-4d0db3966480","495796c7-c5f0-4e25-a949-4d0db3966480","df77632d-31dc-4657-b3fd-e4be18e64371"
+"7418b11e-b864-490c-a921-c536f372ff71","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"774f7957-84b8-47b2-8a59-4b2b248fe8fe","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"77c675d8-c9f8-47f8-bed4-af7fc574ab9e","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"825f2ea8-84cf-4b01-9802-3be016f85e28","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"829b8875-ad9e-4d49-a6c6-119c10370a4e","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"83e22c72-2471-49c6-a71a-408a128b964c","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"8ae30431-58d6-496d-a47b-b1c76d34a83a","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"92466fee-d49e-474c-8211-450a085a63dd","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","2a82f05e-268d-4e33-9775-2372651d708f"
+"9307a254-a5d6-4c0f-9672-0215b8c26ccb","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"94b89d6d-c06f-4863-90b1-44721265d94a","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"963a6e9d-4e2f-404e-93c9-9a7ecd4470c2","before","Done task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","2a82f05e-268d-4e33-9775-2372651d708f"
+"9a308991-93be-4de0-945c-6948e79fad35","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"9b87b955-7e4a-4f81-8129-0f45e8fd42f3","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"a0474655-4aa1-4139-9fd6-90c2bb904da0","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","ad8bfde2-138c-4d7a-b777-77fcfc84a903"
+"a15f5d37-dd64-4ec1-bc22-9d07434d8489","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","9249e96a-7ec5-47d2-9226-fe2aeb5e22f6"
+"a4530f17-a75d-406b-a446-c3a204ef7099","before","Review task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","2a82f05e-268d-4e33-9775-2372651d708f"
+"a88c5485-fa1d-4b7c-9ea5-cb46f413bf45","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"ab85f395-b254-480c-b543-0a3c4adc6190","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","ad8bfde2-138c-4d7a-b777-77fcfc84a903"
+"b9df9092-5b19-46b6-bf69-f9d2f2b4fb0c","before","Done task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","c79ea244-0731-416e-b4f3-b3aaf95f6827"
+"bde6d08b-7f04-419b-a00d-8e3f9a3495bb","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"c0266b79-7674-4050-a68e-8d71cc92e71e","before","In progress task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","ad8bfde2-138c-4d7a-b777-77fcfc84a903"
+"c2fa27af-18be-44f0-ab95-9034d44b1846","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"c8d0d316-e460-4985-80a1-bc0347505bd2","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]","495796c7-c5f0-4e25-a949-4d0db3966480","495796c7-c5f0-4e25-a949-4d0db3966480","df77632d-31dc-4657-b3fd-e4be18e64371"
+"c924c063-f952-43cd-9888-e59fb9212a6d","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"cc2addc0-1797-4731-8e99-f6dca09bb2c0","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"cc6004c8-b618-4edf-b7e3-674c509dc42b","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"ccf6b04b-877f-4e65-b772-817e6ed06a8a","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"cfd01fc1-2fe5-41af-b526-d8ca48d31525","before","Review task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","c79ea244-0731-416e-b4f3-b3aaf95f6827"
+"d3e061d4-6510-49e8-be1e-19be53f7c33c","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"d9d248b8-3a34-4385-b710-cdbfc637583a","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","9249e96a-7ec5-47d2-9226-fe2aeb5e22f6"
+"e04a180d-cbb4-4db5-9c8d-5a93dad7ab56","before","Review task","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","ad8bfde2-138c-4d7a-b777-77fcfc84a903"
+"e59adaaf-71f0-4714-b43e-14262a01c464","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","c79ea244-0731-416e-b4f3-b3aaf95f6827"
+"e72c6579-8a65-40f6-a02d-42598fbcab2e","before","Review task","inReview","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","9249e96a-7ec5-47d2-9226-fe2aeb5e22f6"
+"eb7cb276-f4e9-43e3-9704-48a9acab452f","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"ec79725c-99e2-4c21-85cd-223a2adafe6a","before","Done task","done","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"ee6b37ea-1b14-485f-a5ce-f734171e4d58","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"f369d45a-552b-4c64-b867-fec14951459f","before","eventHostTask","toDo","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","2a82f05e-268d-4e33-9775-2372651d708f"
+"f6a26ac5-102e-466a-b5af-84365ec4b07c","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",
+"f7280d4d-0373-44cb-a03b-cf29c2c8d015","during","Event shifts","toDo","2025-08-25 18:00:00","2025-08-25 20:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","9249e96a-7ec5-47d2-9226-fe2aeb5e22f6"
+"f75160d9-c5e7-4851-ade3-9d47eb4558a7","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","ad8bfde2-138c-4d7a-b777-77fcfc84a903"
+"f9a38fdf-3309-4dcd-b11b-2ada539b5fcc","before","In progress task","inProgress","2025-08-24 16:00:00","2025-08-25 16:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480","9249e96a-7ec5-47d2-9226-fe2aeb5e22f6"
+"fdbc0fc5-797b-473c-af12-ac61a4cf7c26","during","Event shifts","toDo","2025-08-25 16:00:00","2025-08-25 18:00:00","Description","[]",,"495796c7-c5f0-4e25-a949-4d0db3966480",

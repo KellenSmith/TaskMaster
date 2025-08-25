@@ -1,68 +1,35 @@
 "use client";
 
-import React, { FC, startTransition, useActionState, useEffect, useState } from "react";
-import {
-    Stack,
-    Typography,
-    CircularProgress,
-    Button,
-    Grid2,
-    useTheme,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-} from "@mui/material";
+import React, { FC, useState } from "react";
+import { Stack, Typography, Button, Grid2, Dialog, DialogContent } from "@mui/material";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
-import { createEvent, getAllEvents } from "../../lib/event-actions";
+import { createEvent } from "../../lib/event-actions";
 import localeData from "dayjs/plugin/localeData";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
-import { useRouter } from "next/navigation";
-import { navigateToRoute } from "../../ui/utils";
-import { defaultDatagridActionState, FormActionState } from "../../lib/definitions";
+import { EventCreateSchema } from "../../lib/zod-schemas";
+import z from "zod";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
 
-const CalendarDashboard: FC = () => {
+interface CalendarDashboardProps {
+    eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
+}
+
+const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
     const { user } = useUserContext();
-    const theme = useTheme();
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
-    const [fetchEventsState, fetchEventsAction, isEventsPending] = useActionState(
-        getAllEvents,
-        defaultDatagridActionState,
-    );
     const [createOpen, setCreateOpen] = useState(false);
-    const router = useRouter();
 
-    const createEventWithHostAndTicket = async (
-        currentActionState: FormActionState,
-        fieldValues: Prisma.EventCreateInput,
-    ) => {
-        const createEventResult = await createEvent(currentActionState, fieldValues);
-        if (createEventResult.status === 201) {
-            const createdEventId = createEventResult.result;
-            createEventResult.result = "Event created successfully";
-            navigateToRoute(
-                `/${GlobalConstants.CALENDAR}/${GlobalConstants.EVENT}?${GlobalConstants.EVENT_ID}=${createdEventId}`,
-                router,
-            );
-        }
-        return createEventResult;
+    const createEventWithHostAndTicket = async (fieldValues: z.infer<typeof EventCreateSchema>) => {
+        await createEvent(fieldValues);
+        return "Created event";
     };
-
-    // Fetch data on first render
-    useEffect(() => {
-        startTransition(async () => {
-            fetchEventsAction();
-        });
-        // Disable lint to only fetch data on first render
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const getDaysInFirstWeekButNotInMonth = () => {
         const firstDayOfFirstWeekInMonth = selectedDate.startOf("week");
@@ -117,7 +84,7 @@ const CalendarDashboard: FC = () => {
                     ))}
                     {getDaysToShow().map((date) => (
                         <Grid2 key={date.format("YYYY-MM-DD")} size={1}>
-                            <CalendarDay date={date} events={fetchEventsState.result} />
+                            <CalendarDay date={date} eventsPromise={eventsPromise} />
                         </Grid2>
                     ))}
                 </Grid2>
@@ -137,11 +104,7 @@ const CalendarDashboard: FC = () => {
                             >
                                 <ArrowLeft />
                             </Button>
-                            <Typography
-                                color={theme.palette.text.secondary}
-                                alignSelf="center"
-                                variant="h4"
-                            >
+                            <Typography color="primary" alignSelf="center" variant="h4">
                                 {selectedDate.format("MMMM YYYY")}
                             </Typography>
                             <Button onClick={() => setSelectedDate((prev) => prev.add(1, "month"))}>
@@ -150,15 +113,15 @@ const CalendarDashboard: FC = () => {
                         </Stack>
                     </Stack>
                 </Stack>
-                {isEventsPending ? <CircularProgress size={30} /> : getCalendarGrid()}
+                {getCalendarGrid()}
             </Stack>
-            <Dialog maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
-                <DialogTitle>Create event draft</DialogTitle>
+            <Dialog fullWidth maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
                 <DialogContent>
                     <Form
                         name={GlobalConstants.EVENT}
                         buttonLabel={"create event draft"}
                         action={createEventWithHostAndTicket}
+                        validationSchema={EventCreateSchema}
                         readOnly={false}
                         editable={false}
                     />

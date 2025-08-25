@@ -1,13 +1,22 @@
 "use server";
 
-import { OrganizationSettings, Prisma } from "@prisma/client";
-import { prisma } from "../../prisma/prisma-client";
-import { FormActionState } from "./definitions";
+import { prisma } from "../../../prisma/prisma-client";
+import { revalidateTag } from "next/cache";
+import GlobalConstants from "../GlobalConstants";
+import z from "zod";
+import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
+import { Prisma } from "@prisma/client";
 
-export const getOrganizationSettings = async (): Promise<OrganizationSettings> => {
+export const getOrganizationSettings = async (): Promise<
+    Prisma.OrganizationSettingsGetPayload<true>
+> => {
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
-        orgSettings = await prisma.organizationSettings.create({});
+        orgSettings = await prisma.organizationSettings.upsert({
+            where: { organizationName: process.env.NEXT_PUBLIC_ORG_NAME || "Task Master" },
+            update: {},
+            create: {},
+        });
     }
     return orgSettings;
 };
@@ -18,10 +27,8 @@ export const getOrganizationName = async (): Promise<string> => {
 };
 
 export const updateOrganizationSettings = async (
-    currentActionState: FormActionState,
-    fieldValues: Prisma.UserCreateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    fieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
+): Promise<void> => {
     try {
         const settings = await getOrganizationSettings();
         await prisma.organizationSettings.update({
@@ -30,13 +37,8 @@ export const updateOrganizationSettings = async (
             },
             data: fieldValues,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Updated settings successfully`;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
+    } catch {
+        throw new Error(`Failed to update organization settings`);
     }
-    return newActionState;
 };

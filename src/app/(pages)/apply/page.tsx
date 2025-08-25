@@ -1,31 +1,62 @@
-import { Prisma } from "@prisma/client";
+"use client";
 import GlobalConstants from "../../GlobalConstants";
-import { createUser } from "../../lib/user-actions";
+import { submitMemberApplication } from "../../lib/user-actions";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import Form from "../../ui/form/Form";
-import { FormActionState } from "../../lib/definitions";
+import { MembershipApplicationSchema } from "../../lib/zod-schemas";
+import z from "zod";
+import { useRouter } from "next/navigation";
+import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
+import { useMemo } from "react";
+import { Card, Stack, Typography } from "@mui/material";
+import { clientRedirect } from "../../lib/definitions";
 
 const ApplyPage = () => {
-    const submitApplication = async (currentActionState: FormActionState, fieldValues: any) => {
-        "use server";
-        const strippedFieldValues = Object.fromEntries(
-            Object.entries(fieldValues).filter(
-                // eslint-disable-next-line no-unused-vars
-                ([fieldId, _]) => fieldId !== GlobalConstants.CONSENT_GDPR,
-            ),
-        ) as Prisma.UserCreateInput;
-        const submitState = await createUser(currentActionState, strippedFieldValues);
-        if (submitState.status === 201) submitState.result = "Application submitted";
-        return submitState;
+    const router = useRouter();
+    const { organizationSettings } = useOrganizationSettingsContext();
+    const shouldIncludeApplicationPrompt = useMemo(
+        (): boolean => !!organizationSettings.memberApplicationPrompt,
+        [organizationSettings],
+    );
+
+    const submitApplication = async (
+        parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
+    ) => {
+        try {
+            await submitMemberApplication(parsedFieldValues);
+            clientRedirect(router, [GlobalConstants.LOGIN]);
+            return "Application submitted successfully";
+        } catch {
+            throw new Error("Failed to submit application");
+        }
     };
+
     return (
-        <Form
-            name={GlobalConstants.APPLY}
-            buttonLabel={FieldLabels[GlobalConstants.APPLY]}
-            action={submitApplication}
-            readOnly={false}
-            editable={false}
-        />
+        <Stack spacing={1}>
+            {shouldIncludeApplicationPrompt && (
+                <Card>
+                    {organizationSettings.memberApplicationPrompt.split("\n").map((line, index) => (
+                        <Typography key={index} variant="h6" color="primary">
+                            {line}
+                        </Typography>
+                    ))}
+                </Card>
+            )}
+            <Form
+                name={GlobalConstants.APPLY}
+                buttonLabel={FieldLabels[GlobalConstants.APPLY]}
+                action={submitApplication}
+                validationSchema={MembershipApplicationSchema}
+                customIncludedFields={
+                    shouldIncludeApplicationPrompt
+                        ? [GlobalConstants.MEMBER_APPLICATION_PROMPT]
+                        : []
+                }
+                customRequiredFields={[GlobalConstants.MEMBER_APPLICATION_PROMPT]}
+                readOnly={false}
+                editable={false}
+            />
+        </Stack>
     );
 };
 

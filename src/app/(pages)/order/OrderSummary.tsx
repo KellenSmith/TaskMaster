@@ -1,5 +1,3 @@
-"use client";
-
 import {
     Card,
     CardContent,
@@ -12,79 +10,93 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    useTheme,
 } from "@mui/material";
-import GlobalConstants from "../../GlobalConstants";
+import { OrderStatus, Prisma } from "@prisma/client";
+import { formatPrice } from "../../ui/utils";
 
 interface OrderSummaryProps {
-    order: any[];
+    order: Prisma.OrderGetPayload<{
+        include: {
+            orderItems: {
+                include: { product: true };
+            };
+        };
+    }>;
 }
 
 const OrderSummary = ({ order }: OrderSummaryProps) => {
-    const theme = useTheme();
+    const getStatusMessage = (status: OrderStatus) => {
+        switch (status) {
+            case OrderStatus.completed:
+                return "Thank you for your order! Your payment has been processed and your order is complete.";
+            case OrderStatus.paid:
+                return "Thank you for your order! Your payment has been processed and is being fulfilled.";
+            case OrderStatus.pending:
+                return "Your order is currently pending payment. Please complete the payment process.";
+            case OrderStatus.cancelled:
+                return "This order has been cancelled. If you have any questions, please contact support.";
+            default:
+                return `Your order status is ${status}.`;
+        }
+    };
 
     return (
-        order && (
-            <Card>
-                <CardContent>
-                    <Stack spacing={3}>
-                        <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="h5">Order Summary</Typography>
-                            <Typography variant="h6" color={theme.palette.text.secondary}>
-                                Status: {order[GlobalConstants.STATUS]}
-                            </Typography>
-                        </Stack>
+        <Card>
+            <CardContent>
+                <Stack spacing={3}>
+                    <Stack direction="row" justifyContent="space-between">
+                        <Typography variant="h5">Order Summary</Typography>
+                        <Typography textTransform="capitalize" variant="h6" color="primary">
+                            Status: {order.status}
+                        </Typography>
+                    </Stack>
 
-                        <TableContainer component={Paper}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Product</TableCell>
-                                        <TableCell align="right">Price</TableCell>
-                                        <TableCell align="right">Quantity</TableCell>
-                                        <TableCell align="right">Total</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {order[GlobalConstants.ORDER_ITEMS].map((item) => (
-                                        <TableRow key={item.product.name}>
-                                            <TableCell component="th" scope="row">
-                                                <Stack>
-                                                    <Typography variant="body1">
-                                                        {item.product.name}
-                                                    </Typography>
-                                                </Stack>
-                                            </TableCell>
-                                            <TableCell align="right">{item.price} SEK</TableCell>
-                                            <TableCell align="right">{item.quantity}</TableCell>
-                                            <TableCell align="right">
-                                                {item.price * item.quantity} SEK
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    <TableRow>
-                                        <TableCell colSpan={3}>
-                                            <Typography variant="subtitle1">Total</Typography>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Product</TableCell>
+                                    <TableCell align="right">Price</TableCell>
+                                    <TableCell align="right">Quantity</TableCell>
+                                    <TableCell align="right">Total</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {order.orderItems.map((item) => (
+                                    <TableRow key={item.product.name}>
+                                        <TableCell component="th" scope="row">
+                                            <Stack>
+                                                <Typography variant="body1" component="div">
+                                                    {item.product.name}
+                                                </Typography>
+                                            </Stack>
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Typography variant="subtitle1">
-                                                {order[GlobalConstants.TOTAL_AMOUNT]} SEK
-                                            </Typography>
+                                            {formatPrice(item.price)} SEK
+                                        </TableCell>
+                                        <TableCell align="right">{item.quantity}</TableCell>
+                                        <TableCell align="right">
+                                            {formatPrice(item.price * item.quantity)} SEK
                                         </TableCell>
                                     </TableRow>
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-
-                        <Stack spacing={1}>
-                            <Typography variant="body2" color={theme.palette.text.secondary}>
-                                Order ID: {order[GlobalConstants.ID]}
-                            </Typography>
-                        </Stack>
-                    </Stack>
-                </CardContent>
-            </Card>
-        )
+                                ))}
+                                <TableRow>
+                                    <TableCell colSpan={3}>
+                                        <Typography variant="subtitle1">Total</Typography>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Typography variant="subtitle1">
+                                            {formatPrice(order.totalAmount)} SEK
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Stack>
+                <Typography color="primary">{getStatusMessage(order.status)}</Typography>
+            </CardContent>
+        </Card>
     );
 };
 

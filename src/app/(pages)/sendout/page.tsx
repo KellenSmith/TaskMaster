@@ -16,7 +16,8 @@ import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/ma
 import Form from "../../ui/form/Form";
 import { Prisma } from "@prisma/client";
 import { ExpandMore } from "@mui/icons-material";
-import { FormActionState } from "../../lib/definitions";
+import z from "zod";
+import { EmailSendoutSchema } from "../../lib/zod-schemas";
 
 const sendToOptions = {
     ALL: "All",
@@ -44,11 +45,10 @@ const SendoutPage: FC = () => {
     }, [sendTo, getRecipientCriteria]);
 
     const sendMassEmailToRecipientsWithCriteria = async (
-        currentActionState: FormActionState,
-        fieldValues,
+        parsedFieldValues: z.infer<typeof EmailSendoutSchema>,
     ) => {
-        fieldValues[GlobalConstants.RECIPIENT_CRITERIA] = getRecipientCriteria();
-        const sendState = await sendMassEmail(currentActionState, fieldValues);
+        parsedFieldValues[GlobalConstants.RECIPIENT_CRITERIA] = getRecipientCriteria();
+        const sendState = await sendMassEmail(getRecipientCriteria(), parsedFieldValues);
         return sendState;
     };
 

@@ -1,58 +1,51 @@
 "use client";
 import { Button, Stack } from "@mui/material";
-import React, { useState } from "react";
-import GlobalConstants from "../../GlobalConstants";
-import { getPaymentRedirectUrl } from "../../lib/payment-actions";
-import { getFormActionMsg } from "../form/Form";
-import { useRouter } from "next/navigation";
-import { OrderStatus } from "@prisma/client";
-import { updateOrderStatus } from "../../lib/order-actions";
-import { defaultFormActionState } from "../../lib/definitions";
-import { navigateToRoute } from "../utils";
+import React, { use } from "react";
+import { redirectToSwedbankPayment } from "../../lib/payment-actions";
+import { OrderStatus, Prisma } from "@prisma/client";
+import { useNotificationContext } from "../../context/NotificationContext";
+import { allowRedirectException } from "../utils";
+import ConfirmButton from "../ConfirmButton";
+import { progressOrder } from "../../lib/order-actions";
 
-const PaymentHandler = ({ order }) => {
-    const router = useRouter();
-    const [paymentActionState, setPaymentActionState] = useState(defaultFormActionState);
+interface PaymentHandlerProps {
+    orderPromise: Promise<
+        Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>
+    >;
+}
+
+const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
+    const { addNotification } = useNotificationContext();
+    const order = use(orderPromise);
 
     const redirectToPayment = async () => {
-        const orderId = order[GlobalConstants.ID];
-        const redirectUrlResult = await getPaymentRedirectUrl(defaultFormActionState, orderId);
-        if (redirectUrlResult.status === 200 && redirectUrlResult.result) {
-            const redirectUrl = redirectUrlResult.result;
-            router.push(redirectUrl);
-            redirectUrlResult.result = `Redirecting to payment...`;
+        try {
+            await redirectToSwedbankPayment(order.id);
+        } catch (error) {
+            allowRedirectException(error);
+            // Show notification for all other errors
+            addNotification("Failed to redirect to payment", "error");
         }
-        setPaymentActionState(redirectUrlResult);
     };
 
-    const [processOrderActionState, setProcessOrderActionState] = useState(defaultFormActionState);
+    const cancelOrder = async () => {
+        try {
+            await progressOrder(order.id, OrderStatus.cancelled);
+            addNotification("Cancelled order", "success");
+        } catch {
+            addNotification("Failed to cancel order", "error");
+        }
+    };
 
     return (
-        order &&
-        order[GlobalConstants.STATUS] === OrderStatus.pending && (
-            <Stack spacing={2} alignItems="center">
-                {order[GlobalConstants.TOTAL_AMOUNT] === 0 ? (
-                    <Button
-                        fullWidth
-                        onClick={async () => {
-                            const processOrderResult = await updateOrderStatus(
-                                order.id,
-                                defaultFormActionState,
-                                OrderStatus.paid,
-                            );
-                            setProcessOrderActionState(processOrderResult);
-                            navigateToRoute(`/order/complete?orderId=${order.id}`, router);
-                        }}
-                    >
-                        confirm
-                    </Button>
-                ) : (
-                    <Button fullWidth onClick={redirectToPayment}>
-                        pay
-                    </Button>
-                )}
-                {getFormActionMsg(paymentActionState)}
-                {getFormActionMsg(processOrderActionState)}
+        order.status === OrderStatus.pending && (
+            <Stack alignItems="center">
+                <Button color="success" fullWidth onClick={redirectToPayment}>
+                    {order.totalAmount === 0 ? "confirm" : "pay"}
+                </Button>
+                <ConfirmButton fullWidth color="error" onClick={cancelOrder}>
+                    cancel
+                </ConfirmButton>
             </Stack>
         )
     );

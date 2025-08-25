@@ -1,448 +1,269 @@
 "use server";
 
-import { Prisma, PrismaPromise, UserRole } from "@prisma/client";
-import { prisma } from "../../prisma/prisma-client";
+import { Prisma, UserRole } from "@prisma/client";
+import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { decryptJWT, encryptJWT, generateSalt, generateUserCredentials } from "./auth/auth";
-import { sendUserCredentials } from "./mail-service/mail-service";
-import {
-    DatagridActionState,
-    FormActionState,
-    LoginSchema,
-    ResetCredentialsSchema,
-} from "./definitions";
+import { decryptJWT, getUserCookie } from "./auth";
 import dayjs from "dayjs";
+import { validateUserMembership } from "./user-credentials-actions";
+import { revalidateTag } from "next/cache";
+import z from "zod";
+import { MembershipApplicationSchema, UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
+import { notifyOfMembershipApplication } from "./mail-service/mail-service";
+
+/**
+ * Simple in-memory cache for the logged-in user to prevent race conditions and reduce redundant calls.
+ *
+ * Why we need this cache:
+ * - getLoggedInUser() is often called multiple times in quick succession across different components
+ * - Each call involves: cookie access → JWT decryption → database query
+ * - Race conditions can occur when multiple calls happen simultaneously, especially with cookie access
+ * - The second call might fail due to timing issues with the cookies() API in Next.js
+ *
+ * How it works:
+ * - Stores the user result and a timestamp for when it was cached
+ * - If a subsequent call happens within CACHE_DURATION, returns the cached result
+ * - Cache is invalidated after CACHE_DURATION milliseconds to ensure fresh data
+ * - Both successful and failed results are cached to prevent repeated failed attempts
+ */
+let userCache: {
+    user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | null;
+    timestamp: number;
+} | null = null;
+const CACHE_DURATION = 10000; // Cache for 10 seconds - short enough to stay fresh, long enough to prevent race conditions
 
 export const getUserById = async (
-    currentState: DatagridActionState,
     userId: string,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+): Promise<Prisma.UserGetPayload<{ include: { userMembership: true } }>> => {
     try {
-        const user = await prisma.user.findUniqueOrThrow({
+        return await prisma.user.findUniqueOrThrow({
             where: { id: userId },
             include: { userMembership: true },
         });
-        newActionState.status = 200;
-        newActionState.result = [user];
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+    } catch {
+        throw new Error("Failed to get user");
     }
-    return newActionState;
 };
 
 export const createUser = async (
-    currentActionState: FormActionState,
-    fieldValues: Prisma.UserCreateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
+    parsedFieldValues: z.infer<typeof UserCreateSchema>,
+): Promise<void> => {
+    let createdUserId: string;
     try {
         const createdUser = await prisma.user.create({
             data: {
-                ...fieldValues,
+                ...parsedFieldValues,
             },
         });
+        createdUserId = createdUser.id;
+    } catch {
+        throw new Error("Failed creating user");
+    }
 
+    try {
         // If this user is the first user, make them an admin and validate their membership
         const userCount = await prisma.user.count();
-        if (userCount === 1) {
-            const userIdentifier: UserIdentifier = {
-                [GlobalConstants.ID]: createdUser[GlobalConstants.ID],
-            };
-            const fieldValues: Prisma.UserUpdateInput = {
-                role: UserRole.admin,
-            };
-            await updateUserTransaction(fieldValues, userIdentifier);
-            await validateUserMembership(createdUser, newActionState);
+        if (userCount === 1 && createdUserId) {
+            await prisma.user.update({
+                where: { id: createdUserId },
+                data: { role: UserRole.admin },
+            });
+            await validateUserMembership(createdUserId);
         }
-
-        newActionState.errorMsg = "";
-        newActionState.status = 201;
-        newActionState.result = `User #${createdUser[GlobalConstants.ID]} ${
-            createdUser[GlobalConstants.NICKNAME]
-        } created successfully`;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+    } catch {
+        throw new Error("Failed validating user membership");
     }
-    return newActionState;
+    revalidateTag(GlobalConstants.USER);
 };
 
-export const getAllUsers = async (
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+export const submitMemberApplication = async (
+    parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
+) => {
     try {
-        const users = await prisma.user.findMany({
+        const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
+        await createUser(userFieldValues);
+
+        revalidateTag(GlobalConstants.USER);
+    } catch {
+        throw new Error("Failed to submit membership application");
+    }
+
+    try {
+        // Send membership application to organization email
+        await notifyOfMembershipApplication(parsedFieldValues);
+    } catch {
+        const errorMsg =
+            "A membership application was submitted but notification email could not be sent";
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+    }
+};
+
+export const getAllUsers = async (): Promise<
+    Prisma.UserGetPayload<{
+        include: { userCredentials: { select: { id: true } }; userMembership: true };
+    }>[]
+> => {
+    try {
+        return await prisma.user.findMany({
             include: {
-                userCredentials: true,
+                userCredentials: { select: { id: true } },
                 userMembership: true,
             },
         });
-        newActionState.status = 200;
-        newActionState.result = users;
-        newActionState.errorMsg = "";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+    } catch {
+        throw new Error("Failed to get all users");
     }
-    return newActionState;
 };
 
-export const getLoggedInUser = async (
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    const jwtPayload = await decryptJWT();
-    if (jwtPayload) {
-        const loggedInUser = await prisma.user.findUnique({
-            where: { id: jwtPayload[GlobalConstants.ID] as string },
+/**
+ * Retrieves the currently logged-in user from the authentication cookie and database.
+ *
+ * This function implements a short-term cache to prevent issues when called multiple times
+ * in quick succession (common in React server components).
+ *
+ * Process:
+ * 1. Check if we have a valid cached result (within CACHE_DURATION)
+ * 2. If no cache, retrieve the user cookie containing the JWT
+ * 3. Decrypt and verify the JWT to get the user ID
+ * 4. Query the database for the full user record with membership info
+ * 5. Cache the result (success or failure) to prevent repeated calls
+ *
+ * @returns User object with membership info, or null if not authenticated/error occurs
+ */
+export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
+    include: { userMembership: true };
+}> | null> => {
+    // Check cache first - prevents race conditions when function is called multiple times rapidly
+    const now = Date.now();
+    if (userCache && now - userCache.timestamp < CACHE_DURATION) {
+        return userCache.user; // Return cached result if still valid
+    }
+
+    try {
+        // Step 1: Get the authentication cookie containing the JWT
+        const userCookie = await getUserCookie();
+        if (!userCookie) {
+            // No cookie means user is not logged in - cache this result
+            userCache = { user: null, timestamp: now };
+            return null;
+        }
+
+        // Step 2: Decrypt and verify the JWT to extract user information
+        const jwtPayload = await decryptJWT(userCookie);
+        if (!jwtPayload) {
+            // JWT is invalid/expired - cache this result to prevent repeated attempts
+            userCache = { user: null, timestamp: now };
+            return null;
+        }
+
+        // Step 3: Query database for complete user record with membership details
+        const user = await prisma.user.findUniqueOrThrow({
+            where: { id: jwtPayload.id },
             include: { userMembership: true },
         });
-        if (!loggedInUser) {
-            newActionState.status = 404;
-            newActionState.errorMsg = "";
-            newActionState.result = "";
-            return newActionState;
-        }
-        // Renew JWT
-        await encryptJWT(loggedInUser);
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = JSON.stringify(loggedInUser);
-    } else {
-        newActionState.status = 404;
-        newActionState.errorMsg = "";
-        newActionState.result = "";
+        // TODO: Check if this works
+        // await encryptJWT(user); // Refresh JWT to extend session
+
+        // Step 4: Cache the successful result
+        userCache = { user, timestamp: now };
+        return user;
+    } catch {
+        // Cache failed attempts to prevent repeated database calls on errors
+        userCache = { user: null, timestamp: now };
+        return null;
     }
-    return newActionState;
-};
-
-export type UserIdentifier = {
-    id?: string;
-    email?: string;
-};
-
-const updateUserTransaction = (
-    fieldValues: Prisma.UserUpdateInput,
-    userIdentifier: UserIdentifier,
-): Prisma.PrismaPromise<any> => {
-    return prisma.user.update({
-        where: userIdentifier as unknown as Prisma.UserWhereUniqueInput,
-        data: fieldValues,
-    });
 };
 
 export const updateUser = async (
     userId: string,
-    currentActionState: FormActionState,
-    fieldValues: Prisma.UserUpdateInput,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    const userIdentifier: UserIdentifier = {
-        [GlobalConstants.ID]: userId,
-    };
+    fieldValues: z.infer<typeof UserUpdateSchema>,
+): Promise<void> => {
     try {
-        await updateUserTransaction(fieldValues, userIdentifier);
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = `Updated successfully`;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = null;
-    }
-    return newActionState;
-};
-
-export const updateUserCredentials = async (
-    currentActionState: FormActionState,
-    fieldValues: LoginSchema,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    const newCredentials = await generateUserCredentials(fieldValues.password as string);
-    try {
-        await prisma.userCredentials.update({
+        await prisma.user.update({
             where: {
-                email: fieldValues.email,
+                id: userId,
             },
-            data: newCredentials,
+            data: fieldValues,
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Updated successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        revalidateTag(GlobalConstants.USER);
+    } catch {
+        throw new Error(`Failed to update user`);
     }
-    return newActionState;
 };
 
-const createUserCredentialsTransaction = (
-    generatedUserCredentials: Prisma.UserCredentialsCreateInput,
-): PrismaPromise<any> => {
-    const transaction = prisma.userCredentials.create({
-        data: generatedUserCredentials,
-    });
-    return transaction;
-};
-
-export const resetUserCredentials = async (
-    currentActionState: FormActionState,
-    fieldValues: ResetCredentialsSchema,
-) => {
-    const newActionState = { ...currentActionState };
-    const userEmail = fieldValues.email;
-
-    // Check if user has existing credentials. If not, return ambiguous error message to
-    // prevent revealing if the email is registered or not.
-    newActionState.status = 200;
-    newActionState.errorMsg = "";
-    newActionState.result = "New credentials sent to your email if we have it on record";
-    const userCredentials = await prisma.userCredentials.findUnique({
-        where: { email: userEmail },
-    });
-    if (!userCredentials) {
-        return newActionState;
-    }
-
-    const generatedPassword = await generateSalt();
-    const generatedUserCredentials = (await getGeneratedUserCredentials(
-        userEmail,
-        generatedPassword,
-    )) as Prisma.UserCredentialsCreateInput;
-
-    // Email new credentials to user email
+export const deleteUser = async (userId: string): Promise<void> => {
+    let admins: Prisma.UserGetPayload<true>[];
     try {
-        await sendUserCredentials(userEmail, generatedPassword);
-    } catch (error) {
-        newActionState.status = error.statusCode;
-        newActionState.result = "";
-        newActionState.errorMsg = `Credentials could not be sent to user because:\n${error.message}`;
-        return newActionState;
-    }
-
-    try {
-        const deleteCredentialsTransaction = prisma.userCredentials.deleteMany({
-            where: {
-                [GlobalConstants.EMAIL]: userEmail,
-            },
-        });
-        const createCredentialsTransaction =
-            createUserCredentialsTransaction(generatedUserCredentials);
-        await prisma.$transaction([deleteCredentialsTransaction, createCredentialsTransaction]);
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-const getGeneratedUserCredentials = async (
-    userEmail: string,
-    generatedPassword: string,
-): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
-    const generatedUserCredentials = await generateUserCredentials(generatedPassword);
-    generatedUserCredentials[GlobalConstants.EMAIL] = userEmail;
-    return generatedUserCredentials;
-};
-
-export const validateUserMembership = async (
-    user: Prisma.UserUpdateInput,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-
-    const generatedPassword = await generateSalt();
-    const generatedUserCredentials = (await getGeneratedUserCredentials(
-        user.email as string,
-        generatedPassword,
-    )) as Prisma.UserCredentialsCreateInput;
-
-    // Email new credentials to user email
-    try {
-        await sendUserCredentials(user.email as string, generatedPassword);
-    } catch (error) {
-        newActionState.status = error.statusCode;
-        newActionState.result = "";
-        newActionState.errorMsg = `Credentials could not be sent to user because:\n${error.message}`;
-        return newActionState;
-    }
-
-    try {
-        await createUserCredentialsTransaction(generatedUserCredentials);
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = "Validated membership";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-export const renewUserMembership = async (
-    userId: string,
-    membershipId: string,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        const membership = await prisma.membership.findUniqueOrThrow({
-            where: { id: membershipId },
-        });
-        const userMembership = await prisma.userMembership.findUnique({
-            where: { userId: userId },
-        });
-
-        await prisma.userMembership.upsert({
-            where: { userId: userId },
-            update: {
-                membershipId: membershipId,
-                expiresAt:
-                    // If the membership is the same, extend the expiration date
-                    userMembership?.membershipId === membershipId
-                        ? dayjs(userMembership.expiresAt)
-                              .add(membership.duration, "d")
-                              .toISOString()
-                        : // If the membership is different, reset the expiration date
-                          dayjs().add(membership.duration, "d").toISOString(),
-            },
-            // If no membership exists, create a new one
-            create: {
-                userId: userId,
-                membershipId: membershipId,
-                expiresAt: dayjs().add(membership.duration, "d").toISOString(),
-            },
-        });
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
-    }
-    return newActionState;
-};
-
-export const deleteUser = async (
-    user: Prisma.UserUpdateInput,
-    currentActionState: FormActionState,
-): Promise<FormActionState> => {
-    const newActionState = { ...currentActionState };
-    try {
-        const adminCount = await prisma.user.count({
+        admins = await prisma.user.findMany({
             where: {
                 role: UserRole.admin,
             },
         });
-
-        if (adminCount <= 1) {
-            newActionState.status = 400;
-            newActionState.errorMsg =
-                "You are the last admin standing. Find an heir before leaving.";
-            newActionState.result = "";
-            return newActionState;
+    } catch {
+        throw new Error("Failed to check admin count");
+    }
+    if (admins.length <= 1) {
+        if (admins[0].id === userId) {
+            throw new Error("You are the last admin standing. Find an heir before leaving.");
         }
-        const deleteCredentials = prisma.userCredentials.deleteMany({
+    }
+
+    try {
+        const deleteReservedInEventsPromise = prisma.eventReserve.deleteMany({
             where: {
-                email: user.email as string,
+                userId: userId,
             },
         });
+        const deleteParticipantInEventsPromise = prisma.eventParticipant.deleteMany({
+            where: {
+                userId: userId,
+            },
+        });
+        const deleteMembershipPromise = prisma.userMembership.deleteMany({
+            where: {
+                userId: userId,
+            },
+        });
+        const deleteCredentialsPromise = prisma.userCredentials.deleteMany({
+            where: {
+                userId: userId,
+            },
+        });
+
         const deleteUser = prisma.user.delete({
             where: {
-                email: user.email as string,
+                id: userId,
             } as unknown as Prisma.UserWhereUniqueInput,
         });
 
         /**
-         * Delete credentials and user in a transaction where all actions must
+         * Delete dependencies and user in a transaction where all actions must
          * succeed or no action is taken to preserve data integrity.
          */
-        await prisma.$transaction([deleteCredentials, deleteUser]);
+        await prisma.$transaction([
+            deleteReservedInEventsPromise,
+            deleteParticipantInEventsPromise,
+            deleteMembershipPromise,
+            deleteCredentialsPromise,
+            deleteUser,
+        ]);
 
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = "Deleted successfully";
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = "";
+        // TODO: Check revalidation tags for all caches
+        revalidateTag(GlobalConstants.USER);
+        revalidateTag(GlobalConstants.USER_MEMBERSHIP);
+        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
+        revalidateTag(GlobalConstants.EVENT);
+    } catch {
+        throw new Error("Failed to delete user");
     }
-    return newActionState;
 };
 
-export const getUserEvents = async (
-    userId: string,
-    currentState: DatagridActionState,
-): Promise<DatagridActionState> => {
-    const newActionState: DatagridActionState = { ...currentState };
+export const getActiveMembers = async (): Promise<
+    Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+> => {
     try {
-        const events = await prisma.event.findMany({
-            where: {
-                OR: [
-                    {
-                        participantUsers: {
-                            some: {
-                                userId: userId,
-                            },
-                        },
-                    },
-                    {
-                        hostId: userId,
-                    },
-                ],
-            },
-        });
-        newActionState.status = 200;
-        newActionState.errorMsg = "";
-        newActionState.result = events;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
-};
-
-export const getUserNicknames = async (
-    userIds: string[],
-    currentActionState: DatagridActionState,
-) => {
-    const newActionState = { ...currentActionState };
-
-    try {
-        const userNicknames = await prisma.user.findMany({
-            where: {
-                id: {
-                    in: userIds,
-                },
-            },
-            select: {
-                id: true,
-                nickname: true,
-            },
-        });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = userNicknames;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
-    }
-    return newActionState;
-};
-
-export const getActiveMembers = async (currentActionState: DatagridActionState) => {
-    const newActionState = { ...currentActionState };
-    try {
-        const activeMembers = await prisma.user.findMany({
+        return await prisma.user.findMany({
             where: {
                 userMembership: {
                     expiresAt: {
@@ -455,13 +276,7 @@ export const getActiveMembers = async (currentActionState: DatagridActionState) 
                 nickname: true,
             },
         });
-        newActionState.errorMsg = "";
-        newActionState.status = 200;
-        newActionState.result = activeMembers;
-    } catch (error) {
-        newActionState.status = 500;
-        newActionState.errorMsg = error.message;
-        newActionState.result = [];
+    } catch {
+        throw new Error("Failed to get active members");
     }
-    return newActionState;
 };

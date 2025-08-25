@@ -1,57 +1,70 @@
 import { Button, Card, Dialog, Stack, Typography } from "@mui/material";
 import { formatDate } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
-import { assignTasksToUser, deleteTask, updateTaskById } from "../../lib/task-actions";
+import { assignTaskToUser, deleteTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
-import { startTransition, useState } from "react";
+import { use, useState } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
-import { formatAssigneeOptions } from "../form/FieldCfg";
-import { defaultFormActionState } from "../../lib/definitions";
+import { getUserSelectOptions } from "../form/FieldCfg";
+import { Prisma } from "@prisma/client";
+import z from "zod";
+import { TaskUpdateSchema } from "../../lib/zod-schemas";
+import { useNotificationContext } from "../../context/NotificationContext";
+import { isUserHost } from "../../lib/definitions";
+
+interface DraggableTaskProps {
+    eventPromise: Promise<Prisma.EventGetPayload<true>> | undefined;
+    readOnly: boolean;
+    task: Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } } };
+    }>;
+    activeMembersPromise: Promise<
+        Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+    >;
+    setDraggedTask: (
+        // eslint-disable-next-line no-unused-vars
+        task: Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } } };
+        }> | null,
+    ) => void;
+}
 
 const DraggableTask = ({
-    task,
-    setDraggedTask,
-    fetchDbTasks,
+    eventPromise,
     readOnly,
-    taskActionState,
-    setTaskActionState,
-    activeMembers,
-}) => {
+    task,
+    activeMembersPromise,
+    setDraggedTask,
+}: DraggableTaskProps) => {
     const { user } = useUserContext();
+    const { addNotification } = useNotificationContext();
+    const event = eventPromise ? use(eventPromise) : null;
+    const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    const deleteViewTask = async () => {
-        const deleteTaskResult = await deleteTask(task[GlobalConstants.ID], taskActionState);
-        startTransition(() => fetchDbTasks());
-        setTaskActionState(deleteTaskResult);
-        setDialogOpen(false);
+    const deleteTaskAction = async () => {
+        try {
+            await deleteTask(task.id);
+            setDialogOpen(false);
+            addNotification("Deleted task", "success");
+        } catch {
+            addNotification("Failed to delete task", "error");
+        }
     };
 
-    const updateViewTask = async (currentActionState, newTaskData) => {
-        const updateTaskResult = await updateTaskById(
-            task[GlobalConstants.ID],
-            currentActionState,
-            newTaskData,
-        );
-        startTransition(() => fetchDbTasks());
-        return updateTaskResult;
+    const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
+        await updateTaskById(task.id, parsedFieldValues, task.eventId);
+        return "Updated task";
     };
 
     const assignTaskToMe = async () => {
-        const assignTasksResult = await assignTasksToUser(
-            user[GlobalConstants.ID],
-            [task[GlobalConstants.ID]],
-            defaultFormActionState,
-        );
-        startTransition(() => fetchDbTasks());
-        setTaskActionState(assignTasksResult);
-    };
-
-    const getTaskDefaultValues = () => {
-        const defaultValues = { ...task };
-
-        return defaultValues;
+        try {
+            await assignTaskToUser(user.id, task.id);
+            addNotification("Assigned task to you", "success");
+        } catch {
+            addNotification("Failed to assign task", "error");
+        }
     };
 
     return (
@@ -68,41 +81,32 @@ const DraggableTask = ({
                     setDialogOpen(true);
                 }}
             >
-                <Typography variant="body1">{task[GlobalConstants.NAME]}</Typography>
+                <Typography variant="body1">{task.name}</Typography>
                 <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="body2">
-                        {formatDate(task[GlobalConstants.START_TIME])}
-                    </Typography>
+                    <Typography variant="body2">{formatDate(task.startTime)}</Typography>
                     {"-"}
-                    <Typography variant="body2">
-                        {formatDate(task[GlobalConstants.END_TIME])}
-                    </Typography>
+                    <Typography variant="body2">{formatDate(task.endTime)}</Typography>
                 </Stack>
             </Card>
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+            <Dialog fullWidth maxWidth="xl" open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <Form
                     name={GlobalConstants.TASK}
-                    defaultValues={getTaskDefaultValues()}
-                    customOptions={Object.fromEntries(
-                        [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REVIEWER_ID].map(
-                            (fieldId) => [fieldId, formatAssigneeOptions(activeMembers)],
-                        ),
-                    )}
-                    action={updateViewTask}
+                    defaultValues={task}
+                    customOptions={{
+                        [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(activeMembers),
+                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(activeMembers),
+                    }}
+                    action={updateTaskAction}
+                    validationSchema={TaskUpdateSchema}
                     buttonLabel="save task"
-                    readOnly={true}
+                    readOnly={isUserHost(user, event) || task.reviewerId === user.id}
                     editable={!readOnly}
                 />
-                <Button
-                    onClick={assignTaskToMe}
-                    disabled={task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID]}
-                >
-                    {task[GlobalConstants.ASSIGNEE_ID] === user[GlobalConstants.ID]
-                        ? "This task is assigned to you"
-                        : "Assign to me"}
+                <Button onClick={assignTaskToMe} disabled={task.assigneeId === user.id}>
+                    {task.assigneeId === user.id ? "This task is assigned to you" : "Assign to me"}
                 </Button>
                 {!readOnly && (
-                    <ConfirmButton color="error" onClick={deleteViewTask}>
+                    <ConfirmButton color="error" onClick={deleteTaskAction}>
                         delete
                     </ConfirmButton>
                 )}

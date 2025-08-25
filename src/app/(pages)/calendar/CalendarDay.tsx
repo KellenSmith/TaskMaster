@@ -1,24 +1,26 @@
 "use client";
 
-import { FC } from "react";
+import { FC, use } from "react";
 import { Paper, Stack, Typography } from "@mui/material";
-import CalendarEvent, { ICalendarEvent } from "./CalendarEvent";
+import CalendarEvent from "./CalendarEvent";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
-import { isEventPublished } from "./event/event-utils";
+import { isEventPublished } from "../event/event-utils";
+import { Prisma } from "@prisma/client";
 
 dayjs.extend(isBetween);
 
 interface CalendarDayProps {
     date: dayjs.Dayjs;
-    events: ICalendarEvent[];
+    eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
 }
 
-const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
+const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     const { user } = useUserContext();
+    const events = use(eventsPromise);
 
     const shouldShowEvent = (event: any) => {
         let startTime = dayjs(event[GlobalConstants.START_TIME]);
@@ -38,7 +40,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
     const getEmptyDay = () => <Paper key={`empty-end-${date.date()}`} elevation={0} />;
 
     const getDayComp = () => {
-        const eventsForDay = events.filter((event: ICalendarEvent) => shouldShowEvent(event));
+        const eventsForDay = events.filter((event) => shouldShowEvent(event));
         if (eventsForDay.length < 1) return getEmptyDay();
         return (
             <Stack
@@ -58,9 +60,11 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, events }) => {
     };
 
     return (
-        <Paper>
+        <Paper sx={{ height: "100%" }}>
             <Stack spacing={1}>
-                <Typography variant="subtitle2">{date.format("D")}</Typography>
+                <Typography padding={1} variant="subtitle2">
+                    {date.format("D")}
+                </Typography>
                 {getDayComp()}
             </Stack>
         </Paper>
