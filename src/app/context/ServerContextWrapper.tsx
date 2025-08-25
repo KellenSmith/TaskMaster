@@ -21,15 +21,15 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children, p
 
     //  Redirect authenticated users from login to home
     if (loggedInUser && requestedRoute === GlobalConstants.LOGIN)
-        serverRedirect(GlobalConstants.HOME);
+        serverRedirect([GlobalConstants.HOME]);
 
     if (!isUserAuthorized(requestedRoute, loggedInUser)) {
         if (loggedInUser) {
             // Redirect logged in users to home
-            return serverRedirect(GlobalConstants.HOME);
+            return serverRedirect([GlobalConstants.HOME]);
         } else {
             // Redirect guests to login
-            return serverRedirect(GlobalConstants.LOGIN);
+            return serverRedirect([GlobalConstants.LOGIN]);
         }
     }
 

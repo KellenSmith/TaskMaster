@@ -3,6 +3,7 @@ const GlobalConstants = {
     DEVELOPMENT: "development",
     PRODUCTION: "production",
     // Routes
+    PAYMENT_CALLBACK: "api/payment-callback",
     PUBLIC: "public",
     PRIVATE: "private",
     ADMIN: "admin",

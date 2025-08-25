@@ -9,7 +9,7 @@ import { serverRedirect } from "../../lib/definitions";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
-    if (!loggedInUser) serverRedirect(GlobalConstants.LOGIN);
+    if (!loggedInUser) serverRedirect([GlobalConstants.LOGIN]);
 
     const tasksPromise = unstable_cache(getFilteredTasks, [loggedInUser.id], {
         tags: [GlobalConstants.TASK],

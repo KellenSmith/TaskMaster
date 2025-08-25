@@ -5,14 +5,24 @@ import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
 
 // Convention: "path"=`/${route}`
-export const routeToPath = (route: string) => `/${route}`;
-export const pathToRoute = (path: string) => (path ? path.slice(1) : ""); // Remove leading "/"
-export const baseUrl = `https://${process.env.VERCEL_URL}`;
-export const serverRedirect = (route: string, searchParams: { [key: string]: string } = {}) => {
-    const url = new NextURL(routeToPath(route));
+
+export const getUrl = (
+    pathSegments: string[] = [],
+    searchParams: { [key: string]: string } = {},
+): string => {
+    const url = new NextURL(["/", ...pathSegments].join("/"));
     for (let [key, value] of Object.entries(searchParams)) {
         url.searchParams.set(key, value);
     }
+    return url.toString();
+};
+export const routeToPath = (route: string) => `/${route}`;
+export const pathToRoute = (path: string) => (path ? path.slice(1) : ""); // Remove leading "/"
+export const serverRedirect = (
+    pathSegments: string[],
+    searchParams: { [key: string]: string } = {},
+) => {
+    const url = getUrl(pathSegments, searchParams);
     redirect(url.toString());
 };
 

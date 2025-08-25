@@ -7,7 +7,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
-import { baseUrl } from "./definitions";
+import { getUrl } from "./definitions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -65,10 +65,16 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 userAgent: (await headers()).get("user-agent") || "Unknown",
                 language: "en-US",
                 urls: {
-                    hostUrls: [baseUrl],
-                    completeUrl: `${baseUrl}/${GlobalConstants.ORDER}?orderId=${orderId}`,
-                    cancelUrl: `${baseUrl}/${GlobalConstants.ORDER}?orderId=${orderId}`,
-                    callbackUrl: `${baseUrl}/api/payment-callback?orderId=${orderId}`,
+                    hostUrls: [getUrl([GlobalConstants.HOME])],
+                    completeUrl: getUrl([GlobalConstants.ORDER], {
+                        [GlobalConstants.ORDER_ID]: orderId,
+                    }),
+                    cancelUrl: getUrl([GlobalConstants.ORDER], {
+                        [GlobalConstants.ORDER_ID]: orderId,
+                    }),
+                    callbackUrl: getUrl([GlobalConstants.PAYMENT_CALLBACK], {
+                        [GlobalConstants.ORDER_ID]: orderId,
+                    }),
                     // TODO
                     // logoUrl: "https://example.com/logo.png",
                     // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
@@ -97,7 +103,9 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
         }
         if (order.totalAmount < 1) {
             await progressOrder(order.id, OrderStatus.paid);
-            redirectUrl = `${baseUrl}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`;
+            redirectUrl = getUrl([GlobalConstants.ORDER], {
+                [GlobalConstants.ORDER_ID]: orderId,
+            });
         } else {
             const requestBody = await getSwedbankPaymentRequestPayload(orderId);
             if (!requestBody) throw new Error("Failed to create payment request");

@@ -8,8 +8,6 @@ import { informOfCancelledEvent, notifyEventReserves } from "./mail-service/mail
 import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
-import { NextURL } from "next/dist/server/web/next-url";
-import { redirect } from "next/navigation";
 import { isUserHost, serverRedirect } from "./definitions";
 import { allowRedirectException } from "../ui/utils";
 import dayjs from "dayjs";
@@ -62,7 +60,7 @@ export const createEvent = async (
         });
 
         revalidateTag(GlobalConstants.EVENT);
-        serverRedirect(GlobalConstants.HOME, { eventId: createdEvent.id });
+        serverRedirect([GlobalConstants.HOME], { eventId: createdEvent.id });
     } catch (error) {
         allowRedirectException(error);
         throw new Error("Failed to create event");
@@ -281,7 +279,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             }),
         ]);
         revalidateTag(GlobalConstants.EVENT);
-        serverRedirect(GlobalConstants.CALENDAR);
+        serverRedirect([GlobalConstants.CALENDAR]);
     } catch (error) {
         allowRedirectException(error);
         throw new Error("Failed to delete event");
@@ -391,7 +389,7 @@ export const cloneEvent = async (eventId: string) => {
         });
 
         revalidateTag(GlobalConstants.EVENT);
-        serverRedirect(GlobalConstants.EVENT, { [GlobalConstants.EVENT_ID]: eventClone.id });
+        serverRedirect([GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: eventClone.id });
     } catch (error) {
         allowRedirectException(error);
         throw new Error("Failed to clone event");

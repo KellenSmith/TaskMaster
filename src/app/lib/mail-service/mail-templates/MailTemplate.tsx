@@ -2,7 +2,7 @@ import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
 import mailTheme from "../mail-theme";
 import DOMPurify from "isomorphic-dompurify";
-import { baseUrl } from "../../definitions";
+import { getUrl } from "../../definitions";
 
 interface MailTemplateProps {
     children?: ReactNode;
@@ -63,7 +63,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName 
                         {children}
                         {renderHtml()}
                     </Container>
-                    <Button style={mailTheme.components.button} href={baseUrl}>
+                    <Button style={mailTheme.components.button} href={getUrl()}>
                         visit us
                     </Button>
                 </Container>
