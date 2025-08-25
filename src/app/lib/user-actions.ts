@@ -83,15 +83,19 @@ export const submitMemberApplication = async (
         const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
         await createUser(userFieldValues);
 
-        // Send membership application to organization email
-        await notifyOfMembershipApplication(
-            userFieldValues,
-            parsedFieldValues.memberApplicationPrompt,
-        );
-
         revalidateTag(GlobalConstants.USER);
     } catch {
         throw new Error("Failed to submit membership application");
+    }
+
+    try {
+        // Send membership application to organization email
+        await notifyOfMembershipApplication(parsedFieldValues);
+    } catch {
+        const errorMsg =
+            "A membership application was submitted but notification email could not be sent";
+        console.error(errorMsg);
+        throw new Error(errorMsg);
     }
 };
 

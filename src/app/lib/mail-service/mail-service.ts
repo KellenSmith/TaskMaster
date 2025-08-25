@@ -11,7 +11,7 @@ import { Prisma } from "@prisma/client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
-import { EmailSendoutSchema, UserCreateSchema } from "../zod-schemas";
+import { EmailSendoutSchema, MembershipApplicationSchema, UserCreateSchema } from "../zod-schemas";
 import z from "zod";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 import { getEventParticipantEmails } from "../event-participant-actions";
@@ -40,15 +40,13 @@ const getEmailPayload = async (
 };
 
 export const notifyOfMembershipApplication = async (
-    parsedUserFieldValues: z.infer<typeof UserCreateSchema>,
-    applicationMessage: string,
+    parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
 ): Promise<void> => {
     try {
         const organizationSettings = await getOrganizationSettings();
         const mailContent = createElement(MembershipApplicationTemplate, {
             organizationName: organizationSettings.organizationName,
-            user: parsedUserFieldValues,
-            applicationMessage,
+            parsedFieldValues,
         });
 
         const mailResponse = await mailTransport.sendMail(

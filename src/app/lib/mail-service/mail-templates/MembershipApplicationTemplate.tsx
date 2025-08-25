@@ -1,9 +1,10 @@
 import { Text, Section, Column, Row, Button } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
-import { Prisma } from "@prisma/client";
 import mailTheme from "../mail-theme";
 import GlobalConstants from "../../../GlobalConstants";
+import { MembershipApplicationSchema } from "../../zod-schemas";
+import z from "zod";
 
 /**
  * Props for the MembershipApplicationTemplate component.
@@ -13,20 +14,18 @@ import GlobalConstants from "../../../GlobalConstants";
  */
 interface IMembershipApplicationTemplateProps {
     organizationName: string;
-    user: Prisma.UserCreateInput;
-    applicationMessage: string;
+    parsedFieldValues: z.infer<typeof MembershipApplicationSchema>;
 }
 
 const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = ({
     organizationName,
-    user,
-    applicationMessage,
+    parsedFieldValues,
 }) => {
     return (
         <MailTemplate organizationName={organizationName}>
             <Section style={{ textAlign: "left" }}>
                 <Text style={{ fontSize: "18px", fontWeight: "bold" }}>
-                    {`New Membership Application from ${user.nickname}`}
+                    {`New Membership Application from ${parsedFieldValues.nickname}`}
                 </Text>
             </Section>
             <Section style={{ textAlign: "left" }}>
@@ -35,13 +34,13 @@ const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = (
                         <Text style={{ fontWeight: "bold" }}>Email:</Text>
                     </Column>
                     <Column>
-                        <Text>{user.email}</Text>
+                        <Text>{parsedFieldValues.email}</Text>
                     </Column>
                 </Row>
             </Section>
             <Section style={{ textAlign: "left" }}>
-                {applicationMessage &&
-                    applicationMessage.split("\n").map((line, index) => (
+                {parsedFieldValues.memberApplicationPrompt &&
+                    parsedFieldValues.memberApplicationPrompt.split("\n").map((line, index) => (
                         <Text key={index} style={{ marginTop: "10px" }}>
                             {line}
                         </Text>
