@@ -17,6 +17,12 @@ export const navigateToRoute = (
     router.push(url.toString());
 };
 
+export const openResourceInNewTab = (resourceUrl: string) => {
+    const newWindow = window.open(resourceUrl, "_blank", "noopener,noreferrer");
+    // Prevent reverse tabnabbing
+    if (newWindow) newWindow.opener = null;
+};
+
 export const allowRedirectException = (error: Error & { digest?: string }) => {
     if (error?.digest?.startsWith("NEXT_REDIRECT")) {
         throw error;

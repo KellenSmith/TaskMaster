@@ -22,7 +22,7 @@ import { useUserContext } from "../context/UserContext";
 import { isUserAdmin, isUserAuthorized, applicationRoutes, routeToPath } from "../lib/definitions";
 import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { allowRedirectException, navigateToRoute } from "./utils";
+import { allowRedirectException, navigateToRoute, openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
 import { logout } from "../lib/auth";
@@ -98,13 +98,7 @@ const NavPanel = () => {
                         {organizationSettings?.organizationName || "Organization Name"}
                     </Typography>
                     <Tooltip title="Open README.md">
-                        <Button
-                            onClick={() => {
-                                const url = "/README.pdf";
-                                const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-                                if (newWindow) newWindow.opener = null;
-                            }}
-                        >
+                        <Button onClick={() => openResourceInNewTab("/README.pdf")}>
                             <Article />
                         </Button>
                     </Tooltip>
