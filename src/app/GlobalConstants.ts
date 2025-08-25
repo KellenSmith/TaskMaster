@@ -1,4 +1,7 @@
 const GlobalConstants = {
+    // Node env
+    DEVELOPMENT: "development",
+    PRODUCTION: "production",
     // Routes
     PUBLIC: "public",
     PRIVATE: "private",
