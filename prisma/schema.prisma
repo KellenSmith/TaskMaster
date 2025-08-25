@@ -18,6 +18,7 @@ model OrganizationSettings {
     defaultTaskShiftLength Int @default(2)
 
     memberApplicationPrompt String?
+    //TODO: configure fields for ticket inctructions
     ticketInstructions      String?
 
     @@map("organization_settings")
