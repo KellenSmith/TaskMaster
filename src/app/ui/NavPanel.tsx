@@ -20,7 +20,7 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { isUserAdmin, isUserAuthorized, applicationRoutes, routeToPath } from "../lib/definitions";
-import { Cancel, Edit } from "@mui/icons-material";
+import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { allowRedirectException, navigateToRoute } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
@@ -97,6 +97,17 @@ const NavPanel = () => {
                     >
                         {organizationSettings?.organizationName || "Organization Name"}
                     </Typography>
+                    <Tooltip title="Open README.md">
+                        <Button
+                            onClick={() => {
+                                const url = "/README.pdf";
+                                const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+                                if (newWindow) newWindow.opener = null;
+                            }}
+                        >
+                            <Article />
+                        </Button>
+                    </Tooltip>
                     {isUserAdmin(user) && (
                         <Tooltip title={`${editMode ? "Disable" : "Enable"} website edit mode`}>
                             <Button onClick={() => setEditMode((prev: boolean) => !prev)}>
