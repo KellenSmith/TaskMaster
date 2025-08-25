@@ -11,7 +11,7 @@ CREATE TYPE "public"."TaskStatus" AS ENUM ('toDo', 'inProgress', 'inReview', 'do
 CREATE TYPE "public"."TaskPhase" AS ENUM ('before', 'during', 'after');
 
 -- CreateEnum
-CREATE TYPE "public"."TicketType" AS ENUM ('earlyBird', 'volunteer', 'standard');
+CREATE TYPE "public"."TicketType" AS ENUM ('volunteer', 'standard');
 
 -- CreateEnum
 CREATE TYPE "public"."OrderStatus" AS ENUM ('pending', 'paid', 'shipped', 'completed', 'cancelled', 'error');
@@ -23,6 +23,7 @@ CREATE TABLE "public"."organization_settings" (
     "organizationEmail" TEXT NOT NULL DEFAULT 'kellensmith407@gmail.com',
     "remindMembershipExpiresInDays" INTEGER NOT NULL DEFAULT 7,
     "purgeMembersAfterDaysUnvalidated" INTEGER NOT NULL DEFAULT 180,
+    "memberApplicationPrompt" TEXT,
     "defaultTaskShiftLength" INTEGER NOT NULL DEFAULT 2,
 
     CONSTRAINT "organization_settings_pkey" PRIMARY KEY ("id")
@@ -31,15 +32,15 @@ CREATE TABLE "public"."organization_settings" (
 -- CreateTable
 CREATE TABLE "public"."users" (
     "id" TEXT NOT NULL,
-    "firstName" TEXT NOT NULL DEFAULT '',
-    "surName" TEXT NOT NULL DEFAULT '',
-    "nickname" TEXT NOT NULL,
-    "pronoun" TEXT DEFAULT 'they/them',
     "email" TEXT NOT NULL,
-    "phone" TEXT DEFAULT '',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "consentToNewsletters" BOOLEAN NOT NULL DEFAULT true,
+    "nickname" TEXT NOT NULL,
     "role" "public"."UserRole" NOT NULL DEFAULT 'member',
+    "consentToNewsletters" BOOLEAN NOT NULL DEFAULT true,
+    "firstName" TEXT,
+    "surName" TEXT,
+    "pronoun" TEXT DEFAULT 'they/them',
+    "phone" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -47,9 +48,9 @@ CREATE TABLE "public"."users" (
 -- CreateTable
 CREATE TABLE "public"."user_credentials" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
     "salt" TEXT NOT NULL,
     "hashedPassword" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "user_credentials_pkey" PRIMARY KEY ("id")
 );
@@ -61,8 +62,8 @@ CREATE TABLE "public"."events" (
     "location" TEXT NOT NULL DEFAULT '',
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
-    "description" TEXT NOT NULL DEFAULT '',
-    "maxParticipants" INTEGER,
+    "description" TEXT,
+    "maxParticipants" INTEGER NOT NULL,
     "status" "public"."EventStatus" NOT NULL DEFAULT 'draft',
     "hostId" TEXT NOT NULL,
 
@@ -70,36 +71,35 @@ CREATE TABLE "public"."events" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."ParticipantInEvent" (
+CREATE TABLE "public"."event_participants" (
     "userId" TEXT NOT NULL,
-    "eventId" TEXT NOT NULL,
     "ticketId" TEXT NOT NULL,
 
-    CONSTRAINT "ParticipantInEvent_pkey" PRIMARY KEY ("userId","eventId","ticketId")
+    CONSTRAINT "event_participants_pkey" PRIMARY KEY ("userId","ticketId")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ReserveInEvent" (
+CREATE TABLE "public"."event_reserves" (
     "userId" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
     "queueingSince" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ReserveInEvent_pkey" PRIMARY KEY ("userId","eventId")
+    CONSTRAINT "event_reserves_pkey" PRIMARY KEY ("userId","eventId")
 );
 
 -- CreateTable
 CREATE TABLE "public"."tasks" (
     "id" TEXT NOT NULL,
-    "eventId" TEXT,
+    "phase" "public"."TaskPhase" NOT NULL DEFAULT 'before',
+    "name" TEXT NOT NULL,
+    "status" "public"."TaskStatus" NOT NULL DEFAULT 'toDo',
+    "startTime" TIMESTAMP(3) NOT NULL,
+    "endTime" TIMESTAMP(3) NOT NULL,
+    "description" TEXT,
+    "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "assigneeId" TEXT,
     "reviewerId" TEXT,
-    "phase" "public"."TaskPhase" NOT NULL DEFAULT 'before',
-    "name" TEXT NOT NULL DEFAULT '',
-    "status" "public"."TaskStatus" NOT NULL DEFAULT 'toDo',
-    "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "startTime" TIMESTAMP(3),
-    "endTime" TIMESTAMP(3),
-    "description" TEXT NOT NULL DEFAULT '',
+    "eventId" TEXT,
 
     CONSTRAINT "tasks_pkey" PRIMARY KEY ("id")
 );
@@ -107,12 +107,12 @@ CREATE TABLE "public"."tasks" (
 -- CreateTable
 CREATE TABLE "public"."products" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL DEFAULT '',
-    "description" TEXT NOT NULL DEFAULT '',
+    "name" TEXT NOT NULL,
+    "description" TEXT,
     "price" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "stock" INTEGER DEFAULT 0,
+    "stock" INTEGER,
     "unlimitedStock" BOOLEAN NOT NULL DEFAULT false,
-    "imageUrl" TEXT NOT NULL DEFAULT '',
+    "imageUrl" TEXT,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("id")
 );
@@ -149,12 +149,12 @@ CREATE TABLE "public"."tickets" (
 -- CreateTable
 CREATE TABLE "public"."orders" (
     "id" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
     "status" "public"."OrderStatus" NOT NULL DEFAULT 'pending',
     "totalAmount" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     "paymentRequestId" TEXT,
     "payeeRef" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "orders_pkey" PRIMARY KEY ("id")
@@ -185,10 +185,10 @@ CREATE TABLE "public"."text_contents" (
 CREATE UNIQUE INDEX "organization_settings_organizationName_key" ON "public"."organization_settings"("organizationName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_nickname_key" ON "public"."users"("nickname");
+CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
+CREATE UNIQUE INDEX "users_nickname_key" ON "public"."users"("nickname");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_credentials_userId_key" ON "public"."user_credentials"("userId");
@@ -218,28 +218,25 @@ ALTER TABLE "public"."user_credentials" ADD CONSTRAINT "user_credentials_userId_
 ALTER TABLE "public"."events" ADD CONSTRAINT "events_hostId_fkey" FOREIGN KEY ("hostId") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ParticipantInEvent" ADD CONSTRAINT "ParticipantInEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ParticipantInEvent" ADD CONSTRAINT "ParticipantInEvent_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "public"."tickets"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ParticipantInEvent" ADD CONSTRAINT "ParticipantInEvent_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "public"."tickets"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ReserveInEvent" ADD CONSTRAINT "ReserveInEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."ReserveInEvent" ADD CONSTRAINT "ReserveInEvent_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."events"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "public"."events"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."memberships" ADD CONSTRAINT "memberships_productId_fkey" FOREIGN KEY ("productId") REFERENCES "public"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
