@@ -184,11 +184,43 @@ export const updateEvent = async (
     parsedFieldValues: z.infer<typeof EventUpdateSchema>,
 ): Promise<void> => {
     try {
+        const eventToUpdate = await prisma.event.findUniqueOrThrow({
+            where: { id: eventId },
+            include: { tickets: { include: { product: true } } },
+        });
+
+        await prisma.$transaction(async (tx) => {
+            const eventParticipantsCount = (await getEventParticipants(eventId)).length;
+
+            // Ensure that the new maxParticipants is not lower than the current number of participants
+            if (eventParticipantsCount > parsedFieldValues.maxParticipants) {
+                throw new Error(
+                    `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
+                );
+            }
+
+            // Add or remove the new number of available tickets to product stock
+            // deltaMaxParticipants might be negative
+            const deltaMaxParticipants =
+                parsedFieldValues.maxParticipants - eventToUpdate.maxParticipants;
+            if (deltaMaxParticipants !== 0) {
+                const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
+                await tx.product.updateMany({
+                    where: { id: { in: productsToUpdate.map((product) => product.id) } },
+                    data: {
+                        stock: {
+                            increment: deltaMaxParticipants,
+                        },
+                    },
+                });
+            }
+        });
         await prisma.event.update({
             where: { id: eventId },
             data: parsedFieldValues,
         });
         revalidateTag(GlobalConstants.EVENT);
+        revalidateTag(GlobalConstants.TICKET);
     } catch {
         throw new Error("Failed to update event");
     }
