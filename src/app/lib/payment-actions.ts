@@ -7,6 +7,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
+import { baseUrl } from "./definitions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -64,10 +65,10 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 userAgent: (await headers()).get("user-agent") || "Unknown",
                 language: "en-US",
                 urls: {
-                    hostUrls: [`${process.env.VERCEL_URL}`],
-                    completeUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}?orderId=${orderId}`,
-                    cancelUrl: `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}?orderId=${orderId}`,
-                    callbackUrl: `${process.env.VERCEL_URL}/api/payment-callback?orderId=${orderId}`,
+                    hostUrls: [baseUrl],
+                    completeUrl: `${baseUrl}/${GlobalConstants.ORDER}?orderId=${orderId}`,
+                    cancelUrl: `${baseUrl}/${GlobalConstants.ORDER}?orderId=${orderId}`,
+                    callbackUrl: `${baseUrl}/api/payment-callback?orderId=${orderId}`,
                     // TODO
                     // logoUrl: "https://example.com/logo.png",
                     // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
@@ -96,7 +97,7 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
         }
         if (order.totalAmount < 1) {
             await progressOrder(order.id, OrderStatus.paid);
-            redirectUrl = `${process.env.VERCEL_URL}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`;
+            redirectUrl = `${baseUrl}/${GlobalConstants.ORDER}/complete?orderId=${orderId}`;
         } else {
             const requestBody = await getSwedbankPaymentRequestPayload(orderId);
             if (!requestBody) throw new Error("Failed to create payment request");

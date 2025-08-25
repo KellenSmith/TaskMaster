@@ -98,7 +98,7 @@ export const createOrder = async (
                 },
             });
         });
-        const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`, process.env.VERCEL_URL);
+        const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`);
         orderUrl.searchParams.set(GlobalConstants.ORDER_ID, order.id);
         redirectUrl = orderUrl.toString();
     } catch {

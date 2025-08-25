@@ -7,9 +7,9 @@ import { NextURL } from "next/dist/server/web/next-url";
 // Convention: "path"=`/${route}`
 export const routeToPath = (route: string) => `/${route}`;
 export const pathToRoute = (path: string) => (path ? path.slice(1) : ""); // Remove leading "/"
+export const baseUrl = `https://${process.env.VERCEL_URL}`;
 export const serverRedirect = (route: string, searchParams: { [key: string]: string } = {}) => {
-    if (!process.env.VERCEL_URL) throw new Error("VERCEL_URL is not defined");
-    const url = new NextURL(routeToPath(route), process.env.VERCEL_URL);
+    const url = new NextURL(routeToPath(route));
     for (let [key, value] of Object.entries(searchParams)) {
         url.searchParams.set(key, value);
     }

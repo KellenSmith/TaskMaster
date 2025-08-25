@@ -11,6 +11,7 @@ import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { LoginSchema } from "./zod-schemas";
 import z from "zod";
+import { serverRedirect } from "./definitions";
 
 // Generate a random string of specified length
 export const generateSalt = async (): Promise<string> => {
@@ -85,7 +86,7 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
     } catch (error) {
         throw new Error(error.message);
     }
-    redirect("/");
+    serverRedirect(GlobalConstants.HOME);
 };
 
 const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
@@ -150,5 +151,5 @@ export const logout = async () => {
     } catch {
         throw new Error("Failed to log out");
     }
-    redirect("/");
+    serverRedirect(GlobalConstants.HOME);
 };

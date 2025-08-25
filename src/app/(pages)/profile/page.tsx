@@ -5,15 +5,10 @@ import ProfileDashboard from "./ProfileDashboard";
 import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { getFilteredEvents } from "../../lib/event-actions";
-import { routeToPath, serverRedirect } from "../../lib/definitions";
-import { NextURL } from "next/dist/server/web/next-url";
+import { serverRedirect } from "../../lib/definitions";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
-
-    console.warn("vercel url:", process.env.VERCEL_URL);
-    const url = new NextURL(routeToPath(GlobalConstants.LOGIN), process.env.VERCEL_URL);
-    console.warn(url.toString());
     if (!loggedInUser) serverRedirect(GlobalConstants.LOGIN);
 
     const tasksPromise = unstable_cache(getFilteredTasks, [loggedInUser.id], {

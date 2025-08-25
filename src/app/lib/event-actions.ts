@@ -62,12 +62,7 @@ export const createEvent = async (
         });
 
         revalidateTag(GlobalConstants.EVENT);
-        redirect(
-            new NextURL(
-                `/${GlobalConstants.EVENT}?eventId=${createdEvent.id}`,
-                process.env.VERCEL_URL,
-            ).toString(),
-        );
+        serverRedirect(GlobalConstants.HOME, { eventId: createdEvent.id });
     } catch (error) {
         allowRedirectException(error);
         throw new Error("Failed to create event");

@@ -18,7 +18,7 @@ interface IOpenEventSpotTemplateProps {
 const OpenEventSpotTemplate: FC<IOpenEventSpotTemplateProps> = ({ organizationName, event }) => {
     if (!event) throw new Error("Event not found");
 
-    const eventUrl = new NextURL(GlobalConstants.EVENT, process.env.VERCEL_URL);
+    const eventUrl = new NextURL(GlobalConstants.EVENT);
     eventUrl.searchParams.set(GlobalConstants.EVENT_ID, event.id);
     eventUrl.searchParams.set("tab", "Tickets");
 

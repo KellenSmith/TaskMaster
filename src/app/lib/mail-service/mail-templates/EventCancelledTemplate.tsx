@@ -1,7 +1,8 @@
-import { Text } from "@react-email/components";
+import { Button, Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
 import GlobalConstants from "../../../GlobalConstants";
+import { baseUrl } from "../../definitions";
 
 interface EventCancelledTemplateProps {
     event: {
@@ -14,7 +15,12 @@ interface EventCancelledTemplateProps {
 const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({ event, organizationName }) => {
     return (
         <MailTemplate organizationName={organizationName}>
-            <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Visit ${process.env.VERCEL_URL}/${GlobalConstants.EVENT}?eventId=${event[GlobalConstants.ID]} for more details.`}</Text>
+            <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Go to the event for more details.`}</Text>
+            <Button
+                href={`${baseUrl}/${GlobalConstants.EVENT}?eventId=${event[GlobalConstants.ID]}`}
+            >
+                View Event
+            </Button>
         </MailTemplate>
     );
 };

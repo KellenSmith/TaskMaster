@@ -5,6 +5,7 @@ import mailTheme from "../mail-theme";
 import GlobalConstants from "../../../GlobalConstants";
 import { MembershipApplicationSchema } from "../../zod-schemas";
 import z from "zod";
+import { baseUrl } from "../../definitions";
 
 /**
  * Props for the MembershipApplicationTemplate component.
@@ -48,7 +49,7 @@ const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = (
             </Section>
             <Button
                 style={mailTheme.components.button}
-                href={`${process.env.VERCEL_URL}/${GlobalConstants.MEMBERS}`}
+                href={`${baseUrl}/${GlobalConstants.MEMBERS}`}
             >
                 manage members
             </Button>
