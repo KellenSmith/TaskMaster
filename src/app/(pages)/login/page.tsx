@@ -6,9 +6,10 @@ import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
 import { login } from "../../lib/auth";
-import { allowRedirectException, navigateToRoute } from "../../ui/utils";
+import { allowRedirectException } from "../../ui/utils";
 import { LoginSchema } from "../../lib/zod-schemas";
 import z from "zod";
+import { clientRedirect } from "../../lib/definitions";
 
 const LoginPage: FC = () => {
     const router = useRouter();
@@ -33,10 +34,10 @@ const LoginPage: FC = () => {
                 readOnly={false}
                 editable={false}
             />
-            <Button onClick={() => navigateToRoute(router, [GlobalConstants.RESET])}>
+            <Button onClick={() => clientRedirect(router, [GlobalConstants.RESET])}>
                 reset password
             </Button>
-            <Button onClick={() => navigateToRoute(router, [GlobalConstants.APPLY])}>
+            <Button onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}>
                 {FieldLabels[GlobalConstants.APPLY]}
             </Button>
         </Stack>

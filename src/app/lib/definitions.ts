@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import { Prisma, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { NextURL } from "next/dist/server/web/next-url";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 // Convention: "path"=`/${route}`
 
@@ -10,7 +11,7 @@ export const getUrl = (
     pathSegments: string[] = [],
     searchParams: { [key: string]: string } = {},
 ): string => {
-    const url = new NextURL(["/", ...pathSegments].join("/"));
+    const url = new NextURL(pathSegments.join("/"));
     for (let [key, value] of Object.entries(searchParams)) {
         url.searchParams.set(key, value);
     }
@@ -22,8 +23,14 @@ export const serverRedirect = (
     pathSegments: string[],
     searchParams: { [key: string]: string } = {},
 ) => {
-    const url = getUrl(pathSegments, searchParams);
-    redirect(url.toString());
+    redirect(getUrl(pathSegments, searchParams));
+};
+export const clientRedirect = (
+    router: AppRouterInstance,
+    pathSegments: string[],
+    searchParams: { [key: string]: string } = {},
+) => {
+    router.push(getUrl(pathSegments, searchParams));
 };
 
 export const applicationRoutes = {

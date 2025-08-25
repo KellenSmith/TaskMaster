@@ -5,11 +5,11 @@ import { FieldLabels } from "../../ui/form/FieldCfg";
 import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import z from "zod";
-import { navigateToRoute } from "../../ui/utils";
 import { useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { useMemo } from "react";
 import { Card, Stack, Typography } from "@mui/material";
+import { clientRedirect } from "../../lib/definitions";
 
 const ApplyPage = () => {
     const router = useRouter();
@@ -24,7 +24,7 @@ const ApplyPage = () => {
     ) => {
         try {
             await submitMemberApplication(parsedFieldValues);
-            navigateToRoute(router, [GlobalConstants.LOGIN]);
+            clientRedirect(router, [GlobalConstants.LOGIN]);
             return "Application submitted successfully";
         } catch {
             throw new Error("Failed to submit application");

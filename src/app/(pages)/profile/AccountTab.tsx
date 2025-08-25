@@ -14,9 +14,9 @@ import {
     Chip,
     Divider,
 } from "@mui/material";
-import { isMembershipExpired } from "../../lib/definitions";
+import { isMembershipExpired, clientRedirect } from "../../lib/definitions";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { allowRedirectException, formatDate, navigateToRoute } from "../../ui/utils";
+import { allowRedirectException, formatDate } from "../../ui/utils";
 import { Person, Schedule, AdminPanelSettings, Warning, CheckCircle } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
@@ -57,7 +57,7 @@ const AccountTab = () => {
                 try {
                     await logout();
                 } catch {
-                    navigateToRoute(router, [GlobalConstants.HOME]);
+                    clientRedirect(router, [GlobalConstants.HOME]);
                 }
             } catch {
                 addNotification("Failed to delete account", "error");

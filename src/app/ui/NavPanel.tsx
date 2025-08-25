@@ -19,10 +19,16 @@ import LoginIcon from "@mui/icons-material/Login";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAdmin, isUserAuthorized, applicationRoutes, routeToPath } from "../lib/definitions";
+import {
+    isUserAdmin,
+    isUserAuthorized,
+    applicationRoutes,
+    routeToPath,
+    clientRedirect,
+} from "../lib/definitions";
 import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { allowRedirectException, navigateToRoute, openResourceInNewTab } from "./utils";
+import { allowRedirectException, openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
 import { logout } from "../lib/auth";
@@ -72,7 +78,7 @@ const NavPanel = () => {
                         <Button
                             onClick={() => {
                                 setDrawerOpen(false);
-                                navigateToRoute(router, [route]);
+                                clientRedirect(router, [route]);
                             }}
                         >
                             {route}
@@ -93,7 +99,7 @@ const NavPanel = () => {
                     <Typography
                         variant="h6"
                         style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
-                        onClick={() => navigateToRoute(router, [GlobalConstants.HOME])}
+                        onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                     >
                         {organizationSettings?.organizationName || "Organization Name"}
                     </Typography>
@@ -114,7 +120,7 @@ const NavPanel = () => {
                             <LogoutIcon />
                         </Button>
                     ) : (
-                        <Button onClick={() => navigateToRoute(router, [GlobalConstants.LOGIN])}>
+                        <Button onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}>
                             <LoginIcon />
                         </Button>
                     )}

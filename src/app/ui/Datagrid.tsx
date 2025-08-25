@@ -8,12 +8,12 @@ import { usePathname, useRouter } from "next/navigation";
 import GlobalConstants from "../GlobalConstants";
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
-import { navigateToRoute, formatDate } from "./utils";
+import { formatDate } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
 import z from "zod";
-import { pathToRoute } from "../lib/definitions";
+import { clientRedirect, pathToRoute } from "../lib/definitions";
 
 export interface RowActionProps {
     name: string;
@@ -160,7 +160,7 @@ const Datagrid: React.FC<DatagridProps> = ({
             {allowAddNew && (
                 <Button
                     onClick={() =>
-                        navigateToRoute(router, [pathToRoute(pathname), GlobalConstants.CREATE])
+                        clientRedirect(router, [pathToRoute(pathname), GlobalConstants.CREATE])
                     }
                 >
                     Add New

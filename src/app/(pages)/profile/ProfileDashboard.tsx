@@ -4,12 +4,11 @@ import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
-import { isMembershipExpired } from "../../lib/definitions";
+import { isMembershipExpired, clientRedirect } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { navigateToRoute } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 
 interface ProfileDashboardProps {
@@ -51,7 +50,7 @@ const ProfileDashboard = ({ tasksPromise, eventsPromise }: ProfileDashboardProps
         () => searchParams.get("tab") || tabs.account,
         [searchParams, tabs.account],
     );
-    const setOpenTab = (tab: string) => navigateToRoute(router, [GlobalConstants.PROFILE], { tab });
+    const setOpenTab = (tab: string) => clientRedirect(router, [GlobalConstants.PROFILE], { tab });
     const router = useRouter();
 
     const getTabComp = () => {

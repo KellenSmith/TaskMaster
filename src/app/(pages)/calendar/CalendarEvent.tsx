@@ -4,9 +4,10 @@ import { Card, Tooltip, useTheme } from "@mui/material";
 import { FC } from "react";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
-import { formatDate, navigateToRoute } from "../../ui/utils";
+import { formatDate } from "../../ui/utils";
 import { useRouter } from "next/navigation";
 import { EventStatus, Prisma } from "@prisma/client";
+import { clientRedirect } from "../../lib/definitions";
 
 export interface CalendarEventProps {
     event: Prisma.EventGetPayload<true>;
@@ -18,7 +19,7 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     const router = useRouter();
 
     const goToEventPage = () =>
-        navigateToRoute(router, [GlobalConstants.EVENT], { eventId: event.id });
+        clientRedirect(router, [GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: event.id });
 
     // TODO: mark green if participating
     return (

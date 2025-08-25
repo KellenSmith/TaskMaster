@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { isUserAuthorized, routeToPath } from "./app/lib/definitions";
+import { getUrl, isUserAuthorized } from "./app/lib/definitions";
 import { decryptJWT } from "./app/lib/auth";
 import { Prisma } from "@prisma/client";
 
@@ -38,7 +38,7 @@ export default async function middleware(req: NextRequest) {
             return NextResponse.next();
         }
         // Redirect unauthorized unauthenticated users to login
-        return NextResponse.redirect(new URL(routeToPath(GlobalConstants.LOGIN), req.url));
+        return NextResponse.redirect(getUrl([GlobalConstants.LOGIN]));
     }
 
     // Authenticated users: only allow access to authorized paths
@@ -47,5 +47,5 @@ export default async function middleware(req: NextRequest) {
     }
 
     // Redirect authenticated but unauthorized users to home
-    return NextResponse.redirect(new URL(routeToPath(GlobalConstants.HOME), req.url));
+    return NextResponse.redirect(getUrl([GlobalConstants.HOME]));
 }

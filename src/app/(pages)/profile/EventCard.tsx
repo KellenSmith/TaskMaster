@@ -1,7 +1,7 @@
 import { Button, Card, CardContent, Stack, Typography, Chip, Box, useTheme } from "@mui/material";
-import { formatDate, navigateToRoute } from "../../ui/utils";
+import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
-import { isUserHost } from "../../lib/definitions";
+import { isUserHost, clientRedirect } from "../../lib/definitions";
 import { isEventPublished, isUserParticipant, isUserReserve } from "../event/event-utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
@@ -97,7 +97,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                             variant="contained"
                             size="small"
                             onClick={() =>
-                                navigateToRoute(router, [GlobalConstants.EVENT], {
+                                clientRedirect(router, [GlobalConstants.EVENT], {
                                     eventId: event.id,
                                 })
                             }

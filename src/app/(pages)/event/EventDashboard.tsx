@@ -3,7 +3,7 @@
 import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import { use, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { isUserHost } from "../../lib/definitions";
+import { isUserHost, clientRedirect } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
 import EventDetails from "./EventDetails";
@@ -15,7 +15,6 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import ParticipantDashboard from "./ParticipantDashboard";
 import ReserveDashboard from "./ReserveDashboard";
 import TicketDashboard from "./TicketDashboard";
-import { navigateToRoute } from "../../ui/utils";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -89,7 +88,7 @@ const EventDashboard = ({
     );
 
     const setOpenTab = (tab: string) => {
-        navigateToRoute(router, [pathname], { eventId: event.id, tab });
+        clientRedirect(router, [pathname], { eventId: event.id, tab });
     };
 
     const goToOrganizeTab = () => setOpenTab(eventTabs.organize);

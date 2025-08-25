@@ -7,9 +7,9 @@ import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { useUserContext } from "../../context/UserContext";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { useRouter } from "next/navigation";
-import { navigateToRoute } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { checkPaymentStatus } from "../../lib/payment-actions";
+import { clientRedirect } from "../../lib/definitions";
 
 interface OrderDashboardProps {
     orderPromise: Promise<
@@ -25,7 +25,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     const router = useRouter();
 
     // Only allow showing the user's own orders
-    if (user.id !== order.userId) navigateToRoute(router, [GlobalConstants.HOME]);
+    if (user.id !== order.userId) clientRedirect(router, [GlobalConstants.HOME]);
 
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
