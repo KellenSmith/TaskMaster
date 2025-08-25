@@ -21,7 +21,7 @@ vi.mock("./context/ServerContextWrapper", () => ({
     },
 }));
 
-import RootLayout, { RootLayoutInner, metadata } from "./layout";
+import { RootLayoutInner, metadata } from "./layout";
 
 describe("RootLayout", () => {
     it("renders NavPanel and passes children through ServerContextWrapper", () => {
