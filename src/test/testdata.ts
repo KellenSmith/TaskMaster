@@ -75,7 +75,7 @@ const testdata = {
         id: "task-1234-5678",
         eventId: "event-1234-5678",
         assigneeId: "1234-5678-9abc-def0",
-        reporterId: "1234-5678-9abc-def0",
+        reviewerId: "1234-5678-9abc-def0",
         phase: "before",
         name: "Prepare Workshop Materials",
         status: "in progress",

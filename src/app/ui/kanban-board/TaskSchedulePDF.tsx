@@ -35,7 +35,7 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
                 {formatDate(task[GlobalConstants.END_TIME])}
             </Text>
             <Text style={{ ...styles.tableCell, ...customStyles.columnAssignee }}>
-                {task[GlobalConstants.ASSIGNEE_ID]}
+                {task.assignee?.nickname}
             </Text>
         </View>
     );

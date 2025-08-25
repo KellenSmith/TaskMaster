@@ -13,7 +13,6 @@ import {
 import { Prisma } from "@prisma/client";
 import { use } from "react";
 import { isUserHost } from "../../lib/definitions";
-import { useUserContext } from "../../context/UserContext";
 import { Person } from "@mui/icons-material";
 
 interface ParticipantDashboard {

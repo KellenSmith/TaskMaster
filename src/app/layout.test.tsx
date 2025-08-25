@@ -21,11 +21,11 @@ vi.mock("./context/ServerContextWrapper", () => ({
     },
 }));
 
-import RootLayout, { metadata } from "./layout";
+import RootLayout, { RootLayoutInner, metadata } from "./layout";
 
 describe("RootLayout", () => {
     it("renders NavPanel and passes children through ServerContextWrapper", () => {
-        const jsx = RootLayout({
+        const jsx = RootLayoutInner({
             children: React.createElement("div", { "data-testid": "child" }, "child-content"),
         });
         render(jsx as any);

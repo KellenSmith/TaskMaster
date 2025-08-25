@@ -47,7 +47,10 @@ const ProfileDashboard = ({ tasksPromise, eventsPromise }: ProfileDashboardProps
     }, [user]);
 
     const searchParams = useSearchParams();
-    const openTab = useMemo(() => searchParams.get("tab") || tabs.account, [searchParams]);
+    const openTab = useMemo(
+        () => searchParams.get("tab") || tabs.account,
+        [searchParams, tabs.account],
+    );
     const setOpenTab = (tab: string) => navigateToRoute(router, [GlobalConstants.PROFILE], { tab });
     const router = useRouter();
 

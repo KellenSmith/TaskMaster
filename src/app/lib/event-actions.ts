@@ -297,8 +297,8 @@ export const cloneEvent = async (eventId: string) => {
     try {
         const loggedInUser = await getLoggedInUser();
         const {
-            id: eventIdToOmit,
-            hostId: hostIdToOmit,
+            id: eventIdToOmit, // eslint-disable-line no-unused-vars
+            hostId: hostIdToOmit, // eslint-disable-line no-unused-vars
             ...eventData
         } = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
@@ -332,12 +332,13 @@ export const cloneEvent = async (eventId: string) => {
             const clonedTickets = await Promise.all(
                 tickets.map(async (ticket) => {
                     const {
-                        id: ticketIdToOmit,
-                        eventId: eventIdToOmit,
-                        productId: ticketProductIdToOmit,
+                        id: ticketIdToOmit, // eslint-disable-line no-unused-vars
+                        eventId: eventIdToOmit, // eslint-disable-line no-unused-vars
+                        productId: ticketProductIdToOmit, // eslint-disable-line no-unused-vars
                         product,
                         ...ticketData
                     } = ticket;
+                    // eslint-disable-next-line no-unused-vars
                     const { id: productIdToOmit, ...productData } = product;
                     return tx.ticket.create({
                         data: {
@@ -375,10 +376,10 @@ export const cloneEvent = async (eventId: string) => {
             await tx.task.createMany({
                 data: tasks.map((task) => {
                     const {
-                        id: taskIdToOmit,
+                        id: taskIdToOmit, // eslint-disable-line no-unused-vars
                         // Create the tasks as unassigned
-                        assigneeId: taskAssigneeIdToOmit,
-                        reviewerId: taskReviewerIdToOmit,
+                        assigneeId: taskAssigneeIdToOmit, // eslint-disable-line no-unused-vars
+                        reviewerId: taskReviewerIdToOmit, // eslint-disable-line no-unused-vars
                         ...taskData
                     } = task;
                     return {

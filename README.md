@@ -77,8 +77,8 @@ An event is split into three phases: preparation, execution, and aftermath.
 
 ### Task manager
 
-Each event phase has its own tab in the event manager. Each tab contains a list of tasks to be done in that phase. Each task can be created by clicking a button. A task contains an event id, title, status, due date, assignee, reporter, reminder date, and description.
-An event host, reporter, or admin can click the assignee or reporter to show a redacted user profile showing only the user's nickname and contact info.
+Each event phase has its own tab in the event manager. Each tab contains a list of tasks to be done in that phase. Each task can be created by clicking a button. A task contains an event id, title, status, due date, assignee, reviewer, reminder date, and description.
+An event host, reviewer, or admin can click the assignee or reviewer to show a redacted user profile showing only the user's nickname and contact info.
 
 Tasks are automatically checked every day. On the reminder date, an email is automatically sent out to the assignee with a reminder text configurable by the event host, co-hosts, or admins.
 

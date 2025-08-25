@@ -43,7 +43,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
                 );
             }
         });
-    }, []);
+    }, [addNotification, order.id, router]);
 
     // Don't show order until payment status is checked
     if (isPending) return <LoadingFallback />;
