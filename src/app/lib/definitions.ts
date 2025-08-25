@@ -11,7 +11,10 @@ export const getUrl = (
     pathSegments: string[] = [],
     searchParams: { [key: string]: string } = {},
 ): string => {
-    const url = new NextURL(pathSegments.join("/"));
+    const baseUrl = process.env.VERCEL_URL
+        ? "https://" + process.env.VERCEL_URL
+        : window.location.origin;
+    const url = new NextURL([GlobalConstants.HOME, ...pathSegments].join("/"), baseUrl);
     for (let [key, value] of Object.entries(searchParams)) {
         url.searchParams.set(key, value);
     }

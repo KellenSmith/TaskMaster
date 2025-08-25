@@ -5,11 +5,10 @@ import { prisma } from "../../../prisma/prisma-client";
 import { processOrderedProduct } from "./product-actions";
 import { getLoggedInUser } from "./user-actions";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
-import { redirect } from "next/navigation";
-import { NextURL } from "next/dist/server/web/next-url";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
+import { serverRedirect } from "./definitions";
 
 export const getOrderById = async (
     orderId: string,
@@ -65,7 +64,7 @@ export const getAllOrders = async (): Promise<
 export const createOrder = async (
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
 ): Promise<void> => {
-    let redirectUrl: string;
+    let createdOrderId: string;
     try {
         const loggedInUser = await getLoggedInUser();
 
@@ -98,13 +97,11 @@ export const createOrder = async (
                 },
             });
         });
-        const orderUrl = new NextURL(`/${GlobalConstants.ORDER}`);
-        orderUrl.searchParams.set(GlobalConstants.ORDER_ID, order.id);
-        redirectUrl = orderUrl.toString();
+        createdOrderId = order.id;
     } catch {
         throw new Error("Failed to create order");
     }
-    redirect(redirectUrl);
+    serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: createdOrderId });
 };
 
 const processOrderItems = async (orderId: string): Promise<void> => {
