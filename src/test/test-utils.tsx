@@ -25,7 +25,9 @@ const mockOrganizationSettingsContextValue = {
         purgeMembersAfterDaysUnvalidated: 180,
         defaultTaskShiftLength: 2,
         memberApplicationPrompt: "Please provide a brief introduction about yourself.",
-    },
+        ticketInstructions:
+            "Please include any relevant information or questions you have about the event.",
+    } as Prisma.OrganizationSettingsGetPayload<true>,
 };
 
 interface WrapperProps {

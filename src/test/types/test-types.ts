@@ -1,62 +1,36 @@
 import { DeepMockProxy } from "vitest-mock-extended";
 
-// Create a simpler mock type that doesn't include the problematic circular references
-export type MockPrisma = {
-    user: {
-        findUniqueOrThrow: any;
-        create: any;
-        findMany: any;
-        update: any;
-        count: any;
-        delete: any;
-        deleteMany: any;
-    };
-    userCredentials: {
-        create: any;
-        update: any;
-        deleteMany: any;
-    };
-    event: {
-        findMany: any;
-    };
-    product: {
-        findUniqueOrThrow: any;
-        findMany: any;
-        create: any;
-        update: any;
-        delete: any;
-        count: any;
-    };
-    textContent: {
-        create: any;
-        findUnique: any;
-        update: any;
-        delete: any;
-    };
-    order: {
-        findUniqueOrThrow: any;
-        findMany: any;
-        create: any;
-        update: any;
-        delete: any;
-    };
-    orderItem: {
-        create: any;
-        findMany: any;
-        update: any;
-        delete: any;
-    };
-    $transaction: any;
+type prismaOperations = {
+    findUniqueOrThrow: any;
+    findUnique: any;
+    findFirst: any;
+    create: any;
+    findMany: any;
+    update: any;
+    count: any;
+    delete: any;
+    deleteMany: any;
 };
 
-export type MockOrderStatus = {
-    paid: string;
-    pending: string;
-    cancelled: string;
-    completed: string;
+// Create a simpler mock type that doesn't include the problematic circular references
+export type MockPrisma = {
+    organizationSettings: prismaOperations;
+    user: prismaOperations;
+    userCredentials: prismaOperations;
+    event: prismaOperations;
+    eventParticipant: prismaOperations;
+    eventReserve: prismaOperations;
+    task: prismaOperations;
+    product: prismaOperations;
+    membership: prismaOperations;
+    userMembership: prismaOperations;
+    ticket: prismaOperations;
+    order: prismaOperations;
+    orderItem: prismaOperations;
+    textContent: prismaOperations;
+    $transaction: any;
 };
 
 export type TestContext = {
     prisma: DeepMockProxy<MockPrisma>;
-    OrderStatus: DeepMockProxy<MockOrderStatus>;
 };

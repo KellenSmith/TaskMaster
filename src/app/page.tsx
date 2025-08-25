@@ -4,7 +4,7 @@ import GlobalConstants from "./GlobalConstants";
 import { prisma } from "../../prisma/prisma-client";
 import TextContent from "./ui/TextContent";
 
-const Home: React.FC = async () => {
+const HomePage: React.FC = async () => {
     const organizationSettings = await prisma.organizationSettings.findFirst();
 
     return (
@@ -17,4 +17,4 @@ const Home: React.FC = async () => {
     );
 };
 
-export default Home;
+export default HomePage;
