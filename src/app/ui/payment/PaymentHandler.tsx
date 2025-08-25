@@ -1,6 +1,6 @@
 "use client";
 import { Button, Stack } from "@mui/material";
-import React from "react";
+import React, { use } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
 import { OrderStatus, Prisma } from "@prisma/client";
 import { useNotificationContext } from "../../context/NotificationContext";
@@ -9,11 +9,14 @@ import ConfirmButton from "../ConfirmButton";
 import { progressOrder } from "../../lib/order-actions";
 
 interface PaymentHandlerProps {
-    order: Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>;
+    orderPromise: Promise<
+        Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>
+    >;
 }
 
-const PaymentHandler = ({ order }: PaymentHandlerProps) => {
+const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
     const { addNotification } = useNotificationContext();
+    const order = use(orderPromise);
 
     const redirectToPayment = async () => {
         try {

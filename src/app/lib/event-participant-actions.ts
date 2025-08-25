@@ -1,6 +1,8 @@
 "use server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "../../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
+import GlobalConstants from "../GlobalConstants";
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
     try {
@@ -53,6 +55,7 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
                 },
             });
         });
+        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
     } catch {
         throw new Error("Failed to add event participant");
     }

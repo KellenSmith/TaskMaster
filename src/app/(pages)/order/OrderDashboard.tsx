@@ -1,0 +1,57 @@
+"use client";
+import { Prisma } from "@prisma/client";
+import PaymentHandler from "../../ui/payment/PaymentHandler";
+import OrderSummary from "./OrderSummary";
+import { use, useEffect, useTransition } from "react";
+import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
+import { useUserContext } from "../../context/UserContext";
+import { useNotificationContext } from "../../context/NotificationContext";
+import { useRouter } from "next/navigation";
+import { navigateToRoute } from "../../ui/utils";
+import GlobalConstants from "../../GlobalConstants";
+import { checkPaymentStatus } from "../../lib/payment-actions";
+
+interface OrderDashboardProps {
+    orderPromise: Promise<
+        Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>
+    >;
+}
+
+const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
+    const { user } = useUserContext();
+    const order = use(orderPromise);
+    const router = useRouter();
+
+    // Only allow showing the user's own orders
+    if (user.id !== order.userId) navigateToRoute(router, [GlobalConstants.HOME]);
+
+    const { addNotification } = useNotificationContext();
+    const [isPending, startTransition] = useTransition();
+
+    // Check payment status immediately
+    useEffect(() => {
+        startTransition(async () => {
+            try {
+                await checkPaymentStatus(order.id);
+                router.refresh();
+            } catch {
+                addNotification(
+                    "Failed to check order status. What you see might not be up to date.",
+                    "error",
+                );
+            }
+        });
+    }, []);
+
+    // Don't show order until payment status is checked
+    if (isPending) return <LoadingFallback />;
+
+    return (
+        <>
+            <OrderSummary order={order} />
+            <PaymentHandler orderPromise={orderPromise} />
+        </>
+    );
+};
+
+export default OrderDashboard;

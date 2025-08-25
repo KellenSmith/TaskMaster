@@ -17,12 +17,14 @@ import { formatPrice } from "../../ui/utils";
 interface OrderSummaryProps {
     order: Prisma.OrderGetPayload<{
         include: {
-            orderItems: { include: { product: { include: { membership: true; ticket: true } } } };
+            orderItems: {
+                include: { product: { include: { membership: true; ticket: true } } };
+            };
         };
     }>;
 }
 
-const OrderSummary = async ({ order }: OrderSummaryProps) => {
+const OrderSummary = ({ order }: OrderSummaryProps) => {
     const getStatusMessage = (status: OrderStatus) => {
         switch (status) {
             case OrderStatus.completed:

@@ -1,14 +1,10 @@
 "use server";
-import { Card, CardContent, Typography } from "@mui/material";
 import React from "react";
-import OrderSummary from "./OrderSummary";
-import PaymentHandler from "../../ui/payment/PaymentHandler";
-import { getLoggedInUser } from "../../lib/user-actions";
-import { prisma } from "../../../../prisma/prisma-client";
-import { checkPaymentStatus } from "../../lib/payment-actions";
-import { redirect } from "next/navigation";
-import { NextURL } from "next/dist/server/web/next-url";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import { unstable_cache } from "next/cache";
+import { getOrderById } from "../../lib/order-actions";
+import GlobalConstants from "../../GlobalConstants";
+import OrderDashboard from "./OrderDashboard";
 
 interface OrderPageProps {
     searchParams: Promise<{ [orderId: string]: string }>;
@@ -17,37 +13,13 @@ interface OrderPageProps {
 const OrderPage = async ({ searchParams }: OrderPageProps) => {
     const orderId = (await searchParams).orderId as string;
 
-    // Always make sure the order state is updated
-    try {
-        await checkPaymentStatus(orderId);
-    } catch {
-        // If payment status check fails, still show the order page
-    }
-
-    // TODO: Go through the "page" components and minimize the fetched data
-    const order = await prisma.order.findUnique({
-        where: { id: orderId },
-        include: {
-            orderItems: { include: { product: { include: { membership: true, ticket: true } } } },
-        },
-    });
-    const loggedInUser = await getLoggedInUser();
-
-    if (!order || !loggedInUser)
-        return <Typography color="primary">Failed to load order</Typography>;
-
-    if (!loggedInUser || loggedInUser?.id !== order?.userId) {
-        redirect(new NextURL("/", process.env.VERCEL_URL).toString());
-    }
+    const orderPromise = unstable_cache(getOrderById, [orderId], {
+        tags: [GlobalConstants.ORDER],
+    })(orderId);
 
     return (
         <ErrorBoundarySuspense errorMessage="Failed to load order">
-            <Card>
-                <CardContent>
-                    <OrderSummary order={order} />
-                    <PaymentHandler order={order} />
-                </CardContent>
-            </Card>
+            <OrderDashboard orderPromise={orderPromise} />
         </ErrorBoundarySuspense>
     );
 };

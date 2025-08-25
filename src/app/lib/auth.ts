@@ -127,7 +127,7 @@ export const decryptJWT = async (
     try {
         const result = await jwtVerify(userCookie, getEncryptionKey(), {
             algorithms: ["HS256"],
-        }); // TODO: If this fails, check that AUTH_SECRET exists in .env
+        });
         const jwtPayload = result?.payload as Prisma.UserGetPayload<{
             include: { userMembership: true };
         }>;

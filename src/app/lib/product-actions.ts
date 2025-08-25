@@ -123,11 +123,8 @@ export const processOrderedProduct = async (
                 failedProducts.push(`Failed to renew membership for user ${userId}`);
             }
         } else if (orderItem.product.ticket) {
-            // Add user as participant for the ticket
             try {
                 await addEventParticipant(userId, orderItem.product.ticket.id);
-                // Don't revalidate tag GlobalConstants.PARTICIPANT_USERS
-                // This function is run during render where it's not allowed
             } catch (error) {
                 failedProducts.push(
                     `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.eventId}: ${error.message}`,
