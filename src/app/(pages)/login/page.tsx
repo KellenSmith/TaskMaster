@@ -10,6 +10,7 @@ import { clientRedirect } from "../../lib/definitions";
 import { useRouter } from "next/navigation";
 import { login } from "../../lib/user-credentials-actions";
 import { useUserContext } from "../../context/UserContext";
+import { failedSigninCodes } from "../../lib/auth";
 
 const LoginPage: FC = () => {
     const { refreshSession } = useUserContext();
@@ -25,7 +26,11 @@ const LoginPage: FC = () => {
             if (error?.digest?.startsWith("NEXT_REDIRECT")) {
                 refreshSession();
                 throw error;
+                // Allow the error messages thrown by the auth.ts authorize function through
+            } else if (Object.values(failedSigninCodes).includes(error?.message)) {
+                throw error;
             }
+            // Unexpected errors
             throw new Error("Failed to log in");
         }
     };

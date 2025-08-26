@@ -7,7 +7,7 @@ import GlobalConstants from "../GlobalConstants";
 import { JWT } from "@auth/core/jwt";
 import { prisma } from "../../../prisma/prisma-client";
 
-const failedSigninCodes = {
+export const failedSigninCodes = {
     MEMBERSHIP_PENDING: "Membership application pending",
     INVALID_CREDENTIALS: "Invalid credentials",
     USER_NOT_FOUND: "Please apply for membership",
