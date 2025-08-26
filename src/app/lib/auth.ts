@@ -4,7 +4,11 @@ import NextAuth, { CredentialsSignin, Session, type DefaultSession } from "next-
 import Credentials from "next-auth/providers/credentials";
 import { Prisma } from "@prisma/client";
 import GlobalConstants from "../GlobalConstants";
-import { prisma } from "../../../prisma/prisma-client";
+const { prisma } = await import("../../../prisma/prisma-client");
+// NOTE: prisma is intentionally not imported at the top-level because
+// some callbacks (jwt/session) may run in an edge runtime where Prisma
+// cannot run. We lazy-import prisma inside server-only functions (like
+// `authorize`) to avoid bundling Prisma into edge code.
 import { JWT } from "@auth/core/jwt";
 
 const failedSigninCodes = {
@@ -112,25 +116,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }) => {
             // On initial sign in `user` is available — persist it into the token.
             if (user) return { ...token, user };
-
-            // For subsequent requests, refresh the user payload from the database so
-            // session data (which reads from token.user) reflects DB updates like
-            // membership changes. If we can't refresh, just return the existing token.
-            try {
-                const userId = (token as any).sub || (token as any).user?.id;
-                if (userId) {
-                    const dbUser = await prisma.user.findUnique({
-                        where: { id: userId as string },
-                        include: { userMembership: true },
-                    });
-                    if (dbUser) return { ...token, user: dbUser };
-                }
-            } catch (err) {
-                // Don't throw here — failing to refresh should not break auth flow.
-                // Log for debugging.
-                console.error("Failed to refresh token user in jwt callback:", err);
-            }
-
             return token;
         },
         // Populate session.user from the token (including the full user object).
