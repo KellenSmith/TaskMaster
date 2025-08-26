@@ -43,7 +43,9 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
                 );
             }
         });
-    }, [addNotification, order.id, refreshSession]);
+        // Check payment status once upon render
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Don't show order until payment status is checked
     if (isPending) return <LoadingFallback />;
