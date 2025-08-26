@@ -67,42 +67,43 @@ export const createOrder = async (
     userId: string,
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
 ): Promise<void> => {
-    let createdOrderId: string;
-    try {
-        // Calculate the price of each order item
-        for (const item of orderItems) {
-            const product = await prisma.product.findUniqueOrThrow({
-                where: { id: item.productId },
-            });
-            item.price = product.price * item.quantity;
+    // Check that the stock of each product in the orderItems is sufficient
+    for (const orderItem of orderItems) {
+        const product = await prisma.product.findUniqueOrThrow({
+            where: { id: orderItem.productId },
+        });
+        if (product.stock < orderItem.quantity) {
+            throw new Error(`Insufficient stock for product ${product.id}`);
         }
+    }
 
-        // Create the order with items in a transaction
-        const order = await prisma.$transaction(async (tx) => {
-            return await tx.order.create({
-                data: {
-                    totalAmount: orderItems.reduce(
-                        (acc, item) => item.price * item.quantity + acc,
-                        0,
-                    ),
-                    user: {
-                        connect: {
-                            id: userId,
-                        },
-                    },
-                    orderItems: {
-                        createMany: {
-                            data: orderItems,
-                        },
+    // Calculate the price of each order item
+    for (const item of orderItems) {
+        const product = await prisma.product.findUniqueOrThrow({
+            where: { id: item.productId },
+        });
+        item.price = product.price * item.quantity;
+    }
+
+    // Create the order with items in a transaction
+    const order = await prisma.$transaction(async (tx) => {
+        return await tx.order.create({
+            data: {
+                totalAmount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
+                user: {
+                    connect: {
+                        id: userId,
                     },
                 },
-            });
+                orderItems: {
+                    createMany: {
+                        data: orderItems,
+                    },
+                },
+            },
         });
-        createdOrderId = order.id;
-    } catch {
-        throw new Error("Failed to create order");
-    }
-    serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: createdOrderId });
+    });
+    serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
 };
 
 const processOrderItems = async (orderId: string): Promise<void> => {
