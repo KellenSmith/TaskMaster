@@ -16,6 +16,9 @@ There are a few test accounts you can use. All accounts have password 123456
 - expiredMembership@email.com
 
 At the time of writing i've prepped the database with accounts, events a.s.o to show off what the TaskMaster can do. Feel free to change things around. I can easily reset the database.
+The test accounts have been set up with various roles and permissions to help you explore the application. The event-related roles refer to the event "Test Event" happening on 2025-08-26 in the calendar.
+
+The TaskMaster helps out by sending automatic emails related to events, orders, and user actions. The email will be sent to the address of the relevant user. If you want to test it, feel free to enter an email you have access to.
 
 For payments, use the following test data:
 

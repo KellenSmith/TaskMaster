@@ -47,6 +47,7 @@ interface FormProps {
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
     customIncludedFields?: string[]; // Include extra fields which are not preconfigured in FieldCfg.ts
     customRequiredFields?: string[]; // Include extra fields which are required but not preconfigured in FieldCfg.ts
+    customInfoTexts?: { [key: string]: string }; // Include extra information texts for specific fields
     readOnly?: boolean;
     editable?: boolean;
 }
@@ -61,6 +62,7 @@ const Form: FC<FormProps> = ({
     customReadOnlyFields = [],
     customIncludedFields = [],
     customRequiredFields = [],
+    customInfoTexts = {},
     readOnly = true,
     editable = true,
 }) => {
@@ -203,6 +205,23 @@ const Form: FC<FormProps> = ({
         );
     };
 
+    const getInfoTextComp = (fieldId: string) => {
+        const infoText = customInfoTexts[fieldId] || explanatoryTexts[fieldId];
+        if (!infoText) return null;
+        return (
+            <>
+                <Card sx={{ py: 1 }}>
+                    {infoText.split("\n").map((line, index) => (
+                        <Typography key={index} variant="subtitle2" color="primary">
+                            {line}
+                        </Typography>
+                    ))}
+                </Card>
+                <Divider />
+            </>
+        );
+    };
+
     return (
         <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto" }}>
             {(editable || FieldLabels[name]) && (
@@ -221,24 +240,7 @@ const Form: FC<FormProps> = ({
                     {renderedFields.map((fieldId) => (
                         <Stack key={fieldId}>
                             {getFieldComp(fieldId)}
-                            {fieldId in explanatoryTexts && (
-                                <>
-                                    <Card sx={{ py: 1 }}>
-                                        {explanatoryTexts[fieldId]
-                                            .split("\n")
-                                            .map((line, index) => (
-                                                <Typography
-                                                    key={index}
-                                                    variant="subtitle2"
-                                                    color="primary"
-                                                >
-                                                    {line}
-                                                </Typography>
-                                            ))}
-                                    </Card>
-                                    <Divider />
-                                </>
-                            )}
+                            {getInfoTextComp(fieldId)}
                         </Stack>
                     ))}
                     {validationError && <Typography color="error">{validationError}</Typography>}

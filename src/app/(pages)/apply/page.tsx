@@ -33,15 +33,6 @@ const ApplyPage = () => {
 
     return (
         <Stack spacing={1}>
-            {shouldIncludeApplicationPrompt && (
-                <Card>
-                    {organizationSettings.memberApplicationPrompt.split("\n").map((line, index) => (
-                        <Typography key={index} variant="h6" color="primary">
-                            {line}
-                        </Typography>
-                    ))}
-                </Card>
-            )}
             <Form
                 name={GlobalConstants.APPLY}
                 buttonLabel={FieldLabels[GlobalConstants.APPLY]}
@@ -52,7 +43,19 @@ const ApplyPage = () => {
                         ? [GlobalConstants.MEMBER_APPLICATION_PROMPT]
                         : []
                 }
-                customRequiredFields={[GlobalConstants.MEMBER_APPLICATION_PROMPT]}
+                customRequiredFields={
+                    shouldIncludeApplicationPrompt
+                        ? [GlobalConstants.MEMBER_APPLICATION_PROMPT]
+                        : []
+                }
+                customInfoTexts={
+                    shouldIncludeApplicationPrompt
+                        ? {
+                              [GlobalConstants.MEMBER_APPLICATION_PROMPT]:
+                                  organizationSettings.memberApplicationPrompt,
+                          }
+                        : {}
+                }
                 readOnly={false}
                 editable={false}
             />
