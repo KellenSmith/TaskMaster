@@ -6,7 +6,6 @@ import { sendUserCredentials } from "./mail-service/mail-service";
 import { LoginSchema, ResetCredentialsSchema, UpdateCredentialsSchema } from "./zod-schemas";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { getLoggedInUser } from "./user-actions";
 import { hashPassword, signIn, signOut } from "./auth";
 import { getUrl } from "./definitions";
 import { CredentialsSignin } from "next-auth";

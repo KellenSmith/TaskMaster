@@ -8,7 +8,6 @@ import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
 import { serverRedirect } from "./definitions";
-import { getLoggedInUser } from "./user-actions";
 
 export const getOrderById = async (
     userId: string,

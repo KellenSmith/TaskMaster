@@ -7,7 +7,6 @@ import { Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
 import { isMembershipExpired } from "./definitions";
 import { revalidateTag } from "next/cache";
-import { getLoggedInUser } from "./user-actions";
 
 export const renewUserMembership = async (userId: string, membershipId: string): Promise<void> => {
     try {

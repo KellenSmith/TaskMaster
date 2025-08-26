@@ -2,7 +2,7 @@
 
 import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import { use, useMemo } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { isUserHost, clientRedirect } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
