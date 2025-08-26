@@ -27,11 +27,15 @@ import { updateUserCredentials } from "../../lib/user-credentials-actions";
 import { createMembershipOrder } from "../../lib/user-membership-actions";
 import z from "zod";
 import { useTransition } from "react";
+import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 
 const AccountTab = () => {
-    const theme = useTheme();
-    const router = useRouter();
     const { user } = useUserContext();
+    const router = useRouter();
+
+    if (!user) return <LoadingFallback />;
+
+    const theme = useTheme();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
 
