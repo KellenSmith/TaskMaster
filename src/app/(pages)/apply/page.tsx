@@ -8,7 +8,7 @@ import z from "zod";
 import { useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { useMemo } from "react";
-import { Card, Stack, Typography } from "@mui/material";
+import { Stack } from "@mui/material";
 import { clientRedirect } from "../../lib/definitions";
 
 const ApplyPage = () => {
