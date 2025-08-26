@@ -2,12 +2,49 @@
 
 import z from "zod";
 import { prisma } from "../../../prisma/prisma-client";
-import { generateSalt, hashPassword } from "./auth";
 import { sendUserCredentials } from "./mail-service/mail-service";
-import { getLoggedInUser } from "./user-actions";
-import { ResetCredentialsSchema, UpdateCredentialsSchema } from "./zod-schemas";
+import { LoginSchema, ResetCredentialsSchema, UpdateCredentialsSchema } from "./zod-schemas";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
+import { getLoggedInUser } from "./user-actions";
+import { hashPassword, signIn, signOut } from "./auth";
+import { getUrl } from "./definitions";
+import { CredentialsSignin } from "next-auth";
+import { allowRedirectException } from "../ui/utils";
+
+export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Promise<void> => {
+    try {
+        await signIn("credentials", {
+            ...parsedFieldValues,
+            callback: getUrl([GlobalConstants.LOGIN]),
+            redirectTo: getUrl([GlobalConstants.HOME]),
+        });
+    } catch (error) {
+        allowRedirectException(error);
+        // Allow the error messages thrown by the auth.ts authorize function through
+        if (error instanceof CredentialsSignin && error.code) {
+            throw new Error(error.code);
+        } else throw new Error("Failed to log in");
+    }
+};
+
+export const logOut = async (): Promise<void> => {
+    try {
+        await signOut({
+            redirectTo: getUrl([GlobalConstants.HOME]),
+        });
+    } catch (error) {
+        allowRedirectException(error);
+        throw new Error("Failed to log out");
+    }
+};
+
+// Generate a random string of specified length
+const generateSalt = async (): Promise<string> => {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+};
 
 export const validateUserMembership = async (userId: string): Promise<void> => {
     const generatedPassword = await generateSalt();

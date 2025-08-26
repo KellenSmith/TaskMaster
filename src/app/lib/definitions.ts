@@ -13,7 +13,9 @@ export const getUrl = (
 ): string => {
     const baseUrl = process.env.VERCEL_URL
         ? "https://" + process.env.VERCEL_URL
-        : window.location.origin;
+        : window?.location?.origin;
+    if (!baseUrl) return "";
+
     const url = new NextURL([GlobalConstants.HOME, ...pathSegments].join("/"), baseUrl);
     for (let [key, value] of Object.entries(searchParams)) {
         url.searchParams.set(key, value);

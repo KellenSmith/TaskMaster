@@ -7,18 +7,14 @@ import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
 import { Prisma } from "@prisma/client";
 import ErrorBoundarySuspense from "../ui/ErrorBoundarySuspense";
+import { SessionProvider } from "next-auth/react";
 
 interface ContextWrapperProps {
     children: ReactNode;
     organizationSettingsPromise: Promise<any>;
-    loggedInUser: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
 }
 
-const ContextWrapper: FC<ContextWrapperProps> = ({
-    children,
-    organizationSettingsPromise,
-    loggedInUser,
-}) => {
+const ContextWrapper: FC<ContextWrapperProps> = ({ children, organizationSettingsPromise }) => {
     return (
         <ErrorBoundarySuspense errorMessage="Failed to load context">
             <LocalizationContextProvider>
@@ -27,9 +23,9 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                         <OrganizationSettingsProvider
                             organizationSettingsPromise={organizationSettingsPromise}
                         >
-                            <UserContextProvider loggedInUser={loggedInUser}>
-                                {children}
-                            </UserContextProvider>
+                            <SessionProvider>
+                                <UserContextProvider>{children}</UserContextProvider>
+                            </SessionProvider>
                         </OrganizationSettingsProvider>
                     </NotificationContextProvider>
                 </ThemeContextProvider>

@@ -6,9 +6,8 @@ import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
 import { isMembershipExpired } from "./definitions";
-import { getLoggedInUser } from "./user-actions";
-import { encryptJWT } from "./auth";
 import { revalidateTag } from "next/cache";
+import { getLoggedInUser } from "./user-actions";
 
 export const renewUserMembership = async (userId: string, membershipId: string): Promise<void> => {
     try {
@@ -40,13 +39,6 @@ export const renewUserMembership = async (userId: string, membershipId: string):
                 expiresAt: newExpiryDate,
             },
         });
-
-        // Make sure authorization and user context always uses the latest user data
-        const updatedUser = await prisma.user.findUniqueOrThrow({
-            where: { id: userId },
-            include: { userMembership: true },
-        });
-        await encryptJWT(updatedUser);
         revalidateTag(GlobalConstants.USER);
     } catch (error) {
         console.error("Failed to renew user membership:", error);

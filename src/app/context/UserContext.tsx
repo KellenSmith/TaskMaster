@@ -3,6 +3,8 @@
 import { createContext, FC, ReactNode, useContext, useState } from "react";
 import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
+import { useSession } from "next-auth/react";
+import { CircularProgress, Stack } from "@mui/material";
 
 interface UserContextValue {
     user: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
@@ -21,21 +23,36 @@ export const useUserContext = (): UserContextValue => {
 };
 
 interface UserContextProviderProps {
-    loggedInUser: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
     children: ReactNode;
 }
 
-const UserContextProvider: FC<UserContextProviderProps> = ({ loggedInUser, children }) => {
+enum SessionStatus {
+    loading,
+    authenticated,
+    unauthenticated,
+}
+
+const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
+    const session = useSession();
     const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
     const [editMode, setEditMode] = useState(false);
 
+    console.log(session);
+
     const contextValue: UserContextValue = {
-        user: loggedInUser,
+        user: session.data?.user || null,
         language,
         setLanguage,
         editMode,
         setEditMode,
     };
+
+    if (session.status === "loading")
+        return (
+            <Stack height="100vh" width="100%" justifyContent="center" alignItems="center">
+                <CircularProgress />
+            </Stack>
+        );
 
     return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };

@@ -31,7 +31,7 @@ import { useRouter } from "next/navigation";
 import { allowRedirectException, openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
-import { logout } from "../lib/auth";
+import { logOut } from "../lib/user-credentials-actions";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -46,8 +46,9 @@ const NavPanel = () => {
 
     const logOutAction = async () => {
         try {
-            await logout();
+            await logOut();
             addNotification("Logged out", "success");
+            router.refresh();
         } catch (error) {
             allowRedirectException(error);
             addNotification("Failed to log out", "error");

@@ -1,11 +1,11 @@
 "use server";
 import { unstable_cache } from "next/cache";
-import { getLoggedInUser } from "../../lib/user-actions";
 import ProfileDashboard from "./ProfileDashboard";
 import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { getFilteredEvents } from "../../lib/event-actions";
 import { serverRedirect } from "../../lib/definitions";
+import { getLoggedInUser } from "../../lib/user-actions";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
