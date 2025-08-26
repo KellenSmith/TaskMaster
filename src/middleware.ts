@@ -1,4 +1,4 @@
-"user server";
+"use server";
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
@@ -12,6 +12,8 @@ export const config = {
 
 export default async function middleware(req: NextRequest) {
     const loggedInUser = await getLoggedInUser();
+
+    if (!req?.nextUrl?.pathname) return NextResponse.next();
 
     if (isUserAuthorized(req.nextUrl.pathname, loggedInUser)) {
         return NextResponse.next();
