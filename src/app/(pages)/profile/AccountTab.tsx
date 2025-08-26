@@ -32,12 +32,11 @@ import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 const AccountTab = () => {
     const { user } = useUserContext();
     const router = useRouter();
-
-    if (!user) return <LoadingFallback />;
-
     const theme = useTheme();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
+
+    if (!user) return <LoadingFallback />;
 
     const updateUserProfile = async (parsedFieldValues: z.infer<typeof UserUpdateSchema>) => {
         await updateUser(user.id, parsedFieldValues);
