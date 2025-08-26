@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "../../../prisma/prisma-client";
+import { v4 as uuidv4 } from "uuid";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import z from "zod";
@@ -12,7 +13,9 @@ export const getOrganizationSettings = async (): Promise<
 > => {
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
-        orgSettings = await prisma.organizationSettings.create({});
+        // Some DB setups may not have the server-side default configured for the id column.
+        // Generate an id client-side to ensure the create call doesn't attempt to write a null id.
+        orgSettings = await prisma.organizationSettings.create({ data: { id: uuidv4() } });
     }
     return orgSettings;
 };
