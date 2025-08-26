@@ -64,6 +64,7 @@ const GlobalConstants = {
     SALT: "salt",
     HASHED_PASSWORD: "hashedPassword",
     // Event
+    TAB: "tab",
     EVENT: "event",
     EVENT_ID: "eventId",
     TITLE: "title",

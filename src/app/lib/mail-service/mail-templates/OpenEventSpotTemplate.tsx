@@ -3,8 +3,8 @@ import MailTemplate from "./MailTemplate";
 import mailTheme from "../mail-theme";
 import { FC } from "react";
 import { Prisma } from "@prisma/client";
-import { NextURL } from "next/dist/server/web/next-url";
 import GlobalConstants from "../../../GlobalConstants";
+import { getUrl } from "../../definitions";
 
 /**
  * Props for the MembershipExpiresReminderTemplate component.
@@ -18,14 +18,16 @@ interface IOpenEventSpotTemplateProps {
 const OpenEventSpotTemplate: FC<IOpenEventSpotTemplateProps> = ({ organizationName, event }) => {
     if (!event) throw new Error("Event not found");
 
-    const eventUrl = new NextURL(GlobalConstants.EVENT);
-    eventUrl.searchParams.set(GlobalConstants.EVENT_ID, event.id);
-    eventUrl.searchParams.set("tab", "Tickets");
-
     return (
         <MailTemplate organizationName={organizationName}>
             <Text>A spot has opened up for the event: {event.title}</Text>
-            <Button style={mailTheme.components.button} href={eventUrl.toString()}>
+            <Button
+                style={mailTheme.components.button}
+                href={getUrl([GlobalConstants.EVENT], {
+                    [GlobalConstants.EVENT_ID]: event.id,
+                    [GlobalConstants.TAB]: "Tickets",
+                })}
+            >
                 claim your ticket now!
             </Button>
         </MailTemplate>

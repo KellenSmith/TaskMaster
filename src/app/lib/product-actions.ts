@@ -114,6 +114,7 @@ export const processOrderedProduct = async (
         include: { product: { include: { membership: true; ticket: true } } };
     }>,
 ) => {
+    if (orderItem.quantity > orderItem.product.stock) throw new Error("Insufficient stock");
     const failedProducts: string[] = [];
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {

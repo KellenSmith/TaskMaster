@@ -27,7 +27,7 @@ const LoginPage: FC = () => {
                 refreshSession();
                 throw error;
                 // Allow the error messages thrown by the auth.ts authorize function through
-                // TODO: This doesn't work
+                // TODO: This doesn't work in production
             } else if (Object.values(failedSigninCodes).includes(error?.message)) {
                 throw error;
             }

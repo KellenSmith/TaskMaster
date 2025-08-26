@@ -65,60 +65,50 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
 };
 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
-    try {
-        // Find the ticket the user holds to the event
-        const ticket = await prisma.ticket.findFirstOrThrow({
-            where: {
-                eventId: eventId,
-                eventParticipants: {
-                    some: {
-                        userId: userId,
-                    },
+    // Find the ticket the user holds to the event
+    const ticket = await prisma.ticket.findFirstOrThrow({
+        where: {
+            eventId: eventId,
+            eventParticipants: {
+                some: {
+                    userId: userId,
                 },
             },
-        });
-        const deleteParticipantPromise = prisma.eventParticipant.delete({
-            where: {
-                userId_ticketId: {
-                    userId,
-                    ticketId: ticket.id,
-                },
+        },
+    });
+    const deleteParticipantPromise = prisma.eventParticipant.delete({
+        where: {
+            userId_ticketId: {
+                userId,
+                ticketId: ticket.id,
             },
-        });
-        // Increment the product stock of all tickets with limited stock belonging to the same event
-        // Ticket product stock reflects the total number of available tickets across all types
-        const incrementTicketStockPromise = prisma.product.updateMany({
-            where: {
-                ticket: {
-                    eventId,
-                },
-                NOT: {
-                    unlimitedStock: true,
-                },
+        },
+    });
+    // Increment the product stock of all tickets with limited stock belonging to the same event
+    // Ticket product stock reflects the total number of available tickets across all types
+    const incrementTicketStockPromise = prisma.product.updateMany({
+        where: {
+            ticket: {
+                eventId,
             },
-            data: {
-                stock: {
-                    increment: 1,
-                },
+            NOT: {
+                unlimitedStock: true,
             },
-        });
+        },
+        data: {
+            stock: {
+                increment: 1,
+            },
+        },
+    });
 
-        // TODO: unassign from tasks happening during the event
+    // TODO: unassign from tasks happening during the event
 
-        await prisma.$transaction([deleteParticipantPromise, incrementTicketStockPromise]);
-        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-        revalidateTag(GlobalConstants.EVENT);
-        revalidateTag(GlobalConstants.TICKET);
-    } catch {
-        throw new Error("Failed to delete event participant");
-    }
-
-    try {
-        await notifyEventReserves(eventId);
-    } catch (error) {
-        console.log(error);
-        throw new Error("Failed to notify event reserves");
-    }
+    await prisma.$transaction([deleteParticipantPromise, incrementTicketStockPromise]);
+    revalidateTag(GlobalConstants.PARTICIPANT_USERS);
+    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.TICKET);
+    await notifyEventReserves(eventId);
 };
 
 export const getEventParticipants = async (
