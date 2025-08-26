@@ -12,8 +12,6 @@ export const config = {
 
 export default async function middleware(req: NextRequest) {
     const loggedInUser = await getLoggedInUser();
-    console.log(`Middleware - loggedInUser: `);
-    console.log(loggedInUser);
 
     if (isUserAuthorized(req.nextUrl.pathname, loggedInUser)) {
         return NextResponse.next();

@@ -25,6 +25,7 @@ import {
     applicationRoutes,
     routeToPath,
     clientRedirect,
+    getUrl,
 } from "../lib/definitions";
 import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
@@ -32,10 +33,11 @@ import { allowRedirectException, openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
 import { logOut } from "../lib/user-credentials-actions";
+import { signOut } from "next-auth/react";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { user, editMode, setEditMode } = useUserContext();
+    const { user, editMode, setEditMode, refreshSession } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
@@ -47,11 +49,15 @@ const NavPanel = () => {
     const logOutAction = async () => {
         try {
             await logOut();
-            addNotification("Logged out", "success");
-            router.refresh();
-        } catch (error) {
-            allowRedirectException(error);
+            // If logout is successful, redirect exception is thrown
+            // We do not expect to run this line
             addNotification("Failed to log out", "error");
+        } catch (error) {
+            // Catch redirect exception and refresh session before moving on.
+            if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+                refreshSession();
+                throw error;
+            }
         }
     };
 

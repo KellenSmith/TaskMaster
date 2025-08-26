@@ -9,14 +9,24 @@ import z from "zod";
 import { clientRedirect } from "../../lib/definitions";
 import { useRouter } from "next/navigation";
 import { login } from "../../lib/user-credentials-actions";
+import { useUserContext } from "../../context/UserContext";
 
 const LoginPage: FC = () => {
+    const { refreshSession } = useUserContext();
     const router = useRouter();
 
     const loginAction = async (parsedFieldValues: z.infer<typeof LoginSchema>) => {
-        await login(parsedFieldValues);
-        router.refresh();
-        return "Logged in";
+        try {
+            await login(parsedFieldValues);
+            return "Logged in. Redirecting...";
+        } catch (error) {
+            // If login is successful, redirect exception is thrown.
+            // Refresh session before moving on
+            if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+                refreshSession();
+                throw error;
+            }
+        }
     };
 
     return (

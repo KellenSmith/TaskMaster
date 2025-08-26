@@ -18,6 +18,7 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
             ...parsedFieldValues,
             callback: getUrl([GlobalConstants.LOGIN]),
             redirectTo: getUrl([GlobalConstants.HOME]),
+            redirect: true,
         });
     } catch (error) {
         allowRedirectException(error);
@@ -30,9 +31,7 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
 
 export const logOut = async (): Promise<void> => {
     try {
-        await signOut({
-            redirectTo: getUrl([GlobalConstants.HOME]),
-        });
+        await signOut({ redirectTo: getUrl([GlobalConstants.HOME]), redirect: true });
     } catch (error) {
         allowRedirectException(error);
         throw new Error("Failed to log out");

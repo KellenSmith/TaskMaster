@@ -103,16 +103,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     callbacks: {
         // Persist the full user object into the JWT on sign in
-        jwt: ({
+        jwt: async ({
             token,
             user,
         }: {
             token: JWT;
-            user: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
+            user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | undefined;
         }) => {
-            // `user` is only available on the initial sign in. Save it into the token so
-            // subsequent requests (and the `session` callback) can access the full user.
+            // On initial sign in `user` is available — persist it into the token.
             if (user) return { ...token, user };
+
+            // For subsequent requests, refresh the user payload from the database so
+            // session data (which reads from token.user) reflects DB updates like
+            // membership changes. If we can't refresh, just return the existing token.
+            try {
+                const userId = (token as any).sub || (token as any).user?.id;
+                if (userId) {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: userId as string },
+                        include: { userMembership: true },
+                    });
+                    if (dbUser) return { ...token, user: dbUser };
+                }
+            } catch (err) {
+                // Don't throw here — failing to refresh should not break auth flow.
+                // Log for debugging.
+                // eslint-disable-next-line no-console
+                console.error("Failed to refresh token user in jwt callback:", err);
+            }
+
             return token;
         },
         // Populate session.user from the token (including the full user object).
