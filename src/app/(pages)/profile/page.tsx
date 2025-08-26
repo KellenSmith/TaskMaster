@@ -13,7 +13,7 @@ const ProfilePage = async () => {
 
     const tasksPromise = unstable_cache(getFilteredTasks, [loggedInUser.id], {
         tags: [GlobalConstants.TASK],
-    })({ assigneeId: loggedInUser.id, reviewerId: loggedInUser.id });
+    })({ OR: [{ assigneeId: loggedInUser.id }, { reviewerId: loggedInUser.id }] });
     const eventsPromise = unstable_cache(getFilteredEvents, [loggedInUser.id], {
         tags: [GlobalConstants.EVENT],
     })({
