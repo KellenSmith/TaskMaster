@@ -59,7 +59,7 @@ export const createEvent = async (
         });
 
         revalidateTag(GlobalConstants.EVENT);
-        serverRedirect([GlobalConstants.HOME], { eventId: createdEvent.id });
+        serverRedirect([GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: createdEvent.id });
     } catch (error) {
         allowRedirectException(error);
         throw new Error("Failed to create event");
