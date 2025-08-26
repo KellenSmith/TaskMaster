@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import GlobalConstants from "../../GlobalConstants";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { clientRedirect } from "../../lib/definitions";
-import { getSession } from "next-auth/react";
 
 interface OrderDashboardProps {
     orderPromise: Promise<
@@ -44,7 +43,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
                 );
             }
         });
-    }, [addNotification, order.id, router]);
+    }, [addNotification, order.id, refreshSession]);
 
     // Don't show order until payment status is checked
     if (isPending) return <LoadingFallback />;

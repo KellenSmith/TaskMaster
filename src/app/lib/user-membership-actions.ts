@@ -8,7 +8,6 @@ import { createOrder } from "./order-actions";
 import { isMembershipExpired } from "./definitions";
 import { revalidateTag } from "next/cache";
 import { getLoggedInUser } from "./user-actions";
-import { getSession } from "next-auth/react";
 
 export const renewUserMembership = async (userId: string, membershipId: string): Promise<void> => {
     try {

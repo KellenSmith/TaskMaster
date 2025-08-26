@@ -128,7 +128,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             } catch (err) {
                 // Don't throw here — failing to refresh should not break auth flow.
                 // Log for debugging.
-                // eslint-disable-next-line no-console
                 console.error("Failed to refresh token user in jwt callback:", err);
             }
 

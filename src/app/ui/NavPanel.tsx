@@ -25,15 +25,13 @@ import {
     applicationRoutes,
     routeToPath,
     clientRedirect,
-    getUrl,
 } from "../lib/definitions";
 import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { allowRedirectException, openResourceInNewTab } from "./utils";
+import { openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
 import { logOut } from "../lib/user-credentials-actions";
-import { signOut } from "next-auth/react";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);

@@ -6,10 +6,9 @@ import GlobalConstants from "../GlobalConstants";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
-    pathname?: string;
 }
 
-const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children, pathname }) => {
+const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
     const organizationSettingsPromise = unstable_cache(getOrganizationSettings, [], {
         tags: [GlobalConstants.ORGANIZATION_SETTINGS],
     })();

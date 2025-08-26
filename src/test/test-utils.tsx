@@ -13,6 +13,7 @@ const mockUserContextValue = {
     setLanguage: () => {},
     editMode: false,
     setEditMode: () => {},
+    refreshSession: () => Promise.resolve(),
 };
 
 // Mock OrganizationSettingsContext value
