@@ -52,7 +52,7 @@ const TicketShop = ({
             quantity: 1,
         };
         try {
-            await createOrder([ticketOrderItems]);
+            await createOrder(user.id, [ticketOrderItems]);
         } catch (error) {
             allowRedirectException(error);
             addNotification("Failed to create ticket order", "error");

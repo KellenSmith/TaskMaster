@@ -17,11 +17,14 @@ export const renewUserMembership = async (userId: string, membershipId: string):
         const userMembership = await prisma.userMembership.findUnique({
             where: { userId: userId },
         });
+        const user = await prisma.user.findUniqueOrThrow({
+            where: { id: userId },
+            include: { userMembership: true },
+        });
 
         let newExpiryDate = dayjs().add(membership.duration, "d").toISOString();
-        const loggedInUser = await getLoggedInUser();
         // If the membership is the same, extend the expiration date
-        if (!isMembershipExpired(loggedInUser) && userMembership?.membershipId === membershipId)
+        if (!isMembershipExpired(user) && userMembership?.membershipId === membershipId)
             newExpiryDate = dayjs(userMembership.expiresAt)
                 .add(membership.duration, "d")
                 .toISOString();
@@ -88,7 +91,7 @@ export const getMembershipProduct = async (): Promise<
     }
 };
 
-export const createMembershipOrder = async (): Promise<void> => {
+export const createMembershipOrder = async (userId: string): Promise<void> => {
     let orderItems: Prisma.OrderItemCreateManyOrderInput[];
     try {
         // Get or create the membership product
@@ -103,5 +106,5 @@ export const createMembershipOrder = async (): Promise<void> => {
     if (!orderItems || orderItems.length === 0) {
         throw new Error("Failed to create order for membership");
     }
-    await createOrder(orderItems);
+    await createOrder(userId, orderItems);
 };

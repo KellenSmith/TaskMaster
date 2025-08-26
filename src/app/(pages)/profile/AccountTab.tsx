@@ -49,7 +49,7 @@ const AccountTab = () => {
         if (parsedFieldValues.newPassword !== parsedFieldValues.repeatPassword) {
             throw new Error("New password and repeat password do not match");
         }
-        await updateUserCredentials(parsedFieldValues);
+        await updateUserCredentials(user.id, parsedFieldValues);
         return "Successfully updated password";
     };
 
@@ -70,7 +70,7 @@ const AccountTab = () => {
     const activateMembership = async () =>
         startTransition(async () => {
             try {
-                await createMembershipOrder();
+                await createMembershipOrder(user.id);
             } catch (error) {
                 allowRedirectException(error);
                 // Show notification for all other errors

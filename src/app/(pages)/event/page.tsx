@@ -20,11 +20,11 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     // Make sure the user is available before fetching the event
     // When cloning events the user goes from possibly not host to host
     // of the shown event which causes timing issues
-    await getLoggedInUser();
+    const loggedInUser = await getLoggedInUser();
 
-    const eventPromise = unstable_cache(getEventById, [eventId], {
+    const eventPromise = unstable_cache(getEventById, [eventId, loggedInUser.id], {
         tags: [GlobalConstants.EVENT],
-    })(eventId);
+    })(eventId, loggedInUser.id);
     const eventTasksPromise = unstable_cache(getFilteredTasks, [eventId], {
         tags: [GlobalConstants.TASK],
     })({ eventId });

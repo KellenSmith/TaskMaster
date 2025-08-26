@@ -27,7 +27,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
     const [createOpen, setCreateOpen] = useState(false);
 
     const createEventWithHostAndTicket = async (fieldValues: z.infer<typeof EventCreateSchema>) => {
-        await createEvent(fieldValues);
+        await createEvent(user.id, fieldValues);
         return "Created event";
     };
 

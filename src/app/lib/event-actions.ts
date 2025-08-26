@@ -7,16 +7,15 @@ import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
-import { isUserHost, serverRedirect } from "./definitions";
+import { serverRedirect } from "./definitions";
 import { allowRedirectException } from "../ui/utils";
 import dayjs from "dayjs";
-import { getLoggedInUser } from "./user-actions";
 
 export const createEvent = async (
+    userId: string,
     parsedFieldValues: z.infer<typeof EventCreateSchema>,
 ): Promise<void> => {
     try {
-        const loggedInUser = await getLoggedInUser();
         const createdEvent = await prisma.$transaction(async (tx) => {
             // Create event with ticket
             const createdEvent = await tx.event.create({
@@ -24,7 +23,7 @@ export const createEvent = async (
                     ...parsedFieldValues,
                     host: {
                         connect: {
-                            id: loggedInUser.id,
+                            id: userId,
                         },
                     },
                     tickets: {
@@ -51,7 +50,7 @@ export const createEvent = async (
             const volunteerTicket = createdEvent.tickets[0]; // Since we just created one ticket
             await tx.eventParticipant.create({
                 data: {
-                    userId: loggedInUser.id,
+                    userId: userId,
                     ticketId: volunteerTicket.id,
                 },
             });
@@ -111,36 +110,31 @@ export const getFilteredEvents = async (
 
 export const getEventById = async (
     eventId: string,
+    userId: string,
 ): Promise<
     Prisma.EventGetPayload<{
         include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
     }>
 > => {
-    try {
-        const event = await prisma.event.findUniqueOrThrow({
-            where: {
-                id: eventId,
-            },
-            include: {
-                tickets: {
-                    include: {
-                        eventParticipants: true,
-                    },
+    const event = await prisma.event.findUniqueOrThrow({
+        where: {
+            id: eventId,
+        },
+        include: {
+            tickets: {
+                include: {
+                    eventParticipants: true,
                 },
-                eventReserves: true,
             },
-        });
+            eventReserves: true,
+        },
+    });
 
-        // Only event hosts can see event drafts
-        const loggedInUser = await getLoggedInUser();
-        if (event.status === EventStatus.draft && !isUserHost(loggedInUser, event)) {
-            throw new Error("You are not authorized to view this event");
-        }
-
-        return event;
-    } catch {
-        throw new Error("Failed to fetch event");
+    // Only event hosts can see event drafts
+    if (event.status === EventStatus.draft && event.hostId !== userId) {
+        throw new Error("You are not authorized to view this event");
     }
+    return event;
 };
 
 export const getEventParticipants = async (
@@ -286,9 +280,8 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
     }
 };
 
-export const cloneEvent = async (eventId: string) => {
+export const cloneEvent = async (userId: string, eventId: string) => {
     try {
-        const loggedInUser = await getLoggedInUser();
         const {
             id: eventIdToOmit, // eslint-disable-line no-unused-vars
             hostId: hostIdToOmit, // eslint-disable-line no-unused-vars
@@ -316,7 +309,7 @@ export const cloneEvent = async (eventId: string) => {
                         endTime: dayjs().hour(22).minute(0).toDate(),
                     },
                     host: {
-                        connect: { id: loggedInUser.id },
+                        connect: { id: userId },
                     },
                 },
             });
@@ -357,7 +350,7 @@ export const cloneEvent = async (eventId: string) => {
             await tx.eventParticipant.create({
                 data: {
                     user: {
-                        connect: { id: loggedInUser.id },
+                        connect: { id: userId },
                     },
                     ticket: {
                         connect: { id: volunteerTicket.id },
@@ -379,7 +372,7 @@ export const cloneEvent = async (eventId: string) => {
                         ...taskData,
                         eventId: createdEvent.id,
                         // Add logged in user as reviewer
-                        reviewerId: loggedInUser.id,
+                        reviewerId: userId,
                         // Create tasks as "To Do"
                         status: TaskStatus.toDo,
                     } as Prisma.TaskCreateManyInput;

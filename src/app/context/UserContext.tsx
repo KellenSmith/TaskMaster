@@ -34,8 +34,6 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
     const [editMode, setEditMode] = useState(false);
 
-    console.log(session);
-
     const refreshSession = async () => {
         await getSession();
         router.refresh();

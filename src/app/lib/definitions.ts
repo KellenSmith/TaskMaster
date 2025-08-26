@@ -14,7 +14,7 @@ export const getUrl = (
     const baseUrl = process.env.VERCEL_URL
         ? "https://" + process.env.VERCEL_URL
         : window?.location?.origin;
-    if (!baseUrl) return "";
+    if (!baseUrl) throw new Error("Base URL not found");
 
     const url = new NextURL([GlobalConstants.HOME, ...pathSegments].join("/"), baseUrl);
     for (let [key, value] of Object.entries(searchParams)) {

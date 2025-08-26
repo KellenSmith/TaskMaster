@@ -15,6 +15,7 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import ParticipantDashboard from "./ParticipantDashboard";
 import ReserveDashboard from "./ReserveDashboard";
 import TicketDashboard from "./TicketDashboard";
+import GlobalConstants from "../../GlobalConstants";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -59,7 +60,6 @@ const EventDashboard = ({
 }: EventDashboardProps) => {
     const theme = useTheme();
     const router = useRouter();
-    const pathname = usePathname();
     const searchParams = useSearchParams();
     const { user } = useUserContext();
     const event = use(eventPromise);
@@ -87,10 +87,8 @@ const EventDashboard = ({
         [searchParams, eventTabs],
     );
 
-    const setOpenTab = (tab: string) => {
-        clientRedirect(router, [pathname], { eventId: event.id, tab });
-    };
-
+    const setOpenTab = (tab: string) =>
+        clientRedirect(router, [GlobalConstants.EVENT], { eventId: event.id, tab });
     const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
 
     const getOpenTabComp = () => {

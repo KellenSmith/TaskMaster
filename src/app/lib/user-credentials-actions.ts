@@ -115,14 +115,14 @@ export const resetUserCredentials = async (
 };
 
 export const updateUserCredentials = async (
+    userId: string,
     fieldValues: z.infer<typeof UpdateCredentialsSchema>,
 ): Promise<void> => {
     try {
-        const loggedInUser = await getLoggedInUser();
         const salt = await generateSalt();
         await prisma.userCredentials.update({
             where: {
-                userId: loggedInUser.id,
+                userId: userId,
             },
             data: {
                 salt,

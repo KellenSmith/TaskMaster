@@ -11,6 +11,7 @@ import { serverRedirect } from "./definitions";
 import { getLoggedInUser } from "./user-actions";
 
 export const getOrderById = async (
+    userId: string,
     orderId: string,
 ): Promise<
     Prisma.OrderGetPayload<{
@@ -28,8 +29,8 @@ export const getOrderById = async (
                 },
             },
         });
-        const user = await getLoggedInUser();
-        if (user.id === order.userId) return order;
+        if (userId !== order.userId) throw new Error("Not authorized to view this order");
+        return order;
     } catch {
         throw new Error("Failed to fetch order");
     }
@@ -64,12 +65,11 @@ export const getAllOrders = async (): Promise<
 };
 
 export const createOrder = async (
+    userId: string,
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
 ): Promise<void> => {
     let createdOrderId: string;
     try {
-        const loggedInUser = await getLoggedInUser();
-
         // Calculate the price of each order item
         for (const item of orderItems) {
             const product = await prisma.product.findUniqueOrThrow({
@@ -88,7 +88,7 @@ export const createOrder = async (
                     ),
                     user: {
                         connect: {
-                            id: loggedInUser.id,
+                            id: userId,
                         },
                     },
                     orderItems: {
