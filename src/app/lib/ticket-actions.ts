@@ -84,22 +84,19 @@ export const updateEventTicket = async (
 };
 
 export const deleteEventTicket = async (ticketId: string) => {
-    try {
-        const deleteTicket = prisma.ticket.delete({
+    await prisma.$transaction(async (tx) => {
+        const deletedTicket = await tx.ticket.delete({
             where: {
                 id: ticketId,
             },
         });
-        const deleteProduct = prisma.product.delete({
+        await tx.product.delete({
             where: {
-                id: ticketId,
+                id: deletedTicket.productId,
             },
         });
-        await prisma.$transaction([deleteTicket, deleteProduct]);
-        revalidateTag(GlobalConstants.TICKET);
-    } catch {
-        throw new Error("Failed to delete event ticket");
-    }
+    });
+    revalidateTag(GlobalConstants.TICKET);
 };
 
 export const getEventTickets = async (eventId: string) => {

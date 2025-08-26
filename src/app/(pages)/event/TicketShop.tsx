@@ -81,9 +81,8 @@ const TicketShop = ({
     };
 
     const deleteTicketAction = async (ticketId: string) => {
-        const ticket = tickets.find((t) => t.id === ticketId);
         try {
-            await deleteEventTicket(ticket.id);
+            await deleteEventTicket(ticketId);
             addNotification("Deleted ticket", "success");
         } catch {
             addNotification("Failed to delete ticket", "error");
