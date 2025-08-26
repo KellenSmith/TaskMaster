@@ -20,7 +20,7 @@ interface OrderDashboardProps {
 }
 
 const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
-    const { user } = useUserContext();
+    const { user, refreshSession } = useUserContext();
     const order = use(orderPromise);
     const router = useRouter();
 
@@ -35,7 +35,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
         startTransition(async () => {
             try {
                 await checkPaymentStatus(order.id);
-                router.refresh();
+                await refreshSession();
             } catch {
                 addNotification(
                     "Failed to check order status. What you see might not be up to date.",
@@ -43,7 +43,9 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
                 );
             }
         });
-    }, [addNotification, order.id, router]);
+        // Check payment status once upon render
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Don't show order until payment status is checked
     if (isPending) return <LoadingFallback />;

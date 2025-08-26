@@ -5,12 +5,12 @@ import { z } from "zod";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves } from "./mail-service/mail-service";
-import { getLoggedInUser } from "./user-actions";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { isUserHost, serverRedirect } from "./definitions";
 import { allowRedirectException } from "../ui/utils";
 import dayjs from "dayjs";
+import { getLoggedInUser } from "./user-actions";
 
 export const createEvent = async (
     parsedFieldValues: z.infer<typeof EventCreateSchema>,

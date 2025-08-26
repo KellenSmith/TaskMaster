@@ -164,6 +164,29 @@ async function seedMemberships() {
     }
 }
 
+async function seedUserMemberships() {
+    const rows = await streamCsvObjects("prisma/seed-data/user_memberships.csv");
+    for (const r of rows) {
+        const payload = {
+            id: r.id,
+            userId: r.userId,
+            membershipId: r.membershipId,
+            expiresAt: r.expiresAt ? new Date(r.expiresAt) : undefined,
+        };
+        try {
+            // userId is unique in schema; upsert so existing records are updated
+            await prisma.userMembership.upsert({
+                where: { userId: payload.userId },
+                update: payload,
+                create: payload,
+            });
+            console.log("Upserted userMembership", payload.id);
+        } catch (e) {
+            console.warn("Skipping userMembership", payload.id, e?.message);
+        }
+    }
+}
+
 async function seedOrdersAndItems() {
     const orders = await streamCsvObjects("prisma/seed-data/orders.csv");
     for (const r of orders) {
@@ -295,6 +318,7 @@ async function main() {
     await seedUserCredentials();
     await seedProducts();
     await seedMemberships();
+    await seedUserMemberships();
     await seedEvents();
     await seedTickets();
     await seedEventParticipants();

@@ -3,12 +3,12 @@
 import { OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import { processOrderedProduct } from "./product-actions";
-import { getLoggedInUser } from "./user-actions";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
 import { serverRedirect } from "./definitions";
+import { getLoggedInUser } from "./user-actions";
 
 export const getOrderById = async (
     orderId: string,

@@ -6,9 +6,8 @@ import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
 import { isMembershipExpired } from "./definitions";
-import { getLoggedInUser } from "./user-actions";
-import { encryptJWT } from "./auth";
 import { revalidateTag } from "next/cache";
+import { getLoggedInUser } from "./user-actions";
 
 export const renewUserMembership = async (userId: string, membershipId: string): Promise<void> => {
     try {
@@ -40,14 +39,12 @@ export const renewUserMembership = async (userId: string, membershipId: string):
                 expiresAt: newExpiryDate,
             },
         });
-
-        // Make sure authorization and user context always uses the latest user data
-        const updatedUser = await prisma.user.findUniqueOrThrow({
-            where: { id: userId },
-            include: { userMembership: true },
-        });
-        await encryptJWT(updatedUser);
         revalidateTag(GlobalConstants.USER);
+        // Note: calling getSession() on the server does not update the client's
+        // session. The JWT callback in `auth.ts` now refreshes token.user from the
+        // database on subsequent requests. Call `getSession({ force: true })` or
+        // `signIn()` from the client after this server action completes to force
+        // the client to re-fetch the session and pick up membership changes.
     } catch (error) {
         console.error("Failed to renew user membership:", error);
         throw new Error("Failed to renew membership");
@@ -60,6 +57,7 @@ export const getMembershipProduct = async (): Promise<
     try {
         // Try to find existing membership product
         const membershipProduct = await prisma.product.findFirst({
+            where: { membership: { isNot: null } },
             select: {
                 id: true,
                 price: true,

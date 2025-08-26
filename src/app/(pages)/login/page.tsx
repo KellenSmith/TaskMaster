@@ -3,24 +3,29 @@ import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
 import { Button, Stack } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
-import { useRouter } from "next/navigation";
 import { FC } from "react";
-import { login } from "../../lib/auth";
-import { allowRedirectException } from "../../ui/utils";
 import { LoginSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import { clientRedirect } from "../../lib/definitions";
+import { useRouter } from "next/navigation";
+import { login } from "../../lib/user-credentials-actions";
+import { useUserContext } from "../../context/UserContext";
 
 const LoginPage: FC = () => {
+    const { refreshSession } = useUserContext();
     const router = useRouter();
 
-    const handleLogin = async (parsedFieldValues: z.infer<typeof LoginSchema>) => {
+    const loginAction = async (parsedFieldValues: z.infer<typeof LoginSchema>) => {
         try {
             await login(parsedFieldValues);
-            return "Logged in successfully. Redirecting...";
+            return "Logged in. Redirecting...";
         } catch (error) {
-            allowRedirectException(error);
-            throw new Error(error.message);
+            // If login is successful, redirect exception is thrown.
+            // Refresh session before moving on
+            if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+                refreshSession();
+                throw error;
+            }
         }
     };
 
@@ -30,7 +35,7 @@ const LoginPage: FC = () => {
                 name={GlobalConstants.LOGIN}
                 buttonLabel={GlobalConstants.LOGIN}
                 validationSchema={LoginSchema}
-                action={handleLogin}
+                action={loginAction}
                 readOnly={false}
                 editable={false}
             />

@@ -20,7 +20,7 @@ import { allowRedirectException, formatDate } from "../../ui/utils";
 import { Person, Schedule, AdminPanelSettings, Warning, CheckCircle } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-import { logout } from "../../lib/auth";
+import { signOut } from "../../lib/auth";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { UpdateCredentialsSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { updateUserCredentials } from "../../lib/user-credentials-actions";
@@ -55,7 +55,7 @@ const AccountTab = () => {
             try {
                 await deleteUser(user.id);
                 try {
-                    await logout();
+                    await signOut();
                 } catch {
                     clientRedirect(router, [GlobalConstants.HOME]);
                 }

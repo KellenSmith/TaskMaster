@@ -1,16 +1,23 @@
-import { createTransport, Transporter } from "nodemailer";
 import { getOrganizationSettings } from "../organization-settings-actions";
 
-const globalMailService = global as unknown as { mailTransport: Transporter };
+// Avoid importing nodemailer at module evaluation time. Dynamically import it
+// inside getMailTransport so bundlers don't include Node-only modules in edge
+// bundles.
+const globalMailService = global as unknown as { mailTransport?: any };
 
-const orgSettings = await getOrganizationSettings();
+export async function getMailTransport() {
+    if (globalMailService.mailTransport) return globalMailService.mailTransport;
 
-const mailTransport =
-    globalMailService.mailTransport ||
-    createTransport({
+    const orgSettings = await getOrganizationSettings();
+
+    // dynamic import so nodemailer is only required at runtime on a Node server
+    const nodemailer = await import("nodemailer");
+    const { createTransport } = nodemailer as any;
+
+    const transport = createTransport({
         host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT),
-        secure: parseInt(process.env.SMTP_PORT) === 465, // true for port 465, false for other ports
+        port: parseInt(process.env.SMTP_PORT || "0"),
+        secure: parseInt(process.env.SMTP_PORT || "0") === 465,
         auth: {
             user: orgSettings?.organizationEmail,
             pass: process.env.EMAIL_PASSWORD,
@@ -20,4 +27,6 @@ const mailTransport =
         },
     });
 
-export { mailTransport };
+    globalMailService.mailTransport = transport;
+    return transport;
+}

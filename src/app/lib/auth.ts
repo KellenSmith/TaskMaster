@@ -1,23 +1,27 @@
-"use server";
-
-import { jwtVerify, SignJWT } from "jose";
-import { cookies } from "next/headers";
-
-import GlobalConstants from "./../GlobalConstants";
+// TODO: migrate to using passwordless email login
+// TODO: migrate to using prisma adapter
+import NextAuth, { CredentialsSignin, Session, type DefaultSession } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import { Prisma } from "@prisma/client";
+import GlobalConstants from "../GlobalConstants";
 import { prisma } from "../../../prisma/prisma-client";
-import dayjs from "dayjs";
-import { revalidateTag } from "next/cache";
-import { LoginSchema } from "./zod-schemas";
-import z from "zod";
-import { serverRedirect } from "./definitions";
+import { JWT } from "@auth/core/jwt";
 
-// Generate a random string of specified length
-export const generateSalt = async (): Promise<string> => {
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+const failedSigninCodes = {
+    MEMBERSHIP_PENDING: "Membership application pending",
+    INVALID_CREDENTIALS: "Invalid credentials",
+    USER_NOT_FOUND: "Please apply for membership",
 };
+
+declare module "next-auth" {
+    /**
+     * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+     */
+    // eslint-disable-next-line no-unused-vars
+    interface Session {
+        user: Prisma.UserGetPayload<{ include: { userMembership: true } }> & DefaultSession["user"];
+    }
+}
 
 // Hash a password using SHA-256 and salt
 export const hashPassword = async (password: string, salt: string): Promise<string> => {
@@ -35,120 +39,107 @@ export const hashPassword = async (password: string, salt: string): Promise<stri
     return hashHex;
 };
 
-export const generateUserCredentials = async (
-    password: string,
-): Promise<Prisma.UserCredentialsCreateWithoutUserInput> => {
-    const salt = await generateSalt();
-    return {
-        salt,
-        hashedPassword: await hashPassword(password, salt),
-    };
+const throwFailedSignInError = (errorCode: string) => {
+    const error = new CredentialsSignin();
+    error.code = errorCode;
+    throw error;
 };
 
-export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Promise<void> => {
-    try {
-        // Everyone who applied for membership exists in the database
-        const loggedInUser = await prisma.user.findUnique({
-            where: {
-                email: parsedFieldValues.email,
-            },
-            include: {
-                userCredentials: true,
-                userMembership: true,
-            },
-        });
-        if (!loggedInUser) throw new Error("Please apply for membership");
-        if (!loggedInUser.userCredentials) throw new Error("Membership application pending");
-
-        // All validated members have credentials
-        const userCredentials = await prisma.userCredentials.findUnique({
-            where: {
-                userId: loggedInUser.id,
-            } as any as Prisma.UserCredentialsWhereUniqueInput,
-        });
-        if (!userCredentials) throw new Error("Invalid credentials");
-
-        // Match hashed password to stored hashed password
-        const hashedPassword = await hashPassword(
-            parsedFieldValues.password as unknown as string,
-            userCredentials[GlobalConstants.SALT],
-        );
-        const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
-        if (!passwordsMatch) throw new Error("Invalid credentials");
-
-        try {
-            await encryptJWT(loggedInUser);
-        } catch {
-            throw new Error("Failed to log in");
-        }
-        revalidateTag(GlobalConstants.USER);
-    } catch (error) {
-        throw new Error(error.message);
-    }
-    serverRedirect([GlobalConstants.HOME]);
-};
-
-const getEncryptionKey = () => new TextEncoder().encode(process.env.AUTH_SECRET);
-
-export const encryptJWT = async (
-    loggedInUser: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
-) => {
-    const expiresAt = dayjs().add(1, "d").toDate();
-    // Encode the user ID as jwt
-    const jwt = await new SignJWT(loggedInUser)
-        .setProtectedHeader({
-            alg: "HS256",
-        })
-        .setIssuedAt()
-        .setExpirationTime(expiresAt)
-        .sign(getEncryptionKey());
-    const cookieStore = await cookies();
-    cookieStore.set(GlobalConstants.USER, jwt, {
-        httpOnly: true,
-        secure: true,
-        expires: expiresAt,
+const authorize = async (
+    credentials: Partial<Record<"email" | "password", unknown>>,
+): Promise<Prisma.UserGetPayload<{ include: { userMembership: true } }>> => {
+    // Everyone who applied for membership exists in the database
+    const loggedInUser = await prisma.user.findUnique({
+        where: {
+            email: credentials.email as string,
+        },
+        include: {
+            userCredentials: true,
+            userMembership: true,
+        },
     });
+    if (!loggedInUser) throwFailedSignInError(failedSigninCodes.USER_NOT_FOUND);
+    if (!loggedInUser.userCredentials) throwFailedSignInError(failedSigninCodes.MEMBERSHIP_PENDING);
+
+    // All validated members have credentials
+    const userCredentials = await prisma.userCredentials.findUnique({
+        where: {
+            userId: loggedInUser.id,
+        } as any as Prisma.UserCredentialsWhereUniqueInput,
+    });
+    if (!userCredentials) throwFailedSignInError(failedSigninCodes.INVALID_CREDENTIALS);
+
+    // Match hashed password to stored hashed password
+    const hashedPassword = await hashPassword(
+        credentials.password as string,
+        userCredentials[GlobalConstants.SALT],
+    );
+    const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
+    if (!passwordsMatch) throwFailedSignInError(failedSigninCodes.INVALID_CREDENTIALS);
+
+    // eslint-disable-next-line no-unused-vars
+    const { userCredentials: userCredentialsToOmit, ...userWithMembership } = loggedInUser;
+    return userWithMembership;
 };
 
-export const getUserCookie = async (): Promise<string | null> => {
-    try {
-        const cookieStore = await cookies();
-        return cookieStore.get(GlobalConstants.USER)?.value;
-    } catch {
-        return null;
-    }
-};
+export const { handlers, signIn, signOut, auth } = NextAuth({
+    providers: [
+        Credentials({
+            credentials: {
+                email: {
+                    type: "email",
+                    label: "Email",
+                    placeholder: "johndoe@gmail.com",
+                },
+                password: {
+                    type: "password",
+                    label: "Password",
+                    placeholder: "*****",
+                },
+            },
+            authorize,
+        }),
+    ],
 
-export const decryptJWT = async (
-    userCookie: string,
-): Promise<Prisma.UserGetPayload<{
-    include: { userMembership: true };
-}> | null> => {
-    try {
-        const result = await jwtVerify(userCookie, getEncryptionKey(), {
-            algorithms: ["HS256"],
-        });
-        const jwtPayload = result?.payload as Prisma.UserGetPayload<{
-            include: { userMembership: true };
-        }>;
-        // The user is authenticated. Current database state still unclear
-        return jwtPayload;
-    } catch {
-        // Nonexistent or corrupted JWT
-        return null;
-    }
-};
+    callbacks: {
+        // Persist the full user object into the JWT on sign in
+        jwt: async ({
+            token,
+            user,
+        }: {
+            token: JWT;
+            user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | undefined;
+        }) => {
+            // On initial sign in `user` is available — persist it into the token.
+            if (user) return { ...token, user };
 
-export const deleteUserCookie = async () => {
-    const cookieStore = await cookies();
-    cookieStore.delete(GlobalConstants.USER);
-};
+            // For subsequent requests, refresh the user payload from the database so
+            // session data (which reads from token.user) reflects DB updates like
+            // membership changes. If we can't refresh, just return the existing token.
+            try {
+                const userId = (token as any).sub || (token as any).user?.id;
+                if (userId) {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: userId as string },
+                        include: { userMembership: true },
+                    });
+                    if (dbUser) return { ...token, user: dbUser };
+                }
+            } catch (err) {
+                // Don't throw here — failing to refresh should not break auth flow.
+                // Log for debugging.
+                console.error("Failed to refresh token user in jwt callback:", err);
+            }
 
-export const logout = async () => {
-    try {
-        await deleteUserCookie();
-    } catch {
-        throw new Error("Failed to log out");
-    }
-    serverRedirect([GlobalConstants.HOME]);
-};
+            return token;
+        },
+        // Populate session.user from the token (including the full user object).
+        // This ensures `useSession().data.user` contains the full user returned by `authorize()`.
+        session: ({ session, token }): Session => ({
+            ...session,
+            user:
+                (token.user as Prisma.UserGetPayload<{ include: { userMembership: true } }>) ||
+                session.user,
+        }),
+    },
+});

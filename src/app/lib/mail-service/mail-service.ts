@@ -1,6 +1,6 @@
 "use server";
 
-import { mailTransport } from "./mail-transport";
+import { getMailTransport } from "./mail-transport";
 import UserCredentialsTemplate from "./mail-templates/UserCredentialsTemplate";
 import { createElement, ReactElement } from "react";
 import MembershipExpiresReminderTemplate from "./mail-templates/MembershipExpiresReminderTemplate";
@@ -50,7 +50,8 @@ export const notifyOfMembershipApplication = async (
             parsedFieldValues,
         });
 
-        const mailResponse = await mailTransport.sendMail(
+        const transport = await getMailTransport();
+        const mailResponse = await transport.sendMail(
             await getEmailPayload(
                 [organizationSettings.organizationEmail],
                 `New membership application received`,
@@ -75,7 +76,8 @@ export const sendUserCredentials = async (
         password: userPassword,
         organizationName: await getOrganizationName(),
     });
-    const mailResponse = await mailTransport.sendMail(
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(
         await getEmailPayload(
             [userEmail],
             `${await getOrganizationName()} credentials`,
@@ -94,7 +96,8 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
     const mailContent = createElement(MembershipExpiresReminderTemplate, {
         organizationSettings: orgSettings,
     });
-    const mailResponse = await mailTransport.sendMail(
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(
         await getEmailPayload(
             userEmails,
             `Your ${orgSettings?.organizationName || "Task Master"} membership is about to expire`,
@@ -119,7 +122,8 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
         event,
     });
 
-    const mailResponse = await mailTransport.sendMail(
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(
         await getEmailPayload(
             reserveEmails,
             `A spot has opened up for the event: ${event.title}`,
@@ -153,7 +157,8 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
             `Cancelled event: ${event.title}`,
             mailContent,
         );
-        const mailResponse = await mailTransport.sendMail(mailPayload);
+        const transport = await getMailTransport();
+        const mailResponse = await transport.sendMail(mailPayload);
         if (mailResponse.error) throw new Error(mailResponse.error.message);
         const rejectedEmails = mailResponse?.rejected;
         if (rejectedEmails.length > 0)
@@ -203,7 +208,7 @@ export const sendMassEmail = async (
             parsedFieldValues.subject,
             mailContent,
         );
-
+        const mailTransport = await getMailTransport();
         const mailResponse = await mailTransport.sendMail(mailPayload);
         if (mailResponse.error) throw new Error(mailResponse.error.message);
         return `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
@@ -246,7 +251,8 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
             organizationName: await getOrganizationName(),
         });
 
-        const mailResponse = await mailTransport.sendMail(
+        const transport = await getMailTransport();
+        const mailResponse = await transport.sendMail(
             await getEmailPayload(
                 [orderDetails.user.email],
                 `Order Confirmation - ${await getOrganizationName()}`,
@@ -274,7 +280,8 @@ export const notifyTaskReviewer = async (
         notificationMessage,
     });
 
-    return mailTransport.sendMail(
+    const transport = await getMailTransport();
+    return transport.sendMail(
         await getEmailPayload([reviewerEmail], `Task updated - ${organizationName}`, mailContent),
     );
 };
