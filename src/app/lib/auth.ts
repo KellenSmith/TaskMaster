@@ -4,12 +4,12 @@ import NextAuth, { CredentialsSignin, Session, type DefaultSession } from "next-
 import Credentials from "next-auth/providers/credentials";
 import { Prisma } from "@prisma/client";
 import GlobalConstants from "../GlobalConstants";
-const { prisma } = await import("../../../prisma/prisma-client");
 // NOTE: prisma is intentionally not imported at the top-level because
 // some callbacks (jwt/session) may run in an edge runtime where Prisma
 // cannot run. We lazy-import prisma inside server-only functions (like
 // `authorize`) to avoid bundling Prisma into edge code.
 import { JWT } from "@auth/core/jwt";
+import { prisma } from "../../../prisma/prisma-client";
 
 const failedSigninCodes = {
     MEMBERSHIP_PENDING: "Membership application pending",
