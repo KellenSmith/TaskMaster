@@ -12,11 +12,7 @@ export const getOrganizationSettings = async (): Promise<
 > => {
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
-        orgSettings = await prisma.organizationSettings.upsert({
-            where: { organizationName: process.env.NEXT_PUBLIC_ORG_NAME || "Task Master" },
-            update: {},
-            create: {},
-        });
+        orgSettings = await prisma.organizationSettings.create({});
     }
     return orgSettings;
 };
@@ -33,7 +29,7 @@ export const updateOrganizationSettings = async (
         const settings = await getOrganizationSettings();
         await prisma.organizationSettings.update({
             where: {
-                organizationName: settings?.organizationName,
+                id: settings?.id,
             },
             data: fieldValues,
         });
