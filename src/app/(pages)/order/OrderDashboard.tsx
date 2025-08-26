@@ -25,7 +25,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     const router = useRouter();
 
     // Only allow showing the user's own orders
-    if (user.id !== order.userId) clientRedirect(router, [GlobalConstants.HOME]);
+    if (user?.id !== order.userId) clientRedirect(router, [GlobalConstants.HOME]);
 
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();

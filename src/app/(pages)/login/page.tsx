@@ -22,10 +22,8 @@ const LoginPage: FC = () => {
         } catch (error) {
             // If login is successful, redirect exception is thrown.
             // Refresh session before moving on
-            if (error?.digest?.startsWith("NEXT_REDIRECT")) {
-                refreshSession();
-                throw error;
-            }
+            if (error?.digest?.startsWith("NEXT_REDIRECT")) refreshSession();
+            throw error;
         }
     };
 

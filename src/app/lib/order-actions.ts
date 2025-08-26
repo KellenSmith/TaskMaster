@@ -18,7 +18,7 @@ export const getOrderById = async (
     }>
 > => {
     try {
-        return await prisma.order.findUniqueOrThrow({
+        const order = await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
             include: {
                 orderItems: {
@@ -28,6 +28,8 @@ export const getOrderById = async (
                 },
             },
         });
+        const user = await getLoggedInUser();
+        if (user.id === order.userId) return order;
     } catch {
         throw new Error("Failed to fetch order");
     }
