@@ -72,7 +72,7 @@ export const createOrder = async (
         const product = await prisma.product.findUniqueOrThrow({
             where: { id: orderItem.productId },
         });
-        if (product.stock < orderItem.quantity) {
+        if (!product.unlimitedStock && product.stock < orderItem.quantity) {
             throw new Error(`Insufficient stock for product ${product.id}`);
         }
     }
