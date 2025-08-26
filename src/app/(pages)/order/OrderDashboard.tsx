@@ -14,7 +14,7 @@ import { clientRedirect } from "../../lib/definitions";
 interface OrderDashboardProps {
     orderPromise: Promise<
         Prisma.OrderGetPayload<{
-            include: { orderItems: { include: { product: true } } };
+            include: { orderItems: { include: { product: { include: { membership: true } } } } };
         }>
     >;
 }

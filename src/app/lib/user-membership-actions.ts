@@ -42,11 +42,6 @@ export const renewUserMembership = async (userId: string, membershipId: string):
             },
         });
         revalidateTag(GlobalConstants.USER);
-        // Note: calling getSession() on the server does not update the client's
-        // session. The JWT callback in `auth.ts` now refreshes token.user from the
-        // database on subsequent requests. Call `getSession({ force: true })` or
-        // `signIn()` from the client after this server action completes to force
-        // the client to re-fetch the session and pick up membership changes.
     } catch (error) {
         console.error("Failed to renew user membership:", error);
         throw new Error("Failed to renew membership");

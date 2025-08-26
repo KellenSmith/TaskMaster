@@ -14,7 +14,7 @@ export const getOrderById = async (
     orderId: string,
 ): Promise<
     Prisma.OrderGetPayload<{
-        include: { orderItems: { include: { product: true } } };
+        include: { orderItems: { include: { product: { include: { membership: true } } } } };
     }>
 > => {
     try {
@@ -23,7 +23,7 @@ export const getOrderById = async (
             include: {
                 orderItems: {
                     include: {
-                        product: true,
+                        product: { include: { membership: true } },
                     },
                 },
             },
