@@ -194,9 +194,9 @@ export const capturePaymentFunds = async (orderId: string) => {
     }
 };
 
-export const checkPaymentStatus = async (orderId: string): Promise<void> => {
+export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {
     try {
-        const order = await getOrderById(orderId);
+        const order = await getOrderById(userId, orderId);
 
         if (order.status === OrderStatus.completed) {
             return;

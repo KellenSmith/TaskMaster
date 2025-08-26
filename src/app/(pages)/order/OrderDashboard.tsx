@@ -34,7 +34,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     useEffect(() => {
         startTransition(async () => {
             try {
-                await checkPaymentStatus(order.id);
+                await checkPaymentStatus(user.id, order.id);
                 await refreshSession();
             } catch {
                 addNotification(

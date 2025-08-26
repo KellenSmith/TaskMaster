@@ -90,7 +90,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
     const cloneAction = () => {
         startTransition(async () => {
             try {
-                await cloneEvent(event.id);
+                await cloneEvent(user.id, event.id);
             } catch (error) {
                 allowRedirectException(error);
                 addNotification("Failed to clone event", "error");
