@@ -71,11 +71,14 @@ const Form: FC<FormProps> = ({
     const [editMode, setEditMode] = useState(!readOnly);
     const { addNotification } = useNotificationContext();
     const renderedFields = useMemo(
-        () => [...RenderedFields[name], ...customIncludedFields],
+        () => [...(RenderedFields?.[name] || []), ...(customIncludedFields || [])],
         [name, customIncludedFields],
     );
     const requiredFields = useMemo(
-        () => [...(name in RequiredFields ? RequiredFields[name] : []), ...customRequiredFields],
+        () => [
+            ...(name in RequiredFields ? RequiredFields[name] : []),
+            ...(customRequiredFields || []),
+        ],
         [name, customRequiredFields],
     );
 
@@ -105,17 +108,18 @@ const Form: FC<FormProps> = ({
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const parsedFieldValues = validateFormData(formData);
-        if (parsedFieldValues)
+        if (parsedFieldValues) {
             startTransition(async () => {
                 try {
                     const submitResult = await action(parsedFieldValues);
                     addNotification(submitResult, "success");
-                    editable && setEditMode(false);
+                    !(editable && !readOnly) && setEditMode(false);
                 } catch (error) {
                     allowRedirectException(error);
                     addNotification(error.message, "error");
                 }
             });
+        }
     };
 
     const getDefaultValue = (fieldId: string) => {

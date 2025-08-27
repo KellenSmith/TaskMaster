@@ -53,6 +53,8 @@ export const FieldLabels = {
     [GlobalConstants.FULL_TICKET_PRICE]: "Full ticket price",
     [GlobalConstants.DESCRIPTION]: "Description",
     [GlobalConstants.HOST]: "Host",
+    [GlobalConstants.PARTICIPANT_USERS]: "Participants",
+    [GlobalConstants.RESERVE_USERS]: "Reserves",
     // Task
     [GlobalConstants.TASK]: "Task",
     [GlobalConstants.NAME]: "Name",
@@ -158,6 +160,8 @@ export const RenderedFields = {
     ],
     [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],
     [GlobalConstants.ORDER]: [GlobalConstants.STATUS],
+    [GlobalConstants.PARTICIPANT_USERS]: [GlobalConstants.USER_ID, GlobalConstants.TICKET_ID],
+    [GlobalConstants.RESERVE_USERS]: [GlobalConstants.USER_ID],
 };
 RenderedFields[GlobalConstants.TICKET] = [
     GlobalConstants.TICKET_TYPE,
@@ -221,6 +225,8 @@ export const RequiredFields = {
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
     [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE],
+    [GlobalConstants.PARTICIPANT_USERS]: RenderedFields[GlobalConstants.PARTICIPANT_USERS],
+    [GlobalConstants.RESERVE_USERS]: RenderedFields[GlobalConstants.RESERVE_USERS],
 };
 RequiredFields[GlobalConstants.TICKET] = [
     ...RequiredFields[GlobalConstants.PRODUCT],
@@ -251,15 +257,11 @@ export const passwordFields = [
 export const selectFieldOptions = {
     // User
     [GlobalConstants.ROLE]: Object.values(UserRole),
-    [GlobalConstants.PHASE]: [
-        GlobalConstants.BEFORE,
-        GlobalConstants.DURING,
-        GlobalConstants.AFTER,
-    ],
+    [GlobalConstants.PHASE]: Object.values(TaskStatus),
     [GlobalConstants.STATUS]: Object.values(TaskStatus),
     [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
-} as { [key: string]: string[] };
+};
 
 export const allowSelectMultiple = [GlobalConstants.TAGS];
 

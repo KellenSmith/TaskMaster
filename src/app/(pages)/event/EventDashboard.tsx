@@ -132,6 +132,8 @@ const EventDashboard = ({
                             eventPromise={eventPromise}
                             eventParticipantsPromise={eventParticipantsPromise}
                             eventReservesPromise={eventReservesPromise}
+                            eventTicketsPromise={eventTicketsPromise}
+                            activeMembersPromise={activeMembersPromise}
                         />
                     </ErrorBoundarySuspense>
                 );

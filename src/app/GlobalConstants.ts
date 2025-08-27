@@ -85,6 +85,7 @@ const GlobalConstants = {
     QUEUEING_SINCE: "queueingSince",
     // Ticket
     TICKET: "ticket",
+    TICKET_ID: "ticketId",
     TICKET_TYPE: "type",
     // Product
     PRODUCT: "product",

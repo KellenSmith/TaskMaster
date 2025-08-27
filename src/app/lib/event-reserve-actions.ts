@@ -6,6 +6,17 @@ import GlobalConstants from "../GlobalConstants";
 
 export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
     try {
+        // Check that the user is not on the participant list
+        const eventParticipant = await prisma.eventParticipant.findFirst({
+            where: {
+                userId,
+                ticket: {
+                    eventId,
+                },
+            },
+        });
+        if (eventParticipant) throw new Error("User is already a participant in the event");
+
         await prisma.eventReserve.create({
             data: {
                 userId: userId,

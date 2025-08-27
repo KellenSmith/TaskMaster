@@ -279,3 +279,12 @@ export const EmailSendoutSchema = z.object({
     subject: z.string(),
     content: z.string(),
 });
+
+export const AddEventParticipantSchema = z.object({
+    userId: z.uuid(),
+    ticketId: z.uuid(),
+});
+
+export const AddEventReserveSchema = z.object({
+    userId: z.uuid(),
+});
