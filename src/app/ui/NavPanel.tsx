@@ -25,6 +25,7 @@ import {
     applicationRoutes,
     routeToPath,
     clientRedirect,
+    snakeCaseToLabel,
 } from "../lib/definitions";
 import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
@@ -86,7 +87,7 @@ const NavPanel = () => {
                                 clientRedirect(router, [route]);
                             }}
                         >
-                            {route}
+                            {snakeCaseToLabel(route)}
                         </Button>
                     </ListItem>
                 ))}

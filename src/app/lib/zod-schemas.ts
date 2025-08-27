@@ -155,6 +155,16 @@ export const TaskUpdateSchema: z.ZodType<
 > = TaskCreateSchema;
 
 // =============================================================================
+// SKILL BADGE SCHEMAS
+// =============================================================================
+
+export const SkillBadgeCreateSchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    imageUrl: z.string().optional(),
+});
+
+// =============================================================================
 // PRODUCT SCHEMAS
 // =============================================================================
 

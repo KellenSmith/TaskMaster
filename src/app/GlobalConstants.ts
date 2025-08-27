@@ -86,6 +86,9 @@ const GlobalConstants = {
     // Location
     LOCATION: "location",
     LOCATIONS: "locations",
+    // Skill badges
+    SKILL_BADGE: "skill_badge",
+    SKILL_BADGES: "skill_badges",
     ADDRESS: "address",
     CONTACT_PERSON: "contactPerson",
     RENTAL_COST: "rentalCost",

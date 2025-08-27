@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import dayjs, { Dayjs } from "dayjs";
 import Error from "next/error";
 
@@ -14,4 +15,11 @@ export const allowRedirectException = (error: Error & { digest?: string }) => {
     if (error?.digest?.startsWith("NEXT_REDIRECT")) {
         throw error;
     }
+};
+
+export const userHasSkillBadge = (
+    userId: string,
+    skillBadge: Prisma.SkillBadgeGetPayload<{ include: { userSkillBadges: true } }>,
+): boolean => {
+    return skillBadge.userSkillBadges.some((userBadge) => userBadge.userId === userId);
 };

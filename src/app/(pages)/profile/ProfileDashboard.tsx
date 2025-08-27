@@ -38,10 +38,12 @@ const ProfileDashboard = ({ tasksPromise, eventsPromise }: ProfileDashboardProps
             account: "Account",
             events: null,
             tasks: null,
+            skill_badges: null,
         };
         if (!isMembershipExpired(user)) {
             availableTabs.events = "Events";
             availableTabs.tasks = "Tasks";
+            availableTabs.skill_badges = "Skill Badges";
         }
         return availableTabs;
     }, [user]);

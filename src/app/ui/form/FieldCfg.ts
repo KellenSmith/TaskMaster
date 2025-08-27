@@ -90,6 +90,9 @@ export const FieldLabels = {
     [GlobalConstants.UNLIMITED_STOCK]: "Unlimited Stock",
     [GlobalConstants.TICKET]: "Ticket",
     [GlobalConstants.TICKET_TYPE]: "Type",
+    // Skill badge
+    [GlobalConstants.SKILL_BADGE]: "Skill Badge",
+    [GlobalConstants.IMAGE_URL]: "Image URL",
 };
 
 export const explanatoryTexts = {
@@ -173,6 +176,7 @@ export const RenderedFields = {
         GlobalConstants.UNLIMITED_STOCK,
         GlobalConstants.DESCRIPTION,
     ],
+    [GlobalConstants.SKILL_BADGE]: [GlobalConstants.NAME, GlobalConstants.DESCRIPTION],
     [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],
     [GlobalConstants.ORDER]: [GlobalConstants.STATUS],
     [GlobalConstants.PARTICIPANT_USERS]: [GlobalConstants.USER_ID, GlobalConstants.TICKET_ID],

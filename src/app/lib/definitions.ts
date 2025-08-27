@@ -64,6 +64,7 @@ export const applicationRoutes = {
     [UserRole.admin]: [
         GlobalConstants.LOCATIONS,
         GlobalConstants.TASKS,
+        GlobalConstants.SKILL_BADGES,
         GlobalConstants.SENDOUT,
         GlobalConstants.MEMBERS,
         GlobalConstants.PRODUCTS,
@@ -111,5 +112,5 @@ export const isUserHost = (
     event: Prisma.EventGetPayload<true> | null,
 ): boolean => user && event && user?.id === event?.hostId;
 
-export const snakeCaseToLabel = (snakeCase: string) =>
-    snakeCase[0].toUpperCase() + snakeCase.slice(1).replace(/_/g, " ");
+export const snakeCaseToLabel = (snakeCase: string): string =>
+    snakeCase ? snakeCase[0].toUpperCase() + snakeCase.slice(1).replace(/_/g, " ") : "";
