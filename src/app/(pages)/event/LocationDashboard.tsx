@@ -7,9 +7,7 @@ import {
     Box,
     Button,
     Card,
-    CardActionArea,
     CardContent,
-    Select,
     Stack,
     TextField,
     Typography,
@@ -21,8 +19,7 @@ import { FieldLabels, RenderedFields } from "../../ui/form/FieldCfg";
 import GlobalConstants from "../../GlobalConstants";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { updateEvent } from "../../lib/event-actions";
-import AutocompleteWrapper, { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
-import Form from "../../ui/form/Form";
+import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 
 interface LocationDashboardProps {
     eventPromise: Promise<
@@ -122,7 +119,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                         </Button>
                         {isSwitchButtonDisabled() && (
                             <Typography color="error" textAlign="center">
-                                The location can't handle {event.maxParticipants} participants
+                                {`The location can't handle ${event.maxParticipants} participants`}
                             </Typography>
                         )}
                     </Stack>
