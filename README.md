@@ -32,17 +32,19 @@ For payments, use the following test data:
 
 - When you clone an event and is redirected to the new event clone, the event menu button (...) in the upper right corner does not work until the page is refreshed.
 
-## Further plans
+## Further plans in order of priority
 
-- A year wheel for admins showing planning times and current and upcoming events
-- Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.
-- Event tags (munch/playparty/section etc...)
-- Buttons to message the assignee and reviewer of a task
-- Enable task assignees to submit receipts
 - Add configurable locations with properties like address, accessibility info, max capacity which can be chosen by eventHosts
-- Merch store
+- Add instructions for eventHosts on how to set up and manage their events or require admins to approve events before publishing
+- Ability to translate texts and labels for menu, event descriptions etc.
+- Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.
+- Buttons to message the assignee and reviewer of a task
+- Event tags (munch/playparty/section etc...)
+- A year wheel for admins showing planning times and current and upcoming events
+- Enable task assignees to submit receipts
 - Solidarity and community funded event tickets - one bought solidarity ticket funds another ticket for someone else
-- Image support
+- Upload images for events/products/texts
+- Merch store
 
 ## Contributions
 
