@@ -10,6 +10,7 @@ import { LocationCreateSchema } from "../../lib/zod-schemas";
 import { createLocation, deleteLocation, updateLocation } from "../../lib/location-actions";
 import z from "zod";
 import { useNotificationContext } from "../../context/NotificationContext";
+import { RenderedFields } from "../../ui/form/FieldCfg";
 
 interface LocationsDashboardProps {
     locationsPromise: Promise<Location[]>;
@@ -56,14 +57,12 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
                 {locations
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((location) => (
-                        <Stack>
+                        <Stack key={location.id}>
                             <LocationCard
-                                key={location.id}
                                 location={location}
-                                setEditLocationId={setEditLocationId}
+                                renderedFields={RenderedFields[GlobalConstants.LOCATION]}
                             />
                             <Button
-                                key="edit"
                                 disabled={isPending}
                                 onClick={() => setEditLocationId(location.id)}
                                 fullWidth
@@ -71,7 +70,6 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
                                 Edit
                             </Button>
                             <Button
-                                key="delete"
                                 fullWidth
                                 color="error"
                                 onClick={() => deleteLocationAction(location.id)}

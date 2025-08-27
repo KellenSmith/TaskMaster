@@ -102,7 +102,12 @@ const EventDashboard = ({
     const getOpenTabComp = () => {
         switch (openTab) {
             case eventTabs.location:
-                return <LocationDashboard eventPromise={eventPromise} />;
+                return (
+                    <LocationDashboard
+                        eventPromise={eventPromise}
+                        locationsPromise={locationsPromise}
+                    />
+                );
             case eventTabs.organize:
                 return (
                     <ErrorBoundarySuspense errorMessage="Failed to fetch event tasks or active members">

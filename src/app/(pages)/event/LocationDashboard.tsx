@@ -1,10 +1,15 @@
 "use client";
 
 import { Prisma } from "@prisma/client";
-import { use } from "react";
-import { LocationOn } from "@mui/icons-material";
-import { Box, Paper, Stack, Typography } from "@mui/material";
-import RichTextField from "../../ui/form/RichTextField";
+import { use, useState, useTransition } from "react";
+import { Box, Stack, Typography } from "@mui/material";
+import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { useUserContext } from "../../context/UserContext";
+import LocationCard from "../locations/LocationCard";
+import { RenderedFields } from "../../ui/form/FieldCfg";
+import GlobalConstants from "../../GlobalConstants";
+import { useNotificationContext } from "../../context/NotificationContext";
+import { updateEvent } from "../../lib/event-actions";
 
 interface LocationDashboardProps {
     eventPromise: Promise<
@@ -14,11 +19,17 @@ interface LocationDashboardProps {
             };
         }>
     >;
+    locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
 }
 
-const LocationDashboard = ({ eventPromise }: LocationDashboardProps) => {
+const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboardProps) => {
+    const { user } = useUserContext();
+    const { addNotification } = useNotificationContext();
     const event = use(eventPromise);
     const location = event.location;
+    const locations = use(locationsPromise);
+    const [selectedLocationId, setSelectedLocationId] = useState(location?.id || null);
+    const [isPending, startTransition] = useTransition();
 
     if (!location) {
         return (
@@ -30,34 +41,32 @@ const LocationDashboard = ({ eventPromise }: LocationDashboardProps) => {
         );
     }
 
+    const switchEventLocation = () => {
+        startTransition(async () => {
+            try {
+                await updateEvent(event.id, { locationId: selectedLocationId });
+                addNotification("Switched event location", "success");
+            } catch {
+                addNotification("Failed to switch event location", "error");
+            }
+        });
+    };
+
     return (
-        <Stack spacing={3} sx={{ p: 3 }}>
-            <Paper elevation={3} sx={{ p: 3 }}>
-                <Stack spacing={2}>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                        <LocationOn color="primary" />
-                        <Typography variant="h6" component="h3">
-                            {location.name}
-                        </Typography>
-                    </Stack>
-
-                    <Stack spacing={1}>
-                        <Typography color="text.secondary">Address</Typography>
-                        <Typography>{location.address}</Typography>
-                    </Stack>
-
-                    {location.accessibilityInfo && (
-                        <Stack spacing={1}>
-                            <Typography color="text.secondary">Accessibility</Typography>
-                            <Typography>{location.accessibilityInfo}</Typography>
-                        </Stack>
-                    )}
-
-                    {location.description && (
-                        <RichTextField editMode={false} defaultValue={location.description} />
-                    )}
-                </Stack>
-            </Paper>
+        <Stack direction="row" spacing={2}>
+            <LocationCard
+                location={locations.find((loc) => loc.id === selectedLocationId) || location}
+                renderedFields={
+                    isUserAdmin(user) || isUserHost(user, event)
+                        ? RenderedFields[GlobalConstants.LOCATION]
+                        : [
+                              GlobalConstants.NAME,
+                              GlobalConstants.ADDRESS,
+                              GlobalConstants.ACCESSIBILITY_INFO,
+                              GlobalConstants.DESCRIPTION,
+                          ]
+                }
+            />
         </Stack>
     );
 };

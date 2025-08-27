@@ -2,15 +2,14 @@
 import { Location } from "@prisma/client";
 import { LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography } from "@mui/material";
-import { FieldLabels, RenderedFields } from "../../ui/form/FieldCfg";
-import GlobalConstants from "../../GlobalConstants";
+import { FieldLabels } from "../../ui/form/FieldCfg";
 
 interface LocationDashboardProps {
     location: Location;
-    setEditLocationId: (id: string | null) => void;
+    renderedFields: string[];
 }
 
-const LocationCard = ({ location }: LocationDashboardProps) => {
+const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
     return (
         <Stack spacing={3}>
             <Paper elevation={3} sx={{ p: 3 }}>
@@ -24,7 +23,7 @@ const LocationCard = ({ location }: LocationDashboardProps) => {
                         </Stack>
                     </Stack>
 
-                    {RenderedFields[GlobalConstants.LOCATION].map((fieldId) => (
+                    {renderedFields.map((fieldId) => (
                         <Stack key={fieldId} spacing={1}>
                             <Typography color="text.secondary">{FieldLabels[fieldId]}</Typography>
                             <Typography>{location[fieldId]}</Typography>
