@@ -14,6 +14,7 @@ import { Prisma } from "@prisma/client";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
+import { useNotificationContext } from "../../context/NotificationContext";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
@@ -25,12 +26,21 @@ interface CalendarDashboardProps {
 
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
     const { user } = useUserContext();
+    const { addNotification } = useNotificationContext();
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
 
-    const createEventWithHostAndTicket = async (fieldValues: z.infer<typeof EventCreateSchema>) => {
-        await createEvent(user.id, fieldValues);
+    const createEventWithHostAndTicket = async (
+        parsedFieldValues: z.infer<typeof EventCreateSchema>,
+    ) => {
+        const selectedLocation = locations.find((loc) => loc.id === parsedFieldValues.locationId);
+        if (selectedLocation.capacity < parsedFieldValues.maxParticipants)
+            throw new Error(
+                "The location can only handle " + selectedLocation.capacity + " participants",
+            );
+
+        await createEvent(user.id, parsedFieldValues);
         return "Created event";
     };
 
