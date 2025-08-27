@@ -73,24 +73,50 @@ async function seedProducts() {
 async function seedEvents() {
     const rows = await streamCsvObjects("prisma/seed-data/events.csv");
     for (const r of rows) {
+        // Events CSV previously used a free-text `location` column.
+        // Don't resolve the free-text value — instead pick any existing Location
+        // and use its id as the event.locationId.
+        let locationId: string | undefined = undefined;
+        const anyLoc = await (prisma as any).location.findFirst();
+        if (anyLoc) locationId = anyLoc.id;
+
         const payload = {
             id: r.id,
             title: r.title || "",
-            location: r.location || "",
+            locationId: locationId || null,
             startTime: r.startTime ? new Date(r.startTime) : undefined,
             endTime: r.endTime ? new Date(r.endTime) : undefined,
             description: r.description || null,
             maxParticipants: r.maxParticipants ? Number(r.maxParticipants) : 0,
             status: r.status || undefined,
             hostId: r.hostId || undefined,
-        };
+        } as any;
 
-        await prisma.event.upsert({
-            where: { id: payload.id },
-            update: payload,
-            create: payload,
-        });
-        console.log("Upserted event", payload.id);
+        await prisma.event.upsert({ where: { id: payload.id }, update: payload, create: payload });
+        console.log("Upserted event", payload.id, "locationId:", payload.locationId);
+    }
+}
+
+async function seedLocations() {
+    const rows = await streamCsvObjects("prisma/seed-data/locations.csv");
+    for (const r of rows) {
+        const payload = {
+            id: r.id,
+            name: r.name,
+            contactPerson: r.contactPerson || null,
+            rentalCost: r.rentalCost ? Number(r.rentalCost) : 0,
+            address: r.address || null,
+            capacity: r.capacity ? Number(r.capacity) : 0,
+            accessibilityInfo: r.accessibilityInfo || null,
+            description: r.description || null,
+        } as any;
+
+        try {
+            await (prisma as any).location.create({ data: payload });
+            console.log("Created location", payload.name);
+        } catch (e) {
+            console.warn("Skipping location (exists?)", payload.name);
+        }
     }
 }
 
@@ -319,6 +345,7 @@ async function main() {
     await seedProducts();
     await seedMemberships();
     await seedUserMemberships();
+    await seedLocations();
     await seedEvents();
     await seedTickets();
     await seedEventParticipants();

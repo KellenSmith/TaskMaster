@@ -25,6 +25,16 @@ model OrganizationSettings {
     @@map("organization_settings")
 }
 
+model TextContent {
+    id       String  @id
+    language String
+    content  String
+    category String? @default("organization") // ui, email, help, etc.
+
+    @@unique([id, language])
+    @@map("text_contents")
+}
+
 enum UserRole {
     member
     admin
@@ -71,6 +81,20 @@ model UserCredentials {
     @@map("user_credentials")
 }
 
+model Location {
+    id                String  @id @default(uuid())
+    name              String
+    contactPerson     String?
+    rentalCost        Float   @default(0)
+    address           String
+    capacity          Int
+    accessibilityInfo String?
+    description       String?
+    Event             Event[]
+
+    @@map("locations")
+}
+
 enum EventStatus {
     draft
     published
@@ -80,7 +104,8 @@ enum EventStatus {
 model Event {
     id              String      @id @default(uuid())
     title           String      @default("")
-    location        String      @default("")
+    locationId      String?
+    location        Location?   @relation(fields: [locationId], references: [id])
     startTime       DateTime
     endTime         DateTime
     description     String?
@@ -258,14 +283,4 @@ model OrderItem {
     productId String
 
     @@map("order_items")
-}
-
-model TextContent {
-    id       String  @id
-    language String
-    content  String
-    category String? @default("organization") // ui, email, help, etc.
-
-    @@unique([id, language])
-    @@map("text_contents")
 }

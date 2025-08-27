@@ -84,6 +84,22 @@ export const UserUpdateSchema: z.ZodType<Prisma.UserUpdateInput> = UserCreateSch
 // UserCredentials are never created from forms and thus don't need validation
 
 // =============================================================================
+// LOCATION SCHEMAS
+// =============================================================================
+
+export const LocationCreateSchema = z.object({
+    name: z.string(),
+    contactPerson: z.string().optional(),
+    rentalCost: z.coerce.number().min(0).optional(),
+    address: z.string(),
+    capacity: z.coerce.number().min(0),
+    accessibilityInfo: z.string().optional(),
+    description: z.string().optional(),
+});
+
+export const LocationUpdateSchema = LocationCreateSchema.partial();
+
+// =============================================================================
 // EVENT SCHEMAS
 // =============================================================================
 
@@ -91,7 +107,7 @@ export const EventCreateSchema = z
     .object({
         id: z.string().optional(),
         title: z.string(),
-        location: z.string(),
+        location: z.string().optional(),
         startTime: stringToISODate,
         endTime: stringToISODate,
         description: z.string().optional(),
