@@ -95,37 +95,45 @@ const EventDashboard = ({
         switch (openTab) {
             case eventTabs.organize:
                 return (
-                    <KanBanBoard
-                        readOnly={!isUserHost(user, event)}
-                        eventPromise={eventPromise}
-                        tasksPromise={eventTasksPromise}
-                        activeMembersPromise={activeMembersPromise}
-                    />
+                    <ErrorBoundarySuspense errorMessage="Failed to fetch event tasks or active members">
+                        <KanBanBoard
+                            readOnly={!isUserHost(user, event)}
+                            eventPromise={eventPromise}
+                            tasksPromise={eventTasksPromise}
+                            activeMembersPromise={activeMembersPromise}
+                        />
+                    </ErrorBoundarySuspense>
                 );
             case eventTabs.tickets:
                 if (!isUserHost(user, event) && isUserParticipant(user, event))
                     return (
-                        <TicketDashboard
-                            eventPromise={eventPromise}
-                            ticketsPromise={eventTicketsPromise}
-                        />
+                        <ErrorBoundarySuspense errorMessage="Failed to fetch event tickets">
+                            <TicketDashboard
+                                eventPromise={eventPromise}
+                                ticketsPromise={eventTicketsPromise}
+                            />
+                        </ErrorBoundarySuspense>
                     );
                 return (
-                    <TicketShop
-                        eventPromise={eventPromise}
-                        eventTicketsPromise={eventTicketsPromise}
-                        eventTasksPromise={eventTasksPromise}
-                        goToOrganizeTab={goToOrganizeTab}
-                    />
+                    <ErrorBoundarySuspense errorMessage="Failed to fetch event tickets or tasks">
+                        <TicketShop
+                            eventPromise={eventPromise}
+                            eventTicketsPromise={eventTicketsPromise}
+                            eventTasksPromise={eventTasksPromise}
+                            goToOrganizeTab={goToOrganizeTab}
+                        />
+                    </ErrorBoundarySuspense>
                 );
 
             case eventTabs.participants:
                 return (
-                    <ParticipantDashboard
-                        eventPromise={eventPromise}
-                        eventParticipantsPromise={eventParticipantsPromise}
-                        eventReservesPromise={eventReservesPromise}
-                    />
+                    <ErrorBoundarySuspense errorMessage="Failed to fetch event participants or reserves">
+                        <ParticipantDashboard
+                            eventPromise={eventPromise}
+                            eventParticipantsPromise={eventParticipantsPromise}
+                            eventReservesPromise={eventReservesPromise}
+                        />
+                    </ErrorBoundarySuspense>
                 );
             case eventTabs.reserveList:
                 return <ReserveDashboard eventPromise={eventPromise} />;
@@ -167,12 +175,12 @@ const EventDashboard = ({
                     )}
                 </Tabs>
                 <Stack width={50}>
-                    <ErrorBoundarySuspense errorMessage="Failed to load event reserves">
+                    <ErrorBoundarySuspense errorMessage="Failed to fetch event">
                         <EventActions eventPromise={eventPromise} />
                     </ErrorBoundarySuspense>
                 </Stack>
             </Stack>
-            <ErrorBoundarySuspense errorMessage="Failed to load event details">
+            <ErrorBoundarySuspense errorMessage="Failed to fetch event">
                 {getOpenTabComp()}
             </ErrorBoundarySuspense>
         </Stack>
