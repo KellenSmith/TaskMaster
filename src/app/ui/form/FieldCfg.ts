@@ -156,6 +156,7 @@ export const RenderedFields = {
         GlobalConstants.ACCESSIBILITY_INFO,
         GlobalConstants.DESCRIPTION,
     ],
+    [GlobalConstants.LOCATION_ID]: [GlobalConstants.LOCATION_ID],
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
         GlobalConstants.STATUS,
@@ -235,6 +236,7 @@ export const RequiredFields = {
         GlobalConstants.FULL_TICKET_PRICE,
         GlobalConstants.DESCRIPTION,
     ],
+    [GlobalConstants.LOCATION_ID]: [GlobalConstants.LOCATION_ID],
     [GlobalConstants.TASK]: [
         GlobalConstants.NAME,
         GlobalConstants.STATUS,

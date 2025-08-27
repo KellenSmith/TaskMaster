@@ -2,14 +2,27 @@
 
 import { Prisma } from "@prisma/client";
 import { use, useState, useTransition } from "react";
-import { Box, Stack, Typography } from "@mui/material";
+import {
+    Autocomplete,
+    Box,
+    Button,
+    Card,
+    CardActionArea,
+    CardContent,
+    Select,
+    Stack,
+    TextField,
+    Typography,
+} from "@mui/material";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import LocationCard from "../locations/LocationCard";
-import { RenderedFields } from "../../ui/form/FieldCfg";
+import { FieldLabels, RenderedFields } from "../../ui/form/FieldCfg";
 import GlobalConstants from "../../GlobalConstants";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { updateEvent } from "../../lib/event-actions";
+import AutocompleteWrapper, { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
+import Form from "../../ui/form/Form";
 
 interface LocationDashboardProps {
     eventPromise: Promise<
@@ -28,8 +41,10 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     const event = use(eventPromise);
     const location = event.location;
     const locations = use(locationsPromise);
-    const [selectedLocationId, setSelectedLocationId] = useState(location?.id || null);
     const [isPending, startTransition] = useTransition();
+    const [selectedLocationOption, setSelectedLocationOption] = useState<CustomOptionProps>(
+        location?.id ? { id: location.id, label: location.name } : null,
+    );
 
     if (!location) {
         return (
@@ -41,21 +56,32 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
         );
     }
 
-    const switchEventLocation = () => {
+    const getSelectedLocation = () =>
+        locations.find((loc) => loc.id === selectedLocationOption.id) || location;
+
+    const switchEventLocation = async () => {
         startTransition(async () => {
             try {
-                await updateEvent(event.id, { locationId: selectedLocationId });
-                addNotification("Switched event location", "success");
+                await updateEvent(event.id, { locationId: selectedLocationOption.id });
+                addNotification("Updated event location", "success");
             } catch {
-                addNotification("Failed to switch event location", "error");
+                addNotification("Failed to update event location", "error");
             }
         });
     };
 
+    const isSwitchButtonDisabled = () => {
+        const selectedLocation = getSelectedLocation();
+        if (event.maxParticipants > selectedLocation.capacity) {
+            return true;
+        }
+        return false;
+    };
+
     return (
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={2} justifyContent="stretch">
             <LocationCard
-                location={locations.find((loc) => loc.id === selectedLocationId) || location}
+                location={getSelectedLocation()}
                 renderedFields={
                     isUserAdmin(user) || isUserHost(user, event)
                         ? RenderedFields[GlobalConstants.LOCATION]
@@ -67,6 +93,41 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                           ]
                 }
             />
+            {(isUserAdmin(user) || isUserHost(user, event)) && locations.length > 1 && (
+                <Card sx={{ width: "100%" }}>
+                    <CardContent>
+                        <Autocomplete
+                            value={selectedLocationOption}
+                            onChange={(_: any, newValue: any) =>
+                                setSelectedLocationOption(newValue)
+                            }
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label={FieldLabels[GlobalConstants.LOCATION_ID]}
+                                />
+                            )}
+                            options={locations.map((loc) => ({ id: loc.id, label: loc.name }))}
+                            autoSelect
+                            disabled={isPending}
+                        />
+                    </CardContent>
+                    <Stack>
+                        <Button
+                            fullWidth
+                            disabled={isSwitchButtonDisabled()}
+                            onClick={switchEventLocation}
+                        >
+                            switch event location
+                        </Button>
+                        {isSwitchButtonDisabled() && (
+                            <Typography color="error" textAlign="center">
+                                The location can't handle {event.maxParticipants} participants
+                            </Typography>
+                        )}
+                    </Stack>
+                </Card>
+            )}
         </Stack>
     );
 };

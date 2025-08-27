@@ -30,7 +30,9 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                         <LocationOn color="primary" />
-                        <Typography>{event.location.name}</Typography>
+                        <Typography>
+                            {event.location.name}, {event.location.address}
+                        </Typography>
                     </Stack>
                     <RichTextField editMode={false} defaultValue={event.description} />
                 </Stack>

@@ -11,7 +11,7 @@ interface LocationDashboardProps {
 
 const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
     return (
-        <Stack spacing={3}>
+        <Stack spacing={3} width="100%">
             <Paper elevation={3} sx={{ p: 3 }}>
                 <Stack spacing={2}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
