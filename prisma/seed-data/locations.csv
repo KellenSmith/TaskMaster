@@ -1,4 +1,4 @@
 "id","name","contactPerson","rentalCost","address","capacity","accessibilityInfo","description"
-"d4e5c6a7-1111-4a2b-9c3d-111111111111","the place","Alex Smith","50.0","123 Main St, Anytown","200","Wheelchair ramp","Main community hall"
-"b1a2c3d4-2222-4b3c-8e7f-222222222222","Annex Hall","Taylor Reed","30.0","45 Side St, Anytown","80","Elevator","Small annex for meetings"
-"9f8e7d6c-3333-4f2a-a1b2-333333333333","Outdoor Park","Jordan Lee","0.0","Park Ave, Anytown","500","Partial accessibility","City park with stage"
+"d4e5c6a7-1111-4a2b-9c3d-111111111111","the place","Alex Smith","50000","123 Main St, Anytown","200","Wheelchair ramp","Main community hall"
+"b1a2c3d4-2222-4b3c-8e7f-222222222222","Annex Hall","Taylor Reed","30000","45 Side St, Anytown","80","Elevator","Small annex for meetings"
+"9f8e7d6c-3333-4f2a-a1b2-333333333333","Outdoor Park","Jordan Lee","0","Park Ave, Anytown","500","Partial accessibility","City park with stage"

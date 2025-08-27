@@ -85,6 +85,12 @@ const GlobalConstants = {
     QUEUEING_SINCE: "queueingSince",
     // Location
     LOCATION: "location",
+    LOCATIONS: "locations",
+    ADDRESS: "address",
+    CONTACT_PERSON: "contactPerson",
+    RENTAL_COST: "rentalCost",
+    CAPACITY: "capacity",
+    ACCESSIBILITY_INFO: "accessibilityInfo",
     // Ticket
     TICKET: "ticket",
     TICKET_ID: "ticketId",

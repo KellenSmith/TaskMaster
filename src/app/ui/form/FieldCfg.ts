@@ -55,6 +55,14 @@ export const FieldLabels = {
     [GlobalConstants.HOST]: "Host",
     [GlobalConstants.PARTICIPANT_USERS]: "Participants",
     [GlobalConstants.RESERVE_USERS]: "Reserves",
+    // Location
+    [GlobalConstants.NAME]: "Name",
+    [GlobalConstants.CONTACT_PERSON]: "Contact Person",
+    [GlobalConstants.RENTAL_COST]: "Rental Cost [SEK]",
+    [GlobalConstants.ADDRESS]: "Address",
+    [GlobalConstants.CAPACITY]: "Capacity [# people]",
+    [GlobalConstants.ACCESSIBILITY_INFO]: "Accessibility Info",
+    [GlobalConstants.DESCRIPTION]: "Description",
     // Task
     [GlobalConstants.TASK]: "Task",
     [GlobalConstants.NAME]: "Name",
@@ -137,6 +145,15 @@ export const RenderedFields = {
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.MAX_PARTICIPANTS,
+        GlobalConstants.DESCRIPTION,
+    ],
+    [GlobalConstants.LOCATION]: [
+        GlobalConstants.NAME,
+        GlobalConstants.CONTACT_PERSON,
+        GlobalConstants.RENTAL_COST,
+        GlobalConstants.ADDRESS,
+        GlobalConstants.CAPACITY,
+        GlobalConstants.ACCESSIBILITY_INFO,
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.TASK]: [
@@ -296,4 +313,7 @@ export const getUserSelectOptions = (
     }));
 };
 
-export const multiLineTextFields = [GlobalConstants.MEMBER_APPLICATION_PROMPT];
+export const multiLineTextFields = [
+    GlobalConstants.MEMBER_APPLICATION_PROMPT,
+    GlobalConstants.ACCESSIBILITY_INFO,
+];

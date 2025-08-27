@@ -62,6 +62,7 @@ export const applicationRoutes = {
     ],
     [UserRole.member]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
     [UserRole.admin]: [
+        GlobalConstants.LOCATIONS,
         GlobalConstants.TASKS,
         GlobalConstants.SENDOUT,
         GlobalConstants.MEMBERS,

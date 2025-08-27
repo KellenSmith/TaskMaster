@@ -8,11 +8,7 @@ import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 
 export const getAllLocations = async (): Promise<Location[]> => {
-    try {
-        return await prisma.location.findMany();
-    } catch {
-        throw new Error("Failed fetching locations");
-    }
+    return await prisma.location.findMany();
 };
 
 export const createLocation = async (
@@ -31,12 +27,9 @@ export const updateLocation = async (
     locationId: string,
     parsedFieldValues: z.infer<typeof LocationUpdateSchema>,
 ): Promise<void> => {
-    try {
-        await prisma.location.update({ where: { id: locationId }, data: parsedFieldValues as any });
-        revalidateTag(GlobalConstants.LOCATION);
-    } catch {
-        throw new Error(`Failed updating location ${locationId}`);
-    }
+    await prisma.location.update({ where: { id: locationId }, data: parsedFieldValues });
+    revalidateTag(GlobalConstants.LOCATION);
+    revalidateTag(GlobalConstants.EVENT);
 };
 
 export const deleteLocation = async (locationId: string): Promise<void> => {
