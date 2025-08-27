@@ -335,6 +335,74 @@ async function seedOrganizationSettings() {
     }
 }
 
+async function seedSkillBadges() {
+    const rows = await streamCsvObjects("prisma/seed-data/skill_badges.csv");
+    for (const r of rows) {
+        const payload = {
+            id: r.id,
+            name: r.name,
+            description: r.description || null,
+            imageUrl: r.imageUrl || null,
+        } as any;
+        try {
+            await prisma.skillBadge.upsert({
+                where: { id: payload.id },
+                update: payload,
+                create: payload,
+            });
+            console.log("Upserted skillBadge", payload.id);
+        } catch (e) {
+            console.warn("Skipping skillBadge (exists?)", payload.id);
+        }
+    }
+}
+
+async function seedUserSkillBadges() {
+    const rows = await streamCsvObjects("prisma/seed-data/user_skill_badges.csv");
+    for (const r of rows) {
+        try {
+            await prisma.userSkillBadge.create({
+                data: { userId: r.userId, skillBadgeId: r.skillBadgeId },
+            });
+            console.log("Created userSkillBadge", r.userId, r.skillBadgeId);
+        } catch (e) {
+            console.warn("Skipping userSkillBadge (exists?)", r.userId, r.skillBadgeId);
+        }
+    }
+}
+
+async function seedTaskSkillBadges() {
+    const rows = await streamCsvObjects("prisma/seed-data/task_skill_badges.csv");
+    for (const r of rows) {
+        try {
+            await prisma.taskSkillBadge.create({
+                data: { taskId: r.taskId, skillBadgeId: r.skillBadgeId },
+            });
+            console.log("Created taskSkillBadge", r.taskId, r.skillBadgeId);
+
+            // Ensure the badge is also associated with the task's assignee
+            const task = await prisma.task.findUnique({ where: { id: r.taskId } });
+            if (task?.assigneeId) {
+                try {
+                    // Upsert user badge (userId unique combined with skillBadgeId via composite PK)
+                    await prisma.userSkillBadge.create({
+                        data: { userId: task.assigneeId, skillBadgeId: r.skillBadgeId },
+                    });
+                    console.log(
+                        "Also created userSkillBadge for assignee",
+                        task.assigneeId,
+                        r.skillBadgeId,
+                    );
+                } catch (e) {
+                    // ignore if already exists
+                }
+            }
+        } catch (e) {
+            console.warn("Skipping taskSkillBadge (exists?)", r.taskId, r.skillBadgeId);
+        }
+    }
+}
+
 async function main() {
     console.log("Starting seed");
     // order matters: seed parents before dependents
@@ -350,6 +418,9 @@ async function main() {
     await seedEventParticipants();
     await seedEventReserves();
     await seedTasks();
+    await seedSkillBadges();
+    await seedUserSkillBadges();
+    await seedTaskSkillBadges();
     await seedOrdersAndItems();
     await seedTextContents();
     console.log("Done seeding");
