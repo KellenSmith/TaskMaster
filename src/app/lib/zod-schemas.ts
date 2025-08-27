@@ -1,13 +1,5 @@
 import { z } from "zod";
-import {
-    UserRole,
-    EventStatus,
-    TaskStatus,
-    TaskPhase,
-    TicketType,
-    OrderStatus,
-    Prisma,
-} from "@prisma/client";
+import { UserRole, EventStatus, TaskStatus, TicketType, OrderStatus, Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 
 // Required dayjs to string schema for create operations
@@ -32,7 +24,6 @@ const priceSchema = z.coerce
 export const UserRoleSchema = z.enum(UserRole);
 export const EventStatusSchema = z.enum(EventStatus);
 export const TaskStatusSchema = z.enum(TaskStatus);
-export const TaskPhaseSchema = z.enum(TaskPhase);
 export const TicketTypeSchema = z.enum(TicketType);
 export const OrderStatusSchema = z.enum(OrderStatus);
 
@@ -142,7 +133,6 @@ export const TaskCreateSchema: z.ZodType<
 > = z
     .object({
         id: z.string().optional(),
-        phase: TaskPhaseSchema.optional(),
         name: z.string(),
         status: TaskStatusSchema.optional(),
         startTime: stringToISODate,

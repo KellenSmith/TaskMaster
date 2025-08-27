@@ -119,7 +119,6 @@ const GlobalConstants = {
     REVIEWER: "reviewer",
     REVIEWER_ID: "reviewerId",
     TAGS: "tags",
-    PHASE: "phase",
     BEFORE: "before",
     DURING: "during",
     AFTER: "after",

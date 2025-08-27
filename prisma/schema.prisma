@@ -157,16 +157,8 @@ enum TaskStatus {
     done
 }
 
-// TODO: Ditch the task phase and filter tasks by start/end datetime range instead
-enum TaskPhase {
-    before
-    during
-    after
-}
-
 model Task {
     id          String     @id @default(uuid())
-    phase       TaskPhase  @default(before)
     name        String
     status      TaskStatus @default(toDo)
     startTime   DateTime

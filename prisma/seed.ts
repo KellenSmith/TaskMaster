@@ -288,7 +288,6 @@ async function seedTasks() {
     for (const r of rows) {
         const payload = {
             id: r.id,
-            phase: r.phase || undefined,
             name: r.name || "",
             status: r.status || undefined,
             startTime: r.startTime ? new Date(r.startTime) : undefined,

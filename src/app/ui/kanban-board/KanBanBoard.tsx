@@ -22,6 +22,7 @@ import { useUserContext } from "../../context/UserContext";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { Prisma, TaskStatus } from "@prisma/client";
+import { openResourceInNewTab } from "../utils";
 
 interface KanBanBoardProps {
     readOnly: boolean;
@@ -69,12 +70,9 @@ const KanBanBoard = ({
 
     const [filters, setFilters] = useState(
         Object.fromEntries(
-            [
-                GlobalConstants.ASSIGNEE_ID,
-                GlobalConstants.REVIEWER_ID,
-                GlobalConstants.PHASE,
-                GlobalConstants.TAGS,
-            ].map((filterId) => [filterId, []]),
+            [GlobalConstants.ASSIGNEE_ID, GlobalConstants.REVIEWER_ID, GlobalConstants.TAGS].map(
+                (filterId) => [filterId, []],
+            ),
         ),
     );
 
@@ -93,8 +91,7 @@ const KanBanBoard = ({
             if (filterOption === null) return "Unassigned";
             return "Assigned to me";
         }
-        if (filterId === GlobalConstants.REVIEWER_ID) return "Reports to me";
-
+        if (filterId === GlobalConstants.REVIEWER_ID) return "For me to review";
         return FieldLabels[filterOption] || filterOption;
     };
 
@@ -145,7 +142,7 @@ const KanBanBoard = ({
             <TaskSchedulePDF event={event} tasks={applyBoardFilter(tasks, filters)} />,
         ).toBlob();
         const url = URL.createObjectURL(taskSchedule);
-        window.open(url, "_blank");
+        openResourceInNewTab(url);
     };
 
     return (

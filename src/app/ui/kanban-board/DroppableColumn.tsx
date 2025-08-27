@@ -6,7 +6,7 @@ import { use, useState } from "react";
 import { getSortedTaskComps } from "../../(pages)/event/event-utils";
 import { Add } from "@mui/icons-material";
 import { FieldLabels, getUserSelectOptions } from "../form/FieldCfg";
-import { Prisma, Task, TaskPhase, TaskStatus } from "@prisma/client";
+import { Prisma, Task, TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import z from "zod";
 import { TaskCreateSchema } from "../../lib/zod-schemas";
@@ -93,38 +93,18 @@ const DroppableColumn = ({
         );
     };
 
-    const getTaskDefaultStartTime = (taskPhase: TaskPhase) => {
-        if (taskPhase === TaskPhase.before) {
-            return (event ? dayjs(event.startTime) : dayjs().minute(0)).subtract(1, "d").toDate();
-        }
-        if (taskPhase === TaskPhase.during) {
-            return (event ? dayjs(event.startTime) : dayjs().minute(0)).toDate();
-        }
-        if (taskPhase === TaskPhase.after) {
-            return (event ? dayjs(event.endTime) : dayjs().minute(0)).toDate();
-        }
-    };
+    const getTaskDefaultStartTime = (): Date =>
+        (event ? dayjs(event.startTime) : dayjs().minute(0)).toDate();
 
-    const getTaskDefaultEndTime = (taskPhase: TaskPhase): Date => {
-        if (taskPhase === TaskPhase.before) {
-            return (event ? dayjs(event.startTime) : dayjs().minute(0)).toDate();
-        }
-        if (taskPhase === TaskPhase.during) {
-            return (event ? dayjs(event.endTime) : dayjs().minute(0)).toDate();
-        }
-        if (taskPhase === TaskPhase.after) {
-            return (event ? dayjs(event.endTime) : dayjs().minute(0)).add(1, "d").toDate();
-        }
-    };
+    const getTaskDefaultEndTime = (): Date =>
+        dayjs(getTaskDefaultStartTime()).add(1, "day").toDate();
 
     const openCreateTaskDialog = (shiftProps: Task | null) => {
-        const taskPhase = shiftProps?.phase || TaskPhase.before;
         const defaultTask = {
             status,
-            phase: taskPhase,
             reviewerId: user.id,
-            startTime: getTaskDefaultStartTime(taskPhase),
-            endTime: getTaskDefaultEndTime(taskPhase),
+            startTime: getTaskDefaultStartTime(),
+            endTime: getTaskDefaultEndTime(),
             ...shiftProps,
         } as Task;
         setTaskFormDefaultValues(defaultTask);

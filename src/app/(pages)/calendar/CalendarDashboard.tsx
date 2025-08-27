@@ -26,7 +26,6 @@ interface CalendarDashboardProps {
 
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
     const { user } = useUserContext();
-    const { addNotification } = useNotificationContext();
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
