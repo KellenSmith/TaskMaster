@@ -7,7 +7,7 @@ import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
-import { serverRedirect } from "./definitions";
+import { isUserAdmin, serverRedirect } from "./definitions";
 import { allowRedirectException } from "../ui/utils";
 import dayjs from "dayjs";
 
@@ -66,10 +66,29 @@ export const createEvent = async (
     }
 };
 
-export const getAllEvents = async (): Promise<Prisma.EventGetPayload<true>[]> => {
+export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPayload<true>[]> => {
     try {
-        const events = await prisma.event.findMany();
-        return events;
+        const loggedInUser = await prisma.user.findUniqueOrThrow({
+            where: { id: userId },
+        });
+
+        const filterParams = {} as Prisma.EventWhereInput;
+
+        // Non-admins can only see their own event drafts
+        if (!isUserAdmin(loggedInUser)) {
+            filterParams.OR = [
+                {
+                    status: {
+                        not: EventStatus.draft,
+                    },
+                },
+                { hostId: userId },
+            ];
+        }
+
+        return await prisma.event.findMany({
+            where: filterParams,
+        });
     } catch {
         throw new Error("Failed to fetch events");
     }
@@ -130,8 +149,15 @@ export const getEventById = async (
         },
     });
 
-    // Only event hosts can see event drafts
-    if (event.status === EventStatus.draft && event.hostId !== userId) {
+    // Only event hosts and admins can see event drafts
+    const loggedInUser = await prisma.user.findUnique({
+        where: { id: userId },
+    });
+    if (
+        event.status === EventStatus.draft &&
+        !isUserAdmin(loggedInUser) &&
+        event.hostId !== userId
+    ) {
         throw new Error("You are not authorized to view this event");
     }
     return event;

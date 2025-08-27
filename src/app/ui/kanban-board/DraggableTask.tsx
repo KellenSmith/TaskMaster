@@ -11,7 +11,7 @@ import { Prisma } from "@prisma/client";
 import z from "zod";
 import { TaskUpdateSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
-import { isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/definitions";
 
 interface DraggableTaskProps {
     eventPromise: Promise<Prisma.EventGetPayload<true>> | undefined;
@@ -99,7 +99,9 @@ const DraggableTask = ({
                     action={updateTaskAction}
                     validationSchema={TaskUpdateSchema}
                     buttonLabel="save task"
-                    readOnly={isUserHost(user, event) || task.reviewerId === user.id}
+                    readOnly={
+                        isUserHost(user, event) || isUserAdmin(user) || task.reviewerId === user.id
+                    }
                     editable={!readOnly}
                 />
                 <Button onClick={assignTaskToMe} disabled={task.assigneeId === user.id}>

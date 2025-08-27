@@ -5,7 +5,7 @@ import { Prisma, TicketType } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import { createOrder } from "../../lib/order-actions";
 import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";
-import { isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { isUserVolunteer } from "./event-utils";
 import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";
@@ -73,7 +73,6 @@ const TicketShop = ({
     };
 
     const allowDeleteTicket = (ticket: Prisma.TicketGetPayload<true>) => {
-        if (!isUserHost(user, event)) return false;
         // There must always be at least one volunteer ticket
         if (ticket.type === TicketType.volunteer)
             return tickets.filter((ticket) => ticket.type === TicketType.volunteer).length >= 2;
@@ -126,7 +125,7 @@ const TicketShop = ({
                 <Typography variant="h6" color={theme.palette.primary.main}>
                     Tickets
                 </Typography>
-                {isUserHost(user, event) && (
+                {(isUserHost(user, event) || isUserAdmin(user)) && (
                     <Button variant="contained" onClick={() => setDialogOpen(true)} size="small">
                         add ticket
                     </Button>
@@ -152,7 +151,7 @@ const TicketShop = ({
                                         : goToOrganizeTab,
                                 })}
                             />
-                            {isUserHost(user, event) && (
+                            {(isUserHost(user, event) || isUserAdmin(user)) && (
                                 <Stack>
                                     <Button onClick={() => handleEditTicket(ticket.id)}>
                                         edit

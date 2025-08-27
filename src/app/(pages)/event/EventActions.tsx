@@ -25,7 +25,7 @@ import z from "zod";
 import { EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
-import { isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/definitions";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -126,7 +126,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
             </MenuItem>,
         ];
 
-        if (!isUserHost(user, event)) return ActionButtons;
+        if (!(isUserHost(user, event) || isUserAdmin(user))) return ActionButtons;
 
         // Only allow deleting events that only the host is participating in
         if (

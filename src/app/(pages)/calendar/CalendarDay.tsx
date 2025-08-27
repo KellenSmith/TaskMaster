@@ -6,9 +6,6 @@ import CalendarEvent from "./CalendarEvent";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import GlobalConstants from "../../GlobalConstants";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
-import { useUserContext } from "../../context/UserContext";
-import { isEventPublished } from "../event/event-utils";
 import { Prisma } from "@prisma/client";
 
 dayjs.extend(isBetween);
@@ -19,7 +16,6 @@ interface CalendarDayProps {
 }
 
 const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
-    const { user } = useUserContext();
     const events = use(eventsPromise);
 
     const shouldShowEvent = (event: any) => {
@@ -34,7 +30,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
 
         const eventInDay = date.isBetween(startTime, endTime, "day", "[]");
         if (!eventInDay) return false;
-        return isEventPublished(event) || isUserAdmin(user) || isUserHost(user, event);
+        return true;
     };
 
     const getEmptyDay = () => <Paper key={`empty-end-${date.date()}`} elevation={0} />;

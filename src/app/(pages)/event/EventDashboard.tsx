@@ -3,7 +3,7 @@
 import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import { use, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { isUserHost, clientRedirect } from "../../lib/definitions";
+import { isUserHost, clientRedirect, isUserAdmin } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
 import EventDetails from "./EventDetails";
@@ -73,7 +73,7 @@ const EventDashboard = ({
             participants: null,
             reserveList: null,
         };
-        if (isUserHost(user, event)) {
+        if (isUserHost(user, event) || isUserAdmin(user)) {
             tabs.participants = "Participants";
         }
         if (isEventSoldOut(event) && !isUserParticipant(user, event))
@@ -97,7 +97,7 @@ const EventDashboard = ({
                 return (
                     <ErrorBoundarySuspense errorMessage="Failed to fetch event tasks or active members">
                         <KanBanBoard
-                            readOnly={!isUserHost(user, event)}
+                            readOnly={!(isUserHost(user, event) || isUserAdmin(user))}
                             eventPromise={eventPromise}
                             tasksPromise={eventTasksPromise}
                             activeMembersPromise={activeMembersPromise}
