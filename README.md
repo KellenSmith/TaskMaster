@@ -36,7 +36,7 @@ For payments, use the following test data:
 
 - ~~Enable eventHosts to manually add participants and reserves~~
 - ~~Add configurable locations with properties like address, accessibility info, max capacity which can be chosen by eventHosts~~
-- Ditch the task phase property and sort by start/end dates instead
+- ~~Ditch the task phase property and sort by start/end dates instead~~
 - Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.
 - Add instructions for eventHosts on how to set up and manage their events or require admins to approve events before publishing
 - Ability to translate texts and labels for menu, event descriptions etc.

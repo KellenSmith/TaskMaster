@@ -110,3 +110,6 @@ export const isUserHost = (
     user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
     event: Prisma.EventGetPayload<true> | null,
 ): boolean => user && event && user?.id === event?.hostId;
+
+export const snakeCaseToLabel = (snakeCase: string) =>
+    snakeCase[0].toUpperCase() + snakeCase.slice(1).replace(/_/g, " ");

@@ -14,8 +14,6 @@ import { Prisma } from "@prisma/client";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
-import { useNotificationContext } from "../../context/NotificationContext";
-// import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
 
