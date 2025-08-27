@@ -34,6 +34,7 @@ For payments, use the following test data:
 
 ## Further plans in order of priority
 
+- Enable eventHosts to manually add participants and reserves
 - Add configurable locations with properties like address, accessibility info, max capacity which can be chosen by eventHosts
 - Add instructions for eventHosts on how to set up and manage their events or require admins to approve events before publishing
 - Ability to translate texts and labels for menu, event descriptions etc.
