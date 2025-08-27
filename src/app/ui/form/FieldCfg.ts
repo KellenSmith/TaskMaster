@@ -46,7 +46,7 @@ export const FieldLabels = {
     //Event
     [GlobalConstants.EVENT]: "Event",
     [GlobalConstants.TITLE]: "Title",
-    [GlobalConstants.LOCATION]: "Location",
+    [GlobalConstants.LOCATION_ID]: "Location",
     [GlobalConstants.START_TIME]: "Start time",
     [GlobalConstants.END_TIME]: "End time",
     [GlobalConstants.MAX_PARTICIPANTS]: "Maximum no. of participants",
@@ -133,7 +133,7 @@ export const RenderedFields = {
     ],
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
-        GlobalConstants.LOCATION,
+        GlobalConstants.LOCATION_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.MAX_PARTICIPANTS,
@@ -211,7 +211,7 @@ export const RequiredFields = {
     ],
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
-        GlobalConstants.LOCATION,
+        GlobalConstants.LOCATION_ID,
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.MAX_PARTICIPANTS,
@@ -259,7 +259,7 @@ export const selectFieldOptions = {
     [GlobalConstants.ROLE]: Object.values(UserRole),
     [GlobalConstants.PHASE]: Object.values(TaskStatus),
     [GlobalConstants.STATUS]: Object.values(TaskStatus),
-    [GlobalConstants.TAGS]: ["Location", "Decoration", "Wardrobe", "Bartending", "Music"],
+    [GlobalConstants.TAGS]: ["LOCATION_ID", "Decoration", "Wardrobe", "Bartending", "Music"],
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
 };
 

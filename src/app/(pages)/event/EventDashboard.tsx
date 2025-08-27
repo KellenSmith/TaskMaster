@@ -16,11 +16,16 @@ import ParticipantDashboard from "./ParticipantDashboard";
 import ReserveDashboard from "./ReserveDashboard";
 import TicketDashboard from "./TicketDashboard";
 import GlobalConstants from "../../GlobalConstants";
+import LocationDashboard from "./LocationDashboard";
 
 interface EventDashboardProps {
     eventPromise: Promise<
         Prisma.EventGetPayload<{
-            include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
+            include: {
+                location: true;
+                tickets: { include: { eventParticipants: true } };
+                eventReserves: true;
+            };
         }>
     >;
     eventTasksPromise: Promise<
@@ -48,6 +53,7 @@ interface EventDashboardProps {
             include: { user: { select: { id: true; nickname: true } } };
         }>[]
     >;
+    locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
 }
 
 const EventDashboard = ({
@@ -57,6 +63,7 @@ const EventDashboard = ({
     activeMembersPromise,
     eventParticipantsPromise,
     eventReservesPromise,
+    locationsPromise,
 }: EventDashboardProps) => {
     const theme = useTheme();
     const router = useRouter();
@@ -68,6 +75,7 @@ const EventDashboard = ({
     const eventTabs = useMemo(() => {
         const tabs = {
             details: "Details",
+            location: "Location",
             organize: "Organize",
             tickets: "Tickets",
             participants: null,
@@ -93,6 +101,8 @@ const EventDashboard = ({
 
     const getOpenTabComp = () => {
         switch (openTab) {
+            case eventTabs.location:
+                return <LocationDashboard eventPromise={eventPromise} />;
             case eventTabs.organize:
                 return (
                     <ErrorBoundarySuspense errorMessage="Failed to fetch event tasks or active members">
@@ -178,7 +188,10 @@ const EventDashboard = ({
                 </Tabs>
                 <Stack width={50}>
                     <ErrorBoundarySuspense errorMessage="Failed to fetch event">
-                        <EventActions eventPromise={eventPromise} />
+                        <EventActions
+                            eventPromise={eventPromise}
+                            locationsPromise={locationsPromise}
+                        />
                     </ErrorBoundarySuspense>
                 </Stack>
             </Stack>

@@ -68,7 +68,7 @@ const GlobalConstants = {
     EVENT: "event",
     EVENT_ID: "eventId",
     TITLE: "title",
-    LOCATION: "location",
+    LOCATION_ID: "locationId",
     START_TIME: "startTime",
     END_TIME: "endTime",
     DESCRIPTION: "description",
@@ -83,6 +83,8 @@ const GlobalConstants = {
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueingSince",
+    // Location
+    LOCATION: "location",
     // Ticket
     TICKET: "ticket",
     TICKET_ID: "ticketId",

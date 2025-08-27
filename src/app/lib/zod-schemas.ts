@@ -107,7 +107,7 @@ export const EventCreateSchema = z
     .object({
         id: z.string().optional(),
         title: z.string(),
-        location: z.string().optional(),
+        locationId: z.string().nullable().optional(),
         startTime: stringToISODate,
         endTime: stringToISODate,
         description: z.string().optional(),

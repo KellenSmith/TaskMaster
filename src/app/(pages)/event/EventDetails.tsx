@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import { use } from "react";
 
 interface EventDetailsProps {
-    eventPromise: Promise<Prisma.EventGetPayload<true>>;
+    eventPromise: Promise<Prisma.EventGetPayload<{ include: { location: true } }>>;
 }
 
 const EventDetails = ({ eventPromise }: EventDetailsProps) => {
@@ -30,7 +30,7 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                         <LocationOn color="primary" />
-                        <Typography>{event.location}</Typography>
+                        <Typography>{event.location.name}</Typography>
                     </Stack>
                     <RichTextField editMode={false} defaultValue={event.description} />
                 </Stack>

@@ -16,11 +16,12 @@ export const createEvent = async (
     parsedFieldValues: z.infer<typeof EventCreateSchema>,
 ): Promise<void> => {
     try {
+        const { locationId, ...eventData } = parsedFieldValues;
         const createdEvent = await prisma.$transaction(async (tx) => {
             // Create event with ticket
             const createdEvent = await tx.event.create({
                 data: {
-                    ...parsedFieldValues,
+                    ...eventData,
                     host: {
                         connect: {
                             id: userId,
@@ -40,6 +41,7 @@ export const createEvent = async (
                             },
                         },
                     },
+                    ...(locationId && { location: { connect: { id: locationId } } }),
                 },
                 include: {
                     tickets: true,
@@ -67,31 +69,27 @@ export const createEvent = async (
 };
 
 export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPayload<true>[]> => {
-    try {
-        const loggedInUser = await prisma.user.findUniqueOrThrow({
-            where: { id: userId },
-        });
+    const loggedInUser = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+    });
 
-        const filterParams = {} as Prisma.EventWhereInput;
+    const filterParams = {} as Prisma.EventWhereInput;
 
-        // Non-admins can only see their own event drafts
-        if (!isUserAdmin(loggedInUser)) {
-            filterParams.OR = [
-                {
-                    status: {
-                        not: EventStatus.draft,
-                    },
+    // Non-admins can only see their own event drafts
+    if (!isUserAdmin(loggedInUser)) {
+        filterParams.OR = [
+            {
+                status: {
+                    not: EventStatus.draft,
                 },
-                { hostId: userId },
-            ];
-        }
-
-        return await prisma.event.findMany({
-            where: filterParams,
-        });
-    } catch {
-        throw new Error("Failed to fetch events");
+            },
+            { hostId: userId },
+        ];
     }
+
+    return await prisma.event.findMany({
+        where: filterParams,
+    });
 };
 
 export const getFilteredEvents = async (
@@ -99,6 +97,7 @@ export const getFilteredEvents = async (
 ): Promise<
     Prisma.EventGetPayload<{
         include: {
+            location: true;
             tickets: { include: { eventParticipants: true } };
             eventReserves: true;
         };
@@ -108,6 +107,7 @@ export const getFilteredEvents = async (
         const events = await prisma.event.findMany({
             where: filters,
             include: {
+                location: true,
                 host: {
                     select: {
                         id: true,
@@ -132,7 +132,11 @@ export const getEventById = async (
     userId: string,
 ): Promise<
     Prisma.EventGetPayload<{
-        include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
+        include: {
+            location: true;
+            tickets: { include: { eventParticipants: true } };
+            eventReserves: true;
+        };
     }>
 > => {
     const event = await prisma.event.findUniqueOrThrow({
@@ -140,6 +144,7 @@ export const getEventById = async (
             id: eventId,
         },
         include: {
+            location: true,
             tickets: {
                 include: {
                     eventParticipants: true,
@@ -313,6 +318,7 @@ export const cloneEvent = async (userId: string, eventId: string) => {
         const {
             id: eventIdToOmit, // eslint-disable-line no-unused-vars
             hostId: hostIdToOmit, // eslint-disable-line no-unused-vars
+            locationId,
             ...eventData
         } = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
@@ -339,6 +345,7 @@ export const cloneEvent = async (userId: string, eventId: string) => {
                     host: {
                         connect: { id: userId },
                     },
+                    ...(locationId && { location: { connect: { id: locationId } } }),
                 },
             });
 

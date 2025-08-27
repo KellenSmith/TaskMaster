@@ -26,6 +26,7 @@ import { EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -33,6 +34,7 @@ interface IEventActions {
             include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
         }>
     >;
+    locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
 }
 
 const sendoutToOptions = {
@@ -41,13 +43,16 @@ const sendoutToOptions = {
     Reserves: "Reserves",
 };
 
-const EventActions: FC<IEventActions> = ({ eventPromise }) => {
+const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => {
     const { user } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(null);
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const event = use(eventPromise);
+    // TODO: It doesn't need to use locations if the user is not host or admin
+    // Move host actions to separate component to optimize data fetching
+    const locations = use(locationsPromise);
 
     const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All);
 
@@ -228,6 +233,12 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
         }
     };
 
+    const getLocationOptions = (): CustomOptionProps[] =>
+        locations.map((location) => ({
+            id: location.id,
+            label: location.name,
+        }));
+
     const getDialogForm = () => {
         if (!dialogOpen) return null;
         if (dialogOpen === GlobalConstants.EVENT)
@@ -237,6 +248,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise }) => {
                     readOnly={false}
                     action={updateEventById}
                     validationSchema={EventUpdateSchema}
+                    customOptions={{ [GlobalConstants.LOCATION_ID]: getLocationOptions() }}
                     defaultValues={event}
                 />
             );

@@ -9,6 +9,7 @@ import { getEventTickets } from "../../lib/ticket-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { getEventParticipants } from "../../lib/event-participant-actions";
 import { getEventReserves } from "../../lib/event-reserve-actions";
+import { getAllLocations } from "../../lib/location-actions";
 
 interface EventPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
@@ -37,10 +38,12 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventParticipantsPromise = unstable_cache(getEventParticipants, [eventId], {
         tags: [GlobalConstants.PARTICIPANT_USERS],
     })(eventId);
-
     const eventReservesPromise = unstable_cache(getEventReserves, [eventId], {
         tags: [GlobalConstants.RESERVE_USERS],
     })(eventId);
+    const locationsPromise = unstable_cache(getAllLocations, [], {
+        tags: [GlobalConstants.LOCATION],
+    })();
 
     return (
         <ErrorBoundarySuspense errorMessage="Failed to load event">
@@ -51,6 +54,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
                 activeMembersPromise={activeMembersPromise}
                 eventParticipantsPromise={eventParticipantsPromise}
                 eventReservesPromise={eventReservesPromise}
+                locationsPromise={locationsPromise}
             />
         </ErrorBoundarySuspense>
     );

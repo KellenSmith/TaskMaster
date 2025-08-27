@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useState } from "react";
+import React, { FC, use, useState } from "react";
 import { Stack, Typography, Button, Grid2, Dialog, DialogContent } from "@mui/material";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
@@ -13,18 +13,21 @@ import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import z from "zod";
+import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 // import localeData from 'dayjs/plugin/localeData' // ES 2015
 
 dayjs.extend(localeData);
 
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
+    locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
 }
 
-const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
+const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
     const { user } = useUserContext();
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
     const [createOpen, setCreateOpen] = useState(false);
+    const locations = use(locationsPromise);
 
     const createEventWithHostAndTicket = async (fieldValues: z.infer<typeof EventCreateSchema>) => {
         await createEvent(user.id, fieldValues);
@@ -92,6 +95,12 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
         );
     };
 
+    const getLocationOptions = (): CustomOptionProps[] =>
+        locations.map((location) => ({
+            id: location.id,
+            label: location.name,
+        }));
+
     return (
         <>
             <Stack sx={{ height: "100%" }} padding={4}>
@@ -122,6 +131,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise }) => {
                         buttonLabel={"create event draft"}
                         action={createEventWithHostAndTicket}
                         validationSchema={EventCreateSchema}
+                        customOptions={{
+                            [GlobalConstants.LOCATION_ID]: getLocationOptions(),
+                        }}
                         readOnly={false}
                         editable={false}
                     />

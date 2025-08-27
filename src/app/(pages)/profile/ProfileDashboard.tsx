@@ -23,6 +23,7 @@ interface ProfileDashboardProps {
     eventsPromise: Promise<
         Prisma.EventGetPayload<{
             include: {
+                location: true;
                 tickets: { include: { eventParticipants: true } };
                 eventReserves: true;
             };

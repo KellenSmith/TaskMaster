@@ -11,6 +11,7 @@ import { Prisma } from "@prisma/client";
 interface EventCardProps {
     event: Prisma.EventGetPayload<{
         include: {
+            location: true;
             tickets: { include: { eventParticipants: true } };
             eventReserves: true;
         };
@@ -84,9 +85,9 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                         <Typography color="text.secondary">
                             <strong>End:</strong> {formatDate(event.endTime)}
                         </Typography>
-                        {event.location && (
+                        {event.location.name && (
                             <Typography color="text.secondary">
-                                <strong>Location:</strong> {event.location}
+                                <strong>Location:</strong> {event.location.name}
                             </Typography>
                         )}
                     </Stack>

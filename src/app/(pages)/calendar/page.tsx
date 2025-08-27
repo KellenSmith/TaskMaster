@@ -4,14 +4,18 @@ import CalendarDashboard from "./CalendarDashboard";
 import { getAllEvents } from "../../lib/event-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { getLoggedInUser } from "../../lib/user-actions";
+import { getAllLocations } from "../../lib/location-actions";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
     const eventsPromise = unstable_cache(getAllEvents, [loggedInUser.id], {
         tags: [GlobalConstants.EVENT],
     })(loggedInUser.id);
+    const locationsPromise = unstable_cache(getAllLocations, [], {
+        tags: [GlobalConstants.LOCATION],
+    })();
 
-    return <CalendarDashboard eventsPromise={eventsPromise} />;
+    return <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />;
 };
 
 export default CalendarPage;
