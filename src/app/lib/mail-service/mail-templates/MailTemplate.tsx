@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
 import mailTheme from "../mail-theme";
-import { getUrl } from "../../definitions";
+import { getAbsoluteUrl } from "../../definitions";
 
 interface MailTemplateProps {
     children?: ReactNode;
@@ -40,7 +40,7 @@ const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName 
                         {children}
                         {renderHtml()}
                     </Container>
-                    <Button style={mailTheme.components.button} href={getUrl()}>
+                    <Button style={mailTheme.components.button} href={getAbsoluteUrl()}>
                         visit us
                     </Button>
                 </Container>

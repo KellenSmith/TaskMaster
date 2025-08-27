@@ -5,7 +5,7 @@ import mailTheme from "../mail-theme";
 import GlobalConstants from "../../../GlobalConstants";
 import { MembershipApplicationSchema } from "../../zod-schemas";
 import z from "zod";
-import { getUrl } from "../../definitions";
+import { getAbsoluteUrl } from "../../definitions";
 
 /**
  * Props for the MembershipApplicationTemplate component.
@@ -47,7 +47,10 @@ const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = (
                         </Text>
                     ))}
             </Section>
-            <Button style={mailTheme.components.button} href={getUrl([GlobalConstants.MEMBERS])}>
+            <Button
+                style={mailTheme.components.button}
+                href={getAbsoluteUrl([GlobalConstants.MEMBERS])}
+            >
                 manage members
             </Button>
         </MailTemplate>

@@ -7,7 +7,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
-import { getUrl } from "./definitions";
+import { getRelativeUrl } from "./definitions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -65,14 +65,14 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 userAgent: (await headers()).get("user-agent") || "Unknown",
                 language: "en-US",
                 urls: {
-                    hostUrls: [getUrl([GlobalConstants.HOME])],
-                    completeUrl: getUrl([GlobalConstants.ORDER], {
+                    hostUrls: [getRelativeUrl([GlobalConstants.HOME])],
+                    completeUrl: getRelativeUrl([GlobalConstants.ORDER], {
                         [GlobalConstants.ORDER_ID]: orderId,
                     }),
-                    cancelUrl: getUrl([GlobalConstants.ORDER], {
+                    cancelUrl: getRelativeUrl([GlobalConstants.ORDER], {
                         [GlobalConstants.ORDER_ID]: orderId,
                     }),
-                    callbackUrl: getUrl([GlobalConstants.PAYMENT_CALLBACK], {
+                    callbackUrl: getRelativeUrl([GlobalConstants.PAYMENT_CALLBACK], {
                         [GlobalConstants.ORDER_ID]: orderId,
                     }),
                     // TODO
@@ -103,7 +103,7 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
         }
         if (order.totalAmount < 1) {
             await progressOrder(order.id, OrderStatus.paid);
-            redirectUrl = getUrl([GlobalConstants.ORDER], {
+            redirectUrl = getRelativeUrl([GlobalConstants.ORDER], {
                 [GlobalConstants.ORDER_ID]: orderId,
             });
         } else {

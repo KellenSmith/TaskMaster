@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { getUrl, isUserAuthorized } from "./app/lib/definitions";
+import { getAbsoluteUrl, isUserAuthorized } from "./app/lib/definitions";
 import { getLoggedInUser } from "./app/lib/user-actions";
 
 export const config = {
@@ -20,8 +20,8 @@ export default async function middleware(req: NextRequest) {
     }
 
     // Redirect authenticated but unauthorized users to home
-    if (loggedInUser) return NextResponse.redirect(getUrl([GlobalConstants.HOME]));
+    if (loggedInUser) return NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
 
     // Redirect unauthorized unauthenticated users to login
-    return NextResponse.redirect(getUrl([GlobalConstants.LOGIN]));
+    return NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
 }

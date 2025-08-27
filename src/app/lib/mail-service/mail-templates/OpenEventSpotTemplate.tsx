@@ -4,7 +4,7 @@ import mailTheme from "../mail-theme";
 import { FC } from "react";
 import { Prisma } from "@prisma/client";
 import GlobalConstants from "../../../GlobalConstants";
-import { getUrl } from "../../definitions";
+import { getAbsoluteUrl } from "../../definitions";
 
 /**
  * Props for the MembershipExpiresReminderTemplate component.
@@ -23,7 +23,7 @@ const OpenEventSpotTemplate: FC<IOpenEventSpotTemplateProps> = ({ organizationNa
             <Text>A spot has opened up for the event: {event.title}</Text>
             <Button
                 style={mailTheme.components.button}
-                href={getUrl([GlobalConstants.EVENT], {
+                href={getAbsoluteUrl([GlobalConstants.EVENT], {
                     [GlobalConstants.EVENT_ID]: event.id,
                     [GlobalConstants.TAB]: "Tickets",
                 })}

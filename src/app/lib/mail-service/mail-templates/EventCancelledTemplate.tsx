@@ -2,7 +2,7 @@ import { Button, Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
 import GlobalConstants from "../../../GlobalConstants";
-import { getUrl } from "../../definitions";
+import { getAbsoluteUrl } from "../../definitions";
 
 interface EventCancelledTemplateProps {
     event: {
@@ -17,7 +17,7 @@ const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({ event, organi
         <MailTemplate organizationName={organizationName}>
             <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Go to the event for more details.`}</Text>
             <Button
-                href={getUrl([GlobalConstants.EVENT], {
+                href={getAbsoluteUrl([GlobalConstants.EVENT], {
                     [GlobalConstants.EVENT_ID]: event.id,
                 })}
             >

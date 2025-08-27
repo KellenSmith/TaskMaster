@@ -7,7 +7,7 @@ import { LoginSchema, ResetCredentialsSchema, UpdateCredentialsSchema } from "./
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { hashPassword, signIn, signOut } from "./auth";
-import { getUrl } from "./definitions";
+import { getRelativeUrl } from "./definitions";
 import { CredentialsSignin } from "next-auth";
 import { allowRedirectException } from "../ui/utils";
 
@@ -15,8 +15,8 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
     try {
         await signIn("credentials", {
             ...parsedFieldValues,
-            callback: getUrl([GlobalConstants.LOGIN]),
-            redirectTo: getUrl([GlobalConstants.HOME]),
+            callback: getRelativeUrl([GlobalConstants.LOGIN]),
+            redirectTo: getRelativeUrl([GlobalConstants.HOME]),
             redirect: true,
         });
     } catch (error) {
@@ -30,7 +30,7 @@ export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Pro
 
 export const logOut = async (): Promise<void> => {
     try {
-        await signOut({ redirectTo: getUrl([GlobalConstants.HOME]), redirect: true });
+        await signOut({ redirectTo: getRelativeUrl([GlobalConstants.HOME]), redirect: true });
     } catch (error) {
         allowRedirectException(error);
         throw new Error("Failed to log out");

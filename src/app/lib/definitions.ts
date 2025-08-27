@@ -2,12 +2,29 @@ import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { Prisma, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { NextURL } from "next/dist/server/web/next-url";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { NextURL } from "next/dist/server/web/next-url";
 
 // Convention: "path"=`/${route}`
 
-export const getUrl = (
+export const getRelativeUrl = (
+    pathSegments: string[] = [],
+    searchParams: { [key: string]: string } = {},
+): string => {
+    // Use a relative path so redirects preserve cookies and work the same
+    // whether running locally, on a custom domain, or on Vercel.
+    const pathname = `/${pathSegments.filter(Boolean).join("/")}`.replace(/\/+/g, "/");
+    // Use the URL class to build search params safely. Use a dummy base so
+    // URL can parse the pathname, then return the relative path + search.
+    const url = new URL(pathname, "http://localhost");
+    for (const [key, value] of Object.entries(searchParams)) {
+        url.searchParams.set(key, value);
+    }
+    // url.search contains the leading '?' when non-empty
+    return url.search ? `${url.pathname}${url.search}` : url.pathname;
+};
+
+export const getAbsoluteUrl = (
     pathSegments: string[] = [],
     searchParams: { [key: string]: string } = {},
 ): string => {
@@ -16,26 +33,23 @@ export const getUrl = (
         : window?.location?.origin;
     if (!baseUrl) throw new Error("Base URL not found");
 
-    const url = new NextURL([GlobalConstants.HOME, ...pathSegments].join("/"), baseUrl);
-    for (let [key, value] of Object.entries(searchParams)) {
-        url.searchParams.set(key, value);
-    }
-    return url.toString();
+    return baseUrl + getRelativeUrl(pathSegments, searchParams);
 };
+
 export const routeToPath = (route: string) => `/${route}`;
 export const pathToRoute = (path: string) => (path ? path.slice(1) : ""); // Remove leading "/"
 export const serverRedirect = (
     pathSegments: string[],
     searchParams: { [key: string]: string } = {},
 ) => {
-    redirect(getUrl(pathSegments, searchParams));
+    redirect(getRelativeUrl(pathSegments, searchParams));
 };
 export const clientRedirect = (
     router: AppRouterInstance,
     pathSegments: string[],
     searchParams: { [key: string]: string } = {},
 ) => {
-    router.push(getUrl(pathSegments, searchParams));
+    router.push(getRelativeUrl(pathSegments, searchParams));
 };
 
 export const applicationRoutes = {
