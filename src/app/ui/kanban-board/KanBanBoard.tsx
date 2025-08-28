@@ -13,17 +13,17 @@ interface KanBanBoardProps {
     readOnly: boolean;
     eventPromise?: Promise<
         Prisma.EventGetPayload<{
-            include: { tickets: { include: { eventParticipants: true } } };
+            include: { tickets: { include: { event_participants: true } } };
         }>
     >;
     tasksPromise: Promise<
         Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
         }>[]
     >;
     activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{
-            select: { id: true; nickname: true; skillBadges: true };
+            select: { id: true; nickname: true; skill_badges: true };
         }>[]
     >;
     skillBadgesPromise: Promise<

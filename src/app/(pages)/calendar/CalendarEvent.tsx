@@ -23,7 +23,7 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
 
     // TODO: mark green if participating
     return (
-        <Tooltip title={`${formatDate(event.startTime)} - ${formatDate(event.endTime)}`}>
+        <Tooltip title={`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}>
             <Card
                 elevation={0}
                 sx={{

@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 
 interface TicketDashboardProps {
     eventPromise: Promise<
-        Prisma.EventGetPayload<{ include: { tickets: { include: { eventParticipants: true } } } }>
+        Prisma.EventGetPayload<{ include: { tickets: { include: { event_participants: true } } } }>
     >;
     ticketsPromise: Promise<
         Prisma.TicketGetPayload<{
@@ -39,7 +39,8 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
     const tickets = use(ticketsPromise);
     const ticket = useMemo(() => {
         const participantTicket = event.tickets.find((t) =>
-            t.eventParticipants.find((ep) => ep.userId === user.id),
+            // tickets now include event_participants according to Prisma schema
+            t.event_participants?.find((ep: any) => ep.user_id === user.id),
         );
         if (!participantTicket) return null;
         return tickets.find((ticket) => ticket.id === participantTicket?.id);

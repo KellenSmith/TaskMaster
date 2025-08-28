@@ -8,7 +8,7 @@ import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 
 const TasksPage = () => {
     const tasksPromise = unstable_cache(getFilteredTasks, [], { tags: [GlobalConstants.TASK] })({
-        eventId: null,
+        event_id: null,
     });
     const activeMembersPromise = unstable_cache(getActiveMembers, [], {
         tags: [GlobalConstants.USER],

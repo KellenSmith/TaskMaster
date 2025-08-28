@@ -15,14 +15,14 @@ export const createEvent = async (
     userId: string,
     parsedFieldValues: z.infer<typeof EventCreateSchema>,
 ): Promise<void> => {
-    const { locationId, ...eventData } = parsedFieldValues;
+    const { location_id, ...eventData } = parsedFieldValues;
 
-    // Check that the location has capacity for the maxParticipants
+    // Check that the location has capacity for the max_participants
     const location = await prisma.location.findUniqueOrThrow({
-        where: { id: locationId },
+        where: { id: location_id },
     });
 
-    if (location.capacity < parsedFieldValues.maxParticipants) {
+    if (location.capacity < parsedFieldValues.max_participants) {
         throw new Error("The location can't handle that many participants");
     }
 
@@ -45,12 +45,12 @@ export const createEvent = async (
                                 description:
                                     "Admittance for one member signed up for at least one volunteer task",
                                 // The event host is a participant
-                                stock: parsedFieldValues.maxParticipants - 1,
+                                stock: parsedFieldValues.max_participants - 1,
                             },
                         },
                     },
                 },
-                ...(locationId && { location: { connect: { id: locationId } } }),
+                ...(location_id && { location: { connect: { id: location_id } } }),
             },
             include: {
                 tickets: true,
@@ -61,8 +61,8 @@ export const createEvent = async (
         const volunteerTicket = createdEvent.tickets[0]; // Since we just created one ticket
         await tx.eventParticipant.create({
             data: {
-                userId: userId,
-                ticketId: volunteerTicket.id,
+                user_id: userId,
+                ticket_id: volunteerTicket.id,
             },
         });
 
@@ -88,7 +88,7 @@ export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPaylo
                     not: EventStatus.draft,
                 },
             },
-            { hostId: userId },
+            { host_id: userId },
         ];
     }
 
@@ -103,8 +103,8 @@ export const getFilteredEvents = async (
     Prisma.EventGetPayload<{
         include: {
             location: true;
-            tickets: { include: { eventParticipants: true } };
-            eventReserves: true;
+            tickets: { include: { event_participants: true } };
+            event_reserves: true;
         };
     }>[]
 > => {
@@ -120,10 +120,10 @@ export const getFilteredEvents = async (
                 },
                 tickets: {
                     include: {
-                        eventParticipants: true,
+                        event_participants: true,
                     },
                 },
-                eventReserves: true,
+                event_reserves: true,
             },
         });
         return events;
@@ -139,8 +139,8 @@ export const getEventById = async (
     Prisma.EventGetPayload<{
         include: {
             location: true;
-            tickets: { include: { eventParticipants: true } };
-            eventReserves: true;
+            tickets: { include: { event_participants: true } };
+            event_reserves: true;
         };
     }>
 > => {
@@ -152,10 +152,10 @@ export const getEventById = async (
             location: true,
             tickets: {
                 include: {
-                    eventParticipants: true,
+                    event_participants: true,
                 },
             },
-            eventReserves: true,
+            event_reserves: true,
         },
     });
 
@@ -166,7 +166,7 @@ export const getEventById = async (
     if (
         event.status === EventStatus.draft &&
         !isUserAdmin(loggedInUser) &&
-        event.hostId !== userId
+        event.host_id !== userId
     ) {
         throw new Error("You are not authorized to view this event");
     }
@@ -184,7 +184,7 @@ export const getEventParticipants = async (
         const participants = await prisma.eventParticipant.findMany({
             where: {
                 ticket: {
-                    eventId: eventId,
+                    event_id: eventId,
                 },
             },
             include: {
@@ -216,8 +216,8 @@ export const updateEvent = async (
         await prisma.$transaction(async (tx) => {
             const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
-            // Ensure that the new maxParticipants is not lower than the current number of participants
-            if (eventParticipantsCount > parsedFieldValues.maxParticipants) {
+            // Ensure that the new max_participants is not lower than the current number of participants
+            if (eventParticipantsCount > parsedFieldValues.max_participants) {
                 throw new Error(
                     `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
                 );
@@ -226,7 +226,7 @@ export const updateEvent = async (
             // Add or remove the new number of available tickets to product stock
             // deltaMaxParticipants might be negative
             const deltaMaxParticipants =
-                parsedFieldValues.maxParticipants - eventToUpdate.maxParticipants;
+                parsedFieldValues.max_participants - eventToUpdate.max_participants;
             if (Math.abs(deltaMaxParticipants)) {
                 const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
                 await tx.product.updateMany({
@@ -280,7 +280,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             include: {
                 tickets: {
                     include: {
-                        eventParticipants: true,
+                        event_participants: true,
                     },
                 },
             },
@@ -288,7 +288,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 
         const eventParticipants = await getEventParticipants(eventId);
         const onlyHostIsParticipating =
-            eventParticipants.length === 1 && eventParticipants[0].userId === event.hostId;
+            eventParticipants.length === 1 && eventParticipants[0].user_id === event.host_id;
         if (!onlyHostIsParticipating)
             throw new Error(
                 "The event has participants and cannot be deleted. Cancel the event instead",
@@ -296,13 +296,13 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 
         await prisma.$transaction([
             prisma.eventReserve.deleteMany({
-                where: { eventId },
+                where: { event_id: eventId },
             }),
             prisma.eventParticipant.deleteMany({
-                where: { ticket: { eventId } },
+                where: { ticket: { event_id: eventId } },
             }),
             prisma.ticket.deleteMany({
-                where: { eventId },
+                where: { event_id: eventId },
             }),
             prisma.event.delete({
                 where: { id: eventId },
@@ -322,18 +322,18 @@ export const cloneEvent = async (userId: string, eventId: string) => {
     try {
         const {
             id: eventIdToOmit, // eslint-disable-line no-unused-vars
-            hostId: hostIdToOmit, // eslint-disable-line no-unused-vars
-            locationId,
+            host_id: hostIdToOmit, // eslint-disable-line no-unused-vars
+            location_id,
             ...eventData
         } = await prisma.event.findUniqueOrThrow({
             where: { id: eventId },
         });
         const tickets = await prisma.ticket.findMany({
-            where: { eventId },
+            where: { event_id: eventId },
             include: { product: true },
         });
         const tasks = await prisma.task.findMany({
-            where: { eventId },
+            where: { event_id: eventId },
         });
 
         const eventClone = await prisma.$transaction(async (tx) => {
@@ -344,13 +344,13 @@ export const cloneEvent = async (userId: string, eventId: string) => {
                         ...eventData,
                         status: EventStatus.draft,
                         title: `${eventData.title} (Clone)`,
-                        startTime: dayjs().hour(18).minute(0).toDate(),
-                        endTime: dayjs().hour(22).minute(0).toDate(),
+                        start_time: dayjs().hour(18).minute(0).toDate(),
+                        end_time: dayjs().hour(22).minute(0).toDate(),
                     },
                     host: {
                         connect: { id: userId },
                     },
-                    ...(locationId && { location: { connect: { id: locationId } } }),
+                    ...(location_id && { location: { connect: { id: location_id } } }),
                 },
             });
 
@@ -359,8 +359,8 @@ export const cloneEvent = async (userId: string, eventId: string) => {
                 tickets.map(async (ticket) => {
                     const {
                         id: ticketIdToOmit, // eslint-disable-line no-unused-vars
-                        eventId: eventIdToOmit, // eslint-disable-line no-unused-vars
-                        productId: ticketProductIdToOmit, // eslint-disable-line no-unused-vars
+                        event_id: eventIdToOmit, // eslint-disable-line no-unused-vars
+                        product_id: ticketProductIdToOmit, // eslint-disable-line no-unused-vars
                         product,
                         ...ticketData
                     } = ticket;
@@ -374,7 +374,7 @@ export const cloneEvent = async (userId: string, eventId: string) => {
                                 create: {
                                     ...productData,
                                     // The event host is a participant
-                                    stock: eventData.maxParticipants - 1,
+                                    stock: eventData.max_participants - 1,
                                 },
                             },
                             event: {
@@ -404,15 +404,15 @@ export const cloneEvent = async (userId: string, eventId: string) => {
                     const {
                         id: taskIdToOmit, // eslint-disable-line no-unused-vars
                         // Create the tasks as unassigned
-                        assigneeId: taskAssigneeIdToOmit, // eslint-disable-line no-unused-vars
-                        reviewerId: taskReviewerIdToOmit, // eslint-disable-line no-unused-vars
+                        assignee_id: taskAssigneeIdToOmit, // eslint-disable-line no-unused-vars
+                        reviewer_id: taskReviewerIdToOmit, // eslint-disable-line no-unused-vars
                         ...taskData
                     } = task;
                     return {
                         ...taskData,
-                        eventId: createdEvent.id,
+                        event_id: createdEvent.id,
                         // Add logged in user as reviewer
-                        reviewerId: userId,
+                        reviewer_id: userId,
                         // Create tasks as "To Do"
                         status: TaskStatus.toDo,
                     } as Prisma.TaskCreateManyInput;

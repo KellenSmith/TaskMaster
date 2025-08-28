@@ -1,4 +1,4 @@
-"id","status","totalAmount","paymentRequestId","payeeRef","createdAt","updatedAt","userId"
+"id","status","total_amount","payment_request_id","payee_ref","created_at","updated_at","user_id"
 "0f3dfb0b-d10a-4794-94e5-933febe19a1a","completed","20000","/psp/paymentorders/c072b7d3-584a-46cc-d7eb-08dde0aa4331","PAY0f3dfb0bd10a461137419538hh","2025-08-25 09:22:14.341","2025-08-25 09:22:46.783","99838494-f142-44a3-892d-c372db90f93c"
 "25404583-038a-4bb0-8a5d-6203df071a8b","completed","20000","/psp/paymentorders/13af301a-dbbb-4445-0cec-08dde0aaaa8f","PAY25404583038a46118145616xuz","2025-08-25 10:35:39.784","2025-08-25 10:36:11.857","99838494-f142-44a3-892d-c372db90f93c"
 "2a5d3e2b-51a6-4147-84bd-9a19ff2da64e","completed","0",,,"2025-08-25 10:08:00.702","2025-08-25 10:08:04.904","c59d5d50-964f-464e-914b-db2466c1b85f"

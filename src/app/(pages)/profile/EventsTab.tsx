@@ -10,8 +10,8 @@ interface EventsTabProps {
         Prisma.EventGetPayload<{
             include: {
                 location: true;
-                tickets: { include: { eventParticipants: true } };
-                eventReserves: true;
+                tickets: { include: { event_participants: true } };
+                event_reserves: true;
             };
         }>[]
     >;
@@ -22,10 +22,10 @@ const EventsTab: React.FC<EventsTabProps> = ({ eventsPromise }) => {
 
     const getSortedEvents = () => {
         return events.sort((a, b) => {
-            if (a.startTime < b.startTime) return -1;
-            if (a.startTime > b.startTime) return 1;
-            if (a.endTime < b.endTime) return -1;
-            if (a.endTime > b.endTime) return 1;
+            if (a.start_time < b.start_time) return -1;
+            if (a.start_time > b.start_time) return 1;
+            if (a.end_time < b.end_time) return -1;
+            if (a.end_time > b.end_time) return 1;
             return 0;
         });
     };

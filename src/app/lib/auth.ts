@@ -19,7 +19,7 @@ declare module "next-auth" {
      */
     // eslint-disable-next-line no-unused-vars
     interface Session {
-        user: Prisma.UserGetPayload<{ include: { userMembership: true; skillBadges: true } }> &
+        user: Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }> &
             DefaultSession["user"];
     }
 }
@@ -48,26 +48,27 @@ const throwFailedSignInError = (errorCode: string) => {
 
 const authorize = async (
     credentials: Partial<Record<"email" | "password", unknown>>,
-): Promise<Prisma.UserGetPayload<{ include: { userMembership: true } }>> => {
+): Promise<Prisma.UserGetPayload<{ include: { user_membership: true } }>> => {
     // Everyone who applied for membership exists in the database
     const loggedInUser = await prisma.user.findUnique({
         where: {
             email: credentials.email as string,
         },
         include: {
-            userCredentials: true,
-            userMembership: true,
-            skillBadges: true,
+            user_credentials: true,
+            user_membership: true,
+            skill_badges: true,
         },
     });
     if (!loggedInUser) throwFailedSignInError(failedSigninCodes.USER_NOT_FOUND);
-    if (!loggedInUser.userCredentials) throwFailedSignInError(failedSigninCodes.MEMBERSHIP_PENDING);
+    if (!loggedInUser.user_credentials)
+        throwFailedSignInError(failedSigninCodes.MEMBERSHIP_PENDING);
 
     // All validated members have credentials
     const userCredentials = await prisma.userCredentials.findUnique({
         where: {
-            userId: loggedInUser.id,
-        } as any as Prisma.UserCredentialsWhereUniqueInput,
+            user_id: loggedInUser.id,
+        },
     });
     if (!userCredentials) throwFailedSignInError(failedSigninCodes.INVALID_CREDENTIALS);
 
@@ -76,11 +77,11 @@ const authorize = async (
         credentials.password as string,
         userCredentials[GlobalConstants.SALT],
     );
-    const passwordsMatch = hashedPassword === userCredentials.hashedPassword;
+    const passwordsMatch = hashedPassword === userCredentials.hashed_password;
     if (!passwordsMatch) throwFailedSignInError(failedSigninCodes.INVALID_CREDENTIALS);
 
     // eslint-disable-next-line no-unused-vars
-    const { userCredentials: userCredentialsToOmit, ...userWithMembership } = loggedInUser;
+    const { user_credentials: userCredentialsToOmit, ...userWithMembership } = loggedInUser;
     return userWithMembership;
 };
 
@@ -111,7 +112,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }: {
             token: JWT;
             user:
-                | Prisma.UserGetPayload<{ include: { userMembership: true; skillBadges: true } }>
+                | Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }>
                 | undefined;
         }) => {
             // On initial sign in `user` is available — persist it into the token.
@@ -124,7 +125,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             ...session,
             user:
                 (token.user as Prisma.UserGetPayload<{
-                    include: { userMembership: true; skillBadges: true };
+                    include: { user_membership: true; skill_badges: true };
                 }>) || session.user,
         }),
     },

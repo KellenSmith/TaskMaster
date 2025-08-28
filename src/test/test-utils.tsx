@@ -20,13 +20,13 @@ const mockUserContextValue = {
 const mockOrganizationSettingsContextValue = {
     organizationSettings: {
         id: "orgsettingsid",
-        organizationEmail: "test@example.com",
-        organizationName: "Task Master",
-        remindMembershipExpiresInDays: 7,
-        purgeMembersAfterDaysUnvalidated: 180,
-        defaultTaskShiftLength: 2,
-        memberApplicationPrompt: "Please provide a brief introduction about yourself.",
-        ticketInstructions:
+        organization_email: "test@example.com",
+        organization_name: "Task Master",
+        remind_membership_expires_in_days: 7,
+        purge_members_after_days_unvalidated: 180,
+        default_task_shift_length: 2,
+        member_application_prompt: "Please provide a brief introduction about yourself.",
+        ticket_instructions:
             "Please include any relevant information or questions you have about the event.",
     } as Prisma.OrganizationSettingsGetPayload<true>,
 };
@@ -34,7 +34,7 @@ const mockOrganizationSettingsContextValue = {
 interface WrapperProps {
     children: ReactNode;
     user?: Prisma.UserGetPayload<{
-        include: { userMembership: true; userCredentials: true; skillBadges: true };
+        include: { user_membership: true; user_credentials: true; skill_badges: true };
     }>;
 }
 

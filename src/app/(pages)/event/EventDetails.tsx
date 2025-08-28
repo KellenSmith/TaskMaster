@@ -23,9 +23,9 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                             To:
                         </Typography>
                         <Typography>
-                            {formatDate(event.startTime)}
+                            {formatDate(event.start_time)}
                             <br />
-                            {formatDate(event.endTime)}
+                            {formatDate(event.end_time)}
                         </Typography>
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>

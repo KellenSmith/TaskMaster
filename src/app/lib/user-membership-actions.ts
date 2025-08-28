@@ -14,31 +14,31 @@ export const renewUserMembership = async (userId: string, membershipId: string):
             where: { id: membershipId },
         });
         const userMembership = await prisma.userMembership.findUnique({
-            where: { userId: userId },
+            where: { user_id: userId },
         });
         const user = await prisma.user.findUniqueOrThrow({
             where: { id: userId },
-            include: { userMembership: true },
+            include: { user_membership: true },
         });
 
         let newExpiryDate = dayjs().add(membership.duration, "d").toISOString();
         // If the membership is the same, extend the expiration date
-        if (!isMembershipExpired(user) && userMembership?.membershipId === membershipId)
-            newExpiryDate = dayjs(userMembership.expiresAt)
+        if (!isMembershipExpired(user) && userMembership?.membership_id === membershipId)
+            newExpiryDate = dayjs(userMembership.expires_at)
                 .add(membership.duration, "d")
                 .toISOString();
 
         await prisma.userMembership.upsert({
-            where: { userId: userId },
+            where: { user_id: userId },
             update: {
-                membershipId: membershipId,
-                expiresAt: newExpiryDate,
+                membership_id: membershipId,
+                expires_at: newExpiryDate,
             },
             // If no membership exists, create a new one
             create: {
-                userId: userId,
-                membershipId: membershipId,
-                expiresAt: newExpiryDate,
+                user_id: userId,
+                membership_id: membershipId,
+                expires_at: newExpiryDate,
             },
         });
         revalidateTag(GlobalConstants.USER);
@@ -69,7 +69,7 @@ export const getMembershipProduct = async (): Promise<
                 name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
                 description: "Annual membership",
                 price: 0,
-                unlimitedStock: true,
+                unlimited_stock: true,
 
                 membership: {
                     create: {
@@ -92,7 +92,7 @@ export const createMembershipOrder = async (userId: string): Promise<void> => {
         const membershipProduct = await getMembershipProduct();
 
         orderItems = [
-            { productId: membershipProduct.id, price: membershipProduct.price, quantity: 1 },
+            { product_id: membershipProduct.id, price: membershipProduct.price, quantity: 1 },
         ];
     } catch {
         throw new Error("Failed to create order for membership");

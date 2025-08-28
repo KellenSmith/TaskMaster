@@ -14,21 +14,21 @@ export const getOrderById = async (
     orderId: string,
 ): Promise<
     Prisma.OrderGetPayload<{
-        include: { orderItems: { include: { product: { include: { membership: true } } } } };
+        include: { order_items: { include: { product: { include: { membership: true } } } } };
     }>
 > => {
     try {
         const order = await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
             include: {
-                orderItems: {
+                order_items: {
                     include: {
                         product: { include: { membership: true } },
                     },
                 },
             },
         });
-        if (userId !== order.userId) throw new Error("Not authorized to view this order");
+        if (userId !== order.user_id) throw new Error("Not authorized to view this order");
         return order;
     } catch {
         throw new Error("Failed to fetch order");
@@ -39,7 +39,7 @@ export const getAllOrders = async (): Promise<
     Prisma.OrderGetPayload<{
         include: {
             user: { select: { nickname: true } };
-            orderItems: { include: { product: true } };
+            order_items: { include: { product: true } };
         };
     }>[]
 > => {
@@ -51,7 +51,7 @@ export const getAllOrders = async (): Promise<
                         nickname: true,
                     },
                 },
-                orderItems: {
+                order_items: {
                     include: {
                         product: true,
                     },
@@ -70,9 +70,9 @@ export const createOrder = async (
     // Check that the stock of each product in the orderItems is sufficient
     for (const orderItem of orderItems) {
         const product = await prisma.product.findUniqueOrThrow({
-            where: { id: orderItem.productId },
+            where: { id: orderItem.product_id },
         });
-        if (!product.unlimitedStock && product.stock < orderItem.quantity) {
+        if (!product.unlimited_stock && product.stock < orderItem.quantity) {
             throw new Error(`Insufficient stock for product ${product.id}`);
         }
     }
@@ -80,7 +80,7 @@ export const createOrder = async (
     // Calculate the price of each order item
     for (const item of orderItems) {
         const product = await prisma.product.findUniqueOrThrow({
-            where: { id: item.productId },
+            where: { id: item.product_id },
         });
         item.price = product.price * item.quantity;
     }
@@ -89,13 +89,13 @@ export const createOrder = async (
     const order = await prisma.$transaction(async (tx) => {
         return await tx.order.create({
             data: {
-                totalAmount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
+                total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
                 user: {
                     connect: {
                         id: userId,
                     },
                 },
-                orderItems: {
+                order_items: {
                     createMany: {
                         data: orderItems,
                     },
@@ -111,7 +111,7 @@ const processOrderItems = async (orderId: string): Promise<void> => {
         const order = await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
             include: {
-                orderItems: {
+                order_items: {
                     include: {
                         product: {
                             include: {
@@ -124,13 +124,13 @@ const processOrderItems = async (orderId: string): Promise<void> => {
             },
         });
 
-        if (order.orderItems.length === 0) {
+        if (order.order_items.length === 0) {
             throw new Error("No items found for this order");
         }
 
         // Process each order item
-        for (const orderItem of order.orderItems) {
-            await processOrderedProduct(order.userId, orderItem);
+        for (const orderItem of order.order_items) {
+            await processOrderedProduct(order.user_id, orderItem);
         }
     } catch {
         throw new Error(`Failed to process order items`);
@@ -192,7 +192,7 @@ export const deleteOrder = async (orderId: string): Promise<void> => {
         await prisma.$transaction(async (tx) => {
             // Delete all order items first
             await tx.orderItem.deleteMany({
-                where: { orderId },
+                where: { order_id: orderId },
             });
             // Then delete the order
             await tx.order.delete({

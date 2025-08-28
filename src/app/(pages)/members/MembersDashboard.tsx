@@ -21,7 +21,7 @@ import { FC } from "react";
 interface MembersDashboardProps {
     membersPromise: Promise<
         Prisma.UserGetPayload<{
-            include: { userCredentials: { select: { id: true } }; userMembership: true };
+            include: { user_credentials: { select: { id: true } }; user_membership: true };
         }>[]
     >;
 }
@@ -32,9 +32,9 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
     const isMembershipPending = (member: ImplementedDatagridEntities) =>
         !(
             member as Prisma.UserGetPayload<{
-                include: { userCredentials: true; userMembership: true };
+                include: { user_credentials: true; user_membership: true };
             }>
-        ).userCredentials;
+        ).user_credentials;
 
     const updateUserAction = async (
         member: ImplementedDatagridEntities,
@@ -90,7 +90,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
         if (
             isMembershipExpired(
                 member as Prisma.UserGetPayload<{
-                    include: { userCredentials: true; userMembership: true };
+                    include: { user_credentials: true; user_membership: true };
                 }>,
             )
         )

@@ -5,7 +5,7 @@ import * as matchers from "@testing-library/jest-dom/matchers";
 import { mockContext } from "./mocks/prismaMock";
 
 // Extend vitest's expect method with testing-library methods
-expect.extend(matchers as any);
+expect.extend(matchers);
 
 beforeEach(() => {
     vi.resetAllMocks(); // Mock the Prisma module

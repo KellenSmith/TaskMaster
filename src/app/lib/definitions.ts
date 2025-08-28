@@ -76,7 +76,7 @@ export const applicationRoutes = {
 export const isUserAuthorized = (
     pathname: string,
     user: Prisma.UserGetPayload<{
-        include: { userMembership: true };
+        include: { user_membership: true };
     }> | null,
 ): boolean => {
     const requestedRoute = pathToRoute(pathname);
@@ -97,10 +97,10 @@ export const isUserAuthorized = (
 
 export const isMembershipExpired = (
     user: Prisma.UserGetPayload<{
-        include: { userMembership: true };
+        include: { user_membership: true };
     }> | null,
 ): boolean => {
-    const membershipExpiresAt = user?.userMembership?.expiresAt;
+    const membershipExpiresAt = user?.user_membership?.expires_at;
     return !membershipExpiresAt || dayjs().isAfter(dayjs(membershipExpiresAt));
 };
 
@@ -110,7 +110,7 @@ export const isUserAdmin = (user: Prisma.UserGetPayload<true> | null): boolean =
 export const isUserHost = (
     user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
     event: Prisma.EventGetPayload<true> | null,
-): boolean => user && event && user?.id === event?.hostId;
+): boolean => user && event && user?.id === event?.host_id;
 
 export const snakeCaseToLabel = (snakeCase: string): string =>
     snakeCase ? snakeCase[0].toUpperCase() + snakeCase.slice(1).replace(/_/g, " ") : "";

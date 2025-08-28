@@ -9,7 +9,7 @@ import { FC } from "react";
  * @property totalAmount - The total amount of the order.
  */
 interface ITaskUpdateTemplateProps {
-    organizationName: string;
+    organizationName?: string;
     taskName: string;
     notificationMessage: string;
 }

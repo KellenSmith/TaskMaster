@@ -19,19 +19,19 @@ export const allowRedirectException = (error: Error & { digest?: string }) => {
 
 export const userHasSkillBadge = (
     user: Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; skillBadges: true };
+        select: { id: true; nickname: true; skill_badges: true };
     }>,
     skillBadgeId: string,
 ): boolean => {
-    return user.skillBadges.some((userBadge) => userBadge.skillBadgeId === skillBadgeId);
+    return user.skill_badges.some((userBadge) => userBadge.skill_badge_id === skillBadgeId);
 };
 
 export const isUserQualifiedForTask = (
     user: Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; skillBadges: true };
+        select: { id: true; nickname: true; skill_badges: true };
     }>,
     requiredTaskSkillBadges: Prisma.TaskSkillBadgeGetPayload<true>[],
 ) =>
     requiredTaskSkillBadges.every((taskSkillBadge) =>
-        userHasSkillBadge(user, taskSkillBadge.skillBadgeId),
+        userHasSkillBadge(user, taskSkillBadge.skill_badge_id),
     );

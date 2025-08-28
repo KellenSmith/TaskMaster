@@ -31,7 +31,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 interface ParticipantDashboard {
     eventPromise: Promise<
         Prisma.EventGetPayload<{
-            include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
+            include: { tickets: { include: { event_participants: true } }; event_reserves: true };
         }>
     >;
     eventParticipantsPromise: Promise<
@@ -46,7 +46,7 @@ interface ParticipantDashboard {
     >;
     eventTicketsPromise: Promise<Prisma.TicketGetPayload<{ include: { product: true } }>[]>;
     activeMembersPromise: Promise<
-        Prisma.UserGetPayload<{ select: { id: true; nickname: true; skillBadges: true } }>[]
+        Prisma.UserGetPayload<{ select: { id: true; nickname: true; skill_badges: true } }>[]
     >;
 }
 
@@ -71,6 +71,7 @@ const ParticipantDashboard = ({
         parsedFieldValues: z.infer<typeof AddEventParticipantSchema>,
     ) => {
         try {
+            // parsedFieldValues uses camelCase from the form; normalize when calling actions
             await addEventParticipant(parsedFieldValues.userId, parsedFieldValues.ticketId);
             return "Added participant";
         } catch {

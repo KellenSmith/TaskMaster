@@ -107,7 +107,7 @@ const NavPanel = () => {
                         style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
                         onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                     >
-                        {organizationSettings?.organizationName || "Organization Name"}
+                        {organizationSettings?.organization_name || "Organization Name"}
                     </Typography>
                     <Tooltip title="Open README.md">
                         <Button onClick={() => openResourceInNewTab("/README.pdf")}>

@@ -6,7 +6,8 @@ import { getAbsoluteUrl } from "../../definitions";
 interface MailTemplateProps {
     children?: ReactNode;
     html?: string;
-    organizationName: string;
+    // callers might pass organizationName (camelCase) or organization_name (snake_case)
+    organizationName?: string;
 }
 
 const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName }) => {

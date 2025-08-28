@@ -17,7 +17,7 @@ import { formatPrice } from "../../ui/utils";
 interface OrderSummaryProps {
     order: Prisma.OrderGetPayload<{
         include: {
-            orderItems: {
+            order_items: {
                 include: {
                     product: {
                         include: { membership: true };
@@ -66,7 +66,7 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {order.orderItems.map((item) => (
+                                {order.order_items.map((item) => (
                                     <TableRow key={item.product.name}>
                                         <TableCell component="th" scope="row">
                                             <Stack>
@@ -95,7 +95,7 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                     </TableCell>
                                     <TableCell align="right">
                                         <Typography variant="subtitle1">
-                                            {formatPrice(order.totalAmount)} SEK
+                                            {formatPrice(order.total_amount)} SEK
                                         </Typography>
                                     </TableCell>
                                 </TableRow>

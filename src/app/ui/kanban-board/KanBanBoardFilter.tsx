@@ -45,15 +45,15 @@ const KanBanBoardFilter = ({ tasksPromise, setFilteredTasks }: KanBanBoardFilter
 
     const filterOptions = {
         unassigned: (filteredTasks: typeof tasks) =>
-            filteredTasks.filter((task) => !task.assigneeId),
+            filteredTasks.filter((task) => !task.assignee_id),
         assigned_to_me: (filteredTasks: typeof tasks) =>
-            filteredTasks.filter((task) => task.assigneeId === user.id),
+            filteredTasks.filter((task) => task.assignee_id === user.id),
         for_me_to_review: (filteredTasks: typeof tasks) =>
-            filteredTasks.filter((task) => task.reviewerId === user.id),
+            filteredTasks.filter((task) => task.reviewer_id === user.id),
         begins_after: (filteredTasks: typeof tasks, date: Date) =>
-            filteredTasks.filter((task) => dayjs(task.startTime).isAfter(dayjs(date))),
+            filteredTasks.filter((task) => dayjs(task.start_time).isAfter(dayjs(date))),
         ends_before: (filteredTasks: typeof tasks, date: Date) =>
-            filteredTasks.filter((task) => dayjs(task.endTime).isBefore(dayjs(date))),
+            filteredTasks.filter((task) => dayjs(task.end_time).isBefore(dayjs(date))),
         has_tag: (filteredTasks: typeof tasks, tag: string) =>
             filteredTasks.filter((task) => task.tags.includes(tag)),
     };

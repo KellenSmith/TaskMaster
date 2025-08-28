@@ -143,7 +143,7 @@ const AccountTab = () => {
                                         textAlign: "center",
                                     }}
                                 >
-                                    {user.userMembership
+                                    {user.user_membership
                                         ? "Your membership has expired and needs renewal"
                                         : "Welcome! Activate your membership to get started"}
                                 </Typography>
@@ -158,7 +158,7 @@ const AccountTab = () => {
                                             Member since
                                         </Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                            {formatDate(user.createdAt)}
+                                            {formatDate(user.created_at)}
                                         </Typography>
                                     </Stack>
                                 </Stack>
@@ -171,7 +171,7 @@ const AccountTab = () => {
                                             Membership expires
                                         </Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                            {formatDate(dayjs(user.userMembership.expiresAt))}
+                                            {formatDate(dayjs(user.user_membership.expires_at))}
                                         </Typography>
                                     </Stack>
                                 </Stack>

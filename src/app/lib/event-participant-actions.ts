@@ -18,8 +18,8 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
             // DON'T USE THE deleteEventReserve FUNCTION
             await tx.eventReserve.deleteMany({
                 where: {
-                    userId: userId,
-                    eventId: ticket.eventId,
+                    user_id: userId,
+                    event_id: ticket.event_id,
                 },
             });
 
@@ -28,10 +28,10 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
             await tx.product.updateMany({
                 where: {
                     ticket: {
-                        eventId: ticket.eventId,
+                        event_id: ticket.event_id,
                     },
                     NOT: {
-                        unlimitedStock: true,
+                        unlimited_stock: true,
                     },
                 },
                 data: {
@@ -68,19 +68,19 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
     // Find the ticket the user holds to the event
     const ticket = await prisma.ticket.findFirstOrThrow({
         where: {
-            eventId: eventId,
-            eventParticipants: {
+            event_id: eventId,
+            event_participants: {
                 some: {
-                    userId: userId,
+                    user_id: userId,
                 },
             },
         },
     });
     const deleteParticipantPromise = prisma.eventParticipant.delete({
         where: {
-            userId_ticketId: {
-                userId,
-                ticketId: ticket.id,
+            user_id_ticket_id: {
+                user_id: userId,
+                ticket_id: ticket.id,
             },
         },
     });
@@ -89,10 +89,10 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
     const incrementTicketStockPromise = prisma.product.updateMany({
         where: {
             ticket: {
-                eventId,
+                event_id: eventId,
             },
             NOT: {
-                unlimitedStock: true,
+                unlimited_stock: true,
             },
         },
         data: {
@@ -120,7 +120,7 @@ export const getEventParticipants = async (
 > => {
     try {
         return await prisma.eventParticipant.findMany({
-            where: { ticket: { eventId } },
+            where: { ticket: { event_id: eventId } },
             include: {
                 user: {
                     select: {
@@ -138,7 +138,7 @@ export const getEventParticipants = async (
 export const getEventParticipantEmails = async (eventId: string): Promise<string[]> => {
     try {
         const participants = await prisma.eventParticipant.findMany({
-            where: { ticket: { eventId } },
+            where: { ticket: { event_id: eventId } },
             select: {
                 user: {
                     select: {

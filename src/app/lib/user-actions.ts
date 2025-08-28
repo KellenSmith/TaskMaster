@@ -13,11 +13,11 @@ import { auth } from "./auth";
 
 export const getUserById = async (
     userId: string,
-): Promise<Prisma.UserGetPayload<{ include: { userMembership: true } }>> => {
+): Promise<Prisma.UserGetPayload<{ include: { user_membership: true } }>> => {
     try {
         return await prisma.user.findUniqueOrThrow({
             where: { id: userId },
-            include: { userMembership: true },
+            include: { user_membership: true },
         });
     } catch {
         throw new Error("Failed to get user");
@@ -80,14 +80,14 @@ export const submitMemberApplication = async (
 
 export const getAllUsers = async (): Promise<
     Prisma.UserGetPayload<{
-        include: { userCredentials: { select: { id: true } }; userMembership: true };
+        include: { user_credentials: { select: { id: true } }; user_membership: true };
     }>[]
 > => {
     try {
         return await prisma.user.findMany({
             include: {
-                userCredentials: { select: { id: true } },
-                userMembership: true,
+                user_credentials: { select: { id: true } },
+                user_membership: true,
             },
         });
     } catch {
@@ -132,22 +132,22 @@ export const deleteUser = async (userId: string): Promise<void> => {
     try {
         const deleteReservedInEventsPromise = prisma.eventReserve.deleteMany({
             where: {
-                userId: userId,
+                user_id: userId,
             },
         });
         const deleteParticipantInEventsPromise = prisma.eventParticipant.deleteMany({
             where: {
-                userId: userId,
+                user_id: userId,
             },
         });
         const deleteMembershipPromise = prisma.userMembership.deleteMany({
             where: {
-                userId: userId,
+                user_id: userId,
             },
         });
         const deleteCredentialsPromise = prisma.userCredentials.deleteMany({
             where: {
-                userId: userId,
+                user_id: userId,
             },
         });
 
@@ -181,14 +181,14 @@ export const deleteUser = async (userId: string): Promise<void> => {
 
 export const getActiveMembers = async (): Promise<
     Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; skillBadges: true };
+        select: { id: true; nickname: true; skill_badges: true };
     }>[]
 > => {
     try {
         return await prisma.user.findMany({
             where: {
-                userMembership: {
-                    expiresAt: {
+                user_membership: {
+                    expires_at: {
                         gt: dayjs().toISOString(),
                     },
                 },
@@ -196,7 +196,7 @@ export const getActiveMembers = async (): Promise<
             select: {
                 id: true,
                 nickname: true,
-                skillBadges: true,
+                skill_badges: true,
             },
         });
     } catch {
@@ -205,7 +205,7 @@ export const getActiveMembers = async (): Promise<
 };
 
 export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
-    include: { userMembership: true };
+    include: { user_membership: true };
 }> | null> => {
     const authResult = await auth();
     if (!authResult?.user) return null;

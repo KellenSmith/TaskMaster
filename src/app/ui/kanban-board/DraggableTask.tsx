@@ -20,12 +20,12 @@ interface DraggableTaskProps {
     task: Prisma.TaskGetPayload<{
         include: {
             assignee: { select: { id: true; nickname: true } };
-            skillBadges: true;
+            skill_badges: true;
         };
     }>;
     activeMembersPromise: Promise<
         Prisma.UserGetPayload<{
-            select: { id: true; nickname: true; skillBadges: true };
+            select: { id: true; nickname: true; skill_badges: true };
         }>[]
     >;
     skillBadgesPromise: Promise<
@@ -65,7 +65,7 @@ const DraggableTask = ({
     };
 
     const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
-        await updateTaskById(task.id, parsedFieldValues, task.eventId);
+        await updateTaskById(task.id, parsedFieldValues, task.event_id);
         return "Updated task";
     };
 
@@ -94,9 +94,9 @@ const DraggableTask = ({
             >
                 <Typography variant="body1">{task.name}</Typography>
                 <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="body2">{formatDate(task.startTime)}</Typography>
+                    <Typography variant="body2">{formatDate(task.start_time)}</Typography>
                     {"-"}
-                    <Typography variant="body2">{formatDate(task.endTime)}</Typography>
+                    <Typography variant="body2">{formatDate(task.end_time)}</Typography>
                 </Stack>
             </Card>
             <Dialog fullWidth maxWidth="xl" open={dialogOpen} onClose={() => setDialogOpen(false)}>
@@ -104,16 +104,16 @@ const DraggableTask = ({
                     name={GlobalConstants.TASK}
                     defaultValues={{
                         ...task,
-                        skillBadges: task.skillBadges.map((b) => b.skillBadgeId),
+                        skill_badges: (task.skill_badges || []).map((b: any) => b.skill_badge_id),
                     }}
                     customOptions={{
                         [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(
                             activeMembers,
-                            task.skillBadges,
+                            task.skill_badges,
                         ),
                         [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
                             activeMembers,
-                            task.skillBadges,
+                            task.skill_badges,
                         ),
                         [GlobalConstants.SKILL_BADGES]: skillBadges.map(
                             (b) =>
@@ -127,14 +127,14 @@ const DraggableTask = ({
                     validationSchema={TaskUpdateSchema}
                     buttonLabel="save task"
                     readOnly={
-                        isUserHost(user, event) || isUserAdmin(user) || task.reviewerId === user.id
+                        isUserHost(user, event) || isUserAdmin(user) || task.reviewer_id === user.id
                     }
                     editable={!readOnly}
                 />
-                <Button onClick={assignTaskToMe} disabled={task.assigneeId === user.id}>
-                    {task.assigneeId === user.id
+                <Button onClick={assignTaskToMe} disabled={task.assignee_id === user.id}>
+                    {task.assignee_id === user.id
                         ? "This task is assigned to you"
-                        : isUserQualifiedForTask(user, task.skillBadges)
+                        : isUserQualifiedForTask(user, task.skill_badges)
                           ? "Assign to me"
                           : "You don't have the skills for this task yet"}
                 </Button>

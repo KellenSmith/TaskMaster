@@ -41,7 +41,7 @@ export default function ProductCard({
     const defaultImage = "/images/product-placeholder.svg";
 
     const getStockChipLabel = () => {
-        if (product.unlimitedStock || product.stock > 5) {
+        if (product.unlimited_stock || product.stock > 5) {
             return "In Stock";
         }
         if (!product.stock) return "Out of Stock";
@@ -49,7 +49,7 @@ export default function ProductCard({
     };
 
     const getStockChipColor = () => {
-        if (product.unlimitedStock || product.stock > 5) {
+        if (product.unlimited_stock || product.stock > 5) {
             return "success";
         }
         if (!product.stock) return "error";
@@ -81,7 +81,7 @@ export default function ProductCard({
                 >
                     <CardMedia sx={{ position: "relative" }}>
                         <Image
-                            src={product.imageUrl || defaultImage}
+                            src={product.image_url || defaultImage}
                             alt={product.name}
                             width={400}
                             height={400}
@@ -151,7 +151,7 @@ export default function ProductCard({
                             sx={{ position: "relative", width: 300, height: 300, flexShrink: 0 }}
                         >
                             <Image
-                                src={product.imageUrl || defaultImage}
+                                src={product.image_url || defaultImage}
                                 alt={product.name}
                                 fill
                                 style={{ objectFit: "cover", borderRadius: 8 }}
@@ -205,7 +205,7 @@ export default function ProductCard({
                         <Button
                             onClick={() => onAddToCart(product.id)}
                             disabled={
-                                !isAvailable || (!product.unlimitedStock && product.stock === 0)
+                                !isAvailable || (!product.unlimited_stock && product.stock === 0)
                             }
                         >
                             {product.price === 0 ? "claim" : "buy"}

@@ -9,7 +9,7 @@ interface EventCancelledTemplateProps {
         id: string;
         title: string;
     };
-    organizationName: string;
+    organizationName?: string;
 }
 
 const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({ event, organizationName }) => {

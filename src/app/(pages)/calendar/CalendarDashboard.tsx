@@ -31,8 +31,8 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const createEventWithHostAndTicket = async (
         parsedFieldValues: z.infer<typeof EventCreateSchema>,
     ) => {
-        const selectedLocation = locations.find((loc) => loc.id === parsedFieldValues.locationId);
-        if (selectedLocation.capacity < parsedFieldValues.maxParticipants)
+        const selectedLocation = locations.find((loc) => loc.id === parsedFieldValues.location_id);
+        if (selectedLocation.capacity < parsedFieldValues.max_participants)
             throw new Error(
                 "The location can only handle " + selectedLocation.capacity + " participants",
             );

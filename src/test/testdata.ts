@@ -5,30 +5,30 @@ const testdata = {
     // Mock user data for testing
     user: {
         id: "test-user-id",
-        firstName: "Test",
-        surName: "User",
+        first_name: "Test",
+        sur_name: "User",
         pronoun: "they/them",
         nickname: "Test User",
         email: "test@example.com",
         role: UserRole.member,
-        consentToNewsletters: true,
+        consent_to_newsletters: true,
         phone: "123-456-7890",
-        createdAt: dayjs().subtract(1, "year").toDate(),
-        userMembership: {
+        created_at: dayjs().subtract(1, "year").toDate(),
+        user_membership: {
             id: "test-membership-id",
-            membershipId: "test-membership-id",
-            userId: "test-user-id",
-            expiresAt: dayjs().add(1, "year").toDate(),
+            membership_id: "test-membership-id",
+            user_id: "test-user-id",
+            expires_at: dayjs().add(1, "year").toDate(),
         },
-        userCredentials: {
+        user_credentials: {
             id: "test-user-credentials-id",
-            userId: "test-user-id",
+            user_id: "test-user-id",
             salt: "test-password-salt",
-            hashedPassword: "test-hashed-password",
+            hashed_password: "test-hashed-password",
         },
-        skillBadges: [],
+        skill_badges: [],
     } as Prisma.UserGetPayload<{
-        include: { userMembership: true; userCredentials: true; skillBadges: true };
+        include: { user_membership: true; user_credentials: true; skill_badges: true };
     }>,
 
     createUser: {
@@ -52,36 +52,36 @@ const testdata = {
         id: "event-1234-5678",
         title: "Summer Coding Workshop",
         location: "Tech Hub, Downtown",
-        startTime: new Date("2024-06-15T09:00:00Z"),
-        endTime: new Date("2024-06-15T17:00:00Z"),
+        start_time: new Date("2024-06-15T09:00:00Z"),
+        end_time: new Date("2024-06-15T17:00:00Z"),
         description: "Learn coding basics in this one-day workshop",
-        maxParticipants: 20,
-        fullTicketPrice: 50,
+        max_participants: 20,
+        full_ticket_price: 50,
         status: "published",
-        hostId: "1234-5678-9abc-def0",
+        host_id: "1234-5678-9abc-def0",
     },
 
     participantInEvent: {
-        userId: "1234-5678-9abc-def0",
-        eventId: "event-1234-5678",
+        user_id: "1234-5678-9abc-def0",
+        event_id: "event-1234-5678",
     },
 
     reserveInEvent: {
-        userId: "1234-5678-9abc-def0",
-        eventId: "event-1234-5678",
-        queueingSince: new Date("2024-01-15T12:00:00Z"),
+        user_id: "1234-5678-9abc-def0",
+        event_id: "event-1234-5678",
+        queueing_since: new Date("2024-01-15T12:00:00Z"),
     },
 
     task: {
         id: "task-1234-5678",
-        eventId: "event-1234-5678",
-        assigneeId: "1234-5678-9abc-def0",
-        reviewerId: "1234-5678-9abc-def0",
+        event_id: "event-1234-5678",
+        assignee_id: "1234-5678-9abc-def0",
+        reviewer_id: "1234-5678-9abc-def0",
         name: "Prepare Workshop Materials",
         status: "in progress",
         tags: ["preparation", "documentation"],
-        startTime: new Date("2024-06-14T09:00:00Z"),
-        endTime: new Date("2024-06-14T17:00:00Z"),
+        start_time: new Date("2024-06-14T09:00:00Z"),
+        end_time: new Date("2024-06-14T17:00:00Z"),
         description: "Create and organize workshop materials for participants",
     },
 
@@ -90,11 +90,11 @@ const testdata = {
         name: "Test Product",
         description: "A test product for testing",
         price: 99.99,
-        createdAt: new Date("2024-01-01T00:00:00Z"),
-        updatedAt: new Date("2024-01-01T00:00:00Z"),
-        unlimitedStock: false,
+        created_at: new Date("2024-01-01T00:00:00Z"),
+        updated_at: new Date("2024-01-01T00:00:00Z"),
+        unlimited_stock: false,
         stock: 0,
-        imageUrl: "",
+        image_url: "",
     },
 
     createProduct: {
@@ -108,29 +108,29 @@ const testdata = {
 
     order: {
         id: "order-1234-5678",
-        createdAt: new Date("2024-01-01T00:00:00Z"),
-        updatedAt: new Date("2024-01-01T00:00:00Z"),
+        created_at: new Date("2024-01-01T00:00:00Z"),
+        updated_at: new Date("2024-01-01T00:00:00Z"),
         status: "pending",
-        totalAmount: 149.98,
-        userId: "1234-5678-9abc-def0",
-        orderItems: [
+        total_amount: 149.98,
+        user_id: "1234-5678-9abc-def0",
+        order_items: [
             {
                 id: "item-1234-5678",
                 quantity: 2,
                 price: 99.99,
-                orderId: "order-1234-5678",
-                productId: "prod-1234-5678",
+                order_id: "order-1234-5678",
+                product_id: "prod-1234-5678",
                 product: {
                     id: "prod-1234-5678",
                     name: "Test Product",
                     description: "A test product for testing",
                     price: 99.99,
-                    createdAt: new Date("2024-01-01T00:00:00Z"),
-                    updatedAt: new Date("2024-01-01T00:00:00Z"),
-                    Membership: {
+                    created_at: new Date("2024-01-01T00:00:00Z"),
+                    updated_at: new Date("2024-01-01T00:00:00Z"),
+                    membership: {
                         duration: 365,
                     },
-                    Ticket: null,
+                    ticket: null,
                 },
             },
         ],

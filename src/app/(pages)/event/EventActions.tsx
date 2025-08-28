@@ -31,7 +31,7 @@ import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 interface IEventActions {
     eventPromise: Promise<
         Prisma.EventGetPayload<{
-            include: { tickets: { include: { eventParticipants: true } }; eventReserves: true };
+            include: { tickets: { include: { event_participants: true } }; event_reserves: true };
         }>
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
@@ -136,7 +136,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         // Only allow deleting events that only the host is participating in
         if (
             getEventParticipantCount(event) === 1 &&
-            event.tickets[0].eventParticipants[0].userId === user.id
+            event.tickets[0].event_participants[0].user_id === user.id
         ) {
             ActionButtons.unshift(
                 <MenuItem key="delete">
@@ -200,7 +200,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     };
 
     const updateEventById = async (parsedFieldValues: z.infer<typeof EventUpdateSchema>) => {
-        await updateEvent(event[GlobalConstants.ID], parsedFieldValues);
+        // use explicit id property to avoid dynamic key typing issues
+        await updateEvent(event.id, parsedFieldValues);
         setDialogOpen(null);
         return "Updated event";
     };
@@ -209,13 +210,13 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         const recipientIds: string[] = [];
         if (sendoutTo === sendoutToOptions.Participants || sendoutTo === sendoutToOptions.All) {
             const eventParticipants = event.tickets
-                .map((ticket) => ticket.eventParticipants)
+                .map((ticket) => ticket.event_participants)
                 .flat();
 
-            recipientIds.push(...eventParticipants.map((ep) => ep.userId));
+            recipientIds.push(...eventParticipants.map((ep) => ep.user_id));
         }
         if (sendoutTo === sendoutToOptions.Reserves || sendoutTo === sendoutToOptions.All)
-            recipientIds.push(...event.eventReserves.map((er) => er.userId));
+            recipientIds.push(...event.event_reserves.map((er) => er.user_id));
 
         const recipientCriteria: Prisma.UserWhereInput = {
             id: {
@@ -254,8 +255,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             );
 
         let recipientCount = getEventParticipantCount(event);
-        if (sendoutTo === sendoutToOptions.Reserves) recipientCount = event.eventReserves.length;
-        else if (sendoutTo === sendoutToOptions.All) recipientCount += event.eventReserves.length;
+        if (sendoutTo === sendoutToOptions.Reserves) recipientCount = event.event_reserves.length;
+        else if (sendoutTo === sendoutToOptions.All) recipientCount += event.event_reserves.length;
 
         return (
             <>

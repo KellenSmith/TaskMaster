@@ -25,7 +25,7 @@ const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProp
             </View>
             <View style={styles.eventDetailRow}>
                 <Text style={styles.eventDetailLabel}>Time:</Text>
-                <Text>{`${formatDate(event.startTime)} - ${formatDate(event.endTime)}`}</Text>
+                <Text>{`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}</Text>
             </View>
         </View>
     );
@@ -45,7 +45,7 @@ const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProp
                             wrap={true}
                             style={{ ...styles.tableCell, ...styles.columnStyle }}
                         >
-                            {participant.user[header]}
+                            {header === GlobalConstants.NICKNAME ? participant.user.nickname : ""}
                         </Text>
                     ))}
                 </View>

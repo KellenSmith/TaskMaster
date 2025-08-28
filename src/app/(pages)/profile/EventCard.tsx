@@ -12,8 +12,8 @@ interface EventCardProps {
     event: Prisma.EventGetPayload<{
         include: {
             location: true;
-            tickets: { include: { eventParticipants: true } };
-            eventReserves: true;
+            tickets: { include: { event_participants: true } };
+            event_reserves: true;
         };
     }>;
 }
@@ -80,10 +80,10 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                     {/* Event details */}
                     <Stack spacing={1}>
                         <Typography color="text.secondary">
-                            <strong>Start:</strong> {formatDate(event.startTime)}
+                            <strong>Start:</strong> {formatDate(event.start_time)}
                         </Typography>
                         <Typography color="text.secondary">
-                            <strong>End:</strong> {formatDate(event.endTime)}
+                            <strong>End:</strong> {formatDate(event.end_time)}
                         </Typography>
                         {event.location.name && (
                             <Typography color="text.secondary">
@@ -99,7 +99,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                             size="small"
                             onClick={() =>
                                 clientRedirect(router, [GlobalConstants.EVENT], {
-                                    eventId: event.id,
+                                    event_id: event.id,
                                 })
                             }
                             sx={{ minWidth: 80 }}

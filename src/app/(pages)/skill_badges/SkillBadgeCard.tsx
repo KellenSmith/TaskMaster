@@ -39,7 +39,7 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
             >
                 <CardMedia sx={{ paddingTop: 2, position: "relative" }}>
                     <Image
-                        src={badge.imageUrl || "/images/badge-placeholder.svg"}
+                        src={badge.image_url || "/images/badge-placeholder.svg"}
                         alt={badge.name}
                         width={400}
                         height={200}
@@ -61,7 +61,7 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
                 <DialogContent>
                     <Stack direction="row" spacing={4}>
                         <Image
-                            src={badge.imageUrl || "/images/badge-placeholder.svg"}
+                            src={badge.image_url || "/images/badge-placeholder.svg"}
                             alt={badge.name}
                             width={400}
                             height={200}

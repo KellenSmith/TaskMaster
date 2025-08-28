@@ -48,7 +48,7 @@ const TicketShop = ({
 
     const createTicketOrder = async (productId: string) => {
         const ticketOrderItems: Prisma.OrderItemCreateManyOrderInput = {
-            productId: productId,
+            product_id: productId,
             quantity: 1,
         };
         try {
@@ -89,7 +89,7 @@ const TicketShop = ({
     };
 
     const isVolunteerTicketAvailable = () => {
-        const tasksAssignedToUser = tasks.filter((task) => task.assigneeId === user.id);
+        const tasksAssignedToUser = tasks.filter((task) => task.assignee_id === user.id);
         return tasksAssignedToUser.length > 0;
     };
 

@@ -13,10 +13,10 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
         const orgSettings = await getOrganizationSettings();
         const deleteStaleResult = await prisma.user.deleteMany({
             where: {
-                userMembership: null,
-                createdAt: {
+                user_membership: null,
+                created_at: {
                     lt: dayjs()
-                        .subtract(orgSettings?.purgeMembersAfterDaysUnvalidated || 7, "d")
+                        .subtract(orgSettings?.purge_members_after_days_unvalidated || 7, "d")
                         .toISOString(),
                 },
             },
@@ -30,7 +30,7 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
 export const remindAboutExpiringMembership = async (): Promise<void> => {
     // Send reminders to members whose membership expires in X days from now
     const orgSettings = await getOrganizationSettings();
-    const reminderDays = orgSettings?.remindMembershipExpiresInDays || 7;
+    const reminderDays = orgSettings?.remind_membership_expires_in_days || 7;
 
     const earliestExpirationDate = dayjs().add(reminderDays, "d").hour(0).minute(0).second(0);
     const latestExpirationDate = earliestExpirationDate.add(1, "d");
@@ -38,8 +38,8 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
     try {
         const expiringUsers = await prisma.user.findMany({
             where: {
-                userMembership: {
-                    expiresAt: {
+                user_membership: {
+                    expires_at: {
                         gte: earliestExpirationDate.toISOString(),
                         lt: latestExpirationDate.toISOString(),
                     },

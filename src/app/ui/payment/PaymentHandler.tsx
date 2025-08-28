@@ -10,7 +10,7 @@ import { progressOrder } from "../../lib/order-actions";
 
 interface PaymentHandlerProps {
     orderPromise: Promise<
-        Prisma.OrderGetPayload<{ include: { orderItems: { include: { product: true } } } }>
+        Prisma.OrderGetPayload<{ include: { order_items: { include: { product: true } } } }>
     >;
 }
 
@@ -41,7 +41,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         order.status === OrderStatus.pending && (
             <Stack alignItems="center">
                 <Button color="success" fullWidth onClick={redirectToPayment}>
-                    {order.totalAmount === 0 ? "confirm" : "pay"}
+                    {order.total_amount === 0 ? "confirm" : "pay"}
                 </Button>
                 <ConfirmButton fullWidth color="error" onClick={cancelOrder}>
                     cancel

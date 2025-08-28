@@ -74,23 +74,23 @@ export const updateProduct = async (
 export const deleteProduct = async (productId: string): Promise<void> => {
     try {
         const membership = await prisma.membership.findUnique({
-            where: { productId },
+            where: { product_id: productId },
         });
         const ticket = await prisma.ticket.findUnique({
-            where: { productId },
+            where: { product_id: productId },
         });
 
         const deleteRelationsPromises = [];
         if (membership)
             deleteRelationsPromises.push(
                 prisma.membership.delete({
-                    where: { productId },
+                    where: { product_id: productId },
                 }),
             );
         if (ticket)
             deleteRelationsPromises.push(
                 prisma.ticket.delete({
-                    where: { productId },
+                    where: { product_id: productId },
                 }),
             );
 
@@ -108,13 +108,14 @@ export const deleteProduct = async (productId: string): Promise<void> => {
     }
 };
 
+// TODO: Do this in a transaction to avoid partial successes
 export const processOrderedProduct = async (
     userId: string,
     orderItem: Prisma.OrderItemGetPayload<{
         include: { product: { include: { membership: true; ticket: true } } };
     }>,
 ) => {
-    if (!orderItem.product.unlimitedStock && orderItem.quantity > orderItem.product.stock)
+    if (!orderItem.product.unlimited_stock && orderItem.quantity > orderItem.product.stock)
         throw new Error("Insufficient stock");
     const failedProducts: string[] = [];
     for (let i = 0; i < orderItem.quantity; i++) {
@@ -129,7 +130,7 @@ export const processOrderedProduct = async (
                 await addEventParticipant(userId, orderItem.product.ticket.id);
             } catch (error) {
                 failedProducts.push(
-                    `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.eventId}: ${error.message}`,
+                    `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.event_id}: ${error.message}`,
                 );
             }
         }

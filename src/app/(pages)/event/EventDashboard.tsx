@@ -23,14 +23,14 @@ interface EventDashboardProps {
         Prisma.EventGetPayload<{
             include: {
                 location: true;
-                tickets: { include: { eventParticipants: true } };
-                eventReserves: true;
+                tickets: { include: { event_participants: true } };
+                event_reserves: true;
             };
         }>
     >;
     eventTasksPromise: Promise<
         Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
         }>[]
     >;
     eventTicketsPromise: Promise<
@@ -40,7 +40,7 @@ interface EventDashboardProps {
     >;
     activeMembersPromise: Promise<
         Prisma.UserGetPayload<{
-            select: { id: true; nickname: true; skillBadges: true };
+            select: { id: true; nickname: true; skill_badges: true };
         }>[]
     >;
     skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
@@ -98,7 +98,10 @@ const EventDashboard = ({
     );
 
     const setOpenTab = (tab: string) =>
-        clientRedirect(router, [GlobalConstants.EVENT], { eventId: event.id, tab });
+        clientRedirect(router, [GlobalConstants.EVENT], {
+            [GlobalConstants.EVENT_ID]: event.id,
+            tab,
+        });
     const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
 
     const getOpenTabComp = () => {

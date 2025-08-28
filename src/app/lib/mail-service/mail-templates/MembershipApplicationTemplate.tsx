@@ -10,8 +10,6 @@ import { getAbsoluteUrl } from "../../definitions";
 /**
  * Props for the MembershipApplicationTemplate component.
  * @property organizationName - The name of the organization.
- * @property userEmail - The email address of the user.
- * @property password - The password assigned to the user.
  */
 interface IMembershipApplicationTemplateProps {
     organizationName: string;

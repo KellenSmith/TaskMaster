@@ -14,24 +14,24 @@ const ProfilePage = async () => {
 
     const tasksPromise = unstable_cache(getFilteredTasks, [loggedInUser.id], {
         tags: [GlobalConstants.TASK],
-    })({ OR: [{ assigneeId: loggedInUser.id }, { reviewerId: loggedInUser.id }] });
+    })({ OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] });
     const eventsPromise = unstable_cache(getFilteredEvents, [loggedInUser.id], {
         tags: [GlobalConstants.EVENT],
     })({
         OR: [
-            { hostId: loggedInUser.id },
+            { host_id: loggedInUser.id },
             {
                 tickets: {
                     some: {
-                        eventParticipants: {
+                        event_participants: {
                             some: {
-                                userId: loggedInUser.id,
+                                user_id: loggedInUser.id,
                             },
                         },
                     },
                 },
             },
-            { eventReserves: { some: { userId: loggedInUser.id } } },
+            { event_reserves: { some: { user_id: loggedInUser.id } } },
         ],
     });
     const skillBadgesPromise = unstable_cache(getAllSkillBadges, [loggedInUser.id], {

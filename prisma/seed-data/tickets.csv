@@ -1,4 +1,4 @@
-"id","type","productId","eventId"
+"id","type","product_id","event_id"
 "05918617-e4cf-45ff-97d8-205fddb7f931","standard","1e8c7768-ccd1-45da-b403-b9f595feef60","df77632d-31dc-4657-b3fd-e4be18e64371"
 "072d291f-90c8-4155-9a3c-64fb507012ee","standard","7f14a109-8260-4292-a88f-99748f0461c7","ad8bfde2-138c-4d7a-b777-77fcfc84a903"
 "1b89bf4b-bd50-4eb7-9a38-e85b3253cf5a","volunteer","233fbb63-f539-4839-85c9-8cb71521e6c8","ad8bfde2-138c-4d7a-b777-77fcfc84a903"

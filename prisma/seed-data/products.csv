@@ -1,4 +1,4 @@
-"id","name","description","price","stock","unlimitedStock","imageUrl"
+"id","name","description","price","stock","unlimited_stock","image_url"
 "1e8c7768-ccd1-45da-b403-b9f595feef60","Standard ticket for test event","<p>Ticket description</p>","20000","1","false",
 "233fbb63-f539-4839-85c9-8cb71521e6c8","Volunteer ticket for Test event","Admittance for one member signed up for at least one volunteer task","0","2","false",
 "2eb4db0f-729a-4bea-aec6-9e4e37261b10","Volunteer ticket for Test event","Admittance for one member signed up for at least one volunteer task","0","1","false",

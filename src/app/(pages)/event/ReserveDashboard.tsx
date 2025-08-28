@@ -9,7 +9,7 @@ import ConfirmButton from "../../ui/ConfirmButton";
 import { isUserReserve } from "./event-utils";
 
 interface ReserveDashboardProps {
-    eventPromise: Promise<Prisma.EventGetPayload<{ include: { eventReserves: true } }>>;
+    eventPromise: Promise<Prisma.EventGetPayload<{ include: { event_reserves: true } }>>;
 }
 
 const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {

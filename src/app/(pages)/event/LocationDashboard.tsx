@@ -59,7 +59,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     const switchEventLocation = async () => {
         startTransition(async () => {
             try {
-                await updateEvent(event.id, { locationId: selectedLocationOption.id });
+                await updateEvent(event.id, { location_id: selectedLocationOption.id });
                 addNotification("Updated event location", "success");
             } catch {
                 addNotification("Failed to update event location", "error");
@@ -69,7 +69,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
 
     const isSwitchButtonDisabled = () => {
         const selectedLocation = getSelectedLocation();
-        if (event.maxParticipants > selectedLocation.capacity) {
+        if (event.max_participants > selectedLocation.capacity) {
             return true;
         }
         return false;
@@ -119,7 +119,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                         </Button>
                         {isSwitchButtonDisabled() && (
                             <Typography color="error" textAlign="center">
-                                {`The location can't handle ${event.maxParticipants} participants`}
+                                {`The location can't handle ${event.max_participants} participants`}
                             </Typography>
                         )}
                     </Stack>

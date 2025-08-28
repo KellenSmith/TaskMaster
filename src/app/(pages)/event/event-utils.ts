@@ -5,24 +5,24 @@ export const isEventPublished = (event: Prisma.EventGetPayload<true>) =>
     event.status === EventStatus.published;
 
 export const isUserParticipant = (
-    user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
+    user: Prisma.UserGetPayload<{ include: { user_membership: true } }>,
     event: Prisma.EventGetPayload<{
-        include: { tickets: { include: { eventParticipants: true } } };
+        include: { tickets: { include: { event_participants: true } } };
     }>,
 ) =>
     !!event.tickets.find((ticket) =>
-        ticket.eventParticipants.find((participant) => participant.userId === user.id),
+        ticket.event_participants.find((participant) => participant.user_id === user.id),
     );
 
 export // Helper function to check if user is on reserve list
 const isUserReserve = (
-    user: Prisma.UserGetPayload<{ include: { userMembership: true } }>,
+    user: Prisma.UserGetPayload<{ include: { user_membership: true } }>,
     event: Prisma.EventGetPayload<{
-        include: { eventReserves: true };
+        include: { event_reserves: true };
     }>,
 ): boolean => {
-    if (!event.eventReserves || !user) return false;
-    return !!event.eventReserves.find((reserve) => reserve.userId === user.id);
+    if (!event.event_reserves || !user) return false;
+    return !!event.event_reserves.find((reserve) => reserve.user_id === user.id);
 };
 
 // User is volunteer if assigned to at least one task
@@ -31,7 +31,7 @@ export const isUserVolunteer = (
     eventTasks: Prisma.TaskGetPayload<true>[],
 ) => {
     if (!eventTasks || !user) return false;
-    return !!eventTasks.find((task) => task.assigneeId === user.id);
+    return !!eventTasks.find((task) => task.assignee_id === user.id);
 };
 
 export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>
@@ -39,65 +39,77 @@ export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>
 
 export const getEarliestStartTime = (tasks: Task[]) =>
     tasks
-        .map((task) => task.startTime)
+        .map((task) => task.start_time)
         .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
 
 export const getEarliestEndTime = (tasks: Task[]) =>
     tasks
-        .map((task) => task.endTime)
+        .map((task) => task.end_time)
         .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
 
 export const sortTasks = (task1: Task, task2: Task) => {
-    const startTime1 = dayjs(task1.startTime);
-    const startTime2 = dayjs(task2.startTime);
+    const startTime1 = dayjs(task1.start_time);
+    const startTime2 = dayjs(task2.start_time);
     if (Math.abs(startTime2.diff(startTime1, "minute")) > 1)
         return startTime1.diff(startTime2, "minute");
 
-    const endTime1 = dayjs(task1.endTime);
-    const endTime2 = dayjs(task2.endTime);
+    const endTime1 = dayjs(task1.end_time);
+    const endTime2 = dayjs(task2.end_time);
     if (Math.abs(endTime2.diff(endTime1, "minute")) > 1) return endTime1.diff(endTime2, "minute");
 
     return task1.name.localeCompare(task2.name);
 };
 
-export const sortGroupedTasks = (groupedTasks: Task[][]) => {
-    return groupedTasks.sort((taskGroup1, taskGroup2) => {
-        const sortTask1 = {
-            startTime: getEarliestStartTime(taskGroup1),
-            endTime: getEarliestEndTime(taskGroup1),
-            name: taskGroup1[0].name,
-        } as Task;
-        const sortTask2 = {
-            startTime: getEarliestStartTime(taskGroup2),
-            endTime: getEarliestEndTime(taskGroup2),
-            name: taskGroup2[0].name,
-        } as Task;
-        return sortTasks(sortTask1, sortTask2);
-    });
-};
+const getTasksSortedByTime = (
+    taskList: Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+    }>[],
+) =>
+    taskList.sort((task1, task2) => {
+        const startTime1 = dayjs(task1.start_time);
+        const startTime2 = dayjs(task2.start_time);
+        if (startTime1.isBefore(startTime2, "minute")) return -1;
+        if (startTime1.isAfter(startTime2, "minute")) return 1;
 
-export const getSortedTaskComps = (
-    taskList: Task[],
-    getTaskShiftsComp: (taskGroup: Task[]) => any, // eslint-disable-line no-unused-vars
-) => {
-    if (taskList.length < 1) return [];
-    const uniqueTaskNames = [...new Set(taskList.map((task) => task.name))];
-    const sortedTasksGroupedByName = sortGroupedTasks(
-        uniqueTaskNames.map((taskName) => taskList.filter((task) => task.name === taskName)),
+        const endTime1 = dayjs(task1.end_time);
+        const endTime2 = dayjs(task2.end_time);
+        if (endTime1.isBefore(endTime2, "minute")) return -1;
+        if (endTime1.isAfter(endTime2, "minute")) return 1;
+
+        return task1.name.localeCompare(task2.name);
+    });
+
+export const getGroupedAndSortedTasks = (
+    taskList: Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+    }>[],
+): Prisma.TaskGetPayload<{
+    include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+}>[][] => {
+    const uniqueGroupNames = [...new Set(taskList.map((task) => task.name))];
+    const groupsOfSortedTasks = uniqueGroupNames.map((groupName) =>
+        getTasksSortedByTime(taskList.filter((task) => task.name === groupName)),
     );
-    return sortedTasksGroupedByName.map((taskGroup) => getTaskShiftsComp(taskGroup));
+    return groupsOfSortedTasks.sort((sortedTaskList1, sortedTaskList2) => {
+        const earliestTask1 = sortedTaskList1[0];
+        const earliestTask2 = sortedTaskList2[0];
+        const comparison = getTasksSortedByTime([earliestTask1, earliestTask2]);
+        if (comparison[0].id === earliestTask1.id) return -1;
+        if (comparison[0].id === earliestTask2.id) return 1;
+        throw new Error("Unreachable");
+    });
 };
 export const getEventParticipantCount = (
     event: Prisma.EventGetPayload<{
-        include: { tickets: { include: { eventParticipants: true } } };
+        include: { tickets: { include: { event_participants: true } } };
     }>,
-) => event?.tickets.reduce((acc, ticket) => acc + ticket.eventParticipants.length, 0);
+) => event?.tickets.reduce((acc, ticket) => acc + ticket.event_participants.length, 0);
 
 export const isEventSoldOut = (
     event: Prisma.EventGetPayload<{
-        include: { tickets: { include: { eventParticipants: true } } };
+        include: { tickets: { include: { event_participants: true } } };
     }>,
-) => !!(getEventParticipantCount(event) >= event.maxParticipants);
+) => !!(getEventParticipantCount(event) >= event.max_participants);
 
 export const isEventCancelled = (event: Prisma.EventGetPayload<true>) =>
     event && event.status === EventStatus.cancelled;

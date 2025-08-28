@@ -14,7 +14,7 @@ import { clientRedirect } from "../../lib/definitions";
 interface OrderDashboardProps {
     orderPromise: Promise<
         Prisma.OrderGetPayload<{
-            include: { orderItems: { include: { product: { include: { membership: true } } } } };
+            include: { order_items: { include: { product: { include: { membership: true } } } } };
         }>
     >;
 }
@@ -25,7 +25,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     const router = useRouter();
 
     // Only allow showing the user's own orders
-    if (user?.id !== order.userId) clientRedirect(router, [GlobalConstants.HOME]);
+    if (user?.id !== order.user_id) clientRedirect(router, [GlobalConstants.HOME]);
 
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();

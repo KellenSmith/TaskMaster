@@ -11,7 +11,7 @@ interface OrdersDashboardProps {
         Prisma.OrderGetPayload<{
             include: {
                 user: { select: { nickname: true } };
-                orderItems: { include: { product: true } };
+                order_items: { include: { product: true } };
             };
         }>[]
     >;
@@ -27,7 +27,7 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
                     order as Prisma.OrderGetPayload<{
                         include: {
                             user: { select: { nickname: true } };
-                            orderItems: { include: { product: true } };
+                            order_items: { include: { product: true } };
                         };
                     }>
                 ).user.nickname,

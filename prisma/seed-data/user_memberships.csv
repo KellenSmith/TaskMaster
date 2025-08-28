@@ -1,4 +1,4 @@
-"id","userId","membershipId","expiresAt"
+"id","user_id","membership_id","expires_at"
 "511b206c-1046-4aaa-a6bd-9a5fe1f35555","511b206c-1046-4aaa-a6bd-9a5fe1f3970f","4def947f-9421-4c6e-aa5c-e2a8c6ff147b","2025-10-17 00:00:00"
 "7e5fcdc8-20f7-4be6-a8f5-60535d687f6b","99838494-f142-44a3-892d-c372db90f93c","4def947f-9421-4c6e-aa5c-e2a8c6ff147b","2026-08-26 11:24:27.034"
 "bc09353e-c472-44c1-b9de-1b2cb2282a46","09266ce5-ae5d-41b9-990e-e15421354587","4def947f-9421-4c6e-aa5c-e2a8c6ff147b","2026-08-26 11:26:54.898"

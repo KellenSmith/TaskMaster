@@ -311,7 +311,7 @@ export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT]
 
 export const getUserSelectOptions = (
     users: Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; skillBadges: true };
+        select: { id: true; nickname: true; skill_badges: true };
     }>[],
     requiredTaskSkillBadges: Prisma.TaskSkillBadgeGetPayload<true>[] = [],
 ) => {

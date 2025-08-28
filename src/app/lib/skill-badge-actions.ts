@@ -8,7 +8,7 @@ import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 
 export const getAllSkillBadges = async (): Promise<Prisma.SkillBadgeGetPayload<true>[]> => {
-    return await prisma.skillBadge.findMany({ include: { userSkillBadges: true } });
+    return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 };
 
 export const createSkillBadge = async (

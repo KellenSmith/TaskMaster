@@ -1,4 +1,4 @@
-"id","title","location","startTime","endTime","description","maxParticipants","status","hostId"
+"id","title","location","start_time","end_time","description","max_participants","status","host_id"
 "2a82f05e-268d-4e33-9775-2372651d708f","Event draft","the place","2025-08-25 16:00:00","2025-08-25 20:00:00","<p>Styled event description</p>","150","draft","495796c7-c5f0-4e25-a949-4d0db3966480"
 "9249e96a-7ec5-47d2-9226-fe2aeb5e22f6","Test event (Clone)","the place","2025-08-29 16:00:00","2025-08-30 01:00:00","<p>Styled event description</p>","150","published","495796c7-c5f0-4e25-a949-4d0db3966480"
 "ad8bfde2-138c-4d7a-b777-77fcfc84a903","Cancelled event","the place","2025-08-01 16:00:00","2025-08-01 20:00:00","<p>Styled event description</p>","4","cancelled","495796c7-c5f0-4e25-a949-4d0db3966480"

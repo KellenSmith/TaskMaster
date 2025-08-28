@@ -57,9 +57,9 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
 
         await prisma.userCredentials.create({
             data: {
-                userId: user.id,
+                user_id: user.id,
                 salt,
-                hashedPassword,
+                hashed_password: hashedPassword,
             },
         });
         revalidateTag(GlobalConstants.USER);
@@ -93,11 +93,11 @@ export const resetUserCredentials = async (
         const salt = await generateSalt();
         await prisma.userCredentials.update({
             where: {
-                userId: user.id,
+                user_id: user.id,
             },
             data: {
                 salt,
-                hashedPassword: await hashPassword(generatedPassword, salt),
+                hashed_password: await hashPassword(generatedPassword, salt),
             },
         });
     } catch {
@@ -121,11 +121,11 @@ export const updateUserCredentials = async (
         const salt = await generateSalt();
         await prisma.userCredentials.update({
             where: {
-                userId: userId,
+                user_id: userId,
             },
             data: {
                 salt,
-                hashedPassword: await hashPassword(
+                hashed_password: await hashPassword(
                     fieldValues.newPassword as unknown as string,
                     salt,
                 ),

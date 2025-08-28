@@ -17,7 +17,7 @@ interface EventPageProps {
 }
 
 const EventPage = async ({ searchParams }: EventPageProps) => {
-    const eventId = (await searchParams).eventId;
+    const eventId = (await searchParams).event_id;
 
     // Make sure the user is available before fetching the event
     // When cloning events the user goes from possibly not host to host
@@ -29,7 +29,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     })(eventId, loggedInUser.id);
     const eventTasksPromise = unstable_cache(getFilteredTasks, [eventId], {
         tags: [GlobalConstants.TASK],
-    })({ eventId });
+    })({ event_id: eventId });
     const eventTicketsPromise = unstable_cache(getEventTickets, [eventId], {
         tags: [GlobalConstants.TICKET],
     })(eventId);

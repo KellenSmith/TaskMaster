@@ -15,7 +15,7 @@ const ApplyPage = () => {
     const router = useRouter();
     const { organizationSettings } = useOrganizationSettingsContext();
     const shouldIncludeApplicationPrompt = useMemo(
-        (): boolean => !!organizationSettings.memberApplicationPrompt,
+        (): boolean => !!organizationSettings.member_application_prompt,
         [organizationSettings],
     );
 
@@ -52,7 +52,7 @@ const ApplyPage = () => {
                     shouldIncludeApplicationPrompt
                         ? {
                               [GlobalConstants.MEMBER_APPLICATION_PROMPT]:
-                                  organizationSettings.memberApplicationPrompt,
+                                  organizationSettings.member_application_prompt,
                           }
                         : {}
                 }

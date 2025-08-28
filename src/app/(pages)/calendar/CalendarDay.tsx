@@ -5,7 +5,6 @@ import { Paper, Stack, Typography } from "@mui/material";
 import CalendarEvent from "./CalendarEvent";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 
 dayjs.extend(isBetween);
@@ -18,9 +17,9 @@ interface CalendarDayProps {
 const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     const events = use(eventsPromise);
 
-    const shouldShowEvent = (event: any) => {
-        let startTime = dayjs(event[GlobalConstants.START_TIME]);
-        let endTime = dayjs(event[GlobalConstants.END_TIME]);
+    const shouldShowEvent = (event: Prisma.EventGetPayload<true>) => {
+        let startTime = dayjs(event.start_time);
+        let endTime = dayjs(event.end_time);
 
         // Count events ending before 04:00 as belonging to the day before
         if (0 <= endTime.hour() && endTime.hour() <= 4) {
@@ -47,7 +46,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
                 }}
             >
                 {eventsForDay
-                    .sort((a, b) => dayjs(a.startTime).unix() - dayjs(b.startTime).unix())
+                    .sort((a, b) => dayjs(a.start_time).unix() - dayjs(b.start_time).unix())
                     .map((event) => (
                         <CalendarEvent key={event.id} event={event} />
                     ))}

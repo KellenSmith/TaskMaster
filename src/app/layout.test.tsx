@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import React from "react";
+import React, { ReactElement } from "react";
 import { render, screen } from "../test/test-utils";
 
 // Mock NavPanel before importing the layout so the mock is used
@@ -28,7 +28,7 @@ describe("RootLayout", () => {
         const jsx = RootLayoutInner({
             children: React.createElement("div", { "data-testid": "child" }, "child-content"),
         });
-        render(jsx as any);
+        render(jsx as ReactElement);
 
         expect(mockNavPanel).toHaveBeenCalledTimes(1);
         expect(mockServerContextWrapper).toHaveBeenCalledTimes(1);

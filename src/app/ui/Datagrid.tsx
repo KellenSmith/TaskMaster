@@ -26,13 +26,13 @@ export interface RowActionProps {
 
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
-          include: { userCredentials: { select: { id: true } }; userMembership: true };
+          include: { user_credentials: { select: { id: true } }; user_membership: true };
       }>
     | Product
     | Prisma.OrderGetPayload<{
           include: {
               user: { select: { nickname: true } };
-              orderItems: { include: { product: true } };
+              order_items: { include: { product: true } };
           };
       }>;
 

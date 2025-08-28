@@ -37,7 +37,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
     // Check if this payeeRef is already used by another order
     const existingOrder = await prisma.order.findFirst({
         where: {
-            payeeRef: payeeRef,
+            payee_ref: payeeRef,
             id: { not: orderId }, // Exclude the current order
         },
     });
@@ -52,14 +52,14 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
         // Update order with payeeRef
         const order = await prisma.order.update({
             where: { id: orderId },
-            data: { payeeRef },
+            data: { payee_ref: payeeRef },
         });
 
         return {
             paymentorder: {
                 operation: "Purchase",
                 currency: "SEK",
-                amount: order.totalAmount,
+                amount: order.total_amount,
                 vatAmount: 0,
                 description: `Purchase`,
                 userAgent: (await headers()).get("user-agent") || "Unknown",
@@ -101,7 +101,7 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
         if (order?.status !== OrderStatus.pending) {
             throw new Error("Order is not in a pending state");
         }
-        if (order.totalAmount < 1) {
+        if (order.total_amount < 1) {
             await progressOrder(order.id, OrderStatus.paid);
             redirectUrl = getRelativeUrl([GlobalConstants.ORDER], {
                 [GlobalConstants.ORDER_ID]: orderId,
@@ -132,7 +132,7 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
             await prisma.order.update({
                 where: { id: orderId },
                 data: {
-                    paymentRequestId: responseData.paymentOrder.id,
+                    payment_request_id: responseData.paymentOrder.id,
                 },
             });
 
@@ -152,7 +152,7 @@ export const capturePaymentFunds = async (orderId: string) => {
         // Use the same payeeReference that was used for the original authorization
         // This maintains the connection between authorization and capture operations
 
-        if (!order.payeeRef) {
+        if (!order.payee_ref) {
             throw new Error(
                 `Order ${order.id} is missing payeeRef - cannot capture payment safely`,
             );
@@ -160,14 +160,14 @@ export const capturePaymentFunds = async (orderId: string) => {
 
         // Create a unique capture reference by appending "CAPTURE" to the original payeeRef
         // This ensures each capture attempt has a unique reference while maintaining traceability
-        const capturePayeeRef = `${order.payeeRef}CAP`.substring(0, 30);
+        const capturePayeeRef = `${order.payee_ref}CAP`.substring(0, 30);
 
         const capturePaymentResponse = await makeSwedbankApiRequest(
-            `https://api.externalintegration.payex.com${order.paymentRequestId}/captures`,
+            `https://api.externalintegration.payex.com${order.payment_request_id}/captures`,
             {
                 transaction: {
                     description: "Capturing authorized payment",
-                    amount: order.totalAmount, // Convert to smallest currency unit
+                    amount: order.total_amount, // Convert to smallest currency unit
                     vatAmount: 0,
                     payeeReference: capturePayeeRef, // Unique reference for capture operation
                 },
@@ -203,14 +203,14 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
         }
 
         // If the order is free, complete it immediately.
-        if (order.totalAmount === 0) {
+        if (order.total_amount === 0) {
             await progressOrder(orderId, OrderStatus.completed);
             return;
         }
 
-        if (order.paymentRequestId) {
+        if (order.payment_request_id) {
             const paymentStatusResponse = await makeSwedbankApiRequest(
-                `https://api.externalintegration.payex.com${order.paymentRequestId}?$expand=paid`,
+                `https://api.externalintegration.payex.com${order.payment_request_id}?$expand=paid`,
             );
             if (!paymentStatusResponse.ok) {
                 progressOrder(orderId, OrderStatus.error);

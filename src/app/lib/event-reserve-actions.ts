@@ -9,9 +9,9 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
         // Check that the user is not on the participant list
         const eventParticipant = await prisma.eventParticipant.findFirst({
             where: {
-                userId,
+                user_id: userId,
                 ticket: {
-                    eventId,
+                    event_id: eventId,
                 },
             },
         });
@@ -19,8 +19,8 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
 
         await prisma.eventReserve.create({
             data: {
-                userId: userId,
-                eventId: eventId,
+                user_id: userId,
+                event_id: eventId,
             },
         });
         revalidateTag(GlobalConstants.RESERVE_USERS);
@@ -36,9 +36,9 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
         // Delete the event reserve entry if it exists
         await prisma.eventReserve.delete({
             where: {
-                userId_eventId: {
-                    userId: userId,
-                    eventId: eventId,
+                user_id_event_id: {
+                    user_id: userId,
+                    event_id: eventId,
                 },
             },
         });
@@ -53,7 +53,7 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
 export const getEventReserves = async (eventId: string) => {
     try {
         return await prisma.eventReserve.findMany({
-            where: { eventId },
+            where: { event_id: eventId },
             include: {
                 user: {
                     select: {
@@ -71,7 +71,7 @@ export const getEventReserves = async (eventId: string) => {
 export const getEventReservesEmails = async (eventId: string): Promise<string[]> => {
     try {
         const reserves = await prisma.eventReserve.findMany({
-            where: { eventId },
+            where: { event_id: eventId },
             select: {
                 user: {
                     select: {

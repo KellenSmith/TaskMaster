@@ -24,7 +24,7 @@ export const createEventTicket = async (
         const eventParticipantsCount = await prisma.eventParticipant.count({
             where: {
                 ticket: {
-                    eventId,
+                    event_id: eventId,
                 },
             },
         });
@@ -32,7 +32,7 @@ export const createEventTicket = async (
             where: {
                 id: eventId,
             },
-            select: { maxParticipants: true },
+            select: { max_participants: true },
         });
 
         await prisma.ticket.create({
@@ -41,7 +41,7 @@ export const createEventTicket = async (
                 product: {
                     create: {
                         ...productFieldValues,
-                        stock: event.maxParticipants - eventParticipantsCount,
+                        stock: event.max_participants - eventParticipantsCount,
                     },
                 },
                 event: {
@@ -92,7 +92,7 @@ export const deleteEventTicket = async (ticketId: string) => {
         });
         await tx.product.delete({
             where: {
-                id: deletedTicket.productId,
+                id: deletedTicket.product_id,
             },
         });
     });
@@ -103,11 +103,11 @@ export const getEventTickets = async (eventId: string) => {
     try {
         return await prisma.ticket.findMany({
             where: {
-                eventId,
+                event_id: eventId,
             },
             include: {
                 product: true,
-                eventParticipants: true,
+                event_participants: true,
             },
         });
     } catch {

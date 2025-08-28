@@ -1,4 +1,4 @@
-"id","quantity","price","orderId","productId"
+"id","quantity","price","order_id","product_id"
 "10667e4b-d80a-4d29-915e-9814146a76f5","1","20000","39e51640-8c2e-412b-ae85-fcb8a14c9c99","1e8c7768-ccd1-45da-b403-b9f595feef60"
 "1389f6b1-02a4-4253-8e66-f81d77414616","1","0","e26ca546-26aa-412c-abf7-708f183d7160","7d3dc9a0-585d-4681-8a6e-1f1bcd490e92"
 "1ecc25fa-e055-45a2-8afa-750101297bbd","1","0","9d20ec3f-305a-447c-a743-58df97ce5eb5","7d3dc9a0-585d-4681-8a6e-1f1bcd490e92"

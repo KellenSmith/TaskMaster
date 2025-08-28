@@ -10,7 +10,7 @@ const HomePage: React.FC = async () => {
     return (
         <Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center" }}>
             <Typography textAlign="center" color="primary" variant="h3">
-                {`Welcome to ${organizationSettings?.organizationName}`}
+                {`Welcome to ${organizationSettings?.organization_name}`}
             </Typography>
             <TextContent id={GlobalConstants.HOME} />
         </Stack>

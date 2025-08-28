@@ -1,7 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../utils";
-import { sortGroupedTasks } from "../../(pages)/event/event-utils";
+import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
 import dayjs from "dayjs";
 import { styles } from "../pdf-styles";
 
@@ -39,21 +39,6 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
             </Text>
         </View>
     );
-
-    const getSortedTaskComps = () => {
-        if (tasks.length < 1) return [];
-        const uniqueTaskNames = [...new Set(tasks.map((task) => task[GlobalConstants.NAME]))];
-        const sortedTasksGroupedByName = sortGroupedTasks(
-            uniqueTaskNames.map((taskName) =>
-                tasks.filter((task) => task[GlobalConstants.NAME] === taskName),
-            ),
-        );
-        return sortedTasksGroupedByName.map((taskGroup) => (
-            <View key={taskGroup[0][GlobalConstants.NAME]} style={styles.taskGroup}>
-                {taskGroup.map((task) => getTaskRow(task))}
-            </View>
-        ));
-    };
 
     const getEventDetails = () => (
         <View style={styles.eventDetails}>
@@ -95,7 +80,11 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
                         ))}
                     </View>
                     {/* Table Body */}
-                    {getSortedTaskComps()}
+                    {getGroupedAndSortedTasks(tasks).map((taskGroup) => (
+                        <View key={taskGroup[0][GlobalConstants.NAME]} style={styles.taskGroup}>
+                            {taskGroup.map((task) => getTaskRow(task))}
+                        </View>
+                    ))}
                 </View>
             </Page>
         </Document>

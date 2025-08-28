@@ -14,14 +14,14 @@ interface IMembershipExpiresReminderTemplateProps {
 const MembershipExpiresReminderTemplate: FC<IMembershipExpiresReminderTemplateProps> = ({
     organizationSettings,
 }) => {
-    const organizationName =
-        organizationSettings?.organizationName ||
+    const orgName =
+        organizationSettings?.organization_name ||
         process.env.NEXT_PUBLIC_ORGANIZATION_NAME ||
         "Task Master";
     return (
-        <MailTemplate organizationName={organizationName}>
-            <Text>{`Your membership at ${organizationName} expires in ${
-                organizationSettings?.remindMembershipExpiresInDays || 7
+        <MailTemplate organizationName={orgName}>
+            <Text>{`Your membership at ${orgName} expires in ${
+                organizationSettings?.remind_membership_expires_in_days || 7
             } days. Visit your profile to extend it!`}</Text>
         </MailTemplate>
     );

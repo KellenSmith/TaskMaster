@@ -9,6 +9,7 @@ import { getAbsoluteUrl } from "../../definitions";
 /**
  * Props for the MembershipExpiresReminderTemplate component.
  * @property organizationSettings - The settings of the organization.
+ * @property event - The event details.
  */
 interface IOpenEventSpotTemplateProps {
     organizationName: string;

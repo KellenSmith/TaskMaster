@@ -36,12 +36,12 @@ export const OrderStatusSchema = z.enum(OrderStatus);
 export const OrganizationSettingsUpdateSchema = z
     .object({
         id: z.string().optional(),
-        organizationName: z.string().optional(),
-        organizationEmail: z.email().optional(),
-        remindMembershipExpiresInDays: z.coerce.number().int().positive().optional(),
-        purgeMembersAfterDaysUnvalidated: z.coerce.number().int().positive().optional(),
-        defaultTaskShiftLength: z.coerce.number().int().positive().optional(),
-        memberApplicationPrompt: z.string().optional(),
+        organization_name: z.string().optional(),
+        organization_email: z.string().email().optional(),
+        remind_membership_expires_in_days: z.coerce.number().int().positive().optional(),
+        purge_members_after_days_unvalidated: z.coerce.number().int().positive().optional(),
+        default_task_shift_length: z.coerce.number().int().positive().optional(),
+        member_application_prompt: z.string().optional(),
     })
     .omit({ id: true });
 
@@ -80,11 +80,11 @@ export const UserUpdateSchema: z.ZodType<Prisma.UserUpdateInput> = UserCreateSch
 
 export const LocationCreateSchema = z.object({
     name: z.string(),
-    contactPerson: z.string().optional(),
-    rentalCost: z.coerce.number().min(0).optional(),
+    contact_person: z.string().optional(),
+    rental_cost: z.coerce.number().min(0).optional(),
     address: z.string(),
     capacity: z.coerce.number().min(0),
-    accessibilityInfo: z.string().optional(),
+    accessibility_info: z.string().optional(),
     description: z.string().optional(),
 });
 
@@ -98,11 +98,11 @@ export const EventCreateSchema = z
     .object({
         id: z.string().optional(),
         title: z.string(),
-        locationId: z.string().nullable().optional(),
-        startTime: stringToISODate,
-        endTime: stringToISODate,
+        location_id: z.string().nullable().optional(),
+        start_time: stringToISODate,
+        end_time: stringToISODate,
         description: z.string().optional(),
-        maxParticipants: z.coerce.number().int().positive(),
+        max_participants: z.coerce.number().int().positive(),
     })
     .omit({
         id: true,
@@ -131,40 +131,36 @@ export const EventUpdateSchema = EventCreateSchema.partial().extend({
 export const SkillBadgeCreateSchema = z.object({
     name: z.string(),
     description: z.string().optional(),
-    imageUrl: z.string().optional(),
+    image_url: z.string().optional(),
 });
 
 // =============================================================================
 // TASK SCHEMAS
 // =============================================================================
 
-export const TaskCreateSchema: z.ZodType<
-    Prisma.TaskCreateInput & { assigneeId?: string; reviewerId?: string; skillBadges?: string[] }
-> = z
+export const TaskCreateSchema = z
     .object({
         id: z.string().optional(),
         name: z.string(),
         status: TaskStatusSchema.optional(),
-        startTime: stringToISODate,
-        endTime: stringToISODate,
+        start_time: stringToISODate,
+        end_time: stringToISODate,
         description: z.string(),
         tags: z
             .string()
             .transform((val) => (val ? val.split(",") : []))
             .optional(),
 
-        assigneeId: z.string().nullable(),
-        reviewerId: z.string().nullable(),
+        assignee_id: z.string().nullable(),
+        reviewer_id: z.string().nullable(),
 
-        skillBadges: z.array(z.string()).optional(),
+        skill_badges: z.array(z.string()).optional(),
 
-        eventId: z.string().nullable().optional(),
+        event_id: z.string().nullable().optional(),
     })
-    .omit({ id: true, eventId: true });
+    .omit({ id: true, event_id: true });
 
-export const TaskUpdateSchema: z.ZodType<
-    Prisma.TaskUpdateInput & { assigneeId?: string; reviewerId?: string }
-> = TaskCreateSchema;
+export const TaskUpdateSchema = TaskCreateSchema.partial();
 
 // =============================================================================
 // PRODUCT SCHEMAS
@@ -177,8 +173,8 @@ export const ProductCreateSchema = z
         description: z.string().optional(),
         price: priceSchema.optional(),
         stock: z.coerce.number().int().nonnegative().nullable().optional(),
-        unlimitedStock: z.coerce.boolean().optional(),
-        imageUrl: z.string().optional(),
+        unlimited_stock: z.coerce.boolean().optional(),
+        image_url: z.string().optional(),
     })
     .omit({ id: true });
 
@@ -218,7 +214,7 @@ export const MembershipUpdateSchema = z.union([
 // Extract only the common properties from the three Prisma ticket types
 type CommonTicketKeys = keyof Prisma.TicketCreateWithoutEventInput &
     keyof Prisma.TicketCreateWithoutProductInput &
-    keyof Prisma.TicketCreateWithoutEventParticipantsInput;
+    keyof Prisma.TicketCreateWithoutEvent_participantsInput;
 
 export type TicketWithoutRelations = Pick<Prisma.TicketCreateWithoutEventInput, CommonTicketKeys>;
 

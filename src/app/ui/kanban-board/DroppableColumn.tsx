@@ -3,7 +3,6 @@ import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
 import { use, useState } from "react";
-import { getSortedTaskComps } from "../../(pages)/event/event-utils";
 import { Add } from "@mui/icons-material";
 import { FieldLabels, getUserSelectOptions } from "../form/FieldCfg";
 import { Prisma, Task, TaskStatus } from "@prisma/client";
@@ -14,17 +13,18 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import DraggableTaskShifts from "./DraggableTaskShifts";
 import { CustomOptionProps } from "../form/AutocompleteWrapper";
+import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
 
 interface DroppableColumnProps {
     readOnly: boolean;
     eventPromise?: Promise<Prisma.EventGetPayload<true>>;
     status: TaskStatus;
     tasks: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
     }>[];
     activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{
-            select: { id: true; nickname: true; skillBadges: true };
+            select: { id: true; nickname: true; skill_badges: true };
         }>[]
     >;
     skillBadgesPromise?: Promise<
@@ -71,7 +71,7 @@ const DroppableColumn = ({
                     {
                         status,
                     },
-                    draggedTask.eventId,
+                    draggedTask.event_id,
                 );
                 addNotification(`Task set to "${FieldLabels[status]}"`, "success");
             } catch {
@@ -82,27 +82,8 @@ const DroppableColumn = ({
         setDraggedOverColumn(null);
     };
 
-    const getTaskShiftsComp = (
-        taskList: Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
-        }>[],
-    ) => {
-        return (
-            <DraggableTaskShifts
-                key={taskList.map((task) => task.id).join("-")}
-                readOnly={readOnly}
-                eventPromise={eventPromise}
-                taskList={taskList}
-                activeMembersPromise={activeMembersPromise}
-                skillBadgesPromise={skillBadgesPromise}
-                setDraggedTask={setDraggedTask}
-                openCreateTaskDialog={openCreateTaskDialog}
-            />
-        );
-    };
-
     const getTaskDefaultStartTime = (): Date =>
-        (event ? dayjs(event.startTime) : dayjs().minute(0)).toDate();
+        (event ? dayjs(event.start_time) : dayjs().minute(0)).toDate();
 
     const getTaskDefaultEndTime = (): Date =>
         dayjs(getTaskDefaultStartTime()).add(1, "day").toDate();
@@ -110,9 +91,9 @@ const DroppableColumn = ({
     const openCreateTaskDialog = (shiftProps: Task | null) => {
         const defaultTask = {
             status,
-            reviewerId: user.id,
-            startTime: getTaskDefaultStartTime(),
-            endTime: getTaskDefaultEndTime(),
+            reviewer_id: user.id,
+            start_time: getTaskDefaultStartTime(),
+            end_time: getTaskDefaultEndTime(),
             ...shiftProps,
         } as Task;
         setTaskFormDefaultValues(defaultTask);
@@ -151,7 +132,22 @@ const DroppableColumn = ({
                         </Button>
                     )}
                 </Stack>
-                <Stack spacing={2}>{getSortedTaskComps(tasks, getTaskShiftsComp)}</Stack>
+                <Stack spacing={2}>
+                    {getGroupedAndSortedTasks(tasks.filter((task) => task.status === status)).map(
+                        (taskList) => (
+                            <DraggableTaskShifts
+                                key={taskList.map((task) => task.id).join("-")}
+                                readOnly={readOnly}
+                                eventPromise={eventPromise}
+                                taskList={taskList}
+                                activeMembersPromise={activeMembersPromise}
+                                skillBadgesPromise={skillBadgesPromise}
+                                setDraggedTask={setDraggedTask}
+                                openCreateTaskDialog={openCreateTaskDialog}
+                            />
+                        ),
+                    )}
+                </Stack>
             </Paper>
             <Dialog
                 fullWidth
@@ -167,8 +163,8 @@ const DroppableColumn = ({
                         taskFormDefaultValues
                             ? {
                                   ...taskFormDefaultValues,
-                                  skillBadges: taskFormDefaultValues.skillBadges.map(
-                                      (b) => b.skillBadgeId,
+                                  skill_badges: taskFormDefaultValues.skill_badges?.map(
+                                      (b: any) => b.skill_badge_id,
                                   ),
                               }
                             : null
@@ -176,11 +172,11 @@ const DroppableColumn = ({
                     customOptions={{
                         [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(
                             activeMembers,
-                            taskFormDefaultValues?.skillBadges || [],
+                            taskFormDefaultValues?.skill_badges || [],
                         ),
                         [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
                             activeMembers,
-                            taskFormDefaultValues?.skillBadges || [],
+                            taskFormDefaultValues?.skill_badges || [],
                         ),
                         [GlobalConstants.SKILL_BADGES]: skillBadges.map(
                             (b) =>

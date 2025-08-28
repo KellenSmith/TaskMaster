@@ -23,11 +23,11 @@ interface DraggableTaskShiftsProps {
     eventPromise: Promise<Prisma.EventGetPayload<true>> | undefined;
     // A list of shifts (tasks with the same name)
     taskList: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
     }>[];
     activeMembersPromise: Promise<
         Prisma.UserGetPayload<{
-            select: { id: true; nickname: true; skillBadges: true };
+            select: { id: true; nickname: true; skill_badges: true };
         }>[]
     >;
     skillBadgesPromise: Promise<
@@ -60,7 +60,7 @@ const DraggableTaskShifts = ({
 
     const getLatestEndTime = () =>
         taskList
-            .map((task) => task.endTime)
+            .map((task) => task.end_time)
             .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))
             .at(-1);
 
@@ -72,9 +72,9 @@ const DraggableTaskShifts = ({
         include: { assignee: { select: { id: true; nickname: true } } };
     }> => {
         const newTaskShift = { ...task };
-        newTaskShift.startTime = getLatestEndTime();
-        newTaskShift.endTime = dayjs(newTaskShift.startTime)
-            .add(organizationSettings.defaultTaskShiftLength, "hour")
+        newTaskShift.start_time = getLatestEndTime();
+        newTaskShift.end_time = dayjs(newTaskShift.start_time)
+            .add(organizationSettings.default_task_shift_length, "hour")
             .toDate();
         return newTaskShift;
     };

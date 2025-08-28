@@ -18,7 +18,7 @@ interface ProfileDashboardProps {
             include: {
                 assignee: { select: { id: true; nickname: true } };
                 reviewer: { select: { id: true; nickname: true } };
-                skillBadges: true;
+                skill_badges: true;
             };
         }>[]
     >;
@@ -26,8 +26,8 @@ interface ProfileDashboardProps {
         Prisma.EventGetPayload<{
             include: {
                 location: true;
-                tickets: { include: { eventParticipants: true } };
-                eventReserves: true;
+                tickets: { include: { event_participants: true } };
+                event_reserves: true;
             };
         }>[]
     >;

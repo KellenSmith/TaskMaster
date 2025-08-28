@@ -33,7 +33,7 @@ const getEmailPayload = async (
 ): Promise<EmailPayload> => {
     const organizationSettings = await getOrganizationSettings();
     return {
-        from: `${await getOrganizationName()} <${organizationSettings?.organizationEmail}>`,
+        from: `${await getOrganizationName()} <${organizationSettings?.organization_email}>`,
         bcc: receivers.join(", "),
         subject: subject,
         html: await render(mailContent),
@@ -45,15 +45,16 @@ export const notifyOfMembershipApplication = async (
 ): Promise<void> => {
     try {
         const organizationSettings = await getOrganizationSettings();
+        const orgName = await getOrganizationName();
         const mailContent = createElement(MembershipApplicationTemplate, {
-            organizationName: organizationSettings.organizationName,
+            organizationName: orgName,
             parsedFieldValues,
         });
 
         const transport = await getMailTransport();
         const mailResponse = await transport.sendMail(
             await getEmailPayload(
-                [organizationSettings.organizationEmail],
+                [organizationSettings.organization_email],
                 `New membership application received`,
                 mailContent,
             ),
@@ -71,10 +72,13 @@ export const sendUserCredentials = async (
     userEmail: string,
     userPassword: string,
 ): Promise<string> => {
+    const orgSettings = await getOrganizationSettings();
+    const orgName = await getOrganizationName();
     const mailContent = createElement(UserCredentialsTemplate, {
         userEmail: userEmail,
         password: userPassword,
-        organizationName: await getOrganizationName(),
+        organization_name: orgSettings?.organization_name,
+        organizationName: orgName,
     });
     const transport = await getMailTransport();
     const mailResponse = await transport.sendMail(
@@ -100,7 +104,7 @@ export const remindExpiringMembers = async (userEmails: string[]): Promise<strin
     const mailResponse = await transport.sendMail(
         await getEmailPayload(
             userEmails,
-            `Your ${orgSettings?.organizationName || "Task Master"} membership is about to expire`,
+            `Your ${orgSettings?.organization_name || "Task Master"} membership is about to expire`,
             mailContent,
         ),
     );
@@ -115,10 +119,10 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
     const reserveEmails = await getEventReservesEmails(eventId);
     if (reserveEmails.length === 0) return;
 
-    const orgSettings = await getOrganizationSettings();
+    const orgName = await getOrganizationName();
     const event = await prisma.event.findUniqueOrThrow({ where: { id: eventId } });
     const mailContent = createElement(OpenEventSpotTemplate, {
-        organizationName: orgSettings?.organizationName,
+        organizationName: orgName,
         event,
     });
 
@@ -147,9 +151,10 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
             where: { id: eventId },
             select: { id: true, title: true },
         });
+        const orgName = await getOrganizationName();
         const mailContent = createElement(EventCancelledTemplate, {
             event: event,
-            organizationName: await getOrganizationName(),
+            organizationName: orgName,
         });
 
         const mailPayload = await getEmailPayload(
@@ -199,9 +204,10 @@ export const sendMassEmail = async (
                 },
             })
         ).map((user) => user.email);
+        const orgName = await getOrganizationName();
         const mailContent = createElement(MailTemplate, {
             html: parsedFieldValues.content,
-            organizationName: await getOrganizationName(),
+            organizationName: orgName,
         });
         const mailPayload = await getEmailPayload(
             recipients,
@@ -231,7 +237,7 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
                         email: true,
                     },
                 },
-                orderItems: {
+                order_items: {
                     include: {
                         product: {
                             select: {
@@ -244,11 +250,14 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
             },
         });
 
+        const orgSettings = await getOrganizationSettings();
+        const orgName = await getOrganizationName();
         const mailContent = createElement(OrderConfirmationTemplate, {
             orderId: orderDetails.id,
-            orderItems: orderDetails.orderItems,
-            totalAmount: orderDetails.totalAmount,
-            organizationName: await getOrganizationName(),
+            orderItems: orderDetails.order_items,
+            totalAmount: orderDetails.total_amount,
+            organization_name: orgSettings?.organization_name,
+            organizationName: orgName,
         });
 
         const transport = await getMailTransport();

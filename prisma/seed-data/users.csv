@@ -1,4 +1,4 @@
-"id","email","nickname","role","consentToNewsletters","firstName","surName","pronoun","phone","createdAt"
+"id","email","nickname","role","consent_to_newsletters","first_name","sur_name","pronoun","phone","created_at"
 "09266ce5-ae5d-41b9-990e-e15421354587","eventReserve@email.com","eventReserve","member","true","eventReserve","eventReserve","eventReserve","eventReserve","2025-08-25 03:57:26.537"
 "4238dd9a-f7f5-47a0-bd19-f9eea166f841","expiredMembership@email.com","expiredMembership","member","true","expiredMembership","expiredMembership","expiredMembership","expiredMembership","2025-08-25 03:58:32.842"
 "495796c7-c5f0-4e25-a949-4d0db3966480","eventHost@email.com","eventHost","member","true","eventHost","eventHost","eventHost","eventHost","2025-08-25 03:56:13.941"

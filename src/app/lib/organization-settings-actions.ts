@@ -22,7 +22,7 @@ export const getOrganizationSettings = async (): Promise<
 
 export const getOrganizationName = async (): Promise<string> => {
     const orgSettings = await getOrganizationSettings();
-    return orgSettings?.organizationName || process.env.NEXT_PUBLIC_ORG_NAME || "Task Master";
+    return orgSettings?.organization_name || process.env.NEXT_PUBLIC_ORG_NAME || "Task Master";
 };
 
 export const updateOrganizationSettings = async (
