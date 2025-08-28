@@ -13,18 +13,23 @@ import { TaskCreateSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import DraggableTaskShifts from "./DraggableTaskShifts";
+import { CustomOptionProps } from "../form/AutocompleteWrapper";
 
 interface DroppableColumnProps {
     readOnly: boolean;
     eventPromise?: Promise<Prisma.EventGetPayload<true>>;
     status: TaskStatus;
     tasks: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } } };
+        include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
     }>[];
     activeMembersPromise?: Promise<
-        Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+        Prisma.UserGetPayload<{
+            select: { id: true; nickname: true; skillBadges: true };
+        }>[]
     >;
-
+    skillBadgesPromise?: Promise<
+        Prisma.SkillBadgeGetPayload<{ select: { id: true; name: true } }>[]
+    >;
     draggedTask: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } } };
     }> | null;
@@ -44,6 +49,7 @@ const DroppableColumn = ({
     status,
     tasks,
     activeMembersPromise,
+    skillBadgesPromise,
     draggedTask,
     setDraggedTask,
     draggedOverColumn,
@@ -55,6 +61,7 @@ const DroppableColumn = ({
     const [taskFormDefaultValues, setTaskFormDefaultValues] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
+    const skillBadges = use(skillBadgesPromise);
 
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {
@@ -77,7 +84,7 @@ const DroppableColumn = ({
 
     const getTaskShiftsComp = (
         taskList: Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } } };
+            include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
         }>[],
     ) => {
         return (
@@ -87,6 +94,7 @@ const DroppableColumn = ({
                 eventPromise={eventPromise}
                 taskList={taskList}
                 activeMembersPromise={activeMembersPromise}
+                skillBadgesPromise={skillBadgesPromise}
                 setDraggedTask={setDraggedTask}
                 openCreateTaskDialog={openCreateTaskDialog}
             />
@@ -155,10 +163,32 @@ const DroppableColumn = ({
                     name={GlobalConstants.TASK}
                     action={createNewTask}
                     validationSchema={TaskCreateSchema}
-                    defaultValues={taskFormDefaultValues}
+                    defaultValues={
+                        taskFormDefaultValues
+                            ? {
+                                  ...taskFormDefaultValues,
+                                  skillBadges: taskFormDefaultValues.skillBadges.map(
+                                      (b) => b.skillBadgeId,
+                                  ),
+                              }
+                            : null
+                    }
                     customOptions={{
-                        [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(activeMembers),
-                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(activeMembers),
+                        [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(
+                            activeMembers,
+                            taskFormDefaultValues?.skillBadges || [],
+                        ),
+                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
+                            activeMembers,
+                            taskFormDefaultValues?.skillBadges || [],
+                        ),
+                        [GlobalConstants.SKILL_BADGES]: skillBadges.map(
+                            (b) =>
+                                ({
+                                    id: b.id,
+                                    label: b.name,
+                                }) as CustomOptionProps,
+                        ),
                     }}
                     buttonLabel="add task"
                     readOnly={false}

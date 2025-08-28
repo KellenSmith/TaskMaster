@@ -7,9 +7,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 
-export const getAllSkillBadges = async (): Promise<
-    Prisma.SkillBadgeGetPayload<{ include: { userSkillBadges: true } }>[]
-> => {
+export const getAllSkillBadges = async (): Promise<Prisma.SkillBadgeGetPayload<true>[]> => {
     return await prisma.skillBadge.findMany({ include: { userSkillBadges: true } });
 };
 

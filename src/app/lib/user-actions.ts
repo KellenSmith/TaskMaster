@@ -180,7 +180,9 @@ export const deleteUser = async (userId: string): Promise<void> => {
 };
 
 export const getActiveMembers = async (): Promise<
-    Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+    Prisma.UserGetPayload<{
+        select: { id: true; nickname: true; skillBadges: true };
+    }>[]
 > => {
     try {
         return await prisma.user.findMany({
@@ -194,6 +196,7 @@ export const getActiveMembers = async (): Promise<
             select: {
                 id: true,
                 nickname: true,
+                skillBadges: true,
             },
         });
     } catch {

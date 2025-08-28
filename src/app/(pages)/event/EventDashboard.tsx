@@ -30,7 +30,7 @@ interface EventDashboardProps {
     >;
     eventTasksPromise: Promise<
         Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } } };
+            include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
         }>[]
     >;
     eventTicketsPromise: Promise<
@@ -40,9 +40,10 @@ interface EventDashboardProps {
     >;
     activeMembersPromise: Promise<
         Prisma.UserGetPayload<{
-            select: { id: true; nickname: true };
+            select: { id: true; nickname: true; skillBadges: true };
         }>[]
     >;
+    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
     eventParticipantsPromise: Promise<
         Prisma.EventParticipantGetPayload<{
             include: { user: { select: { id: true; nickname: true } } };
@@ -61,6 +62,7 @@ const EventDashboard = ({
     eventTasksPromise,
     eventTicketsPromise,
     activeMembersPromise,
+    skillBadgesPromise,
     eventParticipantsPromise,
     eventReservesPromise,
     locationsPromise,
@@ -116,6 +118,7 @@ const EventDashboard = ({
                             eventPromise={eventPromise}
                             tasksPromise={eventTasksPromise}
                             activeMembersPromise={activeMembersPromise}
+                            skillBadgesPromise={skillBadgesPromise}
                         />
                     </ErrorBoundarySuspense>
                 );

@@ -3,7 +3,7 @@
 import { Button, Dialog, Divider, Stack } from "@mui/material";
 import { use, useState, useTransition } from "react";
 import SkillBadgeCard from "./SkillBadgeCard";
-import { Prisma, SkillBadge } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { SkillBadgeCreateSchema } from "../../lib/zod-schemas";

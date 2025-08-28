@@ -18,11 +18,16 @@ interface KanBanBoardProps {
     >;
     tasksPromise: Promise<
         Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } } };
+            include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
         }>[]
     >;
     activeMembersPromise?: Promise<
-        Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+        Prisma.UserGetPayload<{
+            select: { id: true; nickname: true; skillBadges: true };
+        }>[]
+    >;
+    skillBadgesPromise: Promise<
+        Prisma.SkillBadgeGetPayload<{ select: { id: true; name: true } }>[]
     >;
 }
 
@@ -31,6 +36,7 @@ const KanBanBoard = ({
     eventPromise,
     tasksPromise,
     activeMembersPromise,
+    skillBadgesPromise,
 }: KanBanBoardProps) => {
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
@@ -66,6 +72,7 @@ const KanBanBoard = ({
                             status={status}
                             tasks={filteredTasks.filter((task) => task.status === status)}
                             activeMembersPromise={activeMembersPromise}
+                            skillBadgesPromise={skillBadgesPromise}
                             draggedTask={draggedTask}
                             setDraggedTask={setDraggedTask}
                             draggedOverColumn={draggedOverColumn}

@@ -34,7 +34,7 @@ const mockOrganizationSettingsContextValue = {
 interface WrapperProps {
     children: ReactNode;
     user?: Prisma.UserGetPayload<{
-        include: { userMembership: true; userCredentials: true };
+        include: { userMembership: true; userCredentials: true; skillBadges: true };
     }>;
 }
 

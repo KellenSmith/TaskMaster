@@ -8,7 +8,7 @@ import { CircularProgress, Stack } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 interface UserContextValue {
-    user: Prisma.UserGetPayload<{ include: { userMembership: true } }>;
+    user: Prisma.UserGetPayload<{ include: { userMembership: true; skillBadges: true } }>;
     language: string;
     setLanguage: (language: string) => void; // eslint-disable-line no-unused-vars
     editMode: boolean;

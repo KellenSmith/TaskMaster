@@ -23,10 +23,15 @@ interface DraggableTaskShiftsProps {
     eventPromise: Promise<Prisma.EventGetPayload<true>> | undefined;
     // A list of shifts (tasks with the same name)
     taskList: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } } };
+        include: { assignee: { select: { id: true; nickname: true } }; skillBadges: true };
     }>[];
     activeMembersPromise: Promise<
-        Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+        Prisma.UserGetPayload<{
+            select: { id: true; nickname: true; skillBadges: true };
+        }>[]
+    >;
+    skillBadgesPromise: Promise<
+        Prisma.SkillBadgeGetPayload<{ select: { id: true; name: true } }>[]
     >;
     setDraggedTask: (
         // eslint-disable-next-line no-unused-vars
@@ -47,6 +52,7 @@ const DraggableTaskShifts = ({
     eventPromise,
     taskList,
     activeMembersPromise,
+    skillBadgesPromise,
     setDraggedTask,
     openCreateTaskDialog,
 }: DraggableTaskShiftsProps) => {
@@ -96,6 +102,7 @@ const DraggableTaskShifts = ({
                     task={taskList[0]}
                     setDraggedTask={setDraggedTask}
                     activeMembersPromise={activeMembersPromise}
+                    skillBadgesPromise={skillBadgesPromise}
                 />
                 {getAddShiftButton()}
             </Card>
@@ -125,6 +132,7 @@ const DraggableTaskShifts = ({
                                     task={task}
                                     setDraggedTask={setDraggedTask}
                                     activeMembersPromise={activeMembersPromise}
+                                    skillBadgesPromise={skillBadgesPromise}
                                 />
                             </Stack>
                         ))}

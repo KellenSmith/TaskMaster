@@ -26,8 +26,9 @@ const testdata = {
             salt: "test-password-salt",
             hashedPassword: "test-hashed-password",
         },
+        skillBadges: [],
     } as Prisma.UserGetPayload<{
-        include: { userMembership: true; userCredentials: true };
+        include: { userMembership: true; userCredentials: true; skillBadges: true };
     }>,
 
     createUser: {

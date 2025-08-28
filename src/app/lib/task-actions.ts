@@ -36,7 +36,8 @@ export const updateTaskById = async (
             },
         });
 
-        const { reviewerId, assigneeId, ...tasksWithoutUsers } = parsedFieldValues;
+        const { reviewerId, assigneeId, skillBadges, ...tasksWithoutUsers } = parsedFieldValues;
+        console.log(skillBadges);
         const updatedTask = await prisma.task.update({
             where: {
                 id: taskId,
@@ -106,7 +107,8 @@ export const createTask = async (
     eventId: string | null,
 ): Promise<void> => {
     try {
-        const { reviewerId, assigneeId, ...tasksWithoutUsers } = parsedFieldValues;
+        const { reviewerId, assigneeId, skillBadges, ...tasksWithoutUsers } = parsedFieldValues;
+        console.log(skillBadges);
         await prisma.task.create({
             data: {
                 ...tasksWithoutUsers,
@@ -147,6 +149,7 @@ export const getFilteredTasks = async (
         include: {
             assignee: { select: { id: true; nickname: true } };
             reviewer: { select: { id: true; nickname: true } };
+            skillBadges: true;
         };
     }>[]
 > => {
@@ -166,6 +169,7 @@ export const getFilteredTasks = async (
                         nickname: true,
                     },
                 },
+                skillBadges: true,
             },
         });
     } catch {

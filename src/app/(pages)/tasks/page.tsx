@@ -4,6 +4,7 @@ import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import { getActiveMembers } from "../../lib/user-actions";
+import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 
 const TasksPage = () => {
     const tasksPromise = unstable_cache(getFilteredTasks, [], { tags: [GlobalConstants.TASK] })({
@@ -12,6 +13,9 @@ const TasksPage = () => {
     const activeMembersPromise = unstable_cache(getActiveMembers, [], {
         tags: [GlobalConstants.USER],
     })();
+    const skillBadgesPromise = unstable_cache(getAllSkillBadges, [], {
+        tags: [GlobalConstants.SKILL_BADGE],
+    })();
 
     return (
         <ErrorBoundarySuspense errorMessage="Failed to load tasks">
@@ -19,6 +23,7 @@ const TasksPage = () => {
                 readOnly={false}
                 tasksPromise={tasksPromise}
                 activeMembersPromise={activeMembersPromise}
+                skillBadgesPromise={skillBadgesPromise}
             />
         </ErrorBoundarySuspense>
     );

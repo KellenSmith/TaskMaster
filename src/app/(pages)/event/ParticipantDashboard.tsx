@@ -46,7 +46,7 @@ interface ParticipantDashboard {
     >;
     eventTicketsPromise: Promise<Prisma.TicketGetPayload<{ include: { product: true } }>[]>;
     activeMembersPromise: Promise<
-        Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[]
+        Prisma.UserGetPayload<{ select: { id: true; nickname: true; skillBadges: true } }>[]
     >;
 }
 

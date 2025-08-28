@@ -10,6 +10,7 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { getEventParticipants } from "../../lib/event-participant-actions";
 import { getEventReserves } from "../../lib/event-reserve-actions";
 import { getAllLocations } from "../../lib/location-actions";
+import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 
 interface EventPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
@@ -35,6 +36,9 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const activeMembersPromise = unstable_cache(getActiveMembers, [], {
         tags: [GlobalConstants.USER],
     })();
+    const skillBadgesPromise = unstable_cache(getAllSkillBadges, [], {
+        tags: [GlobalConstants.SKILL_BADGE],
+    })();
     const eventParticipantsPromise = unstable_cache(getEventParticipants, [eventId], {
         tags: [GlobalConstants.PARTICIPANT_USERS],
     })(eventId);
@@ -52,6 +56,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
                 eventTasksPromise={eventTasksPromise}
                 eventTicketsPromise={eventTicketsPromise}
                 activeMembersPromise={activeMembersPromise}
+                skillBadgesPromise={skillBadgesPromise}
                 eventParticipantsPromise={eventParticipantsPromise}
                 eventReservesPromise={eventReservesPromise}
                 locationsPromise={locationsPromise}

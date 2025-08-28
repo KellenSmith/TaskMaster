@@ -37,15 +37,15 @@ For payments, use the following test data:
 - ~~Enable eventHosts to manually add participants and reserves~~
 - ~~Add configurable locations with properties like address, accessibility info, max capacity which can be chosen by eventHosts~~
 - ~~Ditch the task phase property and sort by start/end dates instead~~
-- Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.
+- ~~Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.~~
+- A year wheel for admins showing planning times and current and upcoming events
+- Upload images for events/products/texts
 - Add instructions for eventHosts on how to set up and manage their events or require admins to approve events before publishing
 - Ability to translate texts and labels for menu, event descriptions etc.
 - Buttons to message the assignee and reviewer of a task
 - Event tags (munch/playparty/section etc...)
-- A year wheel for admins showing planning times and current and upcoming events
 - Enable task assignees to submit receipts
 - Solidarity and community funded event tickets - one bought solidarity ticket funds a ticket for someone else
-- Upload images for events/products/texts
 - Merch store
 
 ## Contributions

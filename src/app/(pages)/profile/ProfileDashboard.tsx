@@ -18,6 +18,7 @@ interface ProfileDashboardProps {
             include: {
                 assignee: { select: { id: true; nickname: true } };
                 reviewer: { select: { id: true; nickname: true } };
+                skillBadges: true;
             };
         }>[]
     >;
@@ -30,13 +31,7 @@ interface ProfileDashboardProps {
             };
         }>[]
     >;
-    skillBadgesPromise: Promise<
-        Prisma.SkillBadgeGetPayload<{
-            include: {
-                userSkillBadges: true;
-            };
-        }>[]
-    >;
+    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
 }
 
 const ProfileDashboard = ({
@@ -73,7 +68,13 @@ const ProfileDashboard = ({
             case tabs.events:
                 return <EventsTab eventsPromise={eventsPromise} />;
             case tabs.tasks:
-                return <KanBanBoard readOnly={true} tasksPromise={tasksPromise} />;
+                return (
+                    <KanBanBoard
+                        readOnly={true}
+                        tasksPromise={tasksPromise}
+                        skillBadgesPromise={skillBadgesPromise}
+                    />
+                );
             case tabs.skill_badges:
                 return <SkillBadgesTab skillBadgesPromise={skillBadgesPromise} />;
             default:

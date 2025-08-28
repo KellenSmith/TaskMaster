@@ -19,7 +19,8 @@ declare module "next-auth" {
      */
     // eslint-disable-next-line no-unused-vars
     interface Session {
-        user: Prisma.UserGetPayload<{ include: { userMembership: true } }> & DefaultSession["user"];
+        user: Prisma.UserGetPayload<{ include: { userMembership: true; skillBadges: true } }> &
+            DefaultSession["user"];
     }
 }
 
@@ -56,6 +57,7 @@ const authorize = async (
         include: {
             userCredentials: true,
             userMembership: true,
+            skillBadges: true,
         },
     });
     if (!loggedInUser) throwFailedSignInError(failedSigninCodes.USER_NOT_FOUND);
@@ -108,7 +110,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             user,
         }: {
             token: JWT;
-            user: Prisma.UserGetPayload<{ include: { userMembership: true } }> | undefined;
+            user:
+                | Prisma.UserGetPayload<{ include: { userMembership: true; skillBadges: true } }>
+                | undefined;
         }) => {
             // On initial sign in `user` is available — persist it into the token.
             if (user) return { ...token, user };
@@ -119,8 +123,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session: ({ session, token }): Session => ({
             ...session,
             user:
-                (token.user as Prisma.UserGetPayload<{ include: { userMembership: true } }>) ||
-                session.user,
+                (token.user as Prisma.UserGetPayload<{
+                    include: { userMembership: true; skillBadges: true };
+                }>) || session.user,
         }),
     },
 });

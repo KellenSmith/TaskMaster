@@ -1,5 +1,6 @@
 import { Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
+import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 
 export const FieldLabels = {
     [GlobalConstants.ID]: "ID",
@@ -79,6 +80,7 @@ export const FieldLabels = {
     [GlobalConstants.IN_PROGRESS]: "In Progress",
     [GlobalConstants.IN_REVIEW]: "In Review",
     [GlobalConstants.DONE]: "Done",
+    [GlobalConstants.SKILL_BADGES]: "Skill Badges",
     // Sendout
     [GlobalConstants.SENDOUT]: "Sendout",
     [GlobalConstants.SUBJECT]: "Subject",
@@ -166,6 +168,7 @@ export const RenderedFields = {
         GlobalConstants.START_TIME,
         GlobalConstants.END_TIME,
         GlobalConstants.TAGS,
+        GlobalConstants.SKILL_BADGES,
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
@@ -282,7 +285,7 @@ export const selectFieldOptions = {
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
 };
 
-export const allowSelectMultiple = [GlobalConstants.TAGS];
+export const allowSelectMultiple = [GlobalConstants.TAGS, GlobalConstants.SKILL_BADGES];
 
 export const datePickerFields = [
     GlobalConstants.CREATED_AT,
@@ -307,9 +310,15 @@ export const checkboxFields = [
 export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT];
 
 export const getUserSelectOptions = (
-    users: Prisma.UserGetPayload<{ select: { id: true; nickname: true } }>[],
+    users: Prisma.UserGetPayload<{
+        select: { id: true; nickname: true; skillBadges: true };
+    }>[],
+    requiredTaskSkillBadges: Prisma.TaskSkillBadgeGetPayload<true>[] = [],
 ) => {
-    return users.map((user) => ({
+    const qualifiedMembers = users.filter((user) =>
+        isUserQualifiedForTask(user, requiredTaskSkillBadges),
+    );
+    return qualifiedMembers.map((user) => ({
         id: user.id,
         label: user.nickname,
     }));

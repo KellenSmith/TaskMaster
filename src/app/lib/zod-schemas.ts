@@ -125,11 +125,21 @@ export const EventUpdateSchema = EventCreateSchema.partial().extend({
 // Event reserves are never created from forms and thus don't need validation
 
 // =============================================================================
+// SKILL BADGE SCHEMAS
+// =============================================================================
+
+export const SkillBadgeCreateSchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    imageUrl: z.string().optional(),
+});
+
+// =============================================================================
 // TASK SCHEMAS
 // =============================================================================
 
 export const TaskCreateSchema: z.ZodType<
-    Prisma.TaskCreateInput & { assigneeId?: string; reviewerId?: string }
+    Prisma.TaskCreateInput & { assigneeId?: string; reviewerId?: string; skillBadges?: string[] }
 > = z
     .object({
         id: z.string().optional(),
@@ -146,6 +156,8 @@ export const TaskCreateSchema: z.ZodType<
         assigneeId: z.string().nullable(),
         reviewerId: z.string().nullable(),
 
+        skillBadges: z.array(z.string()).optional(),
+
         eventId: z.string().nullable().optional(),
     })
     .omit({ id: true, eventId: true });
@@ -153,16 +165,6 @@ export const TaskCreateSchema: z.ZodType<
 export const TaskUpdateSchema: z.ZodType<
     Prisma.TaskUpdateInput & { assigneeId?: string; reviewerId?: string }
 > = TaskCreateSchema;
-
-// =============================================================================
-// SKILL BADGE SCHEMAS
-// =============================================================================
-
-export const SkillBadgeCreateSchema = z.object({
-    name: z.string(),
-    description: z.string().optional(),
-    imageUrl: z.string().optional(),
-});
 
 // =============================================================================
 // PRODUCT SCHEMAS
