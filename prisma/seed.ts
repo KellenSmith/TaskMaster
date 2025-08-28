@@ -37,11 +37,11 @@ async function seedUsers() {
             pronoun: r.pronoun || null,
             phone: r.phone || null,
             created_at: r.created_at ? new Date(r.created_at) : undefined,
-        };
+        } as Prisma.UserCreateInput;
 
         await prisma.user.upsert({
             where: { email: payload.email },
-            update: payload,
+            update: payload as Prisma.UserUpdateInput,
             create: payload,
         });
         console.log("Upserted user", payload.email);
@@ -59,11 +59,11 @@ async function seedProducts() {
             stock: r.stock ? Number(r.stock) : null,
             unlimited_stock: bool(r.unlimited_stock) ?? false,
             image_url: r.image_url || null,
-        };
+        } as Prisma.ProductCreateInput;
 
         await prisma.product.upsert({
             where: { id: payload.id },
-            update: payload,
+            update: payload as Prisma.ProductUpdateInput,
             create: payload,
         });
         console.log("Upserted product", payload.id);
@@ -116,7 +116,9 @@ async function seedLocations() {
         } as Prisma.LocationCreateInput;
 
         try {
-            await prisma.location.create({ data: payload });
+            await prisma.location.create({
+                data: payload,
+            });
             console.log("Created location", payload.name);
         } catch (e) {
             console.warn("Skipping location (exists?)", payload.name);
@@ -130,13 +132,15 @@ async function seedTickets() {
         const payload = {
             id: r.id,
             type: r.type || undefined,
-            product_id: r.product_id,
-            event_id: r.event_id,
-        };
+            event: { connect: { id: r.event_id } },
+            product: {
+                connect: { id: r.product_id },
+            },
+        } as Prisma.TicketCreateInput;
         // productId is unique in schema for Ticket
         await prisma.ticket.upsert({
             where: { id: payload.id },
-            update: payload,
+            update: payload as Prisma.TicketUpdateInput,
             create: payload,
         });
         console.log("Upserted ticket", payload.id);
@@ -170,8 +174,8 @@ async function seedUserCredentials() {
             id: r.id,
             salt: r.salt,
             hashed_password: r.hashed_password,
-            user_id: r.user_id,
-        };
+            user: { connect: { id: r.user_id } },
+        } as Prisma.UserCredentialsCreateInput;
         try {
             await prisma.userCredentials.create({ data: payload });
             console.log("Created userCredentials", payload.id);
@@ -186,9 +190,9 @@ async function seedMemberships() {
     for (const r of rows) {
         const payload = {
             id: r.id,
-            product_id: r.product_id,
+            product: { connect: { id: r.product_id } },
             duration: r.duration ? Number(r.duration) : 365,
-        };
+        } as Prisma.MembershipCreateInput;
         try {
             await prisma.membership.create({ data: payload });
             console.log("Created membership", payload.id);
@@ -203,15 +207,15 @@ async function seedUserMemberships() {
     for (const r of rows) {
         const payload = {
             id: r.id,
-            user_id: r.user_id,
-            membership_id: r.membership_id,
+            user: { connect: { id: r.user_id } },
+            membership: { connect: { id: r.membership_id } },
             expires_at: r.expires_at ? new Date(r.expires_at) : undefined,
-        };
+        } as Prisma.UserMembershipCreateInput;
         try {
             // userId is unique in schema; upsert so existing records are updated
             await prisma.userMembership.upsert({
-                where: { user_id: payload.user_id },
-                update: payload,
+                where: { user_id: r.user_id },
+                update: payload as Prisma.UserMembershipUpdateInput,
                 create: payload,
             });
             console.log("Upserted userMembership", payload.id);
@@ -232,8 +236,8 @@ async function seedOrdersAndItems() {
             payee_ref: r.payee_ref || null,
             created_at: r.created_at ? new Date(r.created_at) : undefined,
             updated_at: r.updated_at ? new Date(r.updated_at) : undefined,
-            user_id: r.user_id,
-        };
+            user: { connect: { id: r.user_id } },
+        } as Prisma.OrderCreateInput;
         try {
             await prisma.order.create({ data: payload });
             console.log("Created order", payload.id);
@@ -248,9 +252,9 @@ async function seedOrdersAndItems() {
             id: r.id,
             quantity: r.quantity ? Number(r.quantity) : 1,
             price: r.price ? Number(r.price) : 0,
-            order_id: r.order_id,
-            product_id: r.product_id,
-        };
+            order: { connect: { id: r.order_id } },
+            product: { connect: { id: r.product_id } },
+        } as Prisma.OrderItemCreateInput;
         try {
             await prisma.orderItem.create({ data: payload });
             console.log("Created orderItem", payload.id);
@@ -278,10 +282,10 @@ async function seedEventReserves() {
     const rows = await streamCsvObjects("prisma/seed-data/event_reserves.csv");
     for (const r of rows) {
         const data = {
-            user_id: r.user_id,
-            event_id: r.event_id,
+            user: { connect: { id: r.user_id } },
+            event: { connect: { id: r.event_id } },
             queueing_since: r.queueing_since ? new Date(r.queueing_since) : undefined,
-        };
+        } as Prisma.EventReserveCreateInput;
         try {
             await prisma.eventReserve.create({ data });
             console.log("Created eventReserve", r.userId, r.eventId);
@@ -302,10 +306,10 @@ async function seedTasks() {
             end_time: r.end_time ? new Date(r.end_time) : undefined,
             description: r.description || null,
             tags: r.tags ? JSON.parse(r.tags) : [],
-            assignee_id: r.assignee_id || null,
-            reviewer_id: r.reviewer_id || null,
-            event_id: r.event_id || null,
-        };
+            assignee: { connect: { id: r.assignee_id } },
+            reviewer: { connect: { id: r.reviewer_id } },
+            event: { connect: { id: r.event_id } },
+        } as Prisma.TaskCreateInput;
         try {
             await prisma.task.create({ data: payload });
             console.log("Created task", payload.id);
@@ -333,7 +337,7 @@ async function seedOrganizationSettings() {
                 ? Number(r.default_task_shift_length)
                 : undefined,
             ticket_instructions: r.ticket_instructions || null,
-        };
+        } as Prisma.OrganizationSettingsCreateInput;
         try {
             await prisma.organizationSettings.create({ data: payload });
             console.log("Created organizationSettings", payload.id);
@@ -355,7 +359,7 @@ async function seedSkillBadges() {
         try {
             await prisma.skillBadge.upsert({
                 where: { id: payload.id },
-                update: payload,
+                update: payload as Prisma.SkillBadgeUpdateInput,
                 create: payload,
             });
             console.log("Upserted skillBadge", payload.id);
