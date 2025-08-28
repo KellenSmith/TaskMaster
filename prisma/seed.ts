@@ -83,7 +83,7 @@ async function seedEvents() {
         const payload = {
             id: r.id,
             title: r.title || "",
-            location: { connect: { id: locationId } },
+            location_id: locationId,
             start_time: r.start_time ? new Date(r.start_time) : undefined,
             end_time: r.end_time ? new Date(r.end_time) : undefined,
             description: r.description || null,
@@ -306,15 +306,19 @@ async function seedTasks() {
             end_time: r.end_time ? new Date(r.end_time) : undefined,
             description: r.description || null,
             tags: r.tags ? JSON.parse(r.tags) : [],
-            assignee: { connect: { id: r.assignee_id } },
-            reviewer: { connect: { id: r.reviewer_id } },
-            event: { connect: { id: r.event_id } },
-        } as Prisma.TaskCreateInput;
+            assignee: r.assignee_id ? { connect: { id: r.assignee_id } } : undefined,
+            reviewer: r.reviewer_id ? { connect: { id: r.reviewer_id } } : undefined,
+            event: r.event_id ? { connect: { id: r.event_id } } : undefined,
+        } as Prisma.TaskUpdateInput;
         try {
-            await prisma.task.create({ data: payload });
-            console.log("Created task", payload.id);
+            await prisma.task.upsert({
+                where: { id: payload.id as string },
+                update: payload as Prisma.TaskUpdateInput,
+                create: payload as Prisma.TaskCreateInput,
+            });
+            console.log("Upserted task", payload.id);
         } catch (e) {
-            console.warn("Skipping task (exists?)", payload.id);
+            console.warn("Failed to upsert task", payload.id, e?.message || e);
         }
     }
 }
