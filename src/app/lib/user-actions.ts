@@ -80,7 +80,11 @@ export const submitMemberApplication = async (
 
 export const getAllUsers = async (): Promise<
     Prisma.UserGetPayload<{
-        include: { user_credentials: { select: { id: true } }; user_membership: true };
+        include: {
+            user_credentials: { select: { id: true } };
+            user_membership: true;
+            skill_badges: true;
+        };
     }>[]
 > => {
     try {
@@ -88,6 +92,7 @@ export const getAllUsers = async (): Promise<
             include: {
                 user_credentials: { select: { id: true } },
                 user_membership: true,
+                skill_badges: true,
             },
         });
     } catch {

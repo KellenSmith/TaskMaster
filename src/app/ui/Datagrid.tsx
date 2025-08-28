@@ -26,7 +26,11 @@ export interface RowActionProps {
 
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
-          include: { user_credentials: { select: { id: true } }; user_membership: true };
+          include: {
+              user_credentials: { select: { id: true } };
+              user_membership: true;
+              skill_badges: true;
+          };
       }>
     | Product
     | Prisma.OrderGetPayload<{
@@ -81,19 +85,23 @@ const Datagrid: React.FC<DatagridProps> = ({
 
     const getColumns = () => {
         if (datagridRows.length < 1) return [];
-        const columns: GridColDef[] = Object.keys(datagridRows[0]).map((key) => ({
-            field: key,
-            headerName: key in FieldLabels ? FieldLabels[key] : key,
-            type: getColumnType(key),
-            valueFormatter: (value) => {
-                if (datePickerFields.includes(key)) {
-                    return formatDate(value);
-                }
-                if (priceFields.includes(key)) return parseInt(value) / 100;
-                return value;
-            },
-        })) as GridColDef[];
-        return [...columns, ...customColumns];
+        const customColumnFieldKeys = customColumns.map((col) => col.field);
+        const columns: GridColDef[] = Object.keys(datagridRows[0]).map((key) => {
+            if (customColumnFieldKeys.includes(key)) return null;
+            return {
+                field: key,
+                headerName: key in FieldLabels ? FieldLabels[key] : key,
+                type: getColumnType(key),
+                valueFormatter: (value) => {
+                    if (datePickerFields.includes(key)) {
+                        return formatDate(value);
+                    }
+                    if (priceFields.includes(key)) return parseInt(value) / 100;
+                    return value;
+                },
+            };
+        }) as GridColDef[];
+        return [...customColumns, ...columns].filter(Boolean);
     };
     const columns = useMemo(getColumns, [datagridRows, customColumns]);
 

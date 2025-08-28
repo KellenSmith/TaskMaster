@@ -1,5 +1,5 @@
 "use client";
-import { Stack, Typography } from "@mui/material";
+import { Chip, Stack, Tooltip, Typography } from "@mui/material";
 import { deleteUser, updateUser } from "../../lib/user-actions";
 import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
@@ -14,25 +14,36 @@ import { useUserContext } from "../../context/UserContext";
 import {
     Check as CheckIcon,
     Error as ErrorIcon,
+    Shield,
     Warning as WarningIcon,
 } from "@mui/icons-material";
-import { FC } from "react";
+import { FC, use } from "react";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
         Prisma.UserGetPayload<{
-            include: { user_credentials: { select: { id: true } }; user_membership: true };
+            include: {
+                user_credentials: { select: { id: true } };
+                user_membership: true;
+                skill_badges: true;
+            };
         }>[]
     >;
+    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
 }
 
-const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
+const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadgesPromise }) => {
     const { user } = useUserContext();
+    const skillBadges = use(skillBadgesPromise);
 
     const isMembershipPending = (member: ImplementedDatagridEntities) =>
         !(
             member as Prisma.UserGetPayload<{
-                include: { user_credentials: true; user_membership: true };
+                include: {
+                    user_credentials: true;
+                    user_membership: true;
+                    skill_badges: true;
+                };
             }>
         ).user_credentials;
 
@@ -90,7 +101,11 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
         if (
             isMembershipExpired(
                 member as Prisma.UserGetPayload<{
-                    include: { user_credentials: true; user_membership: true };
+                    include: {
+                        user_credentials: true;
+                        user_membership: true;
+                        skill_badges: true;
+                    };
                 }>,
             )
         )
@@ -108,7 +123,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
 
     const customColumns: GridColDef[] = [
         {
-            field: GlobalConstants.STATUS,
+            field: GlobalConstants.USER_MEMBERSHIP,
             headerName: "Membership status",
             type: "string",
             valueGetter: (_, member: ImplementedDatagridEntities) => {
@@ -151,13 +166,46 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise }) => {
                 );
             },
         },
+        {
+            field: GlobalConstants.SKILL_BADGES,
+            headerName: "Skill Badges",
+            type: "string",
+            renderCell: (params) => {
+                const member: ImplementedDatagridEntities = params.row;
+                const userSkillBadges =
+                    (
+                        member as Prisma.UserGetPayload<{
+                            include: { skill_badges: true };
+                        }>
+                    )?.skill_badges || [];
+                return (
+                    <Tooltip
+                        disableHoverListener={userSkillBadges.length === 0}
+                        placement="right"
+                        title={
+                            <Typography sx={{ whiteSpace: "pre-line", maxWidth: 180 }}>
+                                {userSkillBadges
+                                    .map((userSkillBadge) => {
+                                        const skillBadge = skillBadges.find(
+                                            (skillBadge) =>
+                                                skillBadge.id === userSkillBadge.skill_badge_id,
+                                        );
+                                        return skillBadge ? skillBadge.name : "";
+                                    })
+                                    .filter(Boolean)
+                                    .join(", ")
+                                    .replace(/, /g, ",\n")}
+                            </Typography>
+                        }
+                    >
+                        <Chip label={userSkillBadges.length} icon={<Shield />} />
+                    </Tooltip>
+                );
+            },
+        },
     ];
 
-    const hiddenColumns = [
-        GlobalConstants.ID,
-        GlobalConstants.USER_CREDENTIALS,
-        GlobalConstants.USER_MEMBERSHIP,
-    ];
+    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.USER_CREDENTIALS];
 
     return (
         <Stack sx={{ height: "100%" }}>
