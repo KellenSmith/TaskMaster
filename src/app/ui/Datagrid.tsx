@@ -61,7 +61,7 @@ interface DatagridProps {
     hiddenColumns?: string[];
     // eslint-disable-next-line no-unused-vars
     getDefaultFormValues?: (row: ImplementedDatagridEntities) => Record<string, string | string[]>;
-    customFormOptions: Record<string, CustomOptionProps[]>;
+    customFormOptions?: Record<string, CustomOptionProps[]>;
 }
 
 const Datagrid: React.FC<DatagridProps> = ({
