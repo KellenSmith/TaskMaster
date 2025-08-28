@@ -6,6 +6,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { getFilteredEvents } from "../../lib/event-actions";
 import { serverRedirect } from "../../lib/definitions";
 import { getLoggedInUser } from "../../lib/user-actions";
+import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
@@ -33,8 +34,17 @@ const ProfilePage = async () => {
             { eventReserves: { some: { userId: loggedInUser.id } } },
         ],
     });
+    const skillBadgesPromise = unstable_cache(getAllSkillBadges, [loggedInUser.id], {
+        tags: [GlobalConstants.SKILL_BADGE],
+    })();
 
-    return <ProfileDashboard tasksPromise={tasksPromise} eventsPromise={eventsPromise} />;
+    return (
+        <ProfileDashboard
+            tasksPromise={tasksPromise}
+            eventsPromise={eventsPromise}
+            skillBadgesPromise={skillBadgesPromise}
+        />
+    );
 };
 
 export default ProfilePage;

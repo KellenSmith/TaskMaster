@@ -1,14 +1,16 @@
 "use server";
 
-import { SkillBadge } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import z from "zod";
 import { SkillBadgeCreateSchema } from "./zod-schemas";
 import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 
-export const getAllSkillBadges = async (): Promise<SkillBadge[]> => {
-    return await prisma.skillBadge.findMany();
+export const getAllSkillBadges = async (): Promise<
+    Prisma.SkillBadgeGetPayload<{ include: { userSkillBadges: true } }>[]
+> => {
+    return await prisma.skillBadge.findMany({ include: { userSkillBadges: true } });
 };
 
 export const createSkillBadge = async (

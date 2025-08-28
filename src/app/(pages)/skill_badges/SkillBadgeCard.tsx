@@ -7,25 +7,21 @@ import {
     CardContent,
     CardMedia,
     Typography,
-    Tooltip,
-    Box,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
     Button,
     Stack,
-    Avatar,
 } from "@mui/material";
-import { FieldLabels } from "../../ui/form/FieldCfg";
-import { Shield } from "@mui/icons-material";
 
 interface SkillBadgeProps {
     badge: SkillBadge;
     onClick?: () => void;
+    greyedOut?: boolean;
 }
 
-const SkillBadgeCard = ({ badge, onClick }: SkillBadgeProps) => {
+const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -35,6 +31,9 @@ const SkillBadgeCard = ({ badge, onClick }: SkillBadgeProps) => {
                     maxWidth: 250,
                     width: "fit-content",
                     cursor: "pointer",
+                    transition: "filter 200ms, opacity 200ms",
+                    filter: greyedOut ? "grayscale(100%)" : "none",
+                    opacity: greyedOut ? 0.5 : 1,
                 }}
                 onClick={onClick || (() => setIsOpen(true))}
             >

@@ -1,5 +1,5 @@
 "use client";
-import { Stack } from "@mui/material";
+import { Divider, Stack } from "@mui/material";
 import { Prisma } from "@prisma/client";
 import { use } from "react";
 import { userHasSkillBadge } from "../../ui/utils";
@@ -33,10 +33,22 @@ const SkillBadgesTab = ({ skillBadgesPromise }: SkillBadgesTabProps) => {
         });
     };
     return (
-        <Stack direction="row" spacing={2}>
-            {getSortedSkillBadges().map((badge) => (
-                <SkillBadgeCard key={badge.id} badge={badge} />
-            ))}
+        <Stack direction="row" justifyContent="space-around" flexWrap="wrap" gap={2}>
+            {getSortedSkillBadges().map((badge) => {
+                return (
+                    <Stack key={badge.id} spacing={1}>
+                        <SkillBadgeCard
+                            badge={badge}
+                            greyedOut={!userHasSkillBadge(user.id, badge)}
+                        />
+                        <Stack spacing={1} maxWidth={250}>
+                            <Divider />
+                        </Stack>
+                    </Stack>
+                );
+            })}
         </Stack>
     );
 };
+
+export default SkillBadgesTab;

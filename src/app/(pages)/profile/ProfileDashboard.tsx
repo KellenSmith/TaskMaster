@@ -10,6 +10,7 @@ import { Prisma } from "@prisma/client";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import GlobalConstants from "../../GlobalConstants";
+import SkillBadgesTab from "./SkillBadgesTab";
 
 interface ProfileDashboardProps {
     tasksPromise: Promise<
@@ -29,9 +30,20 @@ interface ProfileDashboardProps {
             };
         }>[]
     >;
+    skillBadgesPromise: Promise<
+        Prisma.SkillBadgeGetPayload<{
+            include: {
+                userSkillBadges: true;
+            };
+        }>[]
+    >;
 }
 
-const ProfileDashboard = ({ tasksPromise, eventsPromise }: ProfileDashboardProps) => {
+const ProfileDashboard = ({
+    tasksPromise,
+    eventsPromise,
+    skillBadgesPromise,
+}: ProfileDashboardProps) => {
     const { user } = useUserContext();
     const tabs = useMemo(() => {
         const availableTabs = {
@@ -62,6 +74,8 @@ const ProfileDashboard = ({ tasksPromise, eventsPromise }: ProfileDashboardProps
                 return <EventsTab eventsPromise={eventsPromise} />;
             case tabs.tasks:
                 return <KanBanBoard readOnly={true} tasksPromise={tasksPromise} />;
+            case tabs.skill_badges:
+                return <SkillBadgesTab skillBadgesPromise={skillBadgesPromise} />;
             default:
                 return <AccountTab />;
         }
