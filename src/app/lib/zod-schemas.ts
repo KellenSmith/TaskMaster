@@ -17,6 +17,11 @@ const priceSchema = z.coerce
     .nonnegative()
     .transform((val) => Math.round(val * 100));
 
+const selectMultipleSchema = z
+    .string()
+    .transform((val) => (val ? val.split(",") : []))
+    .optional();
+
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
 // =============================================================================
@@ -63,10 +68,12 @@ export const UserCreateSchema = z
         phone: z.string().optional(),
 
         memberApplicationPrompt: z.string().optional(),
+
+        skill_badges: selectMultipleSchema,
     })
     .omit({ memberApplicationPrompt: true });
 
-export const UserUpdateSchema: z.ZodType<Prisma.UserUpdateInput> = UserCreateSchema;
+export const UserUpdateSchema = UserCreateSchema.partial();
 
 // =============================================================================
 // USER CREDENTIALS SCHEMAS
@@ -146,10 +153,7 @@ export const TaskCreateSchema = z
         start_time: stringToISODate,
         end_time: stringToISODate,
         description: z.string(),
-        tags: z
-            .string()
-            .transform((val) => (val ? val.split(",") : []))
-            .optional(),
+        tags: selectMultipleSchema,
 
         assignee_id: z.string().nullable(),
         reviewer_id: z.string().nullable(),

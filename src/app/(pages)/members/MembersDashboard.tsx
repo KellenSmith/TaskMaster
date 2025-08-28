@@ -18,6 +18,7 @@ import {
     Warning as WarningIcon,
 } from "@mui/icons-material";
 import { FC, use } from "react";
+import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
@@ -76,6 +77,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             throw new Error("Failed deleting user");
         }
     };
+
     const rowActions: RowActionProps[] = [
         {
             name: GlobalConstants.VALIDATE_MEMBERSHIP,
@@ -170,6 +172,10 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             field: GlobalConstants.SKILL_BADGES,
             headerName: "Skill Badges",
             type: "string",
+            sortable: true,
+            sortComparator: (skillBadges1, skillBadges2) => {
+                return skillBadges1.length - skillBadges2.length;
+            },
             renderCell: (params) => {
                 const member: ImplementedDatagridEntities = params.row;
                 const userSkillBadges =
@@ -217,6 +223,26 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 rowActions={rowActions}
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
+                getDefaultFormValues={(member: ImplementedDatagridEntities) =>
+                    member
+                        ? {
+                              [GlobalConstants.SKILL_BADGES]: (
+                                  member as Prisma.UserGetPayload<{
+                                      include: { skill_badges: true };
+                                  }>
+                              ).skill_badges.map((badge) => badge.skill_badge_id),
+                          }
+                        : null
+                }
+                customFormOptions={{
+                    [GlobalConstants.SKILL_BADGES]: skillBadges.map(
+                        (badge) =>
+                            ({
+                                id: badge.id,
+                                label: badge.name,
+                            }) as CustomOptionProps,
+                    ),
+                }}
             />
         </Stack>
     );

@@ -14,6 +14,7 @@ import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib
 import { Prisma, Product } from "@prisma/client";
 import z from "zod";
 import { clientRedirect, pathToRoute } from "../lib/definitions";
+import { CustomOptionProps } from "./form/AutocompleteWrapper";
 
 export interface RowActionProps {
     name: string;
@@ -58,6 +59,8 @@ interface DatagridProps {
     rowActions: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
+    getDefaultFormValues?: (row: ImplementedDatagridEntities) => Record<string, string | string[]>;
+    customFormOptions: Record<string, CustomOptionProps[]>;
 }
 
 const Datagrid: React.FC<DatagridProps> = ({
@@ -69,6 +72,8 @@ const Datagrid: React.FC<DatagridProps> = ({
     rowActions,
     customColumns = [],
     hiddenColumns = [],
+    getDefaultFormValues,
+    customFormOptions = {},
 }) => {
     const apiRef = useGridApiRef();
     const pathname = usePathname();
@@ -115,6 +120,7 @@ const Datagrid: React.FC<DatagridProps> = ({
     const updateRow = async (fieldValues: any) => {
         try {
             await updateAction(clickedRow, fieldValues);
+            setClickedRow(null);
             return "Updated successfully";
         } catch {
             addNotification("Failed to update", "error");
@@ -185,8 +191,9 @@ const Datagrid: React.FC<DatagridProps> = ({
                     buttonLabel="save"
                     action={updateRow}
                     validationSchema={validationSchema}
-                    defaultValues={clickedRow}
+                    defaultValues={{ ...clickedRow, ...getDefaultFormValues(clickedRow) }}
                     readOnly={!updateAction}
+                    customOptions={customFormOptions}
                 />
                 {!!rowActions &&
                     rowActions.map((rowAction) => getRowActionButton(clickedRow, rowAction))}

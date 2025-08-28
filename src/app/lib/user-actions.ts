@@ -29,9 +29,17 @@ export const createUser = async (
 ): Promise<void> => {
     let createdUserId: string;
     try {
+        const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
         const createdUser = await prisma.user.create({
             data: {
-                ...parsedFieldValues,
+                ...userData,
+                skill_badges: {
+                    createMany: {
+                        data: skill_badge_ids.map((badgeId) => ({
+                            skill_badge_id: badgeId,
+                        })),
+                    },
+                },
             },
         });
         createdUserId = createdUser.id;
@@ -102,19 +110,32 @@ export const getAllUsers = async (): Promise<
 
 export const updateUser = async (
     userId: string,
-    fieldValues: z.infer<typeof UserUpdateSchema>,
+    parsedFieldValues: z.infer<typeof UserUpdateSchema>,
 ): Promise<void> => {
-    try {
-        await prisma.user.update({
+    const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
+    console.log(skill_badge_ids);
+    await prisma.$transaction(async (tx) => {
+        await tx.user.update({
             where: {
                 id: userId,
             },
-            data: fieldValues,
+            data: userData,
         });
-        revalidateTag(GlobalConstants.USER);
-    } catch {
-        throw new Error(`Failed to update user`);
-    }
+        // Update skill badges
+        await tx.userSkillBadge.deleteMany({
+            where: {
+                user_id: userId,
+            },
+        });
+        await tx.userSkillBadge.createMany({
+            data: skill_badge_ids.map((badgeId) => ({
+                user_id: userId,
+                skill_badge_id: badgeId,
+            })),
+        });
+    });
+
+    revalidateTag(GlobalConstants.USER);
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {

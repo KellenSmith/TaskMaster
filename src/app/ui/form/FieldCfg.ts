@@ -204,6 +204,7 @@ RenderedFields[GlobalConstants.APPLY] = [
 RenderedFields[GlobalConstants.USER] = [
     ...RenderedFields[GlobalConstants.PROFILE],
     GlobalConstants.ROLE,
+    GlobalConstants.SKILL_BADGES,
 ];
 
 export const RequiredFields = {
