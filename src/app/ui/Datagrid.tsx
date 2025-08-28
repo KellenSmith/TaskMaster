@@ -59,6 +59,7 @@ interface DatagridProps {
     rowActions: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
+    // eslint-disable-next-line no-unused-vars
     getDefaultFormValues?: (row: ImplementedDatagridEntities) => Record<string, string | string[]>;
     customFormOptions: Record<string, CustomOptionProps[]>;
 }
