@@ -9,18 +9,18 @@ datasource db {
 }
 
 model OrganizationSettings {
-    id                String @id @default(uuid())
-    organizationName  String @default("Task Master")
-    organizationEmail String @default("kellensmith407@gmail.com")
+    id                 String @id @default(uuid())
+    organization_name  String @default("Task Master")
+    organization_email String @default("kellensmith407@gmail.com")
 
-    remindMembershipExpiresInDays    Int @default(7)
-    purgeMembersAfterDaysUnvalidated Int @default(180)
+    remind_membership_expires_in_days    Int @default(7)
+    purge_members_after_days_unvalidated Int @default(180)
 
-    defaultTaskShiftLength Int @default(2)
+    default_task_shift_length Int @default(2)
 
-    memberApplicationPrompt String?
-    //TODO: configure fields for ticket inctructions
-    ticketInstructions      String?
+    member_application_prompt String?
+    //TODO: configure fields for ticket instructions
+    ticket_instructions       String?
 
     @@map("organization_settings")
 }
@@ -41,28 +41,28 @@ enum UserRole {
 }
 
 model User {
-    id                   String   @id @default(uuid())
-    email                String   @unique
-    nickname             String   @unique @default(uuid())
-    role                 UserRole @default(member)
-    consentToNewsletters Boolean  @default(true)
+    id                     String   @id @default(uuid())
+    email                  String   @unique
+    nickname               String   @unique @default(uuid())
+    role                   UserRole @default(member)
+    consent_to_newsletters Boolean  @default(true)
 
-    firstName String?
-    surName   String?
-    pronoun   String?  @default("they/them")
-    phone     String?
-    createdAt DateTime @default(now())
+    first_name String?
+    sur_name   String?
+    pronoun    String?  @default("they/them")
+    phone      String?
+    created_at DateTime @default(now())
 
-    userCredentials UserCredentials?
-    userMembership  UserMembership?
+    user_credentials UserCredentials?
+    user_membership  UserMembership?
 
-    hostingEvents     Event[]
-    participantEvents EventParticipant[]
-    reserveEvents     EventReserve[]
+    hosting_events     Event[]
+    participant_events EventParticipant[]
+    reserve_events     EventReserve[]
 
-    assignedTasks Task[]           @relation("assignee")
-    reviewerTasks Task[]           @relation("reviewer")
-    skillBadges   UserSkillBadge[]
+    assigned_tasks Task[]           @relation("assignee")
+    reviewer_tasks Task[]           @relation("reviewer")
+    skill_badges   UserSkillBadge[]
 
     orders Order[]
 
@@ -72,26 +72,26 @@ model User {
 // No users can log in without credentials.
 // Admins can validate membership to create credentials for user.
 model UserCredentials {
-    id             String @id @default(uuid())
-    salt           String
-    hashedPassword String
+    id              String @id @default(uuid())
+    salt            String
+    hashed_password String
 
-    user   User   @relation(fields: [userId], references: [id])
-    userId String @unique
+    user    User   @relation(fields: [user_id], references: [id])
+    user_id String @unique
 
     @@map("user_credentials")
 }
 
 model Location {
-    id                String  @id @default(uuid())
-    name              String
-    contactPerson     String?
-    rentalCost        Float   @default(0)
-    address           String
-    capacity          Int
-    accessibilityInfo String?
-    description       String?
-    Event             Event[]
+    id                 String  @id @default(uuid())
+    name               String
+    contact_person     String?
+    rental_cost        Float   @default(0)
+    address            String
+    capacity           Int
+    accessibility_info String?
+    description        String?
+    events             Event[]
 
     @@map("locations")
 }
@@ -103,22 +103,22 @@ enum EventStatus {
 }
 
 model Event {
-    id              String      @id @default(uuid())
-    title           String      @default("")
-    locationId      String?
-    location        Location?   @relation(fields: [locationId], references: [id])
-    startTime       DateTime
-    endTime         DateTime
-    description     String?
-    maxParticipants Int
-    status          EventStatus @default(draft)
+    id               String      @id @default(uuid())
+    title            String      @default("")
+    location_id      String?
+    location         Location?   @relation(fields: [location_id], references: [id])
+    start_time       DateTime
+    end_time         DateTime
+    description      String?
+    max_participants Int
+    status           EventStatus @default(draft)
 
-    host   User   @relation(fields: [hostId], references: [id])
-    hostId String
+    host    User   @relation(fields: [host_id], references: [id])
+    host_id String
 
-    eventReserves EventReserve[]
-    tasks         Task[]
-    tickets       Ticket[]
+    event_reserves EventReserve[]
+    tasks          Task[]
+    tickets        Ticket[]
 
     @@map("events")
 }
@@ -127,13 +127,13 @@ model Event {
 // Each user can participate in multiple events
 // Each event can have multiple participants
 model EventParticipant {
-    user     User   @relation(fields: [userId], references: [id])
-    userId   String
-    ticket   Ticket @relation(fields: [ticketId], references: [id])
-    ticketId String // All participants must have a ticket
+    user      User   @relation(fields: [user_id], references: [id])
+    user_id   String
+    ticket    Ticket @relation(fields: [ticket_id], references: [id])
+    ticket_id String // All participants must have a ticket
 
     // This combination is unique. A user can only have one ticket per event
-    @@id([userId, ticketId])
+    @@id([user_id, ticket_id])
     @@map("event_participants")
 }
 
@@ -141,13 +141,13 @@ model EventParticipant {
 // Each user can be on reserveList in multiple events
 // Each event can have multiple reserve users
 model EventReserve {
-    user          User     @relation(fields: [userId], references: [id])
-    userId        String
-    event         Event    @relation(fields: [eventId], references: [id])
-    eventId       String
-    queueingSince DateTime @default(now())
+    user           User     @relation(fields: [user_id], references: [id])
+    user_id        String
+    event          Event    @relation(fields: [event_id], references: [id])
+    event_id       String
+    queueing_since DateTime @default(now())
 
-    @@id([userId, eventId])
+    @@id([user_id, event_id])
     @@map("event_reserves")
 }
 
@@ -162,77 +162,77 @@ model Task {
     id          String     @id @default(uuid())
     name        String
     status      TaskStatus @default(toDo)
-    startTime   DateTime
-    endTime     DateTime
+    start_time  DateTime
+    end_time    DateTime
     description String?
     tags        String[]   @default([])
 
-    assignee   User?   @relation("assignee", fields: [assigneeId], references: [id])
-    assigneeId String?
-    reviewer   User?   @relation("reviewer", fields: [reviewerId], references: [id])
-    reviewerId String?
+    assignee    User?   @relation("assignee", fields: [assignee_id], references: [id])
+    assignee_id String?
+    reviewer    User?   @relation("reviewer", fields: [reviewer_id], references: [id])
+    reviewer_id String?
 
-    event   Event?  @relation(fields: [eventId], references: [id])
-    eventId String?
+    event    Event?  @relation(fields: [event_id], references: [id])
+    event_id String?
 
-    skillBadges TaskSkillBadge[]
+    skill_badges TaskSkillBadge[]
 
     @@map("tasks")
 }
 
 model SkillBadge {
-    id              String           @id @default(uuid())
-    name            String
-    description     String?
-    imageUrl        String?
-    userSkillBadges UserSkillBadge[]
-    taskSkillBadges TaskSkillBadge[]
+    id                String           @id @default(uuid())
+    name              String
+    description       String?
+    image_url         String?
+    user_skill_badges UserSkillBadge[]
+    task_skill_badges TaskSkillBadge[]
 
     @@map("skill_badges")
 }
 
 model UserSkillBadge {
-    user         User       @relation(fields: [userId], references: [id])
-    userId       String
-    skillBadge   SkillBadge @relation(fields: [skillBadgeId], references: [id])
-    skillBadgeId String
+    user           User       @relation(fields: [user_id], references: [id])
+    user_id        String
+    skill_badge    SkillBadge @relation(fields: [skill_badge_id], references: [id])
+    skill_badge_id String
 
-    @@id([userId, skillBadgeId])
+    @@id([user_id, skill_badge_id])
     @@map("user_skill_badges")
 }
 
 model TaskSkillBadge {
-    task         Task       @relation(fields: [taskId], references: [id])
-    taskId       String
-    skillBadge   SkillBadge @relation(fields: [skillBadgeId], references: [id])
-    skillBadgeId String
+    task           Task       @relation(fields: [task_id], references: [id])
+    task_id        String
+    skill_badge    SkillBadge @relation(fields: [skill_badge_id], references: [id])
+    skill_badge_id String
 
-    @@id([taskId, skillBadgeId])
+    @@id([task_id, skill_badge_id])
     @@map("task_skill_badges")
 }
 
 model Product {
-    id             String  @id @default(uuid())
-    name           String
-    description    String?
-    price          Float   @default(0)
-    stock          Int?
-    unlimitedStock Boolean @default(false)
-    imageUrl       String?
+    id              String  @id @default(uuid())
+    name            String
+    description     String?
+    price           Float   @default(0)
+    stock           Int?
+    unlimited_stock Boolean @default(false)
+    image_url       String?
 
     membership Membership?
     ticket     Ticket?
 
-    orderItems OrderItem[]
+    order_items OrderItem[]
 
     @@map("products")
 }
 
 model Membership {
-    id        String  @id @default(uuid())
-    product   Product @relation(fields: [productId], references: [id])
-    productId String  @unique
-    duration  Int     @default(365) // in days
+    id         String  @id @default(uuid())
+    product    Product @relation(fields: [product_id], references: [id])
+    product_id String  @unique
+    duration   Int     @default(365) // in days
 
     users UserMembership[]
 
@@ -240,13 +240,13 @@ model Membership {
 }
 
 model UserMembership {
-    id           String     @id @default(uuid())
-    user         User       @relation(fields: [userId], references: [id])
-    userId       String     @unique // One membership per user
-    membership   Membership @relation(fields: [membershipId], references: [id])
-    membershipId String
+    id            String     @id @default(uuid())
+    user          User       @relation(fields: [user_id], references: [id])
+    user_id       String     @unique // One membership per user
+    membership    Membership @relation(fields: [membership_id], references: [id])
+    membership_id String
 
-    expiresAt DateTime
+    expires_at DateTime
 
     @@map("user_memberships")
 }
@@ -258,13 +258,13 @@ enum TicketType {
 }
 
 model Ticket {
-    id                String             @id @default(uuid())
-    type              TicketType         @default(standard)
-    product           Product            @relation(fields: [productId], references: [id])
-    productId         String             @unique
-    event             Event              @relation(fields: [eventId], references: [id])
-    eventId           String
-    eventParticipants EventParticipant[]
+    id                 String             @id @default(uuid())
+    type               TicketType         @default(standard)
+    product            Product            @relation(fields: [product_id], references: [id])
+    product_id         String             @unique
+    event              Event              @relation(fields: [event_id], references: [id])
+    event_id           String
+    event_participants EventParticipant[]
 
     @@map("tickets")
 }
@@ -280,19 +280,19 @@ enum OrderStatus {
 }
 
 model Order {
-    id               String      @id @default(uuid())
-    status           OrderStatus @default(pending)
-    totalAmount      Float       @default(0.0) // Total amount in the smallest currency unit (e.g., öre)
-    paymentRequestId String?     @unique
-    payeeRef         String?     @unique // Reference to the payment provider's transaction
+    id                 String      @id @default(uuid())
+    status             OrderStatus @default(pending)
+    total_amount       Float       @default(0.0) // Total amount in the smallest currency unit (e.g., öre)
+    payment_request_id String?     @unique
+    payee_ref          String?     @unique // Reference to the payment provider's transaction
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
 
-    user   User   @relation(fields: [userId], references: [id])
-    userId String
+    user    User   @relation(fields: [user_id], references: [id])
+    user_id String
 
-    orderItems OrderItem[]
+    order_items OrderItem[]
 
     @@map("orders")
 }
@@ -302,11 +302,11 @@ model OrderItem {
     quantity Int    @default(1)
     price    Float  @default(0)
 
-    order   Order  @relation(fields: [orderId], references: [id])
-    orderId String
+    order    Order  @relation(fields: [order_id], references: [id])
+    order_id String
 
-    product   Product @relation(fields: [productId], references: [id])
-    productId String
+    product    Product @relation(fields: [product_id], references: [id])
+    product_id String
 
     @@map("order_items")
 }
