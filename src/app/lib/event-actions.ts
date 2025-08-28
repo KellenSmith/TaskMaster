@@ -132,6 +132,16 @@ export const getFilteredEvents = async (
     }
 };
 
+export const getAllEventsWithTasks = async (): Promise<
+    Prisma.EventGetPayload<{ include: { tasks: true } }>[]
+> => {
+    return prisma.event.findMany({
+        include: {
+            tasks: true,
+        },
+    });
+};
+
 export const getEventById = async (
     eventId: string,
     userId: string,

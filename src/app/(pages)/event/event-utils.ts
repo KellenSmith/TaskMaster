@@ -60,11 +60,7 @@ export const sortTasks = (task1: Task, task2: Task) => {
     return task1.name.localeCompare(task2.name);
 };
 
-const getTasksSortedByTime = (
-    taskList: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-    }>[],
-) =>
+export const getTasksSortedByTime = <T extends Prisma.TaskGetPayload<true>>(taskList: T[]): T[] =>
     taskList.sort((task1, task2) => {
         const startTime1 = dayjs(task1.start_time);
         const startTime2 = dayjs(task2.start_time);
@@ -79,13 +75,9 @@ const getTasksSortedByTime = (
         return task1.name.localeCompare(task2.name);
     });
 
-export const getGroupedAndSortedTasks = (
-    taskList: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-    }>[],
-): Prisma.TaskGetPayload<{
-    include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-}>[][] => {
+export const getGroupedAndSortedTasks = <T extends Prisma.TaskGetPayload<true>>(
+    taskList: T[],
+): T[][] => {
     const uniqueGroupNames = [...new Set(taskList.map((task) => task.name))];
     const groupsOfSortedTasks = uniqueGroupNames.map((groupName) =>
         getTasksSortedByTime(taskList.filter((task) => task.name === groupName)),
@@ -99,6 +91,7 @@ export const getGroupedAndSortedTasks = (
         throw new Error("Unreachable");
     });
 };
+
 export const getEventParticipantCount = (
     event: Prisma.EventGetPayload<{
         include: { tickets: { include: { event_participants: true } } };

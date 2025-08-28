@@ -133,20 +133,25 @@ const DroppableColumn = ({
                     )}
                 </Stack>
                 <Stack spacing={2}>
-                    {getGroupedAndSortedTasks(tasks.filter((task) => task.status === status)).map(
-                        (taskList) => (
-                            <DraggableTaskShifts
-                                key={taskList.map((task) => task.id).join("-")}
-                                readOnly={readOnly}
-                                eventPromise={eventPromise}
-                                taskList={taskList}
-                                activeMembersPromise={activeMembersPromise}
-                                skillBadgesPromise={skillBadgesPromise}
-                                setDraggedTask={setDraggedTask}
-                                openCreateTaskDialog={openCreateTaskDialog}
-                            />
-                        ),
-                    )}
+                    {getGroupedAndSortedTasks<
+                        Prisma.TaskGetPayload<{
+                            include: {
+                                assignee: { select: { id: true; nickname: true } };
+                                skill_badges: true;
+                            };
+                        }>
+                    >(tasks.filter((task) => task.status === status)).map((taskList) => (
+                        <DraggableTaskShifts
+                            key={taskList.map((task) => task.id).join("-")}
+                            readOnly={readOnly}
+                            eventPromise={eventPromise}
+                            taskList={taskList}
+                            activeMembersPromise={activeMembersPromise}
+                            skillBadgesPromise={skillBadgesPromise}
+                            setDraggedTask={setDraggedTask}
+                            openCreateTaskDialog={openCreateTaskDialog}
+                        />
+                    ))}
                 </Stack>
             </Paper>
             <Dialog

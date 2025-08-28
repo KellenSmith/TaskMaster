@@ -16,6 +16,7 @@ const GlobalConstants = {
     ORGANIZATION_SETTINGS: "settings",
     CREATE: "create",
     CALENDAR: "calendar",
+    YEAR_WHEEL: "year-wheel",
     SENDOUT: "sendout",
     PRODUCTS: "products",
     ORDERS: "orders",

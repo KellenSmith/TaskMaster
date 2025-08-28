@@ -64,6 +64,7 @@ export const applicationRoutes = {
     [UserRole.admin]: [
         GlobalConstants.LOCATIONS,
         GlobalConstants.TASKS,
+        GlobalConstants.YEAR_WHEEL,
         GlobalConstants.SKILL_BADGES,
         GlobalConstants.SENDOUT,
         GlobalConstants.MEMBERS,
@@ -113,4 +114,4 @@ export const isUserHost = (
 ): boolean => user && event && user?.id === event?.host_id;
 
 export const snakeCaseToLabel = (snakeCase: string): string =>
-    snakeCase ? snakeCase[0].toUpperCase() + snakeCase.slice(1).replace(/_/g, " ") : "";
+    snakeCase ? snakeCase[0].toUpperCase() + snakeCase.slice(1).replace(/(_)|(-)/g, " ") : "";
