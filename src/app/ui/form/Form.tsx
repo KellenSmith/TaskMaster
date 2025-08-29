@@ -232,11 +232,7 @@ const Form: FC<FormProps> = ({
     };
 
     return (
-        <Card
-            component="form"
-            onSubmit={submitForm}
-            sx={{ overflowY: "auto", height: "100%", width: "100%" }}
-        >
+        <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto", width: "100%" }}>
             {(editable || FieldLabels[name]) && (
                 <Stack direction="row" justifyContent="flex-end" alignItems="center">
                     {editable && (
