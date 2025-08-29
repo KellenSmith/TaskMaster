@@ -37,6 +37,8 @@ import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
 import dayjs from "dayjs";
 import { useUserContext } from "../../context/UserContext";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import LanguageTranslations from "../LanguageTranslations";
 
 interface FormProps {
     name: string;
@@ -55,7 +57,7 @@ interface FormProps {
 
 const Form: FC<FormProps> = ({
     name,
-    buttonLabel = "save",
+    buttonLabel,
     action,
     validationSchema,
     defaultValues,
@@ -98,7 +100,7 @@ const Form: FC<FormProps> = ({
                     const errorField = zodIssues[0]?.path[0];
                     const errorMessage = error.issues[0]?.message;
                     setValidationError(
-                        `Error in field ${FieldLabels[errorField as string]}: ${errorMessage}`,
+                        `${LanguageTranslations.errorInField[language]} ${FieldLabels[errorField as string][language]}: ${errorMessage}`,
                     );
                 } else setValidationError("Unknown validation error");
             }
@@ -106,6 +108,7 @@ const Form: FC<FormProps> = ({
         }
     };
 
+    // TODO: Implement translations for notification messages
     const submitForm = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
@@ -168,6 +171,7 @@ const Form: FC<FormProps> = ({
                             name: fieldId,
                             required: requiredFields.includes(fieldId),
                         },
+                        // TODO: Implement translation for action buttons
                         actionBar: { actions: ["clear", "accept"] },
                     }}
                 />
@@ -255,7 +259,7 @@ const Form: FC<FormProps> = ({
                 </Stack>
                 {editMode && (
                     <Button type="submit" variant="contained" disabled={isPending}>
-                        {buttonLabel}
+                        {buttonLabel || GlobalLanguageTranslations.save[language]}
                     </Button>
                 )}
             </CardContent>

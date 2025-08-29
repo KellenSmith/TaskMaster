@@ -22,6 +22,8 @@ const selectMultipleSchema = z
     .transform((val) => (val ? val.split(",") : []))
     .optional();
 
+// TODO: Implement swedish translations for error messages
+
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
 // =============================================================================

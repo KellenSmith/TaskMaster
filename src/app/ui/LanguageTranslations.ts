@@ -76,6 +76,10 @@ const LanguageTranslations = {
         [Language.english]: (loggedIn: boolean) => (loggedIn ? "Log out" : "Log in"),
         [Language.swedish]: (loggedIn: boolean) => (loggedIn ? "Logga ut" : "Logga in"),
     },
+    errorInField: {
+        [Language.english]: "Error in field",
+        [Language.swedish]: "Fel i fältet",
+    },
 };
 
 export default LanguageTranslations;
