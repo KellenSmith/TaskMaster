@@ -11,12 +11,16 @@ import { createLocation, deleteLocation, updateLocation } from "../../lib/locati
 import z from "zod";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { RenderedFields } from "../../ui/form/FieldCfg";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface LocationsDashboardProps {
     locationsPromise: Promise<Location[]>;
 }
 
 const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
+    const { language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const locations = use(locationsPromise);
     const [editLocationId, setEditLocationId] = useState<string | null>(null);
@@ -26,33 +30,43 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
     const createLocationAction = async (
         parsedFieldValues: z.infer<typeof LocationCreateSchema>,
     ) => {
-        await createLocation(parsedFieldValues);
-        setCreateNew(false);
-        return "Created location";
+        try {
+            await createLocation(parsedFieldValues);
+            setCreateNew(false);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const updateLocationAction = async (
         parsedFieldValues: z.infer<typeof LocationCreateSchema>,
     ) => {
-        await updateLocation(editLocationId, parsedFieldValues);
-        setEditLocationId(null);
-        return "Updated location";
+        try {
+            await updateLocation(editLocationId, parsedFieldValues);
+            setEditLocationId(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const deleteLocationAction = async (locationId: string) => {
         startTransition(async () => {
             try {
                 await deleteLocation(locationId);
-                addNotification("Deleted location", "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
             } catch {
-                addNotification("Failed deleting location", "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };
 
     return (
         <Stack justifyContent="flex-start">
-            <Button onClick={() => setCreateNew(true)}>Add Location</Button>
+            <Button onClick={() => setCreateNew(true)}>
+                {LanguageTranslations.addLocation[language]}
+            </Button>
             <Stack spacing={2}>
                 {locations
                     .sort((a, b) => a.name.localeCompare(b.name))
@@ -67,7 +81,7 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
                                 onClick={() => setEditLocationId(location.id)}
                                 fullWidth
                             >
-                                Edit
+                                {GlobalLanguageTranslations.edit[language]}
                             </Button>
                             <Button
                                 fullWidth
@@ -75,7 +89,7 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
                                 onClick={() => deleteLocationAction(location.id)}
                                 disabled={isPending}
                             >
-                                Delete
+                                {GlobalLanguageTranslations.delete[language]}
                             </Button>
                             <Divider />
                         </Stack>
@@ -83,7 +97,10 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
             </Stack>
             <Dialog
                 open={!!editLocationId || createNew}
-                onClose={() => setEditLocationId(null)}
+                onClose={() => {
+                    setEditLocationId(null);
+                    setCreateNew(false);
+                }}
                 fullWidth
             >
                 <Form
