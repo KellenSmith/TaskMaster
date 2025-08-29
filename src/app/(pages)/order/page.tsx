@@ -12,7 +12,7 @@ interface OrderPageProps {
 }
 
 const OrderPage = async ({ searchParams }: OrderPageProps) => {
-    const orderId = (await searchParams).orderId as string;
+    const orderId = (await searchParams)[GlobalConstants.ORDER_ID] as string;
     const loggedInUser = await getLoggedInUser();
 
     const orderPromise = unstable_cache(getOrderById, [loggedInUser.id, orderId], {

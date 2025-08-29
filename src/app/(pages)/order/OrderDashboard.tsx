@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import GlobalConstants from "../../GlobalConstants";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { clientRedirect } from "../../lib/definitions";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface OrderDashboardProps {
     orderPromise: Promise<
@@ -20,7 +21,7 @@ interface OrderDashboardProps {
 }
 
 const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
-    const { user, refreshSession } = useUserContext();
+    const { user, refreshSession, language } = useUserContext();
     const order = use(orderPromise);
     const router = useRouter();
 
@@ -37,10 +38,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
                 await checkPaymentStatus(user.id, order.id);
                 await refreshSession();
             } catch {
-                addNotification(
-                    "Failed to check order status. What you see might not be up to date.",
-                    "error",
-                );
+                addNotification(LanguageTranslations.failedCheckOrderStatus[language], "error");
             }
         });
         // Check payment status once upon render

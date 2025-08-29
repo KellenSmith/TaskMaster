@@ -17,22 +17,18 @@ export const getOrderById = async (
         include: { order_items: { include: { product: { include: { membership: true } } } } };
     }>
 > => {
-    try {
-        const order = await prisma.order.findUniqueOrThrow({
-            where: { id: orderId },
-            include: {
-                order_items: {
-                    include: {
-                        product: { include: { membership: true } },
-                    },
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: orderId },
+        include: {
+            order_items: {
+                include: {
+                    product: { include: { membership: true } },
                 },
             },
-        });
-        if (userId !== order.user_id) throw new Error("Not authorized to view this order");
-        return order;
-    } catch {
-        throw new Error("Failed to fetch order");
-    }
+        },
+    });
+    if (userId !== order.user_id) throw new Error("Not authorized to view this order");
+    return order;
 };
 
 export const getAllOrders = async (): Promise<

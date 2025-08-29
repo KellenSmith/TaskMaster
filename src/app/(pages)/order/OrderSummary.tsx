@@ -1,3 +1,4 @@
+"use client";
 import {
     Card,
     CardContent,
@@ -13,6 +14,9 @@ import {
 } from "@mui/material";
 import { OrderStatus, Prisma } from "@prisma/client";
 import { formatPrice } from "../../ui/utils";
+import { useUserContext } from "../../context/UserContext";
+import ProductLanguageTranslations from "../products/LanguageTranslations";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface OrderSummaryProps {
     order: Prisma.OrderGetPayload<{
@@ -29,18 +33,19 @@ interface OrderSummaryProps {
 }
 
 const OrderSummary = ({ order }: OrderSummaryProps) => {
+    const { language } = useUserContext();
     const getStatusMessage = (status: OrderStatus) => {
         switch (status) {
             case OrderStatus.completed:
-                return "Thank you for your order! Your payment has been processed and your order is complete.";
+                return LanguageTranslations.orderCompleted[language];
             case OrderStatus.paid:
-                return "Thank you for your order! Your payment has been processed and is being fulfilled.";
+                return LanguageTranslations.orderPaid[language];
             case OrderStatus.pending:
-                return "Your order is currently pending payment. Please complete the payment process.";
+                return LanguageTranslations.orderPending[language];
             case OrderStatus.cancelled:
-                return "This order has been cancelled. If you have any questions, please contact support.";
+                return LanguageTranslations.orderCancelled[language];
             default:
-                return `Your order status is ${status}.`;
+                return `${LanguageTranslations.unknownStatus[language]}: ${status}.`;
         }
     };
 
@@ -49,9 +54,11 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
             <CardContent>
                 <Stack spacing={3}>
                     <Stack direction="row" justifyContent="space-between">
-                        <Typography variant="h5">Order Summary</Typography>
+                        <Typography variant="h5">
+                            {LanguageTranslations.orderSummary[language]}
+                        </Typography>
                         <Typography textTransform="capitalize" variant="h6" color="primary">
-                            Status: {order.status}
+                            Status: {LanguageTranslations[order.status][language]}
                         </Typography>
                     </Stack>
 
@@ -59,10 +66,16 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Product</TableCell>
-                                    <TableCell align="right">Price</TableCell>
-                                    <TableCell align="right">Quantity</TableCell>
-                                    <TableCell align="right">Total</TableCell>
+                                    <TableCell>{LanguageTranslations.product[language]}</TableCell>
+                                    <TableCell align="right">
+                                        {ProductLanguageTranslations.price[language]}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        {ProductLanguageTranslations.quantity[language]}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        {ProductLanguageTranslations.total[language]}
+                                    </TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -75,7 +88,10 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                                 </Typography>
                                                 {item.product.membership && (
                                                     <Typography variant="subtitle2" color="warning">
-                                                        Log in again to use your new membership
+                                                        {
+                                                            LanguageTranslations
+                                                                .logInToSeeMembership[language]
+                                                        }
                                                     </Typography>
                                                 )}
                                             </Stack>
@@ -91,7 +107,9 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                 ))}
                                 <TableRow>
                                     <TableCell colSpan={3}>
-                                        <Typography variant="subtitle1">Total</Typography>
+                                        <Typography variant="subtitle1">
+                                            {LanguageTranslations.total[language]}
+                                        </Typography>
                                     </TableCell>
                                     <TableCell align="right">
                                         <Typography variant="subtitle1">
