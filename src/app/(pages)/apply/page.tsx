@@ -10,9 +10,12 @@ import { useOrganizationSettingsContext } from "../../context/OrganizationSettin
 import { useMemo } from "react";
 import { Stack } from "@mui/material";
 import { clientRedirect } from "../../lib/definitions";
+import LanguageTranslations from "./LanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
 
 const ApplyPage = () => {
     const router = useRouter();
+    const { language } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const shouldIncludeApplicationPrompt = useMemo(
         (): boolean => !!organizationSettings.member_application_prompt,
@@ -35,7 +38,7 @@ const ApplyPage = () => {
         <Stack spacing={1}>
             <Form
                 name={GlobalConstants.APPLY}
-                buttonLabel={FieldLabels[GlobalConstants.APPLY]}
+                buttonLabel={LanguageTranslations[GlobalConstants.APPLY][language]}
                 action={submitApplication}
                 validationSchema={MembershipApplicationSchema}
                 customIncludedFields={
