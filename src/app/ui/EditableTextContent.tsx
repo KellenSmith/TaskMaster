@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import { updateTextContent } from "../lib/text-content-actions";
 import { useUserContext } from "../context/UserContext";
 import Form from "./form/Form";
@@ -11,17 +11,21 @@ import { Prisma } from "@prisma/client";
 
 interface EditableTextContentProps {
     id: string;
-    textContentPromise: Promise<Prisma.TextContentGetPayload<{ select: { content: true } }>>;
+    textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;
 }
 
 const EditableTextContent = ({ id, textContentPromise }: EditableTextContentProps) => {
     const { language, editMode: editWebsiteMode } = useUserContext();
     const textContent = use(textContentPromise);
+    const textTranslation = useMemo(
+        () => textContent.translations.find((t) => t.language === language),
+        [language, textContent],
+    );
 
     const handleUpdateTextContent = async (
-        fieldValues: z.output<typeof UpdateTextContentSchema>,
+        parsedFieldValues: z.output<typeof UpdateTextContentSchema>,
     ) => {
-        await updateTextContent(id, language, fieldValues.content);
+        await updateTextContent(id, language, parsedFieldValues.text);
         return "Updated successfully";
     };
 
@@ -30,7 +34,7 @@ const EditableTextContent = ({ id, textContentPromise }: EditableTextContentProp
             name={GlobalConstants.TEXT_CONTENT}
             action={handleUpdateTextContent}
             validationSchema={UpdateTextContentSchema}
-            defaultValues={textContent}
+            defaultValues={textTranslation}
             editable={editWebsiteMode}
         />
     );

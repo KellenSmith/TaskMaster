@@ -2,70 +2,82 @@
 import { revalidateTag } from "next/cache";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { Prisma } from "@prisma/client";
+import { Language, Prisma } from "@prisma/client";
 
 export const getTextContent = async (
     id: string,
-    language: string,
-): Promise<Prisma.TextContentGetPayload<{ select: { content: true } }>> => {
-    try {
-        let textContent = await prisma.textContent.findUnique({
-            where: {
-                id_language: {
-                    id,
-                    language,
+): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
+    let textContent = await prisma.textContent.findUnique({
+        where: {
+            id,
+        },
+        include: {
+            translations: true,
+        },
+    });
+
+    // If the text content doesn't exist, create a default
+    if (!textContent)
+        textContent = await prisma.textContent.create({
+            data: {
+                id,
+                translations: {
+                    createMany: {
+                        data: [
+                            {
+                                language: Language.english,
+                                text: '<p><span style="color: rgb(255, 255, 255);">placeholder</span></p>',
+                            },
+                            {
+                                language: Language.swedish,
+                                text: '<p><span style="color: rgb(255, 255, 255);">platshållare</span></p>',
+                            },
+                        ],
+                    },
                 },
             },
-            select: {
-                content: true,
+            include: {
+                translations: true,
             },
         });
-
-        // If the text content doesn't exist, create a default
-        if (!textContent)
-            textContent = await prisma.textContent.create({
-                data: {
-                    id,
-                    language,
-                    content: '<p><span style="color: rgb(255, 255, 255);">placeholder</span></p>',
-                },
-                select: { content: true },
-            });
-        return textContent;
-    } catch {
-        throw new Error("Failed to fetch text content");
-    }
+    return textContent;
 };
 
 export const updateTextContent = async (
     id: string,
-    language: string,
-    content: string,
+    language: Language,
+    text: string,
     category?: string,
 ): Promise<void> => {
-    try {
-        await prisma.textContent.upsert({
+    await prisma.$transaction(async (tx) => {
+        await tx.textContent.upsert({
             where: {
-                id_language: {
-                    id,
-                    language,
-                },
+                id,
             },
             create: {
                 id,
-                language,
-                content,
                 category: category || null,
             },
             update: {
-                language,
-                content,
                 category: category || null,
             },
         });
-        revalidateTag(GlobalConstants.TEXT_CONTENT);
-    } catch (error) {
-        console.error(error);
-        throw new Error("Failed to update text content");
-    }
+    });
+    await prisma.textTranslation.upsert({
+        where: {
+            language_text_content_id: {
+                language,
+                text_content_id: id,
+            },
+        },
+        create: {
+            language,
+            text,
+            text_content_id: id,
+        },
+        update: {
+            text,
+        },
+    });
+    revalidateTag(GlobalConstants.TEXT_CONTENT);
 };

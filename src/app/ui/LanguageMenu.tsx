@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { Language } from "../LanguageTranslations";
 import { Menu, MenuItem } from "@mui/material";
 import { useMemo, useState } from "react";
+import { Language } from "@prisma/client";
 
 const LanguageMenu = ({ language, setLanguage }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -34,6 +34,7 @@ const LanguageMenu = ({ language, setLanguage }) => {
                 {Object.values(Language).map((languageOption) => (
                     <MenuItem
                         key={languageOption}
+                        selected={languageOption === language}
                         onClick={() => {
                             setLanguage(languageOption);
                             setAnchorEl(null);

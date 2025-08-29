@@ -1,4 +1,4 @@
-import { Language } from "../../LanguageTranslations";
+import { Language } from "@prisma/client";
 
 const LanguageTranslations = {
     login: {

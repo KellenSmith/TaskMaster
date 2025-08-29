@@ -7,8 +7,11 @@ import { FC } from "react";
 import { resetUserCredentials } from "../../lib/user-credentials-actions";
 import { ResetCredentialsSchema } from "../../lib/zod-schemas";
 import z from "zod";
+import LanguageTranslations from "./LanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
 
 const ResetPage: FC = () => {
+    const { language } = useUserContext();
     const handleReset = async (values: z.infer<typeof ResetCredentialsSchema>) => {
         try {
             await resetUserCredentials(values);
@@ -22,7 +25,7 @@ const ResetPage: FC = () => {
         <Stack>
             <Form
                 name={GlobalConstants.RESET}
-                buttonLabel={GlobalConstants.RESET}
+                buttonLabel={LanguageTranslations[GlobalConstants.RESET][language]}
                 action={handleReset}
                 validationSchema={ResetCredentialsSchema}
                 readOnly={false}

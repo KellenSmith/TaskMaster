@@ -1,10 +1,15 @@
-import { Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
+import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import { organizationSettingsFieldLabels, userFieldLabels } from "./LanguageTranslations";
 
 export const FieldLabels = {
     ...organizationSettingsFieldLabels,
+    // Text content
+    [GlobalConstants.TEXT_CONTENT]: {
+        [Language.english]: "Text content",
+        [Language.swedish]: "Textinnehåll",
+    },
     ...userFieldLabels,
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
@@ -153,7 +158,7 @@ export const RenderedFields = {
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.SKILL_BADGE]: [GlobalConstants.NAME, GlobalConstants.DESCRIPTION],
-    [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.CONTENT],
+    [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.TEXT],
     [GlobalConstants.ORDER]: [GlobalConstants.STATUS],
     [GlobalConstants.PARTICIPANT_USERS]: [GlobalConstants.USER_ID, GlobalConstants.TICKET_ID],
     [GlobalConstants.RESERVE_USERS]: [GlobalConstants.USER_ID],
@@ -188,6 +193,7 @@ export const RequiredFields = {
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
         GlobalConstants.ORGANIZATION_EMAIL,
     ],
+    [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.TEXT],
     // Profile
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,
@@ -269,6 +275,8 @@ export const datePickerFields = [
 ];
 
 export const richTextFields = [
+    // Text content
+    GlobalConstants.TEXT,
     // Event
     GlobalConstants.DESCRIPTION,
     // Sendout

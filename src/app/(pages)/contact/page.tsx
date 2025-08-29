@@ -1,17 +1,14 @@
-import { Stack, Typography } from "@mui/material";
-import React from "react";
+import { unstable_cache } from "next/cache";
+import ContactDashboard from "./ContactDashboard";
 import GlobalConstants from "../../GlobalConstants";
-import TextContent from "../../ui/TextContent";
+import { getTextContent } from "../../lib/text-content-actions";
 
 const ContactPage: React.FC = () => {
-    return (
-        <Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center" }}>
-            <Typography textAlign="center" color="primary" variant="h3">
-                Contact
-            </Typography>
-            <TextContent id={GlobalConstants.CONTACT} />
-        </Stack>
-    );
+    const textContentPromise = unstable_cache(getTextContent, [GlobalConstants.CONTACT], {
+        tags: [GlobalConstants.TEXT_CONTENT],
+    })(GlobalConstants.CONTACT);
+
+    return <ContactDashboard textContentPromise={textContentPromise} />;
 };
 
 export default ContactPage;

@@ -1,5 +1,5 @@
+import { Language } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
-import { Language } from "../../LanguageTranslations";
 
 export const organizationSettingsFieldLabels = {
     // Organization settings

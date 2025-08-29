@@ -1,16 +1,15 @@
 "use client";
 
 import { createContext, FC, ReactNode, useContext, useState } from "react";
-import { Prisma } from "@prisma/client";
+import { Language, Prisma } from "@prisma/client";
 import { getSession, useSession } from "next-auth/react";
 import { CircularProgress, Stack } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { Language } from "../LanguageTranslations";
 
 interface UserContextValue {
     user: Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }> | null;
-    language: string;
-    setLanguage: (language: string) => void; // eslint-disable-line no-unused-vars
+    language: Language;
+    setLanguage: (language: Language) => void; // eslint-disable-line no-unused-vars
     editMode: boolean;
     setEditMode: (editMode: boolean | ((prev: boolean) => boolean)) => void; // eslint-disable-line no-unused-vars
     refreshSession: () => Promise<void>;
@@ -31,7 +30,7 @@ interface UserContextProviderProps {
 const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     const session = useSession();
     const router = useRouter();
-    const [language, setLanguage] = useState(Language.english);
+    const [language, setLanguage] = useState<Language>(Language.english);
     const [editMode, setEditMode] = useState(false);
 
     const refreshSession = async () => {

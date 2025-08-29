@@ -285,7 +285,7 @@ export const ResetCredentialsSchema = z.object({
     email: z.email(),
 });
 
-export const UpdateTextContentSchema = z.object({ content: z.string() });
+export const UpdateTextContentSchema = z.object({ text: z.string() });
 
 export const UpdateCredentialsSchema = z.object({
     currentPassword: passwordSchema,
