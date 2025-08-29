@@ -1,4 +1,4 @@
-import { Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
+import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import {
@@ -30,18 +30,41 @@ export const FieldLabels = {
 };
 
 export const explanatoryTexts = {
-    [GlobalConstants.ORGANIZATION_NAME]:
-        "The name of the organization which will be displayed all over the application",
-    [GlobalConstants.ORGANIZATION_EMAIL]:
-        "The email address which automated emails are sent from and should be monitored for replies",
-    [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]:
-        "The default length of task shifts when added from a task board belonging to an event",
-    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]:
-        "Members whose membership expires in X days will automatically be sent an email reminder",
-    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]:
-        "Members whose membership has not been validated after X days will automatically be purged from the database",
-    [GlobalConstants.MEMBER_APPLICATION_PROMPT]:
-        "If given, this text will be displayed as a prompt for member applications and applications can not be submitted without a message. If this field is left empty, applications can be submitted without a message.",
+    [GlobalConstants.ORGANIZATION_NAME]: {
+        [Language.english]:
+            "The name of the organization which will be displayed all over the application",
+        [Language.swedish]: "Namnet på organisationen som kommer att visas över hela applikationen",
+    },
+    [GlobalConstants.ORGANIZATION_EMAIL]: {
+        [Language.english]:
+            "The email address which automated emails are sent from and should be monitored for replies",
+        [Language.swedish]:
+            "E-postadressen som automatiserade e-postmeddelanden skickas från och som bör övervakas för svar",
+    },
+    [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]: {
+        [Language.english]:
+            "The default length of task shifts when added from a task board belonging to an event",
+        [Language.swedish]:
+            "Standardlängden för arbetsuppgifter när de läggs till från en att-göralista som tillhör ett evenemang",
+    },
+    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: {
+        [Language.english]:
+            "Members whose membership expires in X days will automatically be sent an email reminder",
+        [Language.swedish]:
+            "Medlemmar vars medlemskap går ut om X dagar kommer automatiskt att få en påminnelse via e-post",
+    },
+    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]: {
+        [Language.english]:
+            "Members whose membership has not been validated after X days will automatically be purged from the database",
+        [Language.swedish]:
+            "Medlemmar vars medlemskap inte har validerats efter X dagar kommer automatiskt att tas bort från databasen",
+    },
+    [GlobalConstants.MEMBER_APPLICATION_PROMPT]: {
+        [Language.english]:
+            "If given, this text will be displayed as a prompt for member applications and applications can not be submitted without a message. If this field is left empty, applications can be submitted without a message.",
+        [Language.swedish]:
+            "Om den anges kommer denna text att visas som en uppmaning för medlemsansökningar och ansökningar kan inte skickas utan ett meddelande. Om detta fält lämnas tomt kan ansökningar skickas utan ett meddelande.",
+    },
 };
 
 export const RenderedFields = {

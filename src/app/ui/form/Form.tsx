@@ -143,6 +143,7 @@ const Form: FC<FormProps> = ({
     };
 
     const getFieldComp = (fieldId: string) => {
+        console.log(fieldId);
         if (fieldId in selectFieldOptions || customOptions[fieldId]) {
             return (
                 <AutocompleteWrapper
@@ -218,7 +219,7 @@ const Form: FC<FormProps> = ({
     };
 
     const getInfoTextComp = (fieldId: string) => {
-        const infoText = customInfoTexts[fieldId] || explanatoryTexts[fieldId];
+        const infoText = customInfoTexts[fieldId] || explanatoryTexts[fieldId][language];
         if (!infoText) return null;
         return (
             <Stack key={getFieldCompKey(fieldId) + "-infotext"}>

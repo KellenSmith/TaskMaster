@@ -12,6 +12,10 @@ export const organizationSettingsFieldLabels = {
         [Language.english]: "Organization Name",
         [Language.swedish]: "Organisationsnamn",
     },
+    [GlobalConstants.ORGANIZATION_EMAIL]: {
+        [Language.english]: "Organization Email",
+        [Language.swedish]: "Organisationens e-post",
+    },
     [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]: {
         [Language.english]: "Default Task Shift Length [hours]",
         [Language.swedish]: "Standard uppgiftsskiftlängd [timmar]",
