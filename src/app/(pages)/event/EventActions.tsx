@@ -4,7 +4,7 @@ import { FC, use, useState, useTransition } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import { Button, Dialog, Menu, MenuItem, MenuList, Stack } from "@mui/material";
-import { EventStatus, Prisma } from "@prisma/client";
+import { EventStatus, Language, Prisma } from "@prisma/client";
 import Form from "../../ui/form/Form";
 import {
     cancelEvent,
@@ -27,6 +27,8 @@ import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
+import LanguageTranslations from "./LanguageTranslations";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -37,14 +39,8 @@ interface IEventActions {
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
 }
 
-const sendoutToOptions = {
-    All: "All",
-    Participants: "Participants",
-    Reserves: "Reserves",
-};
-
 const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(null);
     const { addNotification } = useNotificationContext();
@@ -54,6 +50,21 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     // Move host actions to separate component to optimize data fetching
     const locations = use(locationsPromise);
 
+    const sendoutToOptions = {
+        All: {
+            [Language.english]: "All",
+            [Language.swedish]: "Alla",
+        },
+        Participants: {
+            [Language.english]: "Participants",
+            [Language.swedish]: "Deltagare",
+        },
+        Reserves: {
+            [Language.english]: "Reserves",
+            [Language.swedish]: "Reservlistan",
+        },
+    };
+
     const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All);
 
     const publishEvent = () => {
@@ -62,10 +73,10 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                 await updateEvent(event.id, {
                     status: EventStatus.published,
                 });
-                addNotification("Published event", "success");
+                addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
             } catch (error) {
-                addNotification(error.message, "error");
+                addNotification(LanguageTranslations.failedPublishEvent[language], "error");
             }
         });
     };
@@ -74,10 +85,10 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         startTransition(async () => {
             try {
                 await cancelEvent(event.id);
-                addNotification("Cancelled event and informed participants", "success");
+                addNotification(LanguageTranslations.cancelledEvent[language], "success");
                 closeActionMenu();
             } catch (error) {
-                addNotification(error.message, "error");
+                addNotification(LanguageTranslations.failedToCancelEvent[language], "error");
             }
         });
 
@@ -87,7 +98,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                 await deleteEvent(event.id);
             } catch (error) {
                 allowRedirectException(error);
-                addNotification("Failed to delete event", "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };
@@ -114,7 +125,10 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                 window.open(url, "_blank");
                 closeActionMenu();
             } catch {
-                addNotification("Failed to print participant list", "error");
+                addNotification(
+                    LanguageTranslations.failedToPrintParticipantList[language],
+                    "error",
+                );
             }
         });
     };
@@ -124,9 +138,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             <MenuItem key="clone">
                 <ConfirmButton
                     onClick={cloneAction}
-                    confirmText="Are you sure you want to clone this event?"
+                    confirmText={LanguageTranslations.areYouSureClone[language]}
                 >
-                    clone event
+                    {LanguageTranslations.cloneEvent[language]}
                 </ConfirmButton>
             </MenuItem>,
         ];
@@ -141,7 +155,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             ActionButtons.unshift(
                 <MenuItem key="delete">
                     <ConfirmButton color="error" onClick={deleteAction}>
-                        delete event
+                        {LanguageTranslations.deleteEvent[language]}
                     </ConfirmButton>
                 </MenuItem>,
             );
@@ -153,18 +167,20 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                     {event.status === EventStatus.published ? (
                         <ConfirmButton
                             color="error"
-                            confirmText={`An info email will be sent to all ${getEventParticipantCount(event)} participants. Are you sure?`}
+                            confirmText={LanguageTranslations.areYouSureCancelEvent[language](
+                                getEventParticipantCount(event),
+                            )}
                             onClick={cancelAction}
                         >
-                            cancel event
+                            {LanguageTranslations.cancelEvent[language]}
                         </ConfirmButton>
                     ) : (
                         <ConfirmButton
                             color="success"
-                            confirmText="This event will now be visible to all members. Are you sure?"
+                            confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
                             onClick={publishEvent}
                         >
-                            publish event
+                            {LanguageTranslations.publishEvent[language]}
                         </ConfirmButton>
                     )}
                 </MenuItem>,
@@ -178,7 +194,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                         setDialogOpen(GlobalConstants.EVENT);
                     }}
                 >
-                    edit event details
+                    {LanguageTranslations.editEvent[language]}
                 </Button>
             </MenuItem>,
             <MenuItem key="sendout">
@@ -188,11 +204,13 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                         setDialogOpen(GlobalConstants.SENDOUT);
                     }}
                 >
-                    send mail to users
+                    {LanguageTranslations.sendMail[language]}
                 </Button>
             </MenuItem>,
             <MenuItem key="print">
-                <Button onClick={printParticipantList}>print participant list</Button>
+                <Button onClick={printParticipantList}>
+                    {LanguageTranslations.printParticipantList[language]}
+                </Button>
             </MenuItem>,
         );
 
@@ -200,22 +218,31 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     };
 
     const updateEventById = async (parsedFieldValues: z.infer<typeof EventUpdateSchema>) => {
-        // use explicit id property to avoid dynamic key typing issues
-        await updateEvent(event.id, parsedFieldValues);
-        setDialogOpen(null);
-        return "Updated event";
+        try {
+            await updateEvent(event.id, parsedFieldValues);
+            setDialogOpen(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const sendoutToEventUsers = async (parsedFieldValues: z.infer<typeof EmailSendoutSchema>) => {
         const recipientIds: string[] = [];
-        if (sendoutTo === sendoutToOptions.Participants || sendoutTo === sendoutToOptions.All) {
+        if (
+            sendoutTo[language] === sendoutToOptions.Participants[language] ||
+            sendoutTo[language] === sendoutToOptions.All[language]
+        ) {
             const eventParticipants = event.tickets
                 .map((ticket) => ticket.event_participants)
                 .flat();
 
             recipientIds.push(...eventParticipants.map((ep) => ep.user_id));
         }
-        if (sendoutTo === sendoutToOptions.Reserves || sendoutTo === sendoutToOptions.All)
+        if (
+            sendoutTo[language] === sendoutToOptions.Reserves[language] ||
+            sendoutTo[language] === sendoutToOptions.All[language]
+        )
             recipientIds.push(...event.event_reserves.map((er) => er.user_id));
 
         const recipientCriteria: Prisma.UserWhereInput = {
@@ -227,10 +254,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         try {
             const result = await sendMassEmail(recipientCriteria, parsedFieldValues);
             setDialogOpen(null);
-            return result;
+            return LanguageTranslations.successfulSendout[language](result);
         } catch {
-            console.error("Failed to send email to participants");
-            throw new Error("Failed to send email");
+            throw new Error(LanguageTranslations.failedSendMail[language]);
         }
     };
 
@@ -255,20 +281,27 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             );
 
         let recipientCount = getEventParticipantCount(event);
-        if (sendoutTo === sendoutToOptions.Reserves) recipientCount = event.event_reserves.length;
-        else if (sendoutTo === sendoutToOptions.All) recipientCount += event.event_reserves.length;
+        if (sendoutTo[language] === sendoutToOptions.Reserves[language])
+            recipientCount = event.event_reserves.length;
+        else if (sendoutTo[language] === sendoutToOptions.All[language])
+            recipientCount += event.event_reserves.length;
 
         return (
             <>
                 <AccordionRadioGroup
-                    title={`Send to ${recipientCount} recipients`}
-                    value={sendoutTo}
+                    title={LanguageTranslations.sendToRecipients[language](recipientCount)}
+                    value={sendoutTo[language]}
                     setValue={setSendoutTo}
-                    valueOptions={sendoutToOptions}
+                    valueOptions={Object.fromEntries(
+                        Object.entries(sendoutToOptions).map(([key, value]) => [
+                            key,
+                            value[language],
+                        ]),
+                    )}
                 />
                 <Form
                     name={dialogOpen}
-                    buttonLabel={"send"}
+                    buttonLabel={LanguageTranslations.send[language]}
                     readOnly={false}
                     action={sendoutToEventUsers}
                     validationSchema={EmailSendoutSchema}
@@ -313,7 +346,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             </Menu>
             <Dialog open={!!dialogOpen} onClose={() => setDialogOpen(null)} fullWidth maxWidth="xl">
                 {getDialogForm()}
-                <Button onClick={() => setDialogOpen(null)}>cancel</Button>
+                <Button onClick={() => setDialogOpen(null)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </>
     );

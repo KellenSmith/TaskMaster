@@ -194,33 +194,31 @@ export const getEmailRecipientCount = async (
 export const sendMassEmail = async (
     recipientCriteria: Prisma.UserWhereInput,
     parsedFieldValues: z.infer<typeof EmailSendoutSchema>,
-): Promise<string> => {
-    try {
-        const recipients = (
-            await prisma.user.findMany({
-                where: recipientCriteria,
-                select: {
-                    email: true,
-                },
-            })
-        ).map((user) => user.email);
-        const orgName = await getOrganizationName();
-        const mailContent = createElement(MailTemplate, {
-            html: parsedFieldValues.content,
-            organizationName: orgName,
-        });
-        const mailPayload = await getEmailPayload(
-            recipients,
-            parsedFieldValues.subject,
-            mailContent,
-        );
-        const mailTransport = await getMailTransport();
-        const mailResponse = await mailTransport.sendMail(mailPayload);
-        if (mailResponse.error) throw new Error(mailResponse.error.message);
-        return `Sendout successful. Accepted: ${mailResponse?.accepted?.length}, rejected: ${mailResponse?.rejected?.length}`;
-    } catch {
-        throw new Error("Failed to send mass email");
-    }
+): Promise<{
+    accepted: number;
+    rejected: number;
+}> => {
+    const recipients = (
+        await prisma.user.findMany({
+            where: recipientCriteria,
+            select: {
+                email: true,
+            },
+        })
+    ).map((user) => user.email);
+    const orgName = await getOrganizationName();
+    const mailContent = createElement(MailTemplate, {
+        html: parsedFieldValues.content,
+        organizationName: orgName,
+    });
+    const mailPayload = await getEmailPayload(recipients, parsedFieldValues.subject, mailContent);
+    const mailTransport = await getMailTransport();
+    const mailResponse = await mailTransport.sendMail(mailPayload);
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    return {
+        accepted: mailResponse?.accepted?.length || 0,
+        rejected: mailResponse?.rejected?.length || 0,
+    };
 };
 
 /**

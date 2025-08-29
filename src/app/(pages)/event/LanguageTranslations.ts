@@ -1,4 +1,5 @@
 import { Language } from "@prisma/client";
+import { cancelEvent, deleteEvent } from "../../lib/event-actions";
 
 export const implementedTabs = {
     details: "Details",
@@ -172,6 +173,87 @@ const LanguageTranslations = {
             isReserve ? "Leave Reserve List" : "Join Reserve List",
         [Language.swedish]: (isReserve: boolean) =>
             isReserve ? "Lämna Reservlistan" : "Gå med i Reservlistan",
+    },
+    sendToRecipients: {
+        [Language.english]: (recipientCount: number) => `Send to ${recipientCount} recipients`,
+        [Language.swedish]: (recipientCount: number) => `Skicka till ${recipientCount} mottagare`,
+    },
+    send: {
+        [Language.english]: "Send",
+        [Language.swedish]: "Skicka",
+    },
+    publishedEvent: {
+        [Language.english]: "Published event",
+        [Language.swedish]: "Publicerat evenemang",
+    },
+    failedPublishEvent: {
+        [Language.english]: "Failed to publish event",
+        [Language.swedish]: "Kunde inte publicera evenemang",
+    },
+    cancelledEvent: {
+        [Language.english]: "Cancelled event and informed participants",
+        [Language.swedish]: "Avbröt evenemanget och informerade deltagarna",
+    },
+    failedToCancelEvent: {
+        [Language.english]: "Failed to cancel event",
+        [Language.swedish]: "Kunde inte avbryta evenemanget",
+    },
+    failedToPrintParticipantList: {
+        [Language.english]: "Failed to print participant list",
+        [Language.swedish]: "Kunde inte skriva ut deltagarlistan",
+    },
+    areYouSureClone: {
+        [Language.english]: "Are you sure you want to clone this event?",
+        [Language.swedish]: "Är du säker på att du vill klona detta evenemang?",
+    },
+    cloneEvent: {
+        [Language.english]: "Clone event",
+        [Language.swedish]: "Klona evenemang",
+    },
+    deleteEvent: {
+        [Language.english]: "Delete event",
+        [Language.swedish]: "Ta bort evenemang",
+    },
+    areYouSureCancelEvent: {
+        [Language.english]: (nParticipants: number) =>
+            `An info email will be sent to all ${nParticipants} participants. Are you sure?`,
+        [Language.swedish]: (nParticipants: number) =>
+            `Ett informationsmejl kommer att skickas till alla ${nParticipants} deltagare. Är du säker?`,
+    },
+    cancelEvent: {
+        [Language.english]: "Cancel event",
+        [Language.swedish]: "Avbryt evenemang",
+    },
+    areYouSurePublishEvent: {
+        [Language.english]: "This event will now be visible to all members. Are you sure?",
+        [Language.swedish]:
+            "Detta evenemang kommer nu att vara synligt för alla medlemmar. Är du säker?",
+    },
+    publishEvent: {
+        [Language.english]: "Publish event",
+        [Language.swedish]: "Publicera evenemang",
+    },
+    editEvent: {
+        [Language.english]: "Edit event",
+        [Language.swedish]: "Redigera evenemang",
+    },
+    sendMail: {
+        [Language.english]: "Send mail to participants",
+        [Language.swedish]: "Skicka mail till deltagare",
+    },
+    successfulSendout: {
+        [Language.english]: (result) =>
+            `Sendout successful. Accepted: ${result?.accepted || 0}, rejected: ${result?.rejected || 0}`,
+        [Language.swedish]: (result) =>
+            `Utskick lyckades. Accepterade: ${result?.accepted || 0}, avvisade: ${result?.rejected || 0}`,
+    },
+    failedSendMail: {
+        [Language.english]: "Failed to send mail",
+        [Language.swedish]: "Kunde inte skicka mail",
+    },
+    printParticipantList: {
+        [Language.english]: "Print participant list",
+        [Language.swedish]: "Skriv ut deltagarlista",
     },
 };
 
