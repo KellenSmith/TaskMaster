@@ -4,6 +4,7 @@ import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import {
     eventFieldLabels,
     locationFieldLabels,
+    orderFieldLabels,
     organizationSettingsFieldLabels,
     productFieldLabels,
     sendoutFieldLabels,
@@ -16,6 +17,10 @@ import {
 } from "./LanguageTranslations";
 
 export const FieldLabels = {
+    [GlobalConstants.ID]: {
+        [Language.english]: "Id",
+        [Language.swedish]: "Id",
+    },
     ...organizationSettingsFieldLabels,
     ...textContentFieldLabels,
     ...userFieldLabels,
@@ -27,6 +32,7 @@ export const FieldLabels = {
     ...productFieldLabels,
     ...ticketFieldLabels,
     ...skillBadgeFieldLabels,
+    ...orderFieldLabels,
 };
 
 export const explanatoryTexts = {
@@ -264,6 +270,8 @@ export const checkboxFields = [
     GlobalConstants.CONSENT_TO_NEWSLETTERS,
     GlobalConstants.CONSENT_GDPR,
     GlobalConstants.UNLIMITED_STOCK,
+    GlobalConstants.PAYMENT_REQUEST_ID,
+    GlobalConstants.PAYEE_REF,
 ];
 
 export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT];

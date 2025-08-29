@@ -8,7 +8,7 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 const OrdersPage = () => {
     const ordersPromise = unstable_cache(getAllOrders, [], { tags: [GlobalConstants.ORDER] })();
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to load orders">
+        <ErrorBoundarySuspense>
             <OrdersDashboard ordersPromise={ordersPromise} />
         </ErrorBoundarySuspense>
     );

@@ -284,3 +284,18 @@ export const skillBadgeFieldLabels = {
         [Language.swedish]: "Beskrivning",
     },
 };
+
+export const orderFieldLabels = {
+    [GlobalConstants.TOTAL_AMOUNT]: {
+        [Language.english]: "Total amount",
+        [Language.swedish]: "Total summa",
+    },
+    [GlobalConstants.PAYMENT_REQUEST_ID]: {
+        [Language.english]: "Payment Request ID",
+        [Language.swedish]: "Betalningsbegäran ID",
+    },
+    [GlobalConstants.PAYEE_REF]: {
+        [Language.english]: "Payee Reference",
+        [Language.swedish]: "Betalningsmottagare Referens",
+    },
+};

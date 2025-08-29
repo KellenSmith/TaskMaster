@@ -15,6 +15,8 @@ import { Prisma, Product } from "@prisma/client";
 import z from "zod";
 import { clientRedirect, pathToRoute } from "../lib/definitions";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
+import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
+import { useUserContext } from "../context/UserContext";
 
 export interface RowActionProps {
     name: string;
@@ -76,6 +78,7 @@ const Datagrid: React.FC<DatagridProps> = ({
     getDefaultFormValues,
     customFormOptions = {},
 }) => {
+    const { language } = useUserContext();
     const apiRef = useGridApiRef();
     const pathname = usePathname();
     const router = useRouter();
@@ -96,7 +99,7 @@ const Datagrid: React.FC<DatagridProps> = ({
             if (customColumnFieldKeys.includes(key)) return null;
             return {
                 field: key,
-                headerName: key in FieldLabels ? FieldLabels[key] : key,
+                headerName: key in FieldLabels ? FieldLabels[key][language] : key,
                 type: getColumnType(key),
                 valueFormatter: (value) => {
                     if (datePickerFields.includes(key)) {
@@ -150,7 +153,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                     color={rowAction.buttonColor || "secondary"}
                     disabled={isPending}
                 >
-                    {FieldLabels[rowAction.name]}
+                    {FieldLabels[rowAction.name][language] as string}
                 </ButtonComponent>
             )
         );
@@ -189,10 +192,13 @@ const Datagrid: React.FC<DatagridProps> = ({
             >
                 <Form
                     name={name}
-                    buttonLabel="save"
+                    buttonLabel={GlobalLanguageTranslations.save[language]}
                     action={updateRow}
                     validationSchema={validationSchema}
-                    defaultValues={{ ...clickedRow, ...getDefaultFormValues(clickedRow) }}
+                    defaultValues={{
+                        ...clickedRow,
+                        ...(getDefaultFormValues ? getDefaultFormValues(clickedRow) : []),
+                    }}
                     readOnly={!updateAction}
                     customOptions={customFormOptions}
                 />
