@@ -4,8 +4,8 @@ import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
 import { useUserContext } from "../../context/UserContext";
 import { deleteUser, updateUser } from "../../lib/user-actions";
-import { Button, Stack, useTheme } from "@mui/material";
-import { isMembershipExpired, clientRedirect } from "../../lib/definitions";
+import { Button, Stack } from "@mui/material";
+import { clientRedirect } from "../../lib/definitions";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { allowRedirectException } from "../../ui/utils";
 import { useRouter } from "next/navigation";
@@ -18,11 +18,12 @@ import z from "zod";
 import { useTransition } from "react";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import MembershipStatusCard from "./MembershipStatusCard";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import LanguageTranslations from "./LanguageTranslations";
 
 const AccountTab = () => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const router = useRouter();
-    const theme = useTheme();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
 
@@ -30,17 +31,17 @@ const AccountTab = () => {
 
     const updateUserProfile = async (parsedFieldValues: z.infer<typeof UserUpdateSchema>) => {
         await updateUser(user.id, parsedFieldValues);
-        return "Successfully updated profile";
+        return GlobalLanguageTranslations.successfulSave[language];
     };
 
     const validateAndUpdateCredentials = async (
         parsedFieldValues: z.infer<typeof UpdateCredentialsSchema>,
     ) => {
         if (parsedFieldValues.newPassword !== parsedFieldValues.repeatPassword) {
-            throw new Error("New password and repeat password do not match");
+            throw new Error(LanguageTranslations.nonMatchingPasswords[language]);
         }
         await updateUserCredentials(user.id, parsedFieldValues);
-        return "Successfully updated password";
+        return GlobalLanguageTranslations.successfulSave[language];
     };
 
     const deleteMyAccount = async () =>
@@ -53,7 +54,7 @@ const AccountTab = () => {
                     clientRedirect(router, [GlobalConstants.HOME]);
                 }
             } catch {
-                addNotification("Failed to delete account", "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
 
@@ -64,7 +65,7 @@ const AccountTab = () => {
             } catch (error) {
                 allowRedirectException(error);
                 // Show notification for all other errors
-                addNotification("Failed to activate membership", "error");
+                addNotification(LanguageTranslations.failedActivateMembership[language], "error");
             }
         });
 
@@ -72,24 +73,24 @@ const AccountTab = () => {
         <Stack>
             <MembershipStatusCard />
             <Button onClick={activateMembership} disabled={isPending}>
-                {`${isMembershipExpired(user) ? "Activate" : "Extend"} membership`}
+                {LanguageTranslations.activateMembership[language](user)}
             </Button>
             <Form
                 name={GlobalConstants.PROFILE}
-                buttonLabel="save"
+                buttonLabel={GlobalLanguageTranslations.save[language]}
                 action={updateUserProfile}
                 validationSchema={UserUpdateSchema}
                 defaultValues={user}
             ></Form>
             <Form
                 name={GlobalConstants.USER_CREDENTIALS}
-                buttonLabel="save"
+                buttonLabel={GlobalLanguageTranslations.save[language]}
                 action={validateAndUpdateCredentials}
                 validationSchema={UpdateCredentialsSchema}
             ></Form>
 
             <ConfirmButton color="error" onClick={deleteMyAccount} disabled={isPending}>
-                Delete My Account
+                {LanguageTranslations.deleteAccount[language]}
             </ConfirmButton>
         </Stack>
     );
