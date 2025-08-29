@@ -14,6 +14,8 @@ import { Prisma } from "@prisma/client";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
+import LanguageTranslations from "./LanguageTranslations";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 dayjs.extend(localeData);
 
@@ -23,7 +25,7 @@ interface CalendarDashboardProps {
 }
 
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
@@ -31,14 +33,18 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const createEventWithHostAndTicket = async (
         parsedFieldValues: z.infer<typeof EventCreateSchema>,
     ) => {
-        const selectedLocation = locations.find((loc) => loc.id === parsedFieldValues.location_id);
-        if (selectedLocation.capacity < parsedFieldValues.max_participants)
-            throw new Error(
-                "The location can only handle " + selectedLocation.capacity + " participants",
+        try {
+            const selectedLocation = locations.find(
+                (loc) => loc.id === parsedFieldValues.location_id,
             );
+            if (selectedLocation.capacity < parsedFieldValues.max_participants)
+                throw new Error(LanguageTranslations.locationCapacityExceeded[language]);
 
-        await createEvent(user.id, parsedFieldValues);
-        return "Created event";
+            await createEvent(user.id, parsedFieldValues);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const getDaysInFirstWeekButNotInMonth = () => {
@@ -81,7 +87,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         return (
             <Stack sx={{ height: "100%", width: "100%" }}>
                 <Grid2 container spacing={2} columns={7} sx={{ height: "100%" }}>
-                    {dayjs.weekdaysShort().map((day) => (
+                    {LanguageTranslations.weekDaysShort[language].map((day) => (
                         <Grid2 key={day} size={1} alignContent="center">
                             <Typography
                                 key={day}
@@ -113,7 +119,11 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             <Stack sx={{ height: "100%" }} padding={4}>
                 <Stack direction="row" justifyContent="center">
                     <Stack direction="row" width="100%" justifyContent="space-between">
-                        {user && <Button onClick={() => setCreateOpen(true)}>create event</Button>}
+                        {user && (
+                            <Button onClick={() => setCreateOpen(true)}>
+                                {LanguageTranslations.createEvent[language]}
+                            </Button>
+                        )}
                         <Stack direction="row">
                             <Button
                                 onClick={() => setSelectedDate((prev) => prev.subtract(1, "month"))}
@@ -121,7 +131,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                                 <ArrowLeft />
                             </Button>
                             <Typography color="primary" alignSelf="center" variant="h4">
-                                {selectedDate.format("MMMM YYYY")}
+                                {selectedDate.format("YYYY/MM")}
                             </Typography>
                             <Button onClick={() => setSelectedDate((prev) => prev.add(1, "month"))}>
                                 <ArrowRight />
@@ -135,7 +145,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                 <DialogContent>
                     <Form
                         name={GlobalConstants.EVENT}
-                        buttonLabel={"create event draft"}
+                        buttonLabel={LanguageTranslations.createEventDraft[language]}
                         action={createEventWithHostAndTicket}
                         validationSchema={EventCreateSchema}
                         customOptions={{

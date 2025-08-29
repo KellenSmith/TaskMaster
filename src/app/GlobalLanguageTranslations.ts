@@ -11,7 +11,7 @@ const GlobalLanguageTranslations = {
     },
     failedSave: {
         [Language.english]: "Failed to save",
-        [Language.swedish]: "Misslyckades med att spara",
+        [Language.swedish]: "Kunde inte spara",
     },
     delete: {
         [Language.english]: "Delete",
@@ -23,7 +23,7 @@ const GlobalLanguageTranslations = {
     },
     failedDelete: {
         [Language.english]: "Failed to delete",
-        [Language.swedish]: "Misslyckades med att ta bort",
+        [Language.swedish]: "Kunde inte ta bort",
     },
     open: {
         [Language.english]: "Open",
