@@ -85,7 +85,10 @@ const ProfileDashboard = ({
 
     return (
         <Stack>
-            <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
+            <Tabs
+                value={openTab || implementedTabs.account}
+                onChange={(_, newTab) => setOpenTab(newTab)}
+            >
                 {Object.keys(tabs).map((tabKey) =>
                     tabs[tabKey] ? (
                         <Tab

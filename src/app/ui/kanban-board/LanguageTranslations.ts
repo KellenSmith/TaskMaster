@@ -1,4 +1,4 @@
-import { Language } from "@prisma/client";
+import { Language, TaskStatus } from "@prisma/client";
 
 const LanguageTranslations = {
     assignYourselfPrompt: {
@@ -45,6 +45,34 @@ const LanguageTranslations = {
     clear: {
         [Language.english]: "Clear",
         [Language.swedish]: "Rensa",
+    },
+    taskSetTo: {
+        [Language.english]: "Task set to",
+        [Language.swedish]: "Uppgift satt till",
+    },
+    [TaskStatus.toDo]: {
+        [Language.english]: "To Do",
+        [Language.swedish]: "Att Göra",
+    },
+    [TaskStatus.inProgress]: {
+        [Language.english]: "In Progress",
+        [Language.swedish]: "Pågår",
+    },
+    [TaskStatus.inReview]: {
+        [Language.english]: "In Review",
+        [Language.swedish]: "Under Granskning",
+    },
+    [TaskStatus.done]: {
+        [Language.english]: "Done",
+        [Language.swedish]: "Klar",
+    },
+    addShift: {
+        [Language.english]: "Add Shift",
+        [Language.swedish]: "Lägg till Skift",
+    },
+    shifts: {
+        [Language.english]: "Shifts",
+        [Language.swedish]: "Skift",
     },
 };
 

@@ -17,6 +17,8 @@ import { Prisma } from "@prisma/client";
 import DraggableTask from "./DraggableTask";
 import dayjs from "dayjs";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
+import LanguageTranslations from "./LanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
 
 interface DraggableTaskShiftsProps {
     readOnly: boolean;
@@ -57,7 +59,7 @@ const DraggableTaskShifts = ({
     openCreateTaskDialog,
 }: DraggableTaskShiftsProps) => {
     const { organizationSettings } = useOrganizationSettingsContext();
-
+    const { language } = useUserContext();
     const getLatestEndTime = () =>
         taskList
             .map((task) => task.end_time)
@@ -86,7 +88,7 @@ const DraggableTaskShifts = ({
                 fullWidth
                 onClick={() => openCreateTaskDialog(getDefaultValuesForTaskShift(taskList[0]))}
             >
-                add shift
+                {LanguageTranslations.addShift[language]}
             </Button>
         );
     };
@@ -120,7 +122,7 @@ const DraggableTaskShifts = ({
             {taskList.length > 1 && (
                 <Accordion>
                     <AccordionSummary {...(taskList.length > 1 && { expandIcon: <ExpandMore /> })}>
-                        Shifts
+                        {LanguageTranslations.shifts[language]}
                     </AccordionSummary>
                     <Stack paddingLeft={2}>
                         {taskList.sort(sortTasks).map((task) => (

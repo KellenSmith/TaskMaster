@@ -1,4 +1,4 @@
-import { Button, Dialog, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Button, Dialog, Divider, Paper, Stack, Typography, useTheme } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
@@ -14,6 +14,8 @@ import { useUserContext } from "../../context/UserContext";
 import DraggableTaskShifts from "./DraggableTaskShifts";
 import { CustomOptionProps } from "../form/AutocompleteWrapper";
 import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface DroppableColumnProps {
     readOnly: boolean;
@@ -56,7 +58,7 @@ const DroppableColumn = ({
     setDraggedOverColumn,
 }: DroppableColumnProps) => {
     const theme = useTheme();
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [taskFormDefaultValues, setTaskFormDefaultValues] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
@@ -73,9 +75,12 @@ const DroppableColumn = ({
                     },
                     draggedTask.event_id,
                 );
-                addNotification(`Task set to "${FieldLabels[status]}"`, "success");
+                addNotification(
+                    `${LanguageTranslations.taskSetTo[language]} "${LanguageTranslations[status][language]}"`,
+                    "success",
+                );
             } catch {
-                addNotification(`Failed to transition task`, "error");
+                addNotification(GlobalLanguageTranslations.failedSave[language], "error");
             }
         }
         setDraggedTask(null);
@@ -104,7 +109,7 @@ const DroppableColumn = ({
     ): Promise<string> => {
         await createTask({ ...parsedFieldValues }, event ? event.id : null);
         setTaskFormDefaultValues(null);
-        return "Created task";
+        return GlobalLanguageTranslations.successfulSave[language];
     };
 
     return (
@@ -125,13 +130,16 @@ const DroppableColumn = ({
                 }}
             >
                 <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="h6">{FieldLabels[status].toUpperCase()}</Typography>
+                    <Typography variant="h6">
+                        {LanguageTranslations[status][language].toUpperCase()}
+                    </Typography>
                     {!readOnly && (
                         <Button onClick={() => openCreateTaskDialog(null)}>
                             <Add />
                         </Button>
                     )}
                 </Stack>
+                <Divider />
                 <Stack spacing={2}>
                     {getGroupedAndSortedTasks<
                         Prisma.TaskGetPayload<{
@@ -191,7 +199,7 @@ const DroppableColumn = ({
                                 }) as CustomOptionProps,
                         ),
                     }}
-                    buttonLabel="add task"
+                    buttonLabel={GlobalLanguageTranslations.save[language]}
                     readOnly={false}
                     editable={false}
                 />
