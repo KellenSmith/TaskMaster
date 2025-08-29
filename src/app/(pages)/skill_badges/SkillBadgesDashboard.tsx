@@ -15,12 +15,16 @@ import {
 import z from "zod";
 import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface SkillBadgesDashboardProps {
     skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
 }
 
 const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps) => {
+    const { language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const badges = use(skillBadgesPromise);
     const [editBadgeId, setEditBadgeId] = useState<string | null>(null);
@@ -28,31 +32,41 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
     const [isPending, startTransition] = useTransition();
 
     const createBadgeAction = async (parsedFieldValues: z.infer<typeof SkillBadgeCreateSchema>) => {
-        await createSkillBadge(parsedFieldValues);
-        setCreateNew(false);
-        return "Created skill badge";
+        try {
+            await createSkillBadge(parsedFieldValues);
+            setCreateNew(false);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const updateBadgeAction = async (parsedFieldValues: z.infer<typeof SkillBadgeCreateSchema>) => {
-        await updateSkillBadge(editBadgeId, parsedFieldValues);
-        setEditBadgeId(null);
-        return "Updated skill badge";
+        try {
+            await updateSkillBadge(editBadgeId, parsedFieldValues);
+            setEditBadgeId(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const deleteBadgeAction = async (badgeId: string) => {
         startTransition(async () => {
             try {
                 await deleteSkillBadge(badgeId);
-                addNotification("Deleted skill badge", "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
             } catch {
-                addNotification("Failed deleting skill badge", "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };
 
     return (
         <>
-            <Button onClick={() => setCreateNew(true)}>Add Skill Badge</Button>
+            <Button onClick={() => setCreateNew(true)}>
+                {LanguageTranslations.addSkillBadge[language]}
+            </Button>
             <Stack direction="row" justifyContent="space-around" flexWrap="wrap" gap={2}>
                 {badges
                     .sort((a, b) => a.name.localeCompare(b.name))
@@ -64,14 +78,14 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
                                     disabled={isPending}
                                     onClick={() => setEditBadgeId(badge.id)}
                                 >
-                                    Edit
+                                    {GlobalLanguageTranslations.edit[language]}
                                 </Button>
                                 <ConfirmButton
                                     color="error"
                                     onClick={() => deleteBadgeAction(badge.id)}
                                     disabled={isPending}
                                 >
-                                    Delete
+                                    {GlobalLanguageTranslations.delete[language]}
                                 </ConfirmButton>
                                 <Divider />
                             </Stack>
