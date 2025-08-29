@@ -1,27 +1,24 @@
 import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
-import { organizationSettingsFieldLabels, userFieldLabels } from "./LanguageTranslations";
+import {
+    organizationSettingsFieldLabels,
+    textContentFieldLabels,
+    userCredentialsFieldLabels,
+    userFieldLabels,
+} from "./LanguageTranslations";
 
 export const FieldLabels = {
     ...organizationSettingsFieldLabels,
-    // Text content
-    [GlobalConstants.TEXT_CONTENT]: {
-        [Language.english]: "Text content",
-        [Language.swedish]: "Textinnehåll",
-    },
+    ...textContentFieldLabels,
     ...userFieldLabels,
+    ...userCredentialsFieldLabels,
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
     // Login
     [GlobalConstants.LOGIN]: "Login",
     // Reset
     [GlobalConstants.RESET]: "Reset",
-    // Credentials
-    [GlobalConstants.USER_CREDENTIALS]: "User Credentials",
-    [GlobalConstants.CURRENT_PASSWORD]: "Current Password",
-    [GlobalConstants.NEW_PASSWORD]: "New Password",
-    [GlobalConstants.REPEAT_PASSWORD]: "Repeat Password",
     //Event
     [GlobalConstants.EVENT]: "Event",
     [GlobalConstants.TITLE]: "Title",

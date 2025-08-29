@@ -29,6 +29,14 @@ export const organizationSettingsFieldLabels = {
     },
 };
 
+export const textContentFieldLabels = {
+    // Text content
+    [GlobalConstants.TEXT_CONTENT]: {
+        [Language.english]: "Text content",
+        [Language.swedish]: "Textinnehåll",
+    },
+};
+
 export const userFieldLabels = {
     [GlobalConstants.USER]: {
         [Language.english]: "User",
@@ -93,5 +101,21 @@ export const userFieldLabels = {
     [GlobalConstants.EXPIRED]: {
         [Language.english]: "Expired",
         [Language.swedish]: "Utgått",
+    },
+};
+
+export const userCredentialsFieldLabels = {
+    // Credentials
+    [GlobalConstants.CURRENT_PASSWORD]: {
+        [Language.english]: "Current Password",
+        [Language.swedish]: "Nuvarande Lösenord",
+    },
+    [GlobalConstants.NEW_PASSWORD]: {
+        [Language.english]: "New Password",
+        [Language.swedish]: "Nytt Lösenord",
+    },
+    [GlobalConstants.REPEAT_PASSWORD]: {
+        [Language.english]: "Repeat Password",
+        [Language.swedish]: "Upprepa Lösenord",
     },
 };
