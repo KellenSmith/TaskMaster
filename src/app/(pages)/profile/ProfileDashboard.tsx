@@ -11,6 +11,7 @@ import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import GlobalConstants from "../../GlobalConstants";
 import SkillBadgesTab from "./SkillBadgesTab";
+import LanguageTranslations, { implementedTabs } from "./LanguageTranslations";
 
 interface ProfileDashboardProps {
     tasksPromise: Promise<
@@ -39,18 +40,18 @@ const ProfileDashboard = ({
     eventsPromise,
     skillBadgesPromise,
 }: ProfileDashboardProps) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const tabs = useMemo(() => {
         const availableTabs = {
-            account: "Account",
+            account: implementedTabs.account,
             events: null,
             tasks: null,
             skill_badges: null,
-        };
+        } as typeof implementedTabs;
         if (!isMembershipExpired(user)) {
-            availableTabs.events = "Events";
-            availableTabs.tasks = "Tasks";
-            availableTabs.skill_badges = "Skill Badges";
+            availableTabs.events = implementedTabs.events;
+            availableTabs.tasks = implementedTabs.tasks;
+            availableTabs.skill_badges = implementedTabs.skill_badges;
         }
         return availableTabs;
     }, [user]);
@@ -87,7 +88,11 @@ const ProfileDashboard = ({
             <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
                 {Object.keys(tabs).map((tabKey) =>
                     tabs[tabKey] ? (
-                        <Tab key={tabKey} value={tabs[tabKey]} label={tabs[tabKey]} />
+                        <Tab
+                            key={tabKey}
+                            value={tabs[tabKey]}
+                            label={LanguageTranslations[tabs[tabKey]][language]}
+                        />
                     ) : null,
                 )}
             </Tabs>
