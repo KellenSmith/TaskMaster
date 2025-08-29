@@ -34,10 +34,13 @@ import { useOrganizationSettingsContext } from "../context/OrganizationSettingsC
 import { useNotificationContext } from "../context/NotificationContext";
 import { logOut } from "../lib/user-credentials-actions";
 import LanguageMenu from "./LanguageMenu";
+import LanguageTranslations from "./LanguageTranslations";
+import { UserRole } from "@prisma/client";
+import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { user, editMode, setEditMode, refreshSession } = useUserContext();
+    const { user, editMode, setEditMode, refreshSession, language } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
@@ -51,7 +54,7 @@ const NavPanel = () => {
             await logOut();
             // If logout is successful, redirect exception is thrown
             // We do not expect to run this line
-            addNotification("Failed to log out", "error");
+            addNotification(LanguageTranslations.failedToLogOut[language], "error");
         } catch (error) {
             // Catch redirect exception and refresh session before moving on.
             if (error?.digest?.startsWith("NEXT_REDIRECT")) {
@@ -62,13 +65,14 @@ const NavPanel = () => {
     };
 
     const hiddenRoutes = [
+        GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         GlobalConstants.RESET,
         GlobalConstants.APPLY,
         GlobalConstants.ORDER,
     ];
 
-    const getLinkGroup = (privacyStatus: string) => {
+    const getLinkGroup = (privacyStatus: UserRole | string) => {
         const authorizedRoutes = applicationRoutes[privacyStatus]
             .filter((route) => !hiddenRoutes.includes(route))
             .filter((route) => isUserAuthorized(routeToPath(route), user));
@@ -77,7 +81,7 @@ const NavPanel = () => {
             <Stack key={privacyStatus}>
                 {privacyStatus !== GlobalConstants.PUBLIC && (
                     <ListSubheader sx={{ textTransform: "capitalize" }}>
-                        {privacyStatus}s only
+                        {LanguageTranslations.restrictedRoute[privacyStatus as UserRole][language]}
                     </ListSubheader>
                 )}
                 {authorizedRoutes.map((route) => (
@@ -88,7 +92,7 @@ const NavPanel = () => {
                                 clientRedirect(router, [route]);
                             }}
                         >
-                            {snakeCaseToLabel(route)}
+                            {LanguageTranslations.routeLabel[route][language]}
                         </Button>
                     </ListItem>
                 ))}
@@ -111,32 +115,36 @@ const NavPanel = () => {
                         {organizationSettings?.organization_name || "Organization Name"}
                     </Typography>
                     <LanguageMenu />
-                    <Tooltip title="Open README.md">
+                    <Tooltip title={`${GlobalLanguageTranslations.open[language]} README.md`}>
                         <Button onClick={() => openResourceInNewTab("/README.pdf")}>
                             <Article />
                         </Button>
                     </Tooltip>
                     {isUserAdmin(user) && (
-                        <Tooltip title={`${editMode ? "Disable" : "Enable"} website edit mode`}>
+                        <Tooltip
+                            title={LanguageTranslations.toggleAdminEditMode[language](editMode)}
+                        >
                             <Button onClick={() => setEditMode((prev: boolean) => !prev)}>
                                 {editMode ? <Cancel /> : <Edit />}
                             </Button>
                         </Tooltip>
                     )}
-                    {user ? (
-                        <Button onClick={logOutAction}>
-                            <LogoutIcon />
-                        </Button>
-                    ) : (
-                        <Button onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}>
-                            <LoginIcon />
-                        </Button>
-                    )}
+                    <Tooltip title={LanguageTranslations.toggleLoggedIn[language](!!user)}>
+                        {user ? (
+                            <Button onClick={logOutAction}>
+                                <LogoutIcon />
+                            </Button>
+                        ) : (
+                            <Button onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}>
+                                <LoginIcon />
+                            </Button>
+                        )}
+                    </Tooltip>
                 </Toolbar>
             </AppBar>
             <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
                 <Button sx={{ justifyContent: "flex-end" }} onClick={toggleDrawerOpen}>
-                    <MenuOpenIcon />
+                    {GlobalLanguageTranslations.close[language]}
                 </Button>
                 <List>
                     {Object.keys(applicationRoutes).map((privacyStatus) =>

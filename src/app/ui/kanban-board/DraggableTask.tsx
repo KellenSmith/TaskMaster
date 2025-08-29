@@ -127,7 +127,10 @@ const DraggableTask = ({
                     validationSchema={TaskUpdateSchema}
                     buttonLabel="save task"
                     readOnly={
-                        isUserHost(user, event) || isUserAdmin(user) || task.reviewer_id === user.id
+                        !user ||
+                        isUserHost(user, event) ||
+                        isUserAdmin(user) ||
+                        task.reviewer_id === user.id
                     }
                     editable={!readOnly}
                 />

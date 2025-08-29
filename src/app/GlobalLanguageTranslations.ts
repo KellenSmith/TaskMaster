@@ -25,6 +25,14 @@ const GlobalLanguageTranslations = {
         [Language.english]: "Failed to delete",
         [Language.swedish]: "Misslyckades med att ta bort",
     },
+    open: {
+        [Language.english]: "Open",
+        [Language.swedish]: "Öppna",
+    },
+    close: {
+        [Language.english]: "Close",
+        [Language.swedish]: "Stäng",
+    },
 };
 
 export default GlobalLanguageTranslations;

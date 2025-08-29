@@ -1,5 +1,7 @@
 import { Language, Prisma, UserRole } from "@prisma/client";
 import { isMembershipExpired } from "../../lib/definitions";
+import UILanguageTranslations from "../../ui/LanguageTranslations";
+import GlobalConstants from "../../GlobalConstants";
 
 export const implementedTabs = {
     account: "Account",
@@ -22,10 +24,7 @@ const LanguageTranslations = {
         [Language.english]: "To do",
         [Language.swedish]: "Att göra",
     },
-    [implementedTabs.skill_badges]: {
-        [Language.english]: "Skill Badges",
-        [Language.swedish]: "Kompetensdiplom",
-    },
+    [implementedTabs.skill_badges]: UILanguageTranslations.routeLabel[GlobalConstants.SKILL_BADGES],
     nonMatchingPasswords: {
         [Language.english]: "New password and repeat password do not match",
         [Language.swedish]: "Lösenord matchar inte",
