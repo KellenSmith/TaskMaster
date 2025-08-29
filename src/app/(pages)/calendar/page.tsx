@@ -5,6 +5,7 @@ import { getAllEvents } from "../../lib/event-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { getAllLocations } from "../../lib/location-actions";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
@@ -15,7 +16,11 @@ const CalendarPage = async () => {
         tags: [GlobalConstants.LOCATION],
     })();
 
-    return <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />;
+    return (
+        <ErrorBoundarySuspense>
+            <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />
+        </ErrorBoundarySuspense>
+    );
 };
 
 export default CalendarPage;

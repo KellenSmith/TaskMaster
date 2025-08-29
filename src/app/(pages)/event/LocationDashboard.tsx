@@ -115,7 +115,10 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                     <Stack>
                         <Button
                             fullWidth
-                            disabled={isSwitchButtonDisabled()}
+                            disabled={
+                                isSwitchButtonDisabled() ||
+                                selectedLocationOption.id === event.location_id
+                            }
                             onClick={switchEventLocation}
                         >
                             {LanguageTranslations.switchEventLocation[language]}

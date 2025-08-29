@@ -12,7 +12,6 @@ import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "rea
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
-import { snakeCaseToLabel } from "../../lib/definitions";
 import LanguageTranslations from "./LanguageTranslations";
 
 interface KanBanBoardFilterProps {

@@ -3,6 +3,7 @@
 import { Autocomplete, TextField } from "@mui/material";
 import { FC, useCallback, useMemo, useState } from "react";
 import { allowSelectMultiple, FieldLabels, selectFieldOptions } from "./FieldCfg";
+import { useUserContext } from "../../context/UserContext";
 
 export interface CustomOptionProps {
     id: string;
@@ -28,14 +29,15 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
     customOptions,
     required,
 }) => {
+    const { language } = useUserContext();
     const multiple = useMemo(() => allowSelectMultiple.includes(fieldId), [fieldId]);
     const options = useMemo<CustomOptionProps[]>(() => {
         if (customOptions) return customOptions;
         return selectFieldOptions[fieldId].map((option: string) => ({
             id: option,
-            label: FieldLabels[option] || option,
+            label: FieldLabels[option][language] || option,
         }));
-    }, [fieldId, customOptions]);
+    }, [fieldId, customOptions, language]);
 
     const getOptionWithId = useCallback(
         (id: string): CustomOptionProps | null =>

@@ -16,7 +16,6 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import {
@@ -25,7 +24,6 @@ import {
     applicationRoutes,
     routeToPath,
     clientRedirect,
-    snakeCaseToLabel,
 } from "../lib/definitions";
 import { Article, Cancel, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";

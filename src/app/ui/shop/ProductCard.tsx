@@ -21,6 +21,9 @@ import { Lock } from "@mui/icons-material";
 import { formatPrice } from "../utils";
 import RichTextField from "../form/RichTextField";
 import { Prisma } from "@prisma/client";
+import { useUserContext } from "../../context/UserContext";
+import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 interface ProductCardProps {
     product: Prisma.ProductGetPayload<true>;
@@ -37,15 +40,16 @@ export default function ProductCard({
     makeAvailableText,
     onClick,
 }: ProductCardProps) {
+    const { language } = useUserContext();
     const [isOpen, setIsOpen] = useState(false);
     const defaultImage = "/images/product-placeholder.svg";
 
     const getStockChipLabel = () => {
         if (product.unlimited_stock || product.stock > 5) {
-            return "In Stock";
+            return ProductLanguageTranslations.inStock[language];
         }
-        if (!product.stock) return "Out of Stock";
-        return `${product.stock} left`;
+        if (!product.stock) return ProductLanguageTranslations.outOfStock[language];
+        return `${product.stock} ${ProductLanguageTranslations.left[language]}`;
     };
 
     const getStockChipColor = () => {
@@ -200,7 +204,9 @@ export default function ProductCard({
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setIsOpen(false)}>Close</Button>
+                    <Button onClick={() => setIsOpen(false)}>
+                        {GlobalLanguageTranslations.close[language]}
+                    </Button>
                     {onAddToCart && (
                         <Button
                             onClick={() => onAddToCart(product.id)}
@@ -208,7 +214,9 @@ export default function ProductCard({
                                 !isAvailable || (!product.unlimited_stock && product.stock === 0)
                             }
                         >
-                            {product.price === 0 ? "claim" : "buy"}
+                            {ProductLanguageTranslations.buyButtonLabel[language](
+                                product,
+                            ).toUpperCase()}
                         </Button>
                     )}
                 </DialogActions>

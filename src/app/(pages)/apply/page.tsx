@@ -1,7 +1,6 @@
 "use client";
 import GlobalConstants from "../../GlobalConstants";
 import { submitMemberApplication } from "../../lib/user-actions";
-import { FieldLabels } from "../../ui/form/FieldCfg";
 import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import z from "zod";

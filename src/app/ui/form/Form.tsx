@@ -4,7 +4,6 @@ import {
     Button,
     Card,
     CardContent,
-    CardHeader,
     Checkbox,
     Divider,
     FormControlLabel,
@@ -144,12 +143,13 @@ const Form: FC<FormProps> = ({
     };
 
     const getFieldComp = (fieldId: string) => {
+        console.log(fieldId);
         if (fieldId in selectFieldOptions || customOptions[fieldId]) {
             return (
                 <AutocompleteWrapper
                     key={getFieldCompKey(fieldId)}
                     fieldId={fieldId}
-                    label={FieldLabels[fieldId][language]}
+                    label={FieldLabels[fieldId][language] as string}
                     editMode={editMode}
                     defaultValue={defaultValues?.[fieldId]}
                     customReadOnlyFields={customReadOnlyFields}
@@ -164,7 +164,7 @@ const Form: FC<FormProps> = ({
                     key={getFieldCompKey(fieldId)}
                     name={fieldId}
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                    label={FieldLabels[fieldId][language]}
+                    label={FieldLabels[fieldId][language] as string}
                     defaultValue={getDefaultValue(fieldId)}
                     slotProps={{
                         textField: {
@@ -189,7 +189,7 @@ const Form: FC<FormProps> = ({
                             defaultChecked={getDefaultValue(fieldId) || false}
                         />
                     }
-                    label={FieldLabels[fieldId][language]}
+                    label={FieldLabels[fieldId][language] as string}
                 />
             );
         if (richTextFields.includes(fieldId)) {
@@ -206,7 +206,7 @@ const Form: FC<FormProps> = ({
             <TextField
                 disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                 key={getFieldCompKey(fieldId)}
-                label={FieldLabels[fieldId][language]}
+                label={FieldLabels[fieldId][language] as string}
                 name={fieldId}
                 defaultValue={getDefaultValue(fieldId)}
                 required={requiredFields.includes(fieldId)}
@@ -237,7 +237,7 @@ const Form: FC<FormProps> = ({
 
     return (
         <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto", width: "100%" }}>
-            {(editable || FieldLabels[name]) && (
+            {editable && (
                 <Stack direction="row" justifyContent="flex-end" alignItems="center">
                     {editable && (
                         <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>

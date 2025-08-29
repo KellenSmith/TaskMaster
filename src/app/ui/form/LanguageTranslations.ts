@@ -1,5 +1,6 @@
-import { Language } from "@prisma/client";
+import { Language, TicketType } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
+import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 
 export const organizationSettingsFieldLabels = {
     // Organization settings
@@ -117,5 +118,157 @@ export const userCredentialsFieldLabels = {
     [GlobalConstants.REPEAT_PASSWORD]: {
         [Language.english]: "Repeat Password",
         [Language.swedish]: "Upprepa Lösenord",
+    },
+};
+
+export const eventFieldLabels = {
+    [GlobalConstants.TITLE]: {
+        [Language.english]: "Title",
+        [Language.swedish]: "Titel",
+    },
+    [GlobalConstants.LOCATION_ID]: {
+        [Language.english]: "Location",
+        [Language.swedish]: "Plats",
+    },
+    [GlobalConstants.START_TIME]: {
+        [Language.english]: "Start time",
+        [Language.swedish]: "Starttid",
+    },
+    [GlobalConstants.END_TIME]: {
+        [Language.english]: "End time",
+        [Language.swedish]: "Sluttid",
+    },
+    [GlobalConstants.MAX_PARTICIPANTS]: {
+        [Language.english]: "Maximum no. of participants",
+        [Language.swedish]: "Max antal deltagare",
+    },
+    [GlobalConstants.DESCRIPTION]: {
+        [Language.english]: "Description",
+        [Language.swedish]: "Beskrivning",
+    },
+    [GlobalConstants.HOST]: {
+        [Language.english]: "Host",
+        [Language.swedish]: "Värd",
+    },
+    [GlobalConstants.PARTICIPANT_USERS]: {
+        [Language.english]: "Participants",
+        [Language.swedish]: "Deltagare",
+    },
+    [GlobalConstants.RESERVE_USERS]: {
+        [Language.english]: "Reserves",
+        [Language.swedish]: "Reserver",
+    },
+};
+
+export const locationFieldLabels = {
+    [GlobalConstants.NAME]: {
+        [Language.english]: "Name",
+        [Language.swedish]: "Namn",
+    },
+    [GlobalConstants.CONTACT_PERSON]: {
+        [Language.english]: "Contact Person",
+        [Language.swedish]: "Kontaktperson",
+    },
+    [GlobalConstants.RENTAL_COST]: {
+        [Language.english]: "Rental Cost [SEK]",
+        [Language.swedish]: "Hyreskostnad [SEK]",
+    },
+    [GlobalConstants.ADDRESS]: {
+        [Language.english]: "Address",
+        [Language.swedish]: "Adress",
+    },
+    [GlobalConstants.CAPACITY]: {
+        [Language.english]: "Capacity [# people]",
+        [Language.swedish]: "Kapacitet [# personer]",
+    },
+    [GlobalConstants.ACCESSIBILITY_INFO]: {
+        [Language.english]: "Accessibility Info",
+        [Language.swedish]: "Tillgänglighetsinformation",
+    },
+    [GlobalConstants.DESCRIPTION]: {
+        [Language.english]: "Description",
+        [Language.swedish]: "Beskrivning",
+    },
+};
+
+export const taskFieldLabels = {
+    [GlobalConstants.NAME]: {
+        [Language.english]: "Name",
+        [Language.swedish]: "Namn",
+    },
+    [GlobalConstants.STATUS]: {
+        [Language.english]: "Status",
+        [Language.swedish]: "Status",
+    },
+    [GlobalConstants.ASSIGNEE_ID]: {
+        [Language.english]: "Assignee",
+        [Language.swedish]: "Tilldelad",
+    },
+    [GlobalConstants.REVIEWER_ID]: {
+        [Language.english]: "Reviewer",
+        [Language.swedish]: "Granskare",
+    },
+    [GlobalConstants.START_TIME]: {
+        [Language.english]: "Start time",
+        [Language.swedish]: "Starttid",
+    },
+    [GlobalConstants.END_TIME]: {
+        [Language.english]: "End time",
+        [Language.swedish]: "Sluttid",
+    },
+    [GlobalConstants.TAGS]: {
+        [Language.english]: "Tags",
+        [Language.swedish]: "Taggar",
+    },
+    [GlobalConstants.SKILL_BADGES]: {
+        [Language.english]: "Skill Badges",
+        [Language.swedish]: "Kompetensdiplom",
+    },
+    [GlobalConstants.DESCRIPTION]: {
+        [Language.english]: "Description",
+        [Language.swedish]: "Beskrivning",
+    },
+};
+
+export const sendoutFieldLabels = {
+    [GlobalConstants.SUBJECT]: {
+        [Language.english]: "Subject",
+        [Language.swedish]: "Ämne",
+    },
+    [GlobalConstants.CONTENT]: {
+        [Language.english]: "Content",
+        [Language.swedish]: "Innehåll",
+    },
+};
+
+export const productFieldLabels = {
+    [GlobalConstants.PRICE]: ProductLanguageTranslations.price,
+    [GlobalConstants.STOCK]: ProductLanguageTranslations.stock,
+    [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations.unlimitedStock,
+};
+
+export const ticketFieldLabels = {
+    [GlobalConstants.TICKET_TYPE]: {
+        [Language.english]: "Ticket Type",
+        [Language.swedish]: "Biljettyp",
+    },
+    [TicketType.standard]: {
+        [Language.english]: "Standard Ticket",
+        [Language.swedish]: "Standardbiljett",
+    },
+    [TicketType.volunteer]: {
+        [Language.english]: "Volunteer Ticket",
+        [Language.swedish]: "Volontärbiljett",
+    },
+};
+
+export const skillBadgeFieldLabels = {
+    [GlobalConstants.NAME]: {
+        [Language.english]: "Name",
+        [Language.swedish]: "Namn",
+    },
+    [GlobalConstants.DESCRIPTION]: {
+        [Language.english]: "Description",
+        [Language.swedish]: "Beskrivning",
     },
 };

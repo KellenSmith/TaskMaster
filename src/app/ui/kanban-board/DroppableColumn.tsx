@@ -4,7 +4,7 @@ import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
 import { use, useState } from "react";
 import { Add } from "@mui/icons-material";
-import { FieldLabels, getUserSelectOptions } from "../form/FieldCfg";
+import { getUserSelectOptions } from "../form/FieldCfg";
 import { Prisma, Task, TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import z from "zod";

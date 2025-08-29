@@ -31,7 +31,7 @@ const readLanguageFromCookie = (): Language => {
         const value = decodeURIComponent(raw.split("=")[1] || "");
         if (Object.values(Language).includes(value as Language)) return value as Language;
         return Language.english;
-    } catch (e) {
+    } catch {
         return Language.english;
     }
 };
@@ -61,8 +61,7 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
             const maxAge = 60 * 60 * 24 * 365;
             document.cookie = `${languageCookieName}=${encodeURIComponent(newLanguage)}; path=/; max-age=${maxAge}`;
             setLanguage(newLanguage);
-        } catch (e) {
-            console.error(e);
+        } catch {
             setLanguage(Language.english);
         }
     };

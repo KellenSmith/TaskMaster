@@ -13,6 +13,10 @@ const GlobalLanguageTranslations = {
         [Language.english]: "Failed to save",
         [Language.swedish]: "Kunde inte spara",
     },
+    edit: {
+        [Language.english]: "Edit",
+        [Language.swedish]: "Redigera",
+    },
     delete: {
         [Language.english]: "Delete",
         [Language.swedish]: "Ta bort",
@@ -24,6 +28,10 @@ const GlobalLanguageTranslations = {
     failedDelete: {
         [Language.english]: "Failed to delete",
         [Language.swedish]: "Kunde inte ta bort",
+    },
+    cancel: {
+        [Language.english]: "Cancel",
+        [Language.swedish]: "Avbryt",
     },
     open: {
         [Language.english]: "Open",

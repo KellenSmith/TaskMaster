@@ -4,7 +4,7 @@ const LanguageTranslations = {
     assignYourselfPrompt: {
         [Language.english]: "Assign yourself to tasks and shifts to help make the event happen",
         [Language.swedish]:
-            "Tilldela dig själv uppgifter och skift för att hjälpa till att få evenemanget att hända",
+            "Tilldela dig själv uppgifter och skift för att hjälpa till med evenemanget",
     },
     printSchedule: {
         [Language.english]: "Print Schedule",

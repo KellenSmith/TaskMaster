@@ -9,6 +9,7 @@ import RichTextFieldControls from "./RichTextFieldControls";
 import useExtensions from "./useRichTextFieldExtensions";
 import { FieldLabels } from "./FieldCfg";
 import { Card } from "@mui/material";
+import { useUserContext } from "../../context/UserContext";
 
 interface RichTextFieldProps {
     fieldId?: string;
@@ -17,12 +18,13 @@ interface RichTextFieldProps {
 }
 
 const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode = false, defaultValue }) => {
+    const { language } = useUserContext();
     const extensions = useExtensions();
     const rteRef = useRef<RichTextEditorRef>(null);
 
     // TODO: sanitize HTML content
 
-    const [content, setContent] = useState(defaultValue || FieldLabels[fieldId] || "");
+    const [content, setContent] = useState(defaultValue || FieldLabels[fieldId][language] || "");
 
     return (
         <>

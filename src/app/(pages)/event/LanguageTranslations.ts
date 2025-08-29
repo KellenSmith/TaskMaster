@@ -58,6 +58,27 @@ const LanguageTranslations = {
         [Language.english]: "Switch Event Location",
         [Language.swedish]: "Byt Evenemangets Plats",
     },
+    failedTicketOrder: {
+        [Language.english]: "Failed to create ticket order",
+        [Language.swedish]: "Misslyckades med att skapa biljettbeställning",
+    },
+    tickets: {
+        [Language.english]: "Tickets",
+        [Language.swedish]: "Biljetter",
+    },
+    addTicket: {
+        [Language.english]: "Add Ticket",
+        [Language.swedish]: "Lägg till Biljett",
+    },
+    noTickets: {
+        [Language.english]: "No tickets available",
+        [Language.swedish]: "Inga biljetter tillgängliga",
+    },
+    unlockVolunteerTicket: {
+        [Language.english]: "Unlock the volunteer ticket by helping organize the event",
+        [Language.swedish]:
+            "Lås upp volontärbiljetten genom att hjälpa till att organisera evenemanget",
+    },
 };
 
 export default LanguageTranslations;

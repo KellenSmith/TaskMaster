@@ -15,6 +15,8 @@ import { TicketCreateSchema, TicketUpdateSchema } from "../../lib/zod-schemas";
 import { allowRedirectException } from "../../ui/utils";
 import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
+import LanguageTranslations from "./LanguageTranslations";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 interface TicketShopProps {
     eventPromise: Promise<Prisma.EventGetPayload<true>>;
@@ -37,7 +39,7 @@ const TicketShop = ({
     eventTasksPromise,
     goToOrganizeTab,
 }: TicketShopProps) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const event = use(eventPromise);
@@ -55,21 +57,29 @@ const TicketShop = ({
             await createOrder(user.id, [ticketOrderItems]);
         } catch (error) {
             allowRedirectException(error);
-            addNotification("Failed to create ticket order", "error");
+            addNotification(LanguageTranslations.failedTicketOrder[language], "error");
         }
     };
 
     const createTicketAction = async (parsedFieldValues: z.infer<typeof TicketCreateSchema>) => {
-        await createEventTicket(event.id, parsedFieldValues);
-        setDialogOpen(false);
-        return "Created ticket";
+        try {
+            await createEventTicket(event.id, parsedFieldValues);
+            setDialogOpen(false);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const updateTicketAction = async (parsedFieldValues: z.infer<typeof TicketUpdateSchema>) => {
-        await updateEventTicket(editingTicketId, parsedFieldValues);
-        setDialogOpen(false);
-        setEditingTicketId(null);
-        return "Updated ticket";
+        try {
+            await updateEventTicket(editingTicketId, parsedFieldValues);
+            setDialogOpen(false);
+            setEditingTicketId(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const allowDeleteTicket = (ticket: Prisma.TicketGetPayload<true>) => {
@@ -82,9 +92,9 @@ const TicketShop = ({
     const deleteTicketAction = async (ticketId: string) => {
         try {
             await deleteEventTicket(ticketId);
-            addNotification("Deleted ticket", "success");
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
         } catch {
-            addNotification("Failed to delete ticket", "error");
+            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
     };
 
@@ -123,17 +133,17 @@ const TicketShop = ({
         <Stack spacing={2} sx={{ padding: 2 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h6" color={theme.palette.primary.main}>
-                    Tickets
+                    {LanguageTranslations.tickets[language]}
                 </Typography>
                 {(isUserHost(user, event) || isUserAdmin(user)) && (
                     <Button variant="contained" onClick={() => setDialogOpen(true)} size="small">
-                        add ticket
+                        {LanguageTranslations.addTicket[language]}
                     </Button>
                 )}
             </Stack>
 
             {tickets.length === 0 ? (
-                <Typography color="primary">Sorry, no tickets available for this event.</Typography>
+                <Typography color="primary">{LanguageTranslations.noTickets[language]}</Typography>
             ) : (
                 <Stack direction="row" flexWrap="wrap" gap={2}>
                     {getSortedTickets().map((ticket) => (
@@ -145,7 +155,7 @@ const TicketShop = ({
                                 {...(ticket.type === TicketType.volunteer && {
                                     isAvailable: isVolunteerTicketAvailable(),
                                     makeAvailableText:
-                                        "Unlock the volunteer ticket by helping organize the event",
+                                        LanguageTranslations.unlockVolunteerTicket[language],
                                     onClick: isUserVolunteer(user, tasks)
                                         ? undefined
                                         : goToOrganizeTab,
@@ -154,14 +164,14 @@ const TicketShop = ({
                             {(isUserHost(user, event) || isUserAdmin(user)) && (
                                 <Stack>
                                     <Button onClick={() => handleEditTicket(ticket.id)}>
-                                        edit
+                                        {GlobalLanguageTranslations.edit[language]}
                                     </Button>
                                     {allowDeleteTicket(ticket) && (
                                         <ConfirmButton
                                             color="error"
                                             onClick={() => deleteTicketAction(ticket.id)}
                                         >
-                                            delete
+                                            {GlobalLanguageTranslations.delete[language]}
                                         </ConfirmButton>
                                     )}
                                 </Stack>
@@ -176,12 +186,11 @@ const TicketShop = ({
                     name={GlobalConstants.TICKET}
                     action={editingTicketId ? updateTicketAction : createTicketAction}
                     defaultValues={getFormDefaultValues()}
-                    buttonLabel="save"
                     readOnly={false}
                     editable={false}
                 />
-                <Button onClick={() => setDialogOpen(false)} sx={{ m: 2 }}>
-                    Cancel
+                <Button onClick={() => setDialogOpen(false)}>
+                    {GlobalLanguageTranslations.cancel[language]}
                 </Button>
             </Dialog>
         </Stack>

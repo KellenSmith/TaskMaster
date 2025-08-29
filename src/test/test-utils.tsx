@@ -3,13 +3,13 @@ import { render } from "@testing-library/react";
 import ThemeContextProvider from "../app/context/ThemeContext";
 import { UserContext } from "../app/context/UserContext";
 import { OrganizationSettingsContext } from "../app/context/OrganizationSettingsContext";
-import { Prisma } from "@prisma/client";
+import { Language, Prisma } from "@prisma/client";
 import testdata from "./testdata";
 
 // Mock UserContext value
 const mockUserContextValue = {
     user: testdata.user,
-    language: "english",
+    language: Language.english,
     setLanguage: () => {},
     editMode: false,
     setEditMode: () => {},

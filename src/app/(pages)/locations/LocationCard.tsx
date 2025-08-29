@@ -3,6 +3,7 @@ import { Location } from "@prisma/client";
 import { LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
+import { useUserContext } from "../../context/UserContext";
 
 interface LocationDashboardProps {
     location: Location;
@@ -10,6 +11,7 @@ interface LocationDashboardProps {
 }
 
 const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
+    const { language } = useUserContext();
     return (
         <Stack spacing={3} width="100%">
             <Paper elevation={3} sx={{ p: 3 }}>
@@ -25,7 +27,9 @@ const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
 
                     {renderedFields.map((fieldId) => (
                         <Stack key={fieldId} spacing={1}>
-                            <Typography color="text.secondary">{FieldLabels[fieldId]}</Typography>
+                            <Typography color="text.secondary">
+                                {FieldLabels[fieldId][language]}
+                            </Typography>
                             <Typography>{location[fieldId]}</Typography>
                         </Stack>
                     ))}

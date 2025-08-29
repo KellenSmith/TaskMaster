@@ -155,8 +155,6 @@ async function seedTextContents() {
             await prisma.textContent.create({
                 data: {
                     id: r.id,
-                    language: r.language,
-                    content: r.content,
                     category: r.category || undefined,
                 },
             });

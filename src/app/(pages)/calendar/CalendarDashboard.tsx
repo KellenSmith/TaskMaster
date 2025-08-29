@@ -17,8 +17,6 @@ import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
-dayjs.extend(localeData);
-
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;

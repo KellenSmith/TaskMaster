@@ -1,9 +1,16 @@
-import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
+import { Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import {
+    eventFieldLabels,
+    locationFieldLabels,
     organizationSettingsFieldLabels,
+    productFieldLabels,
+    sendoutFieldLabels,
+    skillBadgeFieldLabels,
+    taskFieldLabels,
     textContentFieldLabels,
+    ticketFieldLabels,
     userCredentialsFieldLabels,
     userFieldLabels,
 } from "./LanguageTranslations";
@@ -13,63 +20,13 @@ export const FieldLabels = {
     ...textContentFieldLabels,
     ...userFieldLabels,
     ...userCredentialsFieldLabels,
-    // Profile
-    [GlobalConstants.PROFILE]: "Profile",
-    // Login
-    [GlobalConstants.LOGIN]: "Login",
-    // Reset
-    [GlobalConstants.RESET]: "Reset",
-    //Event
-    [GlobalConstants.EVENT]: "Event",
-    [GlobalConstants.TITLE]: "Title",
-    [GlobalConstants.LOCATION_ID]: "Location",
-    [GlobalConstants.START_TIME]: "Start time",
-    [GlobalConstants.END_TIME]: "End time",
-    [GlobalConstants.MAX_PARTICIPANTS]: "Maximum no. of participants",
-    [GlobalConstants.FULL_TICKET_PRICE]: "Full ticket price",
-    [GlobalConstants.DESCRIPTION]: "Description",
-    [GlobalConstants.HOST]: "Host",
-    [GlobalConstants.PARTICIPANT_USERS]: "Participants",
-    [GlobalConstants.RESERVE_USERS]: "Reserves",
-    // Location
-    [GlobalConstants.NAME]: "Name",
-    [GlobalConstants.CONTACT_PERSON]: "Contact Person",
-    [GlobalConstants.RENTAL_COST]: "Rental Cost [SEK]",
-    [GlobalConstants.ADDRESS]: "Address",
-    [GlobalConstants.CAPACITY]: "Capacity [# people]",
-    [GlobalConstants.ACCESSIBILITY_INFO]: "Accessibility Info",
-    [GlobalConstants.DESCRIPTION]: "Description",
-    // Task
-    [GlobalConstants.TASK]: "Task",
-    [GlobalConstants.NAME]: "Name",
-    [GlobalConstants.ASSIGNEE]: "Assignee",
-    [GlobalConstants.ASSIGNEE_ID]: "Assignee",
-    [GlobalConstants.REVIEWER]: "Reviewer",
-    [GlobalConstants.REVIEWER_ID]: "Reviewer",
-    [GlobalConstants.TAGS]: "Tags",
-    [GlobalConstants.STATUS]: "Status",
-    [GlobalConstants.BEFORE]: "Before",
-    [GlobalConstants.DURING]: "During",
-    [GlobalConstants.AFTER]: "After",
-    [GlobalConstants.TO_DO]: "To Do",
-    [GlobalConstants.IN_PROGRESS]: "In Progress",
-    [GlobalConstants.IN_REVIEW]: "In Review",
-    [GlobalConstants.DONE]: "Done",
-    [GlobalConstants.SKILL_BADGES]: "Skill Badges",
-    // Sendout
-    [GlobalConstants.SENDOUT]: "Sendout",
-    [GlobalConstants.SUBJECT]: "Subject",
-    [GlobalConstants.CONTENT]: "Content",
-    // Product
-    [GlobalConstants.PRODUCT]: "Product",
-    [GlobalConstants.PRICE]: "Price",
-    [GlobalConstants.STOCK]: "Stock",
-    [GlobalConstants.UNLIMITED_STOCK]: "Unlimited Stock",
-    [GlobalConstants.TICKET]: "Ticket",
-    [GlobalConstants.TICKET_TYPE]: "Type",
-    // Skill badge
-    [GlobalConstants.SKILL_BADGE]: "Skill Badge",
-    [GlobalConstants.IMAGE_URL]: "Image URL",
+    ...eventFieldLabels,
+    ...locationFieldLabels,
+    ...taskFieldLabels,
+    ...sendoutFieldLabels,
+    ...productFieldLabels,
+    ...ticketFieldLabels,
+    ...skillBadgeFieldLabels,
 };
 
 export const explanatoryTexts = {
