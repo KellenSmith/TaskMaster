@@ -1,9 +1,11 @@
 "use client";
 
-import React, { use } from "react";
+import { FC, use } from "react";
 import { Stack, Typography } from "@mui/material";
 import { Prisma } from "@prisma/client";
 import EventCard from "./EventCard";
+import LanguageTranslations from "./LanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
 
 interface EventsTabProps {
     eventsPromise: Promise<
@@ -17,7 +19,8 @@ interface EventsTabProps {
     >;
 }
 
-const EventsTab: React.FC<EventsTabProps> = ({ eventsPromise }) => {
+const EventsTab: FC<EventsTabProps> = ({ eventsPromise }) => {
+    const { language } = useUserContext();
     const events = use(eventsPromise);
 
     const getSortedEvents = () => {
@@ -38,7 +41,7 @@ const EventsTab: React.FC<EventsTabProps> = ({ eventsPromise }) => {
                     color="textSecondary"
                     sx={{ padding: 10, textAlign: "center" }}
                 >
-                    You are not participating in any events. Check the calendar to get involved!
+                    {LanguageTranslations.noEvents[language]}
                 </Typography>
             ) : (
                 getSortedEvents().map((event) => <EventCard key={event.id} event={event} />)

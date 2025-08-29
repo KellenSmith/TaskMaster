@@ -7,6 +7,7 @@ import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
 import { Prisma } from "@prisma/client";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface EventCardProps {
     event: Prisma.EventGetPayload<{
@@ -19,7 +20,7 @@ interface EventCardProps {
 }
 
 const EventCard: FC<EventCardProps> = ({ event }) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const theme = useTheme();
     const router = useRouter();
 
@@ -32,10 +33,9 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
     };
 
     const getStatusLabel = () => {
-        if (isUserHost(user, event)) return "Host";
-        if (isUserParticipant(user, event)) return "Participant";
-        if (isUserReserve(user, event)) return "Reserve";
-        return "Unknown";
+        if (isUserHost(user, event)) return LanguageTranslations.eventHost[language];
+        if (isUserParticipant(user, event)) return LanguageTranslations.participant[language];
+        if (isUserReserve(user, event)) return LanguageTranslations.reserve[language];
     };
 
     return (
@@ -83,11 +83,13 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                             <strong>Start:</strong> {formatDate(event.start_time)}
                         </Typography>
                         <Typography color="text.secondary">
-                            <strong>End:</strong> {formatDate(event.end_time)}
+                            <strong>{LanguageTranslations.end[language]}:</strong>{" "}
+                            {formatDate(event.end_time)}
                         </Typography>
                         {event.location.name && (
                             <Typography color="text.secondary">
-                                <strong>Location:</strong> {event.location.name}
+                                <strong>{LanguageTranslations.location[language]}:</strong>{" "}
+                                {event.location.name}, {event.location.address}
                             </Typography>
                         )}
                     </Stack>
@@ -104,7 +106,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                             }
                             sx={{ minWidth: 80 }}
                         >
-                            View Event
+                            {LanguageTranslations.seeEvent[language]}
                         </Button>
                     </Box>
                 </Stack>

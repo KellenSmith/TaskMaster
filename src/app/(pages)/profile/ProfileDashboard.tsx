@@ -91,7 +91,7 @@ const ProfileDashboard = ({
                         <Tab
                             key={tabKey}
                             value={tabs[tabKey]}
-                            label={LanguageTranslations[tabs[tabKey]][language]}
+                            label={LanguageTranslations[tabs[tabKey]][language] as string}
                         />
                     ) : null,
                 )}

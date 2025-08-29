@@ -19,8 +19,8 @@ const LanguageTranslations = {
         [Language.swedish]: "Evenemang",
     },
     [implementedTabs.tasks]: {
-        [Language.english]: "Tasks",
-        [Language.swedish]: "Uppgifter",
+        [Language.english]: "To do",
+        [Language.swedish]: "Att göra",
     },
     [implementedTabs.skill_badges]: {
         [Language.english]: "Skill Badges",
@@ -99,6 +99,36 @@ const LanguageTranslations = {
     [UserRole.member]: {
         [Language.english]: "Member",
         [Language.swedish]: "Medlem",
+    },
+    noEvents: {
+        [Language.english]:
+            "You are not participating in any events. Check the calendar to get involved!",
+        [Language.swedish]:
+            "Du deltar inte i några evenemang. Kolla kalendern för att engagera dig!",
+    },
+    eventHost: {
+        [Language.english]: "Host",
+        [Language.swedish]: "Värd",
+    },
+    participant: {
+        [Language.english]: "Participant",
+        [Language.swedish]: "Deltagare",
+    },
+    reserve: {
+        [Language.english]: "Reserve",
+        [Language.swedish]: "Reserv",
+    },
+    end: {
+        [Language.english]: "End",
+        [Language.swedish]: "Slut",
+    },
+    location: {
+        [Language.english]: "Location",
+        [Language.swedish]: "Plats",
+    },
+    seeEvent: {
+        [Language.english]: "See event",
+        [Language.swedish]: "Se evenemang",
     },
 };
 
