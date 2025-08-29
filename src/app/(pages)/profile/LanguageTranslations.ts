@@ -1,4 +1,4 @@
-import { Language, Prisma } from "@prisma/client";
+import { Language, Prisma, UserRole } from "@prisma/client";
 import { isMembershipExpired } from "../../lib/definitions";
 
 export const implementedTabs = {
@@ -49,6 +49,56 @@ const LanguageTranslations = {
     deleteAccount: {
         [Language.english]: "Delete Account",
         [Language.swedish]: "Ta bort konto",
+    },
+    membership: {
+        [Language.english]: "Membership",
+        [Language.swedish]: "Medlemskap",
+    },
+    expired: {
+        [Language.english]: "Expired",
+        [Language.swedish]: "Utgått",
+    },
+    active: {
+        [Language.english]: "Active",
+        [Language.swedish]: "Aktiv",
+    },
+    membershipExpiredPrompt: {
+        [Language.english]: (
+            user: Prisma.UserGetPayload<{
+                include: { user_membership: true };
+            }>,
+        ) =>
+            user.user_membership
+                ? "Your membership has expired and needs renewal"
+                : "Welcome! Activate your membership to get started",
+        [Language.swedish]: (
+            user: Prisma.UserGetPayload<{
+                include: { user_membership: true };
+            }>,
+        ) =>
+            user.user_membership
+                ? "Ditt medlemskap har gått ut och behöver förnyas"
+                : "Välkommen! Aktivera ditt medlemskap för att komma igång",
+    },
+    memberSince: {
+        [Language.english]: "Member since",
+        [Language.swedish]: "Medlem sedan",
+    },
+    membershipExpires: {
+        [Language.english]: "Membership expires",
+        [Language.swedish]: "Medlemskapet går ut",
+    },
+    role: {
+        [Language.english]: "Role",
+        [Language.swedish]: "Roll",
+    },
+    [UserRole.admin]: {
+        [Language.english]: "Admin",
+        [Language.swedish]: "Administratör",
+    },
+    [UserRole.member]: {
+        [Language.english]: "Member",
+        [Language.swedish]: "Medlem",
     },
 };
 

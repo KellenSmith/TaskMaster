@@ -5,10 +5,11 @@ import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui
 import { useUserContext } from "../../context/UserContext";
 import { formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
+import LanguageTranslations from "./LanguageTranslations";
 
 const MembershipStatusCard = () => {
     const theme = useTheme();
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     return (
         <Card elevation={3}>
             <CardContent>
@@ -21,14 +22,19 @@ const MembershipStatusCard = () => {
                         justifyContent="space-between"
                     >
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                            Membership
+                            {LanguageTranslations.membership[language]}
                         </Typography>
                         {isMembershipExpired(user) ? (
-                            <Chip icon={<Warning />} label="Expired" color="error" size="small" />
+                            <Chip
+                                icon={<Warning />}
+                                label={LanguageTranslations.expired[language]}
+                                color="error"
+                                size="small"
+                            />
                         ) : (
                             <Chip
                                 icon={<CheckCircle />}
-                                label="Active"
+                                label={LanguageTranslations.active[language]}
                                 color="success"
                                 size="small"
                             />
@@ -55,9 +61,7 @@ const MembershipStatusCard = () => {
                                     textAlign: "center",
                                 }}
                             >
-                                {user.user_membership
-                                    ? "Your membership has expired and needs renewal"
-                                    : "Welcome! Activate your membership to get started"}
+                                {LanguageTranslations.membershipExpiredPrompt[language](user)}
                             </Typography>
                         </Stack>
                     ) : (
@@ -67,7 +71,7 @@ const MembershipStatusCard = () => {
                                 <Person color="primary" />
                                 <Stack>
                                     <Typography variant="body2" color="text.secondary">
-                                        Member since
+                                        {LanguageTranslations.memberSince[language]}
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
                                         {formatDate(user.created_at)}
@@ -80,7 +84,7 @@ const MembershipStatusCard = () => {
                                 <Schedule color="primary" />
                                 <Stack>
                                     <Typography variant="body2" color="text.secondary">
-                                        Membership expires
+                                        {LanguageTranslations.membershipExpires[language]}
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
                                         {formatDate(dayjs(user.user_membership.expires_at))}
@@ -92,13 +96,13 @@ const MembershipStatusCard = () => {
                                 <AdminPanelSettings color="primary" />
                                 <Stack>
                                     <Typography variant="body2" color="text.secondary">
-                                        Role
+                                        {LanguageTranslations.role[language]}
                                     </Typography>
                                     <Typography
                                         variant="body1"
                                         sx={{ fontWeight: 500, textTransform: "capitalize" }}
                                     >
-                                        {user.role}
+                                        {LanguageTranslations[user.role][language]}
                                     </Typography>
                                 </Stack>
                             </Stack>
