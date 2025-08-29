@@ -232,10 +232,13 @@ const Form: FC<FormProps> = ({
     };
 
     return (
-        <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto" }}>
+        <Card
+            component="form"
+            onSubmit={submitForm}
+            sx={{ overflowY: "auto", height: "100%", width: "100%" }}
+        >
             {(editable || FieldLabels[name]) && (
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <CardHeader title={FieldLabels[name][language]} />
+                <Stack direction="row" justifyContent="flex-end" alignItems="center">
                     {editable && (
                         <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
                             {editMode ? <Cancel /> : <Edit />}
