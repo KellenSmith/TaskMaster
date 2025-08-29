@@ -36,6 +36,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
 import dayjs from "dayjs";
+import { useUserContext } from "../../context/UserContext";
 
 interface FormProps {
     name: string;
@@ -66,6 +67,7 @@ const Form: FC<FormProps> = ({
     readOnly = true,
     editable = true,
 }) => {
+    const { language } = useUserContext();
     const [validationError, setValidationError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const [editMode, setEditMode] = useState(!readOnly);
@@ -141,7 +143,7 @@ const Form: FC<FormProps> = ({
                 <AutocompleteWrapper
                     key={fieldId}
                     fieldId={fieldId}
-                    label={FieldLabels[fieldId]}
+                    label={FieldLabels[fieldId][language]}
                     editMode={editMode}
                     defaultValue={defaultValues?.[fieldId]}
                     customReadOnlyFields={customReadOnlyFields}
@@ -156,7 +158,7 @@ const Form: FC<FormProps> = ({
                     key={fieldId}
                     name={fieldId}
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                    label={FieldLabels[fieldId]}
+                    label={FieldLabels[fieldId][language]}
                     defaultValue={getDefaultValue(fieldId)}
                     slotProps={{
                         textField: {
@@ -180,7 +182,7 @@ const Form: FC<FormProps> = ({
                             defaultChecked={getDefaultValue(fieldId) || false}
                         />
                     }
-                    label={FieldLabels[fieldId]}
+                    label={FieldLabels[fieldId][language]}
                 />
             );
         if (richTextFields.includes(fieldId)) {
@@ -197,7 +199,7 @@ const Form: FC<FormProps> = ({
             <TextField
                 disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                 key={fieldId}
-                label={FieldLabels[fieldId]}
+                label={FieldLabels[fieldId][language]}
                 name={fieldId}
                 defaultValue={getDefaultValue(fieldId)}
                 required={requiredFields.includes(fieldId)}
@@ -230,7 +232,7 @@ const Form: FC<FormProps> = ({
         <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto" }}>
             {(editable || FieldLabels[name]) && (
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <CardHeader title={FieldLabels[name]} />
+                    <CardHeader title={FieldLabels[name][language]} />
                     {editable && (
                         <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
                             {editMode ? <Cancel /> : <Edit />}

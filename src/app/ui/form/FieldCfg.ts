@@ -1,42 +1,15 @@
 import { Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
+import { organizationSettingsFieldLabels, userFieldLabels } from "./LanguageTranslations";
 
 export const FieldLabels = {
-    [GlobalConstants.ID]: "ID",
-    [GlobalConstants.UPDATE]: "Update",
-    [GlobalConstants.DELETE]: "Delete",
-    [GlobalConstants.VALIDATE_MEMBERSHIP]: "Validate Membership",
-    [GlobalConstants.APPLY]: "Apply For Membership",
-    // Organization settings
-    [GlobalConstants.ORGANIZATION_SETTINGS]: "Settings",
-    [GlobalConstants.ORGANIZATION_NAME]: "Organization Name",
-    [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]: "Default Task Shift Length [hours]",
-    [GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS]: "Remind before membership expires [days]",
-    [GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED]:
-        "Purge Members After Time Unvalidated [days]",
-    [GlobalConstants.MEMBER_APPLICATION_PROMPT]: "Send us a message",
+    ...organizationSettingsFieldLabels,
+    ...userFieldLabels,
     // Profile
     [GlobalConstants.PROFILE]: "Profile",
-    // User
-    [GlobalConstants.USER]: "User",
-    [GlobalConstants.FIRST_NAME]: "First Name",
-    [GlobalConstants.SURNAME]: "Surname",
-    [GlobalConstants.NICKNAME]: "Nickname",
-    [GlobalConstants.PRONOUN]: "Pronoun",
-    [GlobalConstants.EMAIL]: "Email",
-    [GlobalConstants.PHONE]: "Phone",
-    [GlobalConstants.ROLE]: "Role",
-    [GlobalConstants.CREATED_AT]: "Created At",
-    [GlobalConstants.UPDATED_AT]: "Updated At",
-    [GlobalConstants.CONSENT_TO_NEWSLETTERS]: `I consent to receiving newsletters`,
-    [GlobalConstants.CONSENT_GDPR]: "I consent to being added to the member registry",
-    [GlobalConstants.PENDING]: "Pending",
-    [GlobalConstants.ACTIVE]: "Active",
-    [GlobalConstants.EXPIRED]: "Expired",
     // Login
     [GlobalConstants.LOGIN]: "Login",
-    [GlobalConstants.PASSWORD]: "Password",
     // Reset
     [GlobalConstants.RESET]: "Reset",
     // Credentials
