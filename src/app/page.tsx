@@ -1,19 +1,19 @@
-import { Stack, Typography } from "@mui/material";
 import React from "react";
 import GlobalConstants from "./GlobalConstants";
-import { prisma } from "../../prisma/prisma-client";
-import TextContent from "./ui/TextContent";
+import ErrorBoundarySuspense from "./ui/ErrorBoundarySuspense";
+import HomeDashboard from "./HomeDashboard";
+import { unstable_cache } from "next/cache";
+import { getTextContent } from "./lib/text-content-actions";
 
 const HomePage: React.FC = async () => {
-    const organizationSettings = await prisma.organizationSettings.findFirst();
+    const textContentPromise = unstable_cache(getTextContent, [GlobalConstants.HOME], {
+        tags: [GlobalConstants.TEXT_CONTENT],
+    })(GlobalConstants.HOME);
 
     return (
-        <Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center" }}>
-            <Typography textAlign="center" color="primary" variant="h3">
-                {`Welcome to ${organizationSettings?.organization_name}`}
-            </Typography>
-            <TextContent id={GlobalConstants.HOME} />
-        </Stack>
+        <ErrorBoundarySuspense>
+            <HomeDashboard textContentPromise={textContentPromise} />
+        </ErrorBoundarySuspense>
     );
 };
 

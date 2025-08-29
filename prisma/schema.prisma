@@ -26,13 +26,27 @@ model OrganizationSettings {
 }
 
 model TextContent {
-    id       String  @id
-    language String
-    content  String
-    category String? @default("organization") // ui, email, help, etc.
+    id           String            @id @default(uuid())
+    category     String?           @default("organization") // ui, email, help, etc.
+    translations TextTranslation[]
 
-    @@unique([id, language])
     @@map("text_contents")
+}
+
+enum Language {
+    english
+    swedish
+}
+
+model TextTranslation {
+    id              String      @id @default(uuid())
+    text            String
+    language        Language
+    text_content_id String
+    text_content    TextContent @relation(fields: [text_content_id], references: [id])
+
+    @@unique([language, text_content_id])
+    @@map("text_translations")
 }
 
 enum UserRole {
