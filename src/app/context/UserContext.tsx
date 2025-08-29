@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, FC, ReactNode, useContext, useState } from "react";
+import { createContext, FC, ReactNode, useContext, useState, useEffect } from "react";
 import { Language, Prisma } from "@prisma/client";
 import { getSession, useSession } from "next-auth/react";
 import { CircularProgress, Stack } from "@mui/material";
@@ -23,6 +23,19 @@ export const useUserContext = (): UserContextValue => {
     return context;
 };
 
+const languageCookieName = "language";
+const readLanguageFromCookie = (): Language => {
+    try {
+        const raw = document.cookie.split("; ").find((c) => c.startsWith(`${languageCookieName}=`));
+        if (!raw) return Language.english;
+        const value = decodeURIComponent(raw.split("=")[1] || "");
+        if (Object.values(Language).includes(value as Language)) return value as Language;
+        return Language.english;
+    } catch (e) {
+        return Language.english;
+    }
+};
+
 interface UserContextProviderProps {
     children: ReactNode;
 }
@@ -30,7 +43,11 @@ interface UserContextProviderProps {
 const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     const session = useSession();
     const router = useRouter();
-    const [language, setLanguage] = useState<Language>(Language.english);
+
+    const [language, setLanguage] = useState<Language>(() => readLanguageFromCookie());
+
+    // Persist language to a cookie whenever it changes
+    useEffect(() => {}, [language]);
     const [editMode, setEditMode] = useState(false);
 
     const refreshSession = async () => {
@@ -38,10 +55,22 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
         router.refresh();
     };
 
+    const updateLanguage = (newLanguage: Language) => {
+        try {
+            // 1 year max-age
+            const maxAge = 60 * 60 * 24 * 365;
+            document.cookie = `${languageCookieName}=${encodeURIComponent(newLanguage)}; path=/; max-age=${maxAge}`;
+            setLanguage(newLanguage);
+        } catch (e) {
+            console.error(e);
+            setLanguage(Language.english);
+        }
+    };
+
     const contextValue: UserContextValue = {
         user: session.data?.user || null,
         language,
-        setLanguage,
+        setLanguage: updateLanguage,
         editMode,
         setEditMode,
         refreshSession,

@@ -34,8 +34,8 @@ model TextContent {
 }
 
 enum Language {
-    english
     swedish
+    english
 }
 
 model TextTranslation {
