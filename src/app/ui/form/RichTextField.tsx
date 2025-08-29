@@ -8,7 +8,7 @@ import {
 import RichTextFieldControls from "./RichTextFieldControls";
 import useExtensions from "./useRichTextFieldExtensions";
 import { FieldLabels } from "./FieldCfg";
-import { Card } from "@mui/material";
+import { Card, CardContent } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";
 
 interface RichTextFieldProps {
@@ -24,31 +24,37 @@ const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode = false, defa
 
     // TODO: sanitize HTML content
 
-    const [content, setContent] = useState(defaultValue || FieldLabels[fieldId][language] || "");
+    const [content, setContent] = useState(
+        defaultValue || (FieldLabels[fieldId][language] as string) || "",
+    );
 
     return (
         <>
             {/* Hidden input for form submission */}
             <input type="hidden" name={fieldId} value={content} />
             {editMode ? (
-                <RichTextEditor
-                    ref={rteRef}
-                    immediatelyRender={false}
-                    extensions={extensions}
-                    content={content}
-                    onUpdate={({ editor }) => setContent(editor.getHTML())}
-                    renderControls={() => <RichTextFieldControls />}
-                >
-                    {() => <LinkBubbleMenu />}
-                </RichTextEditor>
+                // Ensure the editor expands to available width
+                <div style={{ width: "100%", backgroundColor: "transparent" }}>
+                    <RichTextEditor
+                        ref={rteRef}
+                        immediatelyRender={false}
+                        extensions={extensions}
+                        content={content}
+                        onUpdate={({ editor }) => setContent(editor.getHTML())}
+                        renderControls={() => <RichTextFieldControls />}
+                    >
+                        {() => <LinkBubbleMenu />}
+                    </RichTextEditor>
+                </div>
             ) : (
-                <Card>
+                // Readonly view inside a Card that also spans full width
+                <div style={{ width: "100%", backgroundColor: "transparent" }}>
                     <RichTextReadOnly
                         immediatelyRender={false}
                         content={content}
                         extensions={extensions}
                     />
-                </Card>
+                </div>
             )}
         </>
     );

@@ -15,97 +15,77 @@ import GlobalConstants from "../GlobalConstants";
 import { addEventParticipant } from "./event-participant-actions";
 
 export const getAllProducts = async (): Promise<Product[]> => {
-    try {
-        return await prisma.product.findMany();
-    } catch {
-        throw new Error(`Failed fetching products`);
-    }
+    return await prisma.product.findMany();
 };
 
 export const createProduct = async (
     parsedFieldValues: z.infer<typeof ProductCreateSchema>,
 ): Promise<void> => {
-    try {
-        await prisma.product.create({
-            data: parsedFieldValues,
-        });
-        revalidateTag(GlobalConstants.PRODUCT);
-    } catch {
-        throw new Error(`Failed creating product`);
-    }
+    await prisma.product.create({
+        data: parsedFieldValues,
+    });
+    revalidateTag(GlobalConstants.PRODUCT);
 };
 
 export const createMembershipProduct = async (
     parsedFieldValues: z.infer<typeof MembershipCreateSchema>,
 ): Promise<void> => {
-    try {
-        const membershipValues = MembershipWithoutProductSchema.parse(parsedFieldValues);
-        const productValues = ProductCreateSchema.parse(parsedFieldValues);
-        await prisma.membership.create({
-            data: {
-                ...membershipValues,
-                product: {
-                    create: productValues,
-                },
+    const membershipValues = MembershipWithoutProductSchema.parse(parsedFieldValues);
+    const productValues = ProductCreateSchema.parse(parsedFieldValues);
+    await prisma.membership.create({
+        data: {
+            ...membershipValues,
+            product: {
+                create: productValues,
             },
-        });
-        revalidateTag(GlobalConstants.PRODUCT);
-        revalidateTag(GlobalConstants.MEMBERSHIP);
-    } catch {
-        throw new Error("Failed to create membership");
-    }
+        },
+    });
+    revalidateTag(GlobalConstants.PRODUCT);
+    revalidateTag(GlobalConstants.MEMBERSHIP);
 };
 
 export const updateProduct = async (
     productId: string,
     parsedFieldValues: z.infer<typeof ProductUpdateSchema>,
 ): Promise<void> => {
-    try {
-        await prisma.product.update({
-            where: { id: productId },
-            data: parsedFieldValues,
-        });
-        revalidateTag(GlobalConstants.PRODUCT);
-    } catch {
-        throw new Error(`Failed updating product`);
-    }
+    await prisma.product.update({
+        where: { id: productId },
+        data: parsedFieldValues,
+    });
+    revalidateTag(GlobalConstants.PRODUCT);
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
-    try {
-        const membership = await prisma.membership.findUnique({
-            where: { product_id: productId },
-        });
-        const ticket = await prisma.ticket.findUnique({
-            where: { product_id: productId },
-        });
+    const membership = await prisma.membership.findUnique({
+        where: { product_id: productId },
+    });
+    const ticket = await prisma.ticket.findUnique({
+        where: { product_id: productId },
+    });
 
-        const deleteRelationsPromises = [];
-        if (membership)
-            deleteRelationsPromises.push(
-                prisma.membership.delete({
-                    where: { product_id: productId },
-                }),
-            );
-        if (ticket)
-            deleteRelationsPromises.push(
-                prisma.ticket.delete({
-                    where: { product_id: productId },
-                }),
-            );
-
-        await prisma.$transaction([
-            ...deleteRelationsPromises,
-            prisma.product.delete({
-                where: { id: productId },
+    const deleteRelationsPromises = [];
+    if (membership)
+        deleteRelationsPromises.push(
+            prisma.membership.delete({
+                where: { product_id: productId },
             }),
-        ]);
-        revalidateTag(GlobalConstants.PRODUCT);
-        revalidateTag(GlobalConstants.TICKET);
-        revalidateTag(GlobalConstants.MEMBERSHIP);
-    } catch {
-        throw new Error(`Failed deleting product`);
-    }
+        );
+    if (ticket)
+        deleteRelationsPromises.push(
+            prisma.ticket.delete({
+                where: { product_id: productId },
+            }),
+        );
+
+    await prisma.$transaction([
+        ...deleteRelationsPromises,
+        prisma.product.delete({
+            where: { id: productId },
+        }),
+    ]);
+    revalidateTag(GlobalConstants.PRODUCT);
+    revalidateTag(GlobalConstants.TICKET);
+    revalidateTag(GlobalConstants.MEMBERSHIP);
 };
 
 // TODO: Do this in a transaction to avoid partial successes
@@ -136,6 +116,6 @@ export const processOrderedProduct = async (
         }
     }
     if (failedProducts.length > 0) {
-        throw new Error(failedProducts.join(", "));
+        throw new Error("Error for order item " + orderItem.id + ": " + failedProducts.join(", "));
     }
 };

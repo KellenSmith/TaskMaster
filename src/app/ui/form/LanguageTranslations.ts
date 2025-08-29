@@ -1,4 +1,4 @@
-import { Language, TicketType } from "@prisma/client";
+import { Language, TaskStatus, TicketType } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 
@@ -207,6 +207,22 @@ export const taskFieldLabels = {
     [GlobalConstants.STATUS]: {
         [Language.english]: "Status",
         [Language.swedish]: "Status",
+    },
+    [TaskStatus.toDo]: {
+        [Language.english]: "To Do",
+        [Language.swedish]: "Att Göra",
+    },
+    [TaskStatus.inProgress]: {
+        [Language.english]: "In Progress",
+        [Language.swedish]: "Pågående",
+    },
+    [TaskStatus.inReview]: {
+        [Language.english]: "In Review",
+        [Language.swedish]: "Under Granskning",
+    },
+    [TaskStatus.done]: {
+        [Language.english]: "Done",
+        [Language.swedish]: "Färdig",
     },
     [GlobalConstants.ASSIGNEE_ID]: {
         [Language.english]: "Assignee",

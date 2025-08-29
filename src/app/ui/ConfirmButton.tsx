@@ -28,7 +28,7 @@ const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) 
             <Button disabled={isPending} onClick={() => setOpen(true)} {...buttonProps}>
                 {children}
             </Button>
-            <Dialog open={open} onClose={() => setOpen(false)}>
+            <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>{LanguageTranslations.confirm[language]}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>

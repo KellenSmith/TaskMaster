@@ -18,7 +18,7 @@ const TasksPage = () => {
     })();
 
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to load tasks">
+        <ErrorBoundarySuspense>
             <KanBanBoard
                 readOnly={false}
                 tasksPromise={tasksPromise}

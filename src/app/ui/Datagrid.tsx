@@ -25,6 +25,7 @@ export interface RowActionProps {
     ) => Promise<string>;
     available: (clickedRow: any) => boolean; // eslint-disable-line no-unused-vars
     buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning";
+    buttonLabel: string;
 }
 
 export type ImplementedDatagridEntities =
@@ -94,9 +95,9 @@ const Datagrid: React.FC<DatagridProps> = ({
 
     const getColumns = () => {
         if (datagridRows.length < 1) return [];
-        const customColumnFieldKeys = customColumns.map((col) => col.field);
         const columns: GridColDef[] = Object.keys(datagridRows[0]).map((key) => {
-            if (customColumnFieldKeys.includes(key)) return null;
+            const customColumn = customColumns.find((col) => col.field === key);
+            if (customColumn) return customColumn;
             return {
                 field: key,
                 headerName: key in FieldLabels ? FieldLabels[key][language] : key,
@@ -110,7 +111,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 },
             };
         }) as GridColDef[];
-        return [...customColumns, ...columns].filter(Boolean);
+        return columns;
     };
     const columns = useMemo(getColumns, [datagridRows, customColumns]);
 
@@ -153,7 +154,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                     color={rowAction.buttonColor || "secondary"}
                     disabled={isPending}
                 >
-                    {FieldLabels[rowAction.name][language] as string}
+                    {rowAction.buttonLabel}
                 </ButtonComponent>
             )
         );

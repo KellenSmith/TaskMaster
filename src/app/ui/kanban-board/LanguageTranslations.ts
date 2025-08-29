@@ -47,8 +47,8 @@ const LanguageTranslations = {
         [Language.swedish]: "Rensa",
     },
     taskSetTo: {
-        [Language.english]: "Task set to",
-        [Language.swedish]: "Uppgift satt till",
+        [Language.english]: "Set to",
+        [Language.swedish]: "Satt till",
     },
     [TaskStatus.toDo]: {
         [Language.english]: "To Do",

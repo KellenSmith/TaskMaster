@@ -35,7 +35,7 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
         if (customOptions) return customOptions;
         return selectFieldOptions[fieldId].map((option: string) => ({
             id: option,
-            label: FieldLabels[option][language] || option,
+            label: (FieldLabels[option]?.[language] as string) || option,
         }));
     }, [fieldId, customOptions, language]);
 

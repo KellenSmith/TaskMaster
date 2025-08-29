@@ -244,7 +244,7 @@ export const selectFieldOptions = {
     // User
     [GlobalConstants.ROLE]: Object.values(UserRole),
     [GlobalConstants.STATUS]: Object.values(TaskStatus),
-    [GlobalConstants.TAGS]: ["LOCATION_ID", "Decoration", "Wardrobe", "Bartending", "Music"],
+    [GlobalConstants.TAGS]: ["Decoration", "Wardrobe", "Bartending", "Music"],
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
 };
 

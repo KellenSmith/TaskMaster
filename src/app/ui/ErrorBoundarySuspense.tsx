@@ -1,3 +1,4 @@
+import { Error } from "@mui/icons-material";
 import { CircularProgress, Stack, Typography } from "@mui/material";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -8,10 +9,10 @@ const Container = ({ children }) => (
     </Stack>
 );
 
-export const ErrorFallback = ({ errorMessage }) => {
+export const ErrorFallback = () => {
     return (
         <Container>
-            <Typography color="primary">{errorMessage}</Typography>
+            <Error />
         </Container>
     );
 };
@@ -24,9 +25,9 @@ export const LoadingFallback = () => {
     );
 };
 
-const ErrorBoundarySuspense = ({ errorMessage = "An unexpected error occurred", children }) => {
+const ErrorBoundarySuspense = ({ children }) => {
     return (
-        <ErrorBoundary fallback={<ErrorFallback errorMessage={errorMessage} />}>
+        <ErrorBoundary fallback={<ErrorFallback />}>
             <Suspense fallback={<LoadingFallback />}>{children}</Suspense>
         </ErrorBoundary>
     );

@@ -160,7 +160,7 @@ export const TaskCreateSchema = z
         assignee_id: z.string().nullable(),
         reviewer_id: z.string().nullable(),
 
-        skill_badges: z.array(z.string()).optional(),
+        skill_badges: selectMultipleSchema,
 
         event_id: z.string().nullable().optional(),
     })

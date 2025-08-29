@@ -10,7 +10,7 @@ const ProductsPage = () => {
     })();
 
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to load products">
+        <ErrorBoundarySuspense>
             <ProductsDashboard productsPromise={productsPromise} />
         </ErrorBoundarySuspense>
     );

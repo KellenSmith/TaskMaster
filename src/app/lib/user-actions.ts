@@ -28,11 +28,11 @@ export const createUser = async (
     parsedFieldValues: z.infer<typeof UserCreateSchema>,
 ): Promise<void> => {
     let createdUserId: string;
-    try {
-        const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
-        const createdUser = await prisma.user.create({
-            data: {
-                ...userData,
+    const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
+    const createdUser = await prisma.user.create({
+        data: {
+            ...userData,
+            ...(skill_badge_ids && {
                 skill_badges: {
                     createMany: {
                         data: skill_badge_ids.map((badgeId) => ({
@@ -40,12 +40,10 @@ export const createUser = async (
                         })),
                     },
                 },
-            },
-        });
-        createdUserId = createdUser.id;
-    } catch {
-        throw new Error("Failed creating user");
-    }
+            }),
+        },
+    });
+    createdUserId = createdUser.id;
 
     try {
         // If this user is the first user, make them an admin and validate their membership
@@ -66,24 +64,13 @@ export const createUser = async (
 export const submitMemberApplication = async (
     parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
 ) => {
-    try {
-        const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
-        await createUser(userFieldValues);
+    const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
+    await createUser(userFieldValues);
 
-        revalidateTag(GlobalConstants.USER);
-    } catch {
-        throw new Error("Failed to submit membership application");
-    }
+    revalidateTag(GlobalConstants.USER);
 
-    try {
-        // Send membership application to organization email
-        await notifyOfMembershipApplication(parsedFieldValues);
-    } catch {
-        const errorMsg =
-            "A membership application was submitted but notification email could not be sent";
-        console.error(errorMsg);
-        throw new Error(errorMsg);
-    }
+    // Send membership application to organization email
+    await notifyOfMembershipApplication(parsedFieldValues);
 };
 
 export const getAllUsers = async (): Promise<

@@ -14,6 +14,7 @@ import {
     Button,
     Stack,
 } from "@mui/material";
+import RichTextField from "../../ui/form/RichTextField";
 
 interface SkillBadgeProps {
     badge: SkillBadge;
@@ -59,7 +60,7 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>{badge.name}</DialogTitle>
                 <DialogContent>
-                    <Stack direction="row" spacing={4}>
+                    <Stack direction="row" width="100%" spacing={4}>
                         <Image
                             src={badge.image_url || "/images/badge-placeholder.svg"}
                             alt={badge.name}
@@ -71,7 +72,7 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
                                 maxWidth: 250,
                             }}
                         />
-                        <Typography color="text.secondary">{badge.description}</Typography>
+                        <RichTextField defaultValue={badge.description} editMode={false} />
                     </Stack>
                 </DialogContent>
                 <DialogActions>
