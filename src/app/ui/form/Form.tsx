@@ -124,6 +124,9 @@ const Form: FC<FormProps> = ({
         }
     };
 
+    // Make the Form rerender fields when default values change
+    const getFieldCompKey = (fieldId: string): string => `${fieldId}-${defaultValues?.[fieldId]}`;
+
     const getDefaultValue = (fieldId: string) => {
         if (defaultValues && fieldId in defaultValues) {
             if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId]);
@@ -141,7 +144,7 @@ const Form: FC<FormProps> = ({
         if (fieldId in selectFieldOptions || customOptions[fieldId]) {
             return (
                 <AutocompleteWrapper
-                    key={fieldId}
+                    key={getFieldCompKey(fieldId)}
                     fieldId={fieldId}
                     label={FieldLabels[fieldId][language]}
                     editMode={editMode}
@@ -155,7 +158,7 @@ const Form: FC<FormProps> = ({
         if (datePickerFields.includes(fieldId)) {
             return (
                 <DateTimePicker
-                    key={fieldId}
+                    key={getFieldCompKey(fieldId)}
                     name={fieldId}
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId][language]}
@@ -173,7 +176,7 @@ const Form: FC<FormProps> = ({
         if (checkboxFields.includes(fieldId))
             return (
                 <FormControlLabel
-                    key={fieldId}
+                    key={getFieldCompKey(fieldId)}
                     required={requiredFields.includes(fieldId)}
                     control={
                         <Checkbox
@@ -188,7 +191,7 @@ const Form: FC<FormProps> = ({
         if (richTextFields.includes(fieldId)) {
             return (
                 <RichTextField
-                    key={fieldId}
+                    key={getFieldCompKey(fieldId)}
                     fieldId={fieldId}
                     editMode={editMode || customReadOnlyFields.includes(fieldId)}
                     defaultValue={defaultValues?.[fieldId] || ""}
@@ -198,7 +201,7 @@ const Form: FC<FormProps> = ({
         return (
             <TextField
                 disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                key={fieldId}
+                key={getFieldCompKey(fieldId)}
                 label={FieldLabels[fieldId][language]}
                 name={fieldId}
                 defaultValue={getDefaultValue(fieldId)}
@@ -215,7 +218,7 @@ const Form: FC<FormProps> = ({
         const infoText = customInfoTexts[fieldId] || explanatoryTexts[fieldId];
         if (!infoText) return null;
         return (
-            <>
+            <Stack key={getFieldCompKey(fieldId) + "-infotext"}>
                 <Card sx={{ py: 1 }}>
                     {infoText.split("\n").map((line, index) => (
                         <Typography key={index} variant="subtitle2" color="primary">
@@ -224,7 +227,7 @@ const Form: FC<FormProps> = ({
                     ))}
                 </Card>
                 <Divider />
-            </>
+            </Stack>
         );
     };
 
