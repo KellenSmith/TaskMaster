@@ -1,11 +1,11 @@
 "use client";
 
 import { createContext, FC, ReactNode, useContext, useState } from "react";
-import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { getSession, useSession } from "next-auth/react";
 import { CircularProgress, Stack } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { Language } from "../LanguageTranslations";
 
 interface UserContextValue {
     user: Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }> | null;
@@ -31,7 +31,7 @@ interface UserContextProviderProps {
 const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     const session = useSession();
     const router = useRouter();
-    const [language, setLanguage] = useState(GlobalConstants.ENGLISH);
+    const [language, setLanguage] = useState(Language.english);
     const [editMode, setEditMode] = useState(false);
 
     const refreshSession = async () => {

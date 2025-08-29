@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="600" height="300" role="img" aria-label="Union Jack">
+  <rect width="60" height="30" fill="#012169"/>
+  <!-- white diagonal broad stripes -->
+  <g stroke="#ffffff" stroke-width="6" stroke-linecap="square">
+    <line x1="-8" y1="-8" x2="68" y2="38"/>
+    <line x1="-8" y1="38" x2="68" y2="-8"/>
+  </g>
+  <!-- red diagonal narrower stripes -->
+  <g stroke="#C8102E" stroke-width="3" stroke-linecap="square">
+    <line x1="-8" y1="-8" x2="68" y2="38"/>
+    <line x1="-8" y1="38" x2="68" y2="-8"/>
+  </g>
+  <!-- white upright/horizontal cross -->
+  <rect x="24" y="0" width="12" height="30" fill="#ffffff"/>
+  <rect x="0" y="10" width="60" height="10" fill="#ffffff"/>
+  <!-- red central cross -->
+  <rect x="26" y="0" width="8" height="30" fill="#C8102E"/>
+  <rect x="0" y="11" width="60" height="8" fill="#C8102E"/>
+</svg>

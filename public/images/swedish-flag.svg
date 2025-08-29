@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 10" width="640" height="400" role="img" aria-label="Swedish flag">
+  <!-- Proportions: simple Nordic cross, slightly hoist-offset -->
+  <rect width="16" height="10" fill="#005EB8"/>
+  <!-- vertical bar (hoist offset) -->
+  <rect x="5" y="0" width="2" height="10" fill="#FECB00"/>
+  <!-- horizontal bar -->
+  <rect x="0" y="4" width="16" height="2" fill="#FECB00"/>
+</svg>

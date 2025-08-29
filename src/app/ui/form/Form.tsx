@@ -82,8 +82,6 @@ const Form: FC<FormProps> = ({
         [name, customRequiredFields],
     );
 
-    console.log(customOptions);
-
     const validateFormData = (formData: FormData): z.infer<typeof validationSchema> | null => {
         const formDataObject = Object.fromEntries(formData);
         if (!validationSchema) return formDataObject;

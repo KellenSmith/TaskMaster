@@ -33,10 +33,11 @@ import { openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
 import { logOut } from "../lib/user-credentials-actions";
+import LanguageMenu from "./LanguageMenu";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { user, editMode, setEditMode, refreshSession } = useUserContext();
+    const { user, editMode, setEditMode, refreshSession, language, setLanguage } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
@@ -109,6 +110,7 @@ const NavPanel = () => {
                     >
                         {organizationSettings?.organization_name || "Organization Name"}
                     </Typography>
+                    <LanguageMenu language={language} setLanguage={setLanguage} />
                     <Tooltip title="Open README.md">
                         <Button onClick={() => openResourceInNewTab("/README.pdf")}>
                             <Article />
