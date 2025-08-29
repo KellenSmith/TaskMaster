@@ -28,6 +28,7 @@ import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
+import SendoutLanguageTranslations from "../sendout/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 interface IEventActions {
@@ -254,9 +255,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         try {
             const result = await sendMassEmail(recipientCriteria, parsedFieldValues);
             setDialogOpen(null);
-            return LanguageTranslations.successfulSendout[language](result);
+            return SendoutLanguageTranslations.successfulSendout[language](result);
         } catch {
-            throw new Error(LanguageTranslations.failedSendMail[language]);
+            throw new Error(SendoutLanguageTranslations.failedSendMail[language]);
         }
     };
 
@@ -289,7 +290,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         return (
             <>
                 <AccordionRadioGroup
-                    title={LanguageTranslations.sendToRecipients[language](recipientCount)}
+                    title={SendoutLanguageTranslations.sendToRecipients[language](recipientCount)}
                     value={sendoutTo[language]}
                     setValue={setSendoutTo}
                     valueOptions={Object.fromEntries(
@@ -301,7 +302,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                 />
                 <Form
                     name={dialogOpen}
-                    buttonLabel={LanguageTranslations.send[language]}
+                    buttonLabel={SendoutLanguageTranslations.send[language]}
                     readOnly={false}
                     action={sendoutToEventUsers}
                     validationSchema={EmailSendoutSchema}

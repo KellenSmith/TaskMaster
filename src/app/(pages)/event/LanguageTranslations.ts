@@ -174,14 +174,6 @@ const LanguageTranslations = {
         [Language.swedish]: (isReserve: boolean) =>
             isReserve ? "Lämna Reservlistan" : "Gå med i Reservlistan",
     },
-    sendToRecipients: {
-        [Language.english]: (recipientCount: number) => `Send to ${recipientCount} recipients`,
-        [Language.swedish]: (recipientCount: number) => `Skicka till ${recipientCount} mottagare`,
-    },
-    send: {
-        [Language.english]: "Send",
-        [Language.swedish]: "Skicka",
-    },
     publishedEvent: {
         [Language.english]: "Published event",
         [Language.swedish]: "Publicerat evenemang",
@@ -240,16 +232,6 @@ const LanguageTranslations = {
     sendMail: {
         [Language.english]: "Send mail to participants",
         [Language.swedish]: "Skicka mail till deltagare",
-    },
-    successfulSendout: {
-        [Language.english]: (result) =>
-            `Sendout successful. Accepted: ${result?.accepted || 0}, rejected: ${result?.rejected || 0}`,
-        [Language.swedish]: (result) =>
-            `Utskick lyckades. Accepterade: ${result?.accepted || 0}, avvisade: ${result?.rejected || 0}`,
-    },
-    failedSendMail: {
-        [Language.english]: "Failed to send mail",
-        [Language.swedish]: "Kunde inte skicka mail",
     },
     printParticipantList: {
         [Language.english]: "Print participant list",
