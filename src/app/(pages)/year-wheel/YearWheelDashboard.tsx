@@ -18,27 +18,22 @@ import { formatDate, openResourceInNewTab } from "../../ui/utils";
 import { ArrowLeft, ArrowRight, OpenInNew } from "@mui/icons-material";
 import { getRelativeUrl } from "../../lib/definitions";
 import GlobalConstants from "../../GlobalConstants";
+import { useUserContext } from "../../context/UserContext";
+import LanguageTranslations from "./LanguageTranslations";
+import { getSortedEvents } from "../event/event-utils";
 
 interface YearWheelDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<{ include: { tasks: true } }>[]>;
 }
 
 const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
+    const { language } = useUserContext();
     const events = use(eventsPromise);
     const [displayStartTime, setDisplayStartTime] = useState(dayjs().startOf("year"));
     const [markerDate, setMarkerDate] = useState(dayjs());
 
-    const getSortedEvents = () => {
-        return events.toSorted((a, b) => {
-            const aStart = dayjs(a.start_time);
-            const bStart = dayjs(b.start_time);
-            if (aStart.isSame(bStart)) return a.title.localeCompare(b.title);
-            return aStart.isBefore(bStart) ? -1 : 1;
-        });
-    };
-
     const getSortedAndFilteredEvents = () => {
-        return getSortedEvents().filter((event) => {
+        return getSortedEvents(events).filter((event) => {
             if (dayjs(event.start_time).isSame(displayStartTime, "year")) return true;
             if (dayjs(event.end_time).isSame(displayStartTime, "year")) return true;
             if (
@@ -74,7 +69,7 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
 
     const getEventsAtMarker = () => {
         const md = markerDate;
-        return getSortedEvents().filter((event) => {
+        return getSortedEvents(events).filter((event) => {
             const evStart = dayjs(event.start_time);
             const evEnd = dayjs(event.end_time);
 
@@ -128,13 +123,8 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
                 ref={containerRef}
                 onPointerDown={onContainerPointerDown}
             >
-                {getSortedAndFilteredEvents().map((event, index) => (
-                    <YearWheelEvent
-                        key={event.id}
-                        event={event}
-                        index={index * 2}
-                        sizePercent={100 - (index * 100) / events.length}
-                    />
+                {getSortedAndFilteredEvents().map((event) => (
+                    <YearWheelEvent key={event.id} event={event} events={events} />
                 ))}
                 {/* Marker rendered on top of all rings */}
                 <YearWheelMarker
@@ -147,7 +137,8 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
             </Stack>
             <Stack sx={{ width: "25%", p: 2 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                    Current events — {markerDate.format("YYYY/MM/DD")}
+                    {LanguageTranslations.currentEvents[language]} —{" "}
+                    {markerDate.format("YYYY/MM/DD")}
                 </Typography>
                 <List dense sx={{ maxHeight: 220, overflow: "auto" }}>
                     {getEventsAtMarker().length === 0 ? (

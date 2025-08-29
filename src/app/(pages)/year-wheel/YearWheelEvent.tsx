@@ -1,29 +1,44 @@
 import * as colors from "@mui/material/colors";
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
-import { getTasksSortedByTime } from "../event/event-utils";
+import { getSortedEvents, getTasksSortedByTime } from "../event/event-utils";
 import CircleSector from "./CircleSector";
 
 interface YearWheelEventProps {
     event: Prisma.EventGetPayload<{ include: { tasks: true } }>;
-    sizePercent: number;
-    index: number;
+    events: Prisma.EventGetPayload<{ include: { tasks: true } }>[];
 }
 
-const YearWheelEvent = ({ event, sizePercent, index }: YearWheelEventProps) => {
-    const sortedEventTasks = getTasksSortedByTime(event.tasks);
-    const earliestTaskStartTime = sortedEventTasks[0]?.start_time;
-    const latestTaskEndTime = sortedEventTasks.at(-1)?.end_time;
-    const totalDuration =
-        (dayjs(latestTaskEndTime).diff(dayjs(earliestTaskStartTime), "milliseconds") /
-            (365 * 24 * 60 * 60 * 1000)) *
-        100;
+const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
+    const getEarliestTaskStartTime = (ev: typeof event) => {
+        const sortedTasks = getTasksSortedByTime(ev.tasks);
+        return sortedTasks[0]?.start_time;
+    };
+
+    const getLatestTaskEndTime = (ev: typeof event) => {
+        const sortedTasks = getTasksSortedByTime(ev.tasks);
+        return sortedTasks.at(-1)?.end_time;
+    };
+
+    const getTotalDuration = (ev: typeof event) => {
+        return (
+            (dayjs(getLatestTaskEndTime(ev)).diff(
+                dayjs(getEarliestTaskStartTime(ev)),
+                "milliseconds",
+            ) /
+                (365 * 24 * 60 * 60 * 1000)) *
+            100
+        );
+    };
+
+    const totalDuration = getTotalDuration(event);
     const eventDuration =
         (dayjs(event.end_time).diff(dayjs(event.start_time), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
+
     const taskStartOffset =
-        (dayjs(earliestTaskStartTime).diff(dayjs().startOf("year"), "milliseconds") /
+        (dayjs(getEarliestTaskStartTime(event)).diff(dayjs().startOf("year"), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
     const eventStartOffset =
@@ -36,6 +51,36 @@ const YearWheelEvent = ({ event, sizePercent, index }: YearWheelEventProps) => {
         const shadeIndex = index % Object.keys(colors).length;
         return Object.values(colors)[shadeIndex];
     };
+
+    const overLappingEvents = getSortedEvents([
+        event,
+        ...events.filter((e) => {
+            const earliestTaskStartTime = getEarliestTaskStartTime(e);
+            const latestTaskEndTime = getLatestTaskEndTime(e);
+
+            const currentEarliestTaskStartTime = getEarliestTaskStartTime(event);
+            const currentLatestTaskEndTime = getLatestTaskEndTime(event);
+
+            if (
+                dayjs(earliestTaskStartTime).isAfter(dayjs(currentEarliestTaskStartTime)) &&
+                dayjs(latestTaskEndTime).isBefore(dayjs(currentLatestTaskEndTime))
+            )
+                return true;
+            if (
+                dayjs(latestTaskEndTime).isAfter(dayjs(currentEarliestTaskStartTime)) &&
+                dayjs(latestTaskEndTime).isBefore(dayjs(currentLatestTaskEndTime))
+            )
+                return true;
+            return false;
+        }),
+    ]);
+
+    const index = overLappingEvents.indexOf(event);
+
+    // Ensure index is non-negative (fallback) then compute a logarithmic decrease
+    // Start at 100% for index 0 and approach 50% as index grows.
+    const safeIndex = Math.max(0, index);
+    const sizePercent = Math.min(100, Math.max(50, 50 + 50 / (1 + Math.log10(safeIndex + 1))));
 
     return (
         <>

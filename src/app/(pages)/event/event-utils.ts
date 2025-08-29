@@ -92,6 +92,15 @@ export const getGroupedAndSortedTasks = <T extends Prisma.TaskGetPayload<true>>(
     });
 };
 
+export const getSortedEvents = <T extends Prisma.EventGetPayload<true>>(events: T[]): T[] => {
+    return events.toSorted((a, b) => {
+        const aStart = dayjs(a.start_time);
+        const bStart = dayjs(b.start_time);
+        if (aStart.isSame(bStart)) return a.title.localeCompare(b.title);
+        return aStart.isBefore(bStart) ? -1 : 1;
+    });
+};
+
 export const getEventParticipantCount = (
     event: Prisma.EventGetPayload<{
         include: { tickets: { include: { event_participants: true } } };
