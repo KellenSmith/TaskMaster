@@ -93,7 +93,7 @@ const SendoutPage: FC = () => {
                 action={sendMassEmailToRecipientsWithCriteria}
                 buttonLabel={LanguageTranslations.send[language]}
                 readOnly={false}
-                editable={false}
+                editable={true}
             />
         </Stack>
     );

@@ -92,6 +92,10 @@ const LanguageTranslations = {
         [Language.english]: "Proceed",
         [Language.swedish]: "Fortsätt",
     },
+    addNew: {
+        [Language.english]: "Add New",
+        [Language.swedish]: "Lägg till ny",
+    },
 };
 
 export default LanguageTranslations;

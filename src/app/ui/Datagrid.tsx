@@ -10,13 +10,20 @@ import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
 import { formatDate } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
-import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
+import {
+    OrderUpdateSchema,
+    ProductCreateSchema,
+    ProductUpdateSchema,
+    UserCreateSchema,
+    UserUpdateSchema,
+} from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
 import z from "zod";
 import { clientRedirect, pathToRoute } from "../lib/definitions";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
+import LanguageTranslations from "./LanguageTranslations";
 
 export interface RowActionProps {
     name: string;
@@ -49,12 +56,18 @@ interface DatagridProps {
     name: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     updateAction?: (
-        row: ImplementedDatagridEntities, // eslint-disable-line no-unused-vars
+        rowId: string,
         fieldValues: // eslint-disable-line no-unused-vars
         | z.infer<typeof UserUpdateSchema>
             | z.infer<typeof ProductUpdateSchema>
             | z.infer<typeof OrderUpdateSchema>,
-    ) => Promise<string>;
+    ) => Promise<void>;
+    createAction?: (
+        fieldValues: // eslint-disable-line no-unused-vars
+        | z.infer<typeof UserCreateSchema>
+            | z.infer<typeof ProductCreateSchema>
+            | z.infer<typeof OrderUpdateSchema>,
+    ) => Promise<void>;
     validationSchema:
         | typeof UserUpdateSchema
         | typeof ProductUpdateSchema
@@ -72,6 +85,7 @@ const Datagrid: React.FC<DatagridProps> = ({
     name,
     dataGridRowsPromise,
     updateAction,
+    createAction,
     validationSchema,
     rowActions,
     customColumns = [],
@@ -81,11 +95,10 @@ const Datagrid: React.FC<DatagridProps> = ({
 }) => {
     const { language } = useUserContext();
     const apiRef = useGridApiRef();
-    const pathname = usePathname();
-    const router = useRouter();
     const { addNotification } = useNotificationContext();
     const datagridRows = use(dataGridRowsPromise);
     const [clickedRow, setClickedRow] = useState<ImplementedDatagridEntities | null>(null);
+    const [addNew, setAddNew] = useState(false);
     const [isPending, startTransition] = useTransition();
 
     const getColumnType = (fieldKey: string) => {
@@ -97,7 +110,8 @@ const Datagrid: React.FC<DatagridProps> = ({
         if (datagridRows.length < 1) return [];
         const columns: GridColDef[] = Object.keys(datagridRows[0]).map((key) => {
             const customColumn = customColumns.find((col) => col.field === key);
-            if (customColumn) return customColumn;
+            console.log(key, FieldLabels[key]);
+            if (customColumn) return null;
             return {
                 field: key,
                 headerName: key in FieldLabels ? FieldLabels[key][language] : key,
@@ -111,7 +125,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 },
             };
         }) as GridColDef[];
-        return columns;
+        return [...customColumns, ...columns].filter(Boolean) as GridColDef[];
     };
     const columns = useMemo(getColumns, [datagridRows, customColumns]);
 
@@ -122,13 +136,23 @@ const Datagrid: React.FC<DatagridProps> = ({
         });
     }, [apiRef, columns]);
 
+    const createRow = async (fieldValues: any) => {
+        try {
+            await createAction(fieldValues);
+            setAddNew(false);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
+    };
+
     const updateRow = async (fieldValues: any) => {
         try {
-            await updateAction(clickedRow, fieldValues);
+            await updateAction(clickedRow.id, fieldValues);
             setClickedRow(null);
-            return "Updated successfully";
+            return GlobalLanguageTranslations.successfulSave[language];
         } catch {
-            addNotification("Failed to update", "error");
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
     };
 
@@ -177,33 +201,35 @@ const Datagrid: React.FC<DatagridProps> = ({
                 autoPageSize
             />
             {allowAddNew && (
-                <Button
-                    onClick={() =>
-                        clientRedirect(router, [pathToRoute(pathname), GlobalConstants.CREATE])
-                    }
-                >
-                    Add New
+                <Button onClick={() => setAddNew(true)}>
+                    {LanguageTranslations.addNew[language]}
                 </Button>
             )}
             <Dialog
                 fullWidth
                 maxWidth="xl"
-                open={clickedRow !== null}
-                onClose={() => setClickedRow(null)}
+                open={clickedRow !== null || addNew}
+                onClose={() => {
+                    setClickedRow(null);
+                    setAddNew(false);
+                }}
             >
                 <Form
                     name={name}
                     buttonLabel={GlobalLanguageTranslations.save[language]}
-                    action={updateRow}
+                    action={clickedRow ? updateRow : createRow}
                     validationSchema={validationSchema}
-                    defaultValues={{
-                        ...clickedRow,
-                        ...(getDefaultFormValues ? getDefaultFormValues(clickedRow) : []),
-                    }}
+                    defaultValues={
+                        clickedRow && {
+                            ...clickedRow,
+                            ...(getDefaultFormValues ? getDefaultFormValues(clickedRow) : []),
+                        }
+                    }
                     readOnly={!updateAction}
                     customOptions={customFormOptions}
                 />
-                {!!rowActions &&
+                {!addNew &&
+                    !!rowActions &&
                     rowActions.map((rowAction) => getRowActionButton(clickedRow, rowAction))}
             </Dialog>
         </Stack>

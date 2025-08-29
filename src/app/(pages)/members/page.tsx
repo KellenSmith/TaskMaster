@@ -17,7 +17,7 @@ const MembersPage = async () => {
 
     // TODO: If on mobile, just show list of pending members, viewable and validatable
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to load users">
+        <ErrorBoundarySuspense>
             <MembersDashboard
                 membersPromise={membersPromise}
                 skillBadgesPromise={skillBadgesPromise}

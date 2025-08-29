@@ -16,6 +16,7 @@ import { CustomOptionProps } from "../form/AutocompleteWrapper";
 import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
+import { useRouter } from "next/navigation";
 
 interface DroppableColumnProps {
     readOnly: boolean;
@@ -64,6 +65,7 @@ const DroppableColumn = ({
     const event = eventPromise ? use(eventPromise) : null;
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const skillBadges = use(skillBadgesPromise);
+    const router = useRouter();
 
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {
@@ -79,6 +81,7 @@ const DroppableColumn = ({
                     `${LanguageTranslations.taskSetTo[language]} "${LanguageTranslations[status][language]}"`,
                     "success",
                 );
+                router.refresh(); // ensures moved/updated task shows up immediately
             } catch {
                 addNotification(GlobalLanguageTranslations.failedSave[language], "error");
             }
@@ -109,6 +112,7 @@ const DroppableColumn = ({
     ): Promise<string> => {
         await createTask({ ...parsedFieldValues }, event ? event.id : null);
         setTaskFormDefaultValues(null);
+        router.refresh(); // ensures newly created task shows up immediately
         return GlobalLanguageTranslations.successfulSave[language];
     };
 

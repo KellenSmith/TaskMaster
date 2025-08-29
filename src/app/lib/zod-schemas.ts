@@ -64,16 +64,16 @@ export const UserCreateSchema = z
         role: UserRoleSchema.optional(),
         consentToNewsletters: z.coerce.boolean().optional(),
 
-        firstName: z.string().optional(),
-        surName: z.string().optional(),
+        first_name: z.string().optional(),
+        sur_name: z.string().optional(),
         pronoun: z.string().optional(),
         phone: z.string().optional(),
 
-        memberApplicationPrompt: z.string().optional(),
+        member_application_prompt: z.string().optional(),
 
         skill_badges: selectMultipleSchema,
     })
-    .omit({ memberApplicationPrompt: true });
+    .omit({ member_application_prompt: true });
 
 export const UserUpdateSchema = UserCreateSchema.partial();
 

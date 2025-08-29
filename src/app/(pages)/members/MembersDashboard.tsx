@@ -1,6 +1,6 @@
 "use client";
 import { Chip, Stack, Tooltip, Typography } from "@mui/material";
-import { deleteUser, updateUser } from "../../lib/user-actions";
+import { createUser, deleteUser, updateUser } from "../../lib/user-actions";
 import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
@@ -19,6 +19,8 @@ import {
 } from "@mui/icons-material";
 import { FC, use } from "react";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
+import LanguageTranslations from "./LanguageTranslations";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
@@ -34,7 +36,7 @@ interface MembersDashboardProps {
 }
 
 const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadgesPromise }) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const skillBadges = use(skillBadgesPromise);
 
     const isMembershipPending = (member: ImplementedDatagridEntities) =>
@@ -47,18 +49,6 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 };
             }>
         ).user_credentials;
-
-    const updateUserAction = async (
-        member: ImplementedDatagridEntities,
-        parsedFieldValues: z.infer<typeof UserUpdateSchema>,
-    ) => {
-        try {
-            await updateUser(member.id, parsedFieldValues);
-            return "User updated successfully";
-        } catch {
-            throw new Error("Failed updating user");
-        }
-    };
 
     const validateMembershipAction = async (member: ImplementedDatagridEntities) => {
         try {
@@ -84,12 +74,14 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             serverAction: validateMembershipAction,
             available: (member: ImplementedDatagridEntities) =>
                 member && isMembershipPending(member),
+            buttonLabel: LanguageTranslations.validateMembership[language],
         },
         {
             name: GlobalConstants.DELETE,
             serverAction: deleteUserAction,
             available: (member: ImplementedDatagridEntities) => member?.id !== user.id,
             buttonColor: "error",
+            buttonLabel: GlobalLanguageTranslations.delete[language],
         },
     ];
 
@@ -151,7 +143,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             renderCell: (params) => {
                 const member: ImplementedDatagridEntities = params.row;
                 const { status, icon: Icon, color } = getStatusConfig(member);
-                const statusText = FieldLabels[status] || status;
+                const statusText = (FieldLabels[status][language] as string) || status;
                 return (
                     <Stack
                         height="100%"
@@ -218,7 +210,8 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             <Datagrid
                 name={GlobalConstants.USER}
                 dataGridRowsPromise={membersPromise}
-                updateAction={updateUserAction}
+                createAction={createUser}
+                updateAction={updateUser}
                 validationSchema={UserUpdateSchema}
                 rowActions={rowActions}
                 customColumns={customColumns}

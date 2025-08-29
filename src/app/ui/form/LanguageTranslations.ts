@@ -268,7 +268,11 @@ export const sendoutFieldLabels = {
 export const productFieldLabels = {
     [GlobalConstants.PRICE]: ProductLanguageTranslations.price,
     [GlobalConstants.STOCK]: ProductLanguageTranslations.stock,
-    [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations.unlimitedStock,
+    [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations[GlobalConstants.UNLIMITED_STOCK],
+    [GlobalConstants.IMAGE_URL]: {
+        [Language.english]: "Image URL",
+        [Language.swedish]: "Bild-URL",
+    },
 };
 
 export const ticketFieldLabels = {

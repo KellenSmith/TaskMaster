@@ -100,7 +100,6 @@ export const updateUser = async (
     parsedFieldValues: z.infer<typeof UserUpdateSchema>,
 ): Promise<void> => {
     const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
-    console.log(skill_badge_ids);
     await prisma.$transaction(async (tx) => {
         await tx.user.update({
             where: {
