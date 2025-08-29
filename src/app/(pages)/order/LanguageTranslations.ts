@@ -39,24 +39,24 @@ const LanguageTranslations = {
         [Language.swedish]: "Beställningsöversikt",
     },
     [OrderStatus.pending]: {
-        [Language.english]: OrderStatus.pending,
+        [Language.english]: "Pending",
         [Language.swedish]: "Avvaktande",
     },
     [OrderStatus.paid]: {
-        [Language.english]: OrderStatus.paid,
+        [Language.english]: "Paid",
         [Language.swedish]: "Betald",
     },
     [OrderStatus.completed]: {
-        [Language.english]: OrderStatus.completed,
+        [Language.english]: "Completed",
         [Language.swedish]: "Komplett",
     },
     [OrderStatus.cancelled]: {
-        [Language.english]: OrderStatus.cancelled,
+        [Language.english]: "Cancelled",
         [Language.swedish]: "Avbruten",
     },
     [OrderStatus.error]: {
-        [Language.english]: OrderStatus.error,
-        [Language.swedish]: "Något gick fel",
+        [Language.english]: "Error",
+        [Language.swedish]: "Error",
     },
     logInToSeeMembership: {
         [Language.english]: "Log in again to use your new membership",

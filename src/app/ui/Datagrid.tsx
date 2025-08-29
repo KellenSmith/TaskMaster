@@ -110,7 +110,6 @@ const Datagrid: React.FC<DatagridProps> = ({
         if (datagridRows.length < 1) return [];
         const columns: GridColDef[] = Object.keys(datagridRows[0]).map((key) => {
             const customColumn = customColumns.find((col) => col.field === key);
-            console.log(key, FieldLabels[key]);
             if (customColumn) return null;
             return {
                 field: key,
@@ -121,6 +120,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                         return formatDate(value);
                     }
                     if (priceFields.includes(key)) return parseInt(value) / 100;
+                    if (value in FieldLabels) return FieldLabels[value][language];
                     return value;
                 },
             };

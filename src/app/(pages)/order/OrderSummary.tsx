@@ -68,13 +68,13 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                 <TableRow>
                                     <TableCell>{LanguageTranslations.product[language]}</TableCell>
                                     <TableCell align="right">
-                                        {ProductLanguageTranslations.price[language]}
+                                        {ProductLanguageTranslations.price[language] as string}
                                     </TableCell>
                                     <TableCell align="right">
-                                        {ProductLanguageTranslations.quantity[language]}
+                                        {ProductLanguageTranslations.quantity[language] as string}
                                     </TableCell>
                                     <TableCell align="right">
-                                        {ProductLanguageTranslations.total[language]}
+                                        {ProductLanguageTranslations.total[language] as string}
                                     </TableCell>
                                 </TableRow>
                             </TableHead>

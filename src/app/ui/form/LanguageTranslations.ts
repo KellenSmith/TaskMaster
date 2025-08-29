@@ -1,4 +1,4 @@
-import { Language, TaskStatus, TicketType } from "@prisma/client";
+import { Language, OrderStatus, TaskStatus, TicketType } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 
@@ -317,5 +317,21 @@ export const orderFieldLabels = {
     [GlobalConstants.PAYEE_REF]: {
         [Language.english]: "Payee Reference",
         [Language.swedish]: "Betalningsmottagare Referens",
+    },
+    [OrderStatus.pending]: {
+        [Language.english]: "Pending",
+        [Language.swedish]: "Avvaktande",
+    },
+    [OrderStatus.completed]: {
+        [Language.english]: "Completed",
+        [Language.swedish]: "Komplett",
+    },
+    [OrderStatus.cancelled]: {
+        [Language.english]: "Cancelled",
+        [Language.swedish]: "Avbruten",
+    },
+    [OrderStatus.error]: {
+        [Language.english]: "Error",
+        [Language.swedish]: "Error",
     },
 };
