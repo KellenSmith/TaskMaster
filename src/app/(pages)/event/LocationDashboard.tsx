@@ -104,7 +104,9 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label={FieldLabels[GlobalConstants.LOCATION_ID][language]}
+                                    label={
+                                        FieldLabels[GlobalConstants.LOCATION_ID][language] as string
+                                    }
                                 />
                             )}
                             options={locations.map((loc) => ({ id: loc.id, label: loc.name }))}

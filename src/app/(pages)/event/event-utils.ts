@@ -10,8 +10,8 @@ export const isUserParticipant = (
         include: { tickets: { include: { event_participants: true } } };
     }>,
 ) =>
-    !!event.tickets.find((ticket) =>
-        ticket.event_participants.find((participant) => participant.user_id === user.id),
+    !!event?.tickets.find((ticket) =>
+        ticket?.event_participants.find((participant) => participant?.user_id === user?.id),
     );
 
 export // Helper function to check if user is on reserve list

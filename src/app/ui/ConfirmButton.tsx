@@ -8,8 +8,12 @@ import {
     DialogTitle,
 } from "@mui/material";
 import { useState, useTransition } from "react";
+import LanguageTranslations from "./LanguageTranslations";
+import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
+import { useUserContext } from "../context/UserContext";
 
 const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) => {
+    const { language } = useUserContext();
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
 
@@ -25,18 +29,18 @@ const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) 
                 {children}
             </Button>
             <Dialog open={open} onClose={() => setOpen(false)}>
-                <DialogTitle>Please confirm</DialogTitle>
+                <DialogTitle>{LanguageTranslations.confirm[language]}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        {confirmText || "This action is irreversible. Are you sure?"}
+                        {confirmText || LanguageTranslations.areYouSure[language]}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={isPending} onClick={wrappedOnClick}>
-                        yes, proceed
+                        {LanguageTranslations.proceed[language]}
                     </Button>
                     <Button disabled={isPending} onClick={() => setOpen(false)}>
-                        cancel
+                        {GlobalLanguageTranslations.cancel[language]}
                     </Button>
                 </DialogActions>
             </Dialog>

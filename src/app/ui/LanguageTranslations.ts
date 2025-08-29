@@ -80,6 +80,18 @@ const LanguageTranslations = {
         [Language.english]: "Error in field",
         [Language.swedish]: "Fel i fältet",
     },
+    confirm: {
+        [Language.english]: "Confirm",
+        [Language.swedish]: "Bekräfta",
+    },
+    areYouSure: {
+        [Language.english]: "Are you sure?",
+        [Language.swedish]: "Är du säker?",
+    },
+    proceed: {
+        [Language.english]: "Proceed",
+        [Language.swedish]: "Fortsätt",
+    },
 };
 
 export default LanguageTranslations;

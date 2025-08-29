@@ -27,6 +27,9 @@ import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-act
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { useNotificationContext } from "../../context/NotificationContext";
+import { useUserContext } from "../../context/UserContext";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface ParticipantDashboard {
     eventPromise: Promise<
@@ -58,6 +61,7 @@ const ParticipantDashboard = ({
     activeMembersPromise,
 }: ParticipantDashboard) => {
     const theme = useTheme();
+    const { language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const event = use(eventPromise);
     const eventParticipants = use(eventParticipantsPromise);
@@ -72,10 +76,10 @@ const ParticipantDashboard = ({
     ) => {
         try {
             // parsedFieldValues uses camelCase from the form; normalize when calling actions
-            await addEventParticipant(parsedFieldValues.userId, parsedFieldValues.ticketId);
-            return "Added participant";
+            await addEventParticipant(parsedFieldValues.user_id, parsedFieldValues.ticket_id);
+            return GlobalLanguageTranslations.successfulSave[language];
         } catch {
-            throw new Error("Failed to add participant");
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
     };
 
@@ -83,9 +87,9 @@ const ParticipantDashboard = ({
         startTransition(async () => {
             try {
                 await deleteEventParticipant(event.id, userId);
-                addNotification("Deleted participant", "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
             } catch {
-                addNotification("Failed to delete participant", "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };
@@ -94,10 +98,10 @@ const ParticipantDashboard = ({
         parsedFieldValues: z.infer<typeof AddEventReserveSchema>,
     ) => {
         try {
-            await addEventReserve(parsedFieldValues.userId, event.id);
-            return "Added reserve";
+            await addEventReserve(parsedFieldValues.user_id, event.id);
+            return GlobalLanguageTranslations.successfulSave[language];
         } catch {
-            throw new Error("Failed to add reserve");
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
     };
 
@@ -105,9 +109,9 @@ const ParticipantDashboard = ({
         startTransition(async () => {
             try {
                 await deleteEventReserve(userId, event.id);
-                addNotification("Deleted reserve", "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
             } catch {
-                addNotification("Failed to delete reserve", "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };
@@ -122,7 +126,7 @@ const ParticipantDashboard = ({
         <List sx={{ minWidth: 200 }}>
             <ListSubheader>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    {FieldLabels[name]}
+                    {FieldLabels[name][language] as string}
                     <Button onClick={() => setAddDialogOpen(name)}>
                         <Add sx={{ cursor: "pointer" }} />
                     </Button>
@@ -146,7 +150,11 @@ const ParticipantDashboard = ({
                                 </ListItemAvatar>
                                 <ListItemText primary={p.user.nickname} />
                                 {isUserHost(p.user, event) && (
-                                    <Chip label="Host" color="primary" size="small" />
+                                    <Chip
+                                        label={LanguageTranslations.host[language]}
+                                        color="primary"
+                                        size="small"
+                                    />
                                 )}
 
                                 <IconButton

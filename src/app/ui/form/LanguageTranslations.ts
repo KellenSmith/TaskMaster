@@ -43,6 +43,10 @@ export const userFieldLabels = {
         [Language.english]: "User",
         [Language.swedish]: "Användare",
     },
+    [GlobalConstants.USER_ID]: {
+        [Language.english]: "Member",
+        [Language.swedish]: "Medlem",
+    },
     [GlobalConstants.FIRST_NAME]: {
         [Language.english]: "First Name",
         [Language.swedish]: "Förnamn",
@@ -248,6 +252,10 @@ export const productFieldLabels = {
 };
 
 export const ticketFieldLabels = {
+    [GlobalConstants.TICKET_ID]: {
+        [Language.english]: "Ticket",
+        [Language.swedish]: "Biljett",
+    },
     [GlobalConstants.TICKET_TYPE]: {
         [Language.english]: "Ticket Type",
         [Language.swedish]: "Biljettyp",

@@ -143,7 +143,6 @@ const Form: FC<FormProps> = ({
     };
 
     const getFieldComp = (fieldId: string) => {
-        console.log(fieldId);
         if (fieldId in selectFieldOptions || customOptions[fieldId]) {
             return (
                 <AutocompleteWrapper

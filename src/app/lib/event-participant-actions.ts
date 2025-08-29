@@ -6,62 +6,58 @@ import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
-    try {
-        await prisma.$transaction(async (tx) => {
-            const ticket = await prisma.ticket.findUniqueOrThrow({
-                where: {
-                    id: ticketId,
-                },
-            });
+    await prisma.$transaction(async (tx) => {
+        const ticket = await prisma.ticket.findUniqueOrThrow({
+            where: {
+                id: ticketId,
+            },
+        });
 
-            // Delete the event reserve entry if it exists (within transaction)
-            // DON'T USE THE deleteEventReserve FUNCTION
-            await tx.eventReserve.deleteMany({
-                where: {
-                    user_id: userId,
+        // Delete the event reserve entry if it exists (within transaction)
+        // DON'T USE THE deleteEventReserve FUNCTION
+        await tx.eventReserve.deleteMany({
+            where: {
+                user_id: userId,
+                event_id: ticket.event_id,
+            },
+        });
+
+        // Decrement the product stock of all tickets with limited stock belonging to the same event
+        // Ticket product stock reflects the total number of available tickets across all types
+        await tx.product.updateMany({
+            where: {
+                ticket: {
                     event_id: ticket.event_id,
                 },
-            });
-
-            // Decrement the product stock of all tickets with limited stock belonging to the same event
-            // Ticket product stock reflects the total number of available tickets across all types
-            await tx.product.updateMany({
-                where: {
-                    ticket: {
-                        event_id: ticket.event_id,
-                    },
-                    NOT: {
-                        unlimited_stock: true,
-                    },
+                NOT: {
+                    unlimited_stock: true,
                 },
-                data: {
-                    stock: {
-                        decrement: 1,
-                    },
+            },
+            data: {
+                stock: {
+                    decrement: 1,
                 },
-            });
-            // Create the participant and connect it to the user, ticket, and event
-            await tx.eventParticipant.create({
-                data: {
-                    user: {
-                        connect: {
-                            id: userId,
-                        },
-                    },
-                    ticket: {
-                        connect: {
-                            id: ticketId,
-                        },
-                    },
-                },
-            });
+            },
         });
-        revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-        revalidateTag(GlobalConstants.EVENT);
-        revalidateTag(GlobalConstants.TICKET);
-    } catch {
-        throw new Error("Failed to add event participant");
-    }
+        // Create the participant and connect it to the user, ticket, and event
+        await tx.eventParticipant.create({
+            data: {
+                user: {
+                    connect: {
+                        id: userId,
+                    },
+                },
+                ticket: {
+                    connect: {
+                        id: ticketId,
+                    },
+                },
+            },
+        });
+    });
+    revalidateTag(GlobalConstants.PARTICIPANT_USERS);
+    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.TICKET);
 };
 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
@@ -118,37 +114,29 @@ export const getEventParticipants = async (
         include: { user: { select: { id: true; nickname: true } } };
     }>[]
 > => {
-    try {
-        return await prisma.eventParticipant.findMany({
-            where: { ticket: { event_id: eventId } },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        nickname: true,
-                    },
+    return await prisma.eventParticipant.findMany({
+        where: { ticket: { event_id: eventId } },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    nickname: true,
                 },
             },
-        });
-    } catch {
-        throw new Error("Failed to get event participant emails");
-    }
+        },
+    });
 };
 
 export const getEventParticipantEmails = async (eventId: string): Promise<string[]> => {
-    try {
-        const participants = await prisma.eventParticipant.findMany({
-            where: { ticket: { event_id: eventId } },
-            select: {
-                user: {
-                    select: {
-                        email: true,
-                    },
+    const participants = await prisma.eventParticipant.findMany({
+        where: { ticket: { event_id: eventId } },
+        select: {
+            user: {
+                select: {
+                    email: true,
                 },
             },
-        });
-        return participants.map((participant) => participant.user.email);
-    } catch {
-        throw new Error("Failed to get event participant emails");
-    }
+        },
+    });
+    return participants.map((participant) => participant.user.email);
 };

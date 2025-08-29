@@ -301,10 +301,10 @@ export const EmailSendoutSchema = z.object({
 });
 
 export const AddEventParticipantSchema = z.object({
-    userId: z.uuid(),
-    ticketId: z.uuid(),
+    user_id: z.uuid(),
+    ticket_id: z.uuid(),
 });
 
 export const AddEventReserveSchema = z.object({
-    userId: z.uuid(),
+    user_id: z.uuid(),
 });

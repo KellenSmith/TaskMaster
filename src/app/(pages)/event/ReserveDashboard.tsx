@@ -7,13 +7,14 @@ import { Stack, Typography, Card, CardContent, Divider, Chip, useTheme } from "@
 import { CheckCircle, ExitToApp, PersonAdd } from "@mui/icons-material";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { isUserReserve } from "./event-utils";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface ReserveDashboardProps {
     eventPromise: Promise<Prisma.EventGetPayload<{ include: { event_reserves: true } }>>;
 }
 
 const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const event = use(eventPromise);
@@ -23,18 +24,18 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
     const joinReserveList = async () => {
         try {
             await addEventReserve(user.id, event.id);
-            addNotification("You have been added to the reserve list.", "success");
+            addNotification(LanguageTranslations.joinedReserveList[language], "success");
         } catch {
-            addNotification("Failed to add you to the reserve list.", "error");
+            addNotification(LanguageTranslations.failedToAddReserve[language], "error");
         }
     };
 
     const leaveReserveList = async () => {
         try {
             await deleteEventReserve(user.id, event.id);
-            addNotification("You have been removed from the reserve list.", "success");
+            addNotification(LanguageTranslations.leftReserveList[language], "success");
         } catch {
-            addNotification("Failed to remove you from the reserve list.", "error");
+            addNotification(LanguageTranslations.failedToLeaveReserve[language], "error");
         }
     };
 
@@ -52,16 +53,14 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                         {isReserve && (
                             <Chip
                                 icon={<CheckCircle />}
-                                label={"On Reserve List"}
+                                label={LanguageTranslations.registered[language] as string}
                                 color={"success"}
                                 variant="outlined"
                                 size="medium"
                             />
                         )}
                         <Typography variant="h4" color="primary" gutterBottom>
-                            {isReserve
-                                ? "You're on the Reserve List!"
-                                : "Sorry, this event is sold out"}
+                            {LanguageTranslations.sorrySoldOut[language](isReserve)}
                         </Typography>
                         {isReserve && (
                             <Typography
@@ -69,7 +68,7 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                                 color="text.secondary"
                                 sx={{ fontWeight: 400, lineHeight: 1.6 }}
                             >
-                                {"If a spot opens up, you'll be notified."}
+                                {LanguageTranslations.notifyIfSpotOpens[language]}
                             </Typography>
                         )}
                     </Stack>
@@ -86,9 +85,7 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                             textAlign="center"
                             sx={{ mb: 2, fontWeight: 500 }}
                         >
-                            {isReserve
-                                ? "Leave the reserve list to stop receiving notifications."
-                                : "Join the reserve list to be notified if a spot opens up for this event."}
+                            {LanguageTranslations.joinReserveToBeNotified[language](isReserve)}
                         </Typography>
                         <ConfirmButton
                             color={isReserve ? "error" : "primary"}
@@ -96,13 +93,11 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                             fullWidth
                             onClick={isReserve ? leaveReserveList : joinReserveList}
                             startIcon={isReserve ? <ExitToApp /> : <PersonAdd />}
-                            confirmText={
-                                isReserve
-                                    ? "Are you sure you want to leave the reserve list? You will not be notified if a spot opens up."
-                                    : "Are you sure you want to join the reserve list? You'll be notified if a spot opens up."
-                            }
+                            confirmText={LanguageTranslations.areYouSureYouWannaJoin[language](
+                                isReserve,
+                            )}
                         >
-                            {isReserve ? "Leave Reserve List" : "Join Reserve List"}
+                            {LanguageTranslations.joinReserveButtonLabel[language](isReserve)}
                         </ConfirmButton>
                     </Stack>
                 </CardContent>

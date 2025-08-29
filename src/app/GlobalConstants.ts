@@ -97,7 +97,7 @@ const GlobalConstants = {
     ACCESSIBILITY_INFO: "accessibility_info",
     // Ticket
     TICKET: "ticket",
-    TICKET_ID: "ticketId",
+    TICKET_ID: "ticket_id",
     TICKET_TYPE: "type",
     // Product
     PRODUCT: "product",

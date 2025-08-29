@@ -18,6 +18,7 @@ import ConfirmButton from "../../ui/ConfirmButton";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { deleteEventParticipant } from "../../lib/event-participant-actions";
 import { useRouter } from "next/navigation";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface TicketDashboardProps {
     eventPromise: Promise<
@@ -31,7 +32,7 @@ interface TicketDashboardProps {
 }
 
 const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
     const theme = useTheme();
@@ -49,10 +50,10 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
     const leaveParticipantList = async () => {
         try {
             await deleteEventParticipant(event.id, user.id);
-            addNotification("You have left the event", "success");
+            addNotification(LanguageTranslations.leftEvent[language], "success");
             router.refresh();
         } catch {
-            addNotification("Failed to leave the event", "error");
+            addNotification(LanguageTranslations.failedToLeaveEvent[language], "error");
         }
     };
 
@@ -85,7 +86,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                             <Stack sx={{ justifyContent: "center", mb: 2 }}>
                                 <Chip
                                     icon={<CheckCircle />}
-                                    label="Registered"
+                                    label={LanguageTranslations.registered[language]}
                                     color="success"
                                     variant="outlined"
                                     size="medium"
@@ -99,14 +100,14 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                 />
                             </Stack>
                             <Typography variant="h4" color="primary" gutterBottom>
-                                {"You're All Set!"}
+                                {LanguageTranslations.allSet[language]}
                             </Typography>
                             <Typography
                                 variant="h6"
                                 color="text.secondary"
                                 sx={{ fontWeight: 400, lineHeight: 1.6 }}
                             >
-                                {"You have a ticket to this event. We can't wait to see you there!"}
+                                {LanguageTranslations.youHaveATicket[language]}
                             </Typography>
                         </Stack>
 
@@ -127,7 +128,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                     textAlign="center"
                                     sx={{ mb: 2, fontWeight: 500 }}
                                 >
-                                    {"Can't make it after all?"}
+                                    {LanguageTranslations.cantMakeIt[language]}
                                 </Typography>
                                 <Typography
                                     variant="body2"
@@ -135,9 +136,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                     textAlign="center"
                                     sx={{ mb: 3, opacity: 0.8 }}
                                 >
-                                    {
-                                        "Leave the participant list to free up your spot for someone else."
-                                    }
+                                    {LanguageTranslations.leaveToFreeUpSpot[language]}
                                 </Typography>
                                 <ConfirmButton
                                     color="error"
@@ -145,9 +144,9 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                     fullWidth
                                     onClick={leaveParticipantList}
                                     startIcon={<ExitToApp />}
-                                    confirmText="Are you sure you want to leave this event? This action cannot be undone and you will lose your spot."
+                                    confirmText={LanguageTranslations.sureYouWannaLeave[language]}
                                 >
-                                    Leave Participant List
+                                    {LanguageTranslations.leaveParticipantList[language]}
                                 </ConfirmButton>
                             </Stack>
                         </Stack>
