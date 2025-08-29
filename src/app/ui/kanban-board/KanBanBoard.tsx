@@ -8,6 +8,8 @@ import { pdf } from "@react-pdf/renderer";
 import { Prisma, TaskStatus } from "@prisma/client";
 import { openResourceInNewTab } from "../utils";
 import KanBanBoardFilter from "./KanBanBoardFilter";
+import LanguageTranslations from "./LanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
 
 interface KanBanBoardProps {
     readOnly: boolean;
@@ -38,6 +40,7 @@ const KanBanBoard = ({
     activeMembersPromise,
     skillBadgesPromise,
 }: KanBanBoardProps) => {
+    const { language } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
@@ -54,15 +57,12 @@ const KanBanBoard = ({
 
     return (
         <Stack spacing={2} justifyContent="center" height="100%">
-            <KanBanBoardFilter tasksPromise={tasksPromise} setFilteredTasks={setFilteredTasks} />
-            <Button fullWidth onClick={printVisibleTasksToPdf}>
-                print task schedule
-            </Button>
             {event && (
                 <Typography textAlign="center" variant="h4" color="primary">
-                    Assign yourself to tasks and shifts to help make the event happen
+                    {LanguageTranslations.assignYourselfPrompt[language]}
                 </Typography>
             )}
+            <KanBanBoardFilter tasksPromise={tasksPromise} setFilteredTasks={setFilteredTasks} />
             <Grid2 container spacing={2} columns={4} height="100%">
                 {Object.values(TaskStatus).map((status) => (
                     <Grid2 size={1} key={status} height="100%">
@@ -81,6 +81,9 @@ const KanBanBoard = ({
                     </Grid2>
                 ))}
             </Grid2>
+            <Button fullWidth onClick={printVisibleTasksToPdf}>
+                {LanguageTranslations.printSchedule[language]}
+            </Button>
         </Stack>
     );
 };

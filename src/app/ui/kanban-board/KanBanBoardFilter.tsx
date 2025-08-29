@@ -13,6 +13,7 @@ import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import { snakeCaseToLabel } from "../../lib/definitions";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface KanBanBoardFilterProps {
     tasksPromise: Promise<
@@ -24,7 +25,7 @@ interface KanBanBoardFilterProps {
 }
 
 const KanBanBoardFilter = ({ tasksPromise, setFilteredTasks }: KanBanBoardFilterProps) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const tasks = use(tasksPromise);
     const [filtersOpen, setFiltersOpen] = useState(false);
     const tagsOptions = useMemo(() => [...new Set(tasks.map((task) => task.tags).flat())], [tasks]);
@@ -59,7 +60,7 @@ const KanBanBoardFilter = ({ tasksPromise, setFilteredTasks }: KanBanBoardFilter
     };
 
     const getFilterOptionComp = (fieldId: keyof typeof filterOptions) => {
-        const label = snakeCaseToLabel(fieldId);
+        const label = LanguageTranslations[fieldId][language];
 
         if (["begins_after", "ends_before"].includes(fieldId))
             return (
@@ -94,7 +95,9 @@ const KanBanBoardFilter = ({ tasksPromise, setFilteredTasks }: KanBanBoardFilter
 
     return (
         <>
-            <Button onClick={() => setFiltersOpen(true)}>open filter</Button>
+            <Button onClick={() => setFiltersOpen(true)}>
+                {LanguageTranslations.openFilter[language]}
+            </Button>
             <Drawer anchor="right" open={filtersOpen} onClose={() => setFiltersOpen(false)}>
                 <form onSubmit={applyFilter}>
                     <Stack spacing={2}>
@@ -102,8 +105,10 @@ const KanBanBoardFilter = ({ tasksPromise, setFilteredTasks }: KanBanBoardFilter
                         {Object.keys(filterOptions).map((fieldId) =>
                             getFilterOptionComp(fieldId as keyof typeof filterOptions),
                         )}
-                        <Button type="submit">Apply Filters</Button>
-                        <Button onClick={() => setFilteredTasks(tasks)}>clear</Button>
+                        <Button type="submit">{LanguageTranslations.apply[language]}</Button>
+                        <Button onClick={() => setFilteredTasks(tasks)}>
+                            {LanguageTranslations.clear[language]}
+                        </Button>
                     </Stack>
                 </form>
             </Drawer>
