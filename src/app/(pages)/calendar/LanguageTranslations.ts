@@ -3,8 +3,8 @@ import dayjs from "dayjs";
 
 const LanguageTranslations = {
     locationCapacityExceeded: {
-        [Language.english]: "Location capacity exceeded",
-        [Language.swedish]: "Lokalens kapacitet är överskriden",
+        [Language.english]: "The location can't handle this many participants",
+        [Language.swedish]: "Lokalen kan inte husera så många deltagare",
     },
     createEvent: {
         [Language.english]: "Create event",

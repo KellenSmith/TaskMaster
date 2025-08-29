@@ -117,10 +117,6 @@ const LanguageTranslations = {
         [Language.english]: "Reserve",
         [Language.swedish]: "Reserv",
     },
-    end: {
-        [Language.english]: "End",
-        [Language.swedish]: "Slut",
-    },
     location: {
         [Language.english]: "Location",
         [Language.swedish]: "Plats",

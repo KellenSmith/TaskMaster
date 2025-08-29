@@ -20,6 +20,9 @@ import GlobalConstants from "../../GlobalConstants";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { updateEvent } from "../../lib/event-actions";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
+import LanguageTranslations from "./LanguageTranslations";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import CalendarLanguageTranslations from "../calendar/LanguageTranslations";
 
 interface LocationDashboardProps {
     eventPromise: Promise<
@@ -33,7 +36,7 @@ interface LocationDashboardProps {
 }
 
 const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboardProps) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const event = use(eventPromise);
     const location = event.location;
@@ -47,7 +50,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
         return (
             <Box sx={{ my: 2 }}>
                 <Typography variant="body2" color="text.secondary">
-                    No location information available for this event.
+                    {LanguageTranslations.noLocationInfo[language]}
                 </Typography>
             </Box>
         );
@@ -60,9 +63,9 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
         startTransition(async () => {
             try {
                 await updateEvent(event.id, { location_id: selectedLocationOption.id });
-                addNotification("Updated event location", "success");
+                addNotification(GlobalLanguageTranslations.successfulSave[language], "success");
             } catch {
-                addNotification("Failed to update event location", "error");
+                addNotification(GlobalLanguageTranslations.failedSave[language], "error");
             }
         });
     };
@@ -101,7 +104,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label={FieldLabels[GlobalConstants.LOCATION_ID]}
+                                    label={FieldLabels[GlobalConstants.LOCATION_ID][language]}
                                 />
                             )}
                             options={locations.map((loc) => ({ id: loc.id, label: loc.name }))}
@@ -115,11 +118,11 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             disabled={isSwitchButtonDisabled()}
                             onClick={switchEventLocation}
                         >
-                            switch event location
+                            {LanguageTranslations.switchEventLocation[language]}
                         </Button>
                         {isSwitchButtonDisabled() && (
                             <Typography color="error" textAlign="center">
-                                {`The location can't handle ${event.max_participants} participants`}
+                                {CalendarLanguageTranslations.locationCapacityExceeded[language]}
                             </Typography>
                         )}
                     </Stack>

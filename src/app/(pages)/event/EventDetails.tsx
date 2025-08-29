@@ -4,12 +4,15 @@ import { formatDate } from "../../ui/utils";
 import RichTextField from "../../ui/form/RichTextField";
 import { Prisma } from "@prisma/client";
 import { use } from "react";
+import LanguageTranslations from "./LanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
 
 interface EventDetailsProps {
     eventPromise: Promise<Prisma.EventGetPayload<{ include: { location: true } }>>;
 }
 
 const EventDetails = ({ eventPromise }: EventDetailsProps) => {
+    const { language } = useUserContext();
     const event = use(eventPromise);
     return (
         <Stack spacing={3} sx={{ p: 3 }}>
@@ -18,9 +21,9 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                         <CalendarMonth color="primary" />
                         <Typography>
-                            From:
+                            {LanguageTranslations.start[language]}:
                             <br />
-                            To:
+                            {LanguageTranslations.end[language]}:
                         </Typography>
                         <Typography>
                             {formatDate(event.start_time)}

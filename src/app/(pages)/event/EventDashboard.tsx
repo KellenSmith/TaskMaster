@@ -17,6 +17,7 @@ import ReserveDashboard from "./ReserveDashboard";
 import TicketDashboard from "./TicketDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import LocationDashboard from "./LocationDashboard";
+import LanguageTranslations, { implementedTabs } from "./LanguageTranslations";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -70,25 +71,25 @@ const EventDashboard = ({
     const theme = useTheme();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const event = use(eventPromise);
 
     // Tab is available if it has a label
     const eventTabs = useMemo(() => {
-        const tabs = {
-            details: "Details",
-            location: "Location",
-            organize: "Organize",
-            tickets: "Tickets",
+        const availableTabs = {
+            details: implementedTabs.details,
+            location: implementedTabs.location,
+            organize: implementedTabs.organize,
+            tickets: implementedTabs.tickets,
             participants: null,
             reserveList: null,
-        };
+        } as typeof implementedTabs;
         if (isUserHost(user, event) || isUserAdmin(user)) {
-            tabs.participants = "Participants";
+            availableTabs.participants = implementedTabs.participants;
         }
         if (isEventSoldOut(event) && !isUserParticipant(user, event))
-            tabs.reserveList = "Reserve List";
-        return tabs;
+            availableTabs.reserveList = implementedTabs.reserveList;
+        return availableTabs;
     }, [event, user]);
 
     // Get current tab from search params, default to details
@@ -115,7 +116,7 @@ const EventDashboard = ({
                 );
             case eventTabs.organize:
                 return (
-                    <ErrorBoundarySuspense errorMessage="Failed to fetch event tasks or active members">
+                    <ErrorBoundarySuspense>
                         <KanBanBoard
                             readOnly={!(isUserHost(user, event) || isUserAdmin(user))}
                             eventPromise={eventPromise}
@@ -128,7 +129,7 @@ const EventDashboard = ({
             case eventTabs.tickets:
                 if (!isUserHost(user, event) && isUserParticipant(user, event))
                     return (
-                        <ErrorBoundarySuspense errorMessage="Failed to fetch event tickets">
+                        <ErrorBoundarySuspense>
                             <TicketDashboard
                                 eventPromise={eventPromise}
                                 ticketsPromise={eventTicketsPromise}
@@ -136,7 +137,7 @@ const EventDashboard = ({
                         </ErrorBoundarySuspense>
                     );
                 return (
-                    <ErrorBoundarySuspense errorMessage="Failed to fetch event tickets or tasks">
+                    <ErrorBoundarySuspense>
                         <TicketShop
                             eventPromise={eventPromise}
                             eventTicketsPromise={eventTicketsPromise}
@@ -148,7 +149,7 @@ const EventDashboard = ({
 
             case eventTabs.participants:
                 return (
-                    <ErrorBoundarySuspense errorMessage="Failed to fetch event participants or reserves">
+                    <ErrorBoundarySuspense>
                         <ParticipantDashboard
                             eventPromise={eventPromise}
                             eventParticipantsPromise={eventParticipantsPromise}
@@ -182,7 +183,7 @@ const EventDashboard = ({
                         textDecoration: isEventCancelled(event) ? "line-through" : "none",
                     }}
                 >
-                    {`${event.title} ${isEventCancelled(event) ? "(CANCELLED)" : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
+                    {`${event.title} ${isEventCancelled(event) ? `"${LanguageTranslations.cancelled[language].toUpperCase()}"` : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
                 </Typography>
             </Stack>
 
@@ -194,11 +195,18 @@ const EventDashboard = ({
             >
                 <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
                     {Object.entries(eventTabs).map(
-                        ([key, label]) => label && <Tab key={key} value={label} label={label} />,
+                        ([key, label]) =>
+                            label && (
+                                <Tab
+                                    key={key}
+                                    value={label}
+                                    label={LanguageTranslations[label][language]}
+                                />
+                            ),
                     )}
                 </Tabs>
                 <Stack width={50}>
-                    <ErrorBoundarySuspense errorMessage="Failed to fetch event">
+                    <ErrorBoundarySuspense>
                         <EventActions
                             eventPromise={eventPromise}
                             locationsPromise={locationsPromise}
@@ -206,9 +214,7 @@ const EventDashboard = ({
                     </ErrorBoundarySuspense>
                 </Stack>
             </Stack>
-            <ErrorBoundarySuspense errorMessage="Failed to fetch event">
-                {getOpenTabComp()}
-            </ErrorBoundarySuspense>
+            <ErrorBoundarySuspense>{getOpenTabComp()}</ErrorBoundarySuspense>
         </Stack>
     );
 };

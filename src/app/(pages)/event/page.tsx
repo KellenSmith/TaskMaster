@@ -17,7 +17,7 @@ interface EventPageProps {
 }
 
 const EventPage = async ({ searchParams }: EventPageProps) => {
-    const eventId = (await searchParams).event_id;
+    const eventId = (await searchParams)[GlobalConstants.EVENT_ID];
 
     // Make sure the user is available before fetching the event
     // When cloning events the user goes from possibly not host to host
@@ -50,7 +50,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     })();
 
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to load event">
+        <ErrorBoundarySuspense>
             <EventDashboard
                 eventPromise={eventPromise}
                 eventTasksPromise={eventTasksPromise}

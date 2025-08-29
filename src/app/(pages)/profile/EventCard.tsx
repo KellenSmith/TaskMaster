@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { FC } from "react";
 import { Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
+import EventLanguageTranslations from "../event/LanguageTranslations";
 
 interface EventCardProps {
     event: Prisma.EventGetPayload<{
@@ -80,10 +81,11 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                     {/* Event details */}
                     <Stack spacing={1}>
                         <Typography color="text.secondary">
-                            <strong>Start:</strong> {formatDate(event.start_time)}
+                            <strong>{EventLanguageTranslations.start[language]}:</strong>{" "}
+                            {formatDate(event.start_time)}
                         </Typography>
                         <Typography color="text.secondary">
-                            <strong>{LanguageTranslations.end[language]}:</strong>{" "}
+                            <strong>{EventLanguageTranslations.end[language]}:</strong>{" "}
                             {formatDate(event.end_time)}
                         </Typography>
                         {event.location.name && (
