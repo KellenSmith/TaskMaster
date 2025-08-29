@@ -8,7 +8,6 @@ import {
 import RichTextFieldControls from "./RichTextFieldControls";
 import useExtensions from "./useRichTextFieldExtensions";
 import { FieldLabels } from "./FieldCfg";
-import { Card, CardContent } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";
 
 interface RichTextFieldProps {

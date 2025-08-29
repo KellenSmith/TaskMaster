@@ -20,7 +20,7 @@ const OrderPage = async ({ searchParams }: OrderPageProps) => {
     })(loggedInUser.id, orderId);
 
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to load order">
+        <ErrorBoundarySuspense>
             <OrderDashboard orderPromise={orderPromise} />
         </ErrorBoundarySuspense>
     );

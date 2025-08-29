@@ -28,7 +28,7 @@ const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
                     {renderedFields.map((fieldId) => (
                         <Stack key={fieldId} spacing={1}>
                             <Typography color="text.secondary">
-                                {FieldLabels[fieldId][language]}
+                                {FieldLabels[fieldId][language] as string}
                             </Typography>
                             <Typography>{location[fieldId]}</Typography>
                         </Stack>

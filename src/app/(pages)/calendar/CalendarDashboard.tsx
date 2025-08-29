@@ -5,7 +5,6 @@ import { Stack, Typography, Button, Grid2, Dialog, DialogContent } from "@mui/ma
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
 import { createEvent } from "../../lib/event-actions";
-import localeData from "dayjs/plugin/localeData";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";

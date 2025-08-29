@@ -200,7 +200,7 @@ const EventDashboard = ({
                                 <Tab
                                     key={key}
                                     value={label}
-                                    label={LanguageTranslations[label][language]}
+                                    label={LanguageTranslations[label][language] as string}
                                 />
                             ),
                     )}

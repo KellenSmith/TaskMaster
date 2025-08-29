@@ -9,7 +9,7 @@ interface TextContentProps {
 
 const TextContent = ({ id, textContentPromise }: TextContentProps) => {
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to fetch text content">
+        <ErrorBoundarySuspense>
             <EditableTextContent id={id} textContentPromise={textContentPromise} />
         </ErrorBoundarySuspense>
     );

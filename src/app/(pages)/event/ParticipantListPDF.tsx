@@ -6,6 +6,7 @@ import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useMemo } from "react";
 import dayjs from "dayjs";
 import { Prisma } from "@prisma/client";
+import { useUserContext } from "../../context/UserContext";
 
 interface ParticipantListPDFProps {
     event: Prisma.EventGetPayload<true>;
@@ -15,6 +16,7 @@ interface ParticipantListPDFProps {
 }
 
 const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProps) => {
+    const { language } = useUserContext();
     const headers = useMemo(() => [GlobalConstants.NICKNAME, "Arrived"], []);
 
     const getEventDetails = () => (
@@ -75,7 +77,7 @@ const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProp
                                     ...styles.columnStyle,
                                 }}
                             >
-                                {FieldLabels[header] || header}
+                                {(FieldLabels[header][language] as string) || header}
                             </Text>
                         ))}
                     </View>

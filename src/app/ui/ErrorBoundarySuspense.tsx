@@ -1,5 +1,5 @@
 import { Error } from "@mui/icons-material";
-import { CircularProgress, Stack, Typography } from "@mui/material";
+import { CircularProgress, Stack } from "@mui/material";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 

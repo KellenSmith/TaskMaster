@@ -76,7 +76,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                 });
                 addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
-            } catch (error) {
+            } catch {
                 addNotification(LanguageTranslations.failedPublishEvent[language], "error");
             }
         });
@@ -88,7 +88,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                 await cancelEvent(event.id);
                 addNotification(LanguageTranslations.cancelledEvent[language], "success");
                 closeActionMenu();
-            } catch (error) {
+            } catch {
                 addNotification(LanguageTranslations.failedToCancelEvent[language], "error");
             }
         });

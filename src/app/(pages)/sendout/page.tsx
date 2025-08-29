@@ -43,7 +43,7 @@ const SendoutPage: FC = () => {
             recipientCriteria[GlobalConstants.CONSENT_TO_NEWSLETTERS] = true;
         }
         return recipientCriteria;
-    }, [sendTo]);
+    }, [sendTo, language]);
 
     useEffect(() => {
         const fetchRecipientCount = async () => {

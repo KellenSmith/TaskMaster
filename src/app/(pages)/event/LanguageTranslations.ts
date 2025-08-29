@@ -1,5 +1,4 @@
 import { Language } from "@prisma/client";
-import { cancelEvent, deleteEvent } from "../../lib/event-actions";
 
 export const implementedTabs = {
     details: "Details",

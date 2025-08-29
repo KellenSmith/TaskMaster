@@ -15,7 +15,7 @@ interface ContextWrapperProps {
 
 const ContextWrapper: FC<ContextWrapperProps> = ({ children, organizationSettingsPromise }) => {
     return (
-        <ErrorBoundarySuspense errorMessage="Failed to load context">
+        <ErrorBoundarySuspense>
             <LocalizationContextProvider>
                 <ThemeContextProvider>
                     <NotificationContextProvider>

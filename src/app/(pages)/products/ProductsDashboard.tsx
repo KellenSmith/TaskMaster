@@ -4,27 +4,11 @@ import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/
 import GlobalConstants from "../../GlobalConstants";
 import { deleteProduct, updateProduct } from "../../lib/product-actions";
 import { ProductUpdateSchema } from "../../lib/zod-schemas";
-import z from "zod";
-import { Product } from "@prisma/client";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
-import { useNotificationContext } from "../../context/NotificationContext";
 
 const ProductsDashboard = ({ productsPromise }) => {
     const { language } = useUserContext();
-    const { addNotification } = useNotificationContext();
-
-    const updateAction = async (
-        product: Product,
-        parsedFieldValues: z.infer<typeof ProductUpdateSchema>,
-    ) => {
-        try {
-            await updateProduct(product.id, parsedFieldValues);
-            return GlobalLanguageTranslations.successfulSave[language];
-        } catch {
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
-        }
-    };
 
     const deleteAction = async (product: ImplementedDatagridEntities) => {
         try {
@@ -56,7 +40,7 @@ const ProductsDashboard = ({ productsPromise }) => {
             <Datagrid
                 name={GlobalConstants.PRODUCT}
                 dataGridRowsPromise={productsPromise}
-                updateAction={updateAction}
+                updateAction={updateProduct}
                 validationSchema={ProductUpdateSchema}
                 rowActions={rowActions}
                 hiddenColumns={hiddenColumns}

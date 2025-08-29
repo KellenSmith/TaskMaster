@@ -4,8 +4,6 @@ import { Button, Dialog, Stack } from "@mui/material";
 import { DataGrid, GridColDef, useGridApiRef } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import { checkboxFields, datePickerFields, FieldLabels, priceFields } from "./form/FieldCfg";
-import { usePathname, useRouter } from "next/navigation";
-import GlobalConstants from "../GlobalConstants";
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
 import { formatDate } from "./utils";
@@ -19,7 +17,6 @@ import {
 } from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
 import z from "zod";
-import { clientRedirect, pathToRoute } from "../lib/definitions";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
@@ -56,7 +53,7 @@ interface DatagridProps {
     name: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     updateAction?: (
-        rowId: string,
+        rowId: string, // eslint-disable-line no-unused-vars
         fieldValues: // eslint-disable-line no-unused-vars
         | z.infer<typeof UserUpdateSchema>
             | z.infer<typeof ProductUpdateSchema>
@@ -127,7 +124,7 @@ const Datagrid: React.FC<DatagridProps> = ({
         }) as GridColDef[];
         return [...customColumns, ...columns].filter(Boolean) as GridColDef[];
     };
-    const columns = useMemo(getColumns, [datagridRows, customColumns]);
+    const columns = useMemo(getColumns, [datagridRows, customColumns, language]);
 
     useEffect(() => {
         apiRef.current.autosizeColumns({
