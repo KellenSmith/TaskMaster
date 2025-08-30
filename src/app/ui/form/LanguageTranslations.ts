@@ -166,6 +166,10 @@ export const eventFieldLabels = {
         [Language.english]: "Reserves",
         [Language.swedish]: "Reserver",
     },
+    [GlobalConstants.ARRIVED]: {
+        [Language.english]: "Arrived",
+        [Language.swedish]: "Anlänt",
+    },
 };
 
 export const locationFieldLabels = {

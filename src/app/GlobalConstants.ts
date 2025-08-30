@@ -84,6 +84,7 @@ const GlobalConstants = {
     PARTICIPANT_USERS: "participantUsers",
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueing_since",
+    ARRIVED: "arrived",
     // Location
     LOCATION: "location",
     LOCATIONS: "locations",

@@ -120,7 +120,11 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             try {
                 const eventParticipants = await getEventParticipants(event.id);
                 const taskSchedule = await pdf(
-                    <ParticipantListPDF event={event} eventParticipants={eventParticipants} />,
+                    <ParticipantListPDF
+                        event={event}
+                        eventParticipants={eventParticipants}
+                        language={language}
+                    />,
                 ).toBlob();
                 const url = URL.createObjectURL(taskSchedule);
                 window.open(url, "_blank");

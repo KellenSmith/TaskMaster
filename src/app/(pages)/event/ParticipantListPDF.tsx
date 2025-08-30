@@ -5,19 +5,18 @@ import { formatDate } from "../../ui/utils";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useMemo } from "react";
 import dayjs from "dayjs";
-import { Prisma } from "@prisma/client";
-import { useUserContext } from "../../context/UserContext";
+import { Language, Prisma } from "@prisma/client";
 
 interface ParticipantListPDFProps {
     event: Prisma.EventGetPayload<true>;
     eventParticipants: Prisma.EventParticipantGetPayload<{
         include: { user: { select: { id: true; nickname: true } } };
     }>[];
+    language: Language;
 }
 
-const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProps) => {
-    const { language } = useUserContext();
-    const headers = useMemo(() => [GlobalConstants.NICKNAME, "Arrived"], []);
+const ParticipantListPDF = ({ event, eventParticipants, language }: ParticipantListPDFProps) => {
+    const headers = useMemo(() => [GlobalConstants.NICKNAME, GlobalConstants.ARRIVED], []);
 
     const getEventDetails = () => (
         <View key="event" style={styles.eventDetails}>
@@ -67,19 +66,22 @@ const ParticipantListPDF = ({ event, eventParticipants }: ParticipantListPDFProp
                 <View style={styles.table}>
                     {/* Table Header */}
                     <View style={[styles.tableRow, styles.headerCell]}>
-                        {headers.map((header) => (
-                            <Text
-                                key={header}
-                                wrap={true}
-                                style={{
-                                    ...styles.tableCell,
-                                    ...styles.headerCell,
-                                    ...styles.columnStyle,
-                                }}
-                            >
-                                {(FieldLabels[header][language] as string) || header}
-                            </Text>
-                        ))}
+                        {headers.map((header) => {
+                            console.log(header);
+                            return (
+                                <Text
+                                    key={header}
+                                    wrap={true}
+                                    style={{
+                                        ...styles.tableCell,
+                                        ...styles.headerCell,
+                                        ...styles.columnStyle,
+                                    }}
+                                >
+                                    {(FieldLabels[header][language] as string) || header}
+                                </Text>
+                            );
+                        })}
                     </View>
                     {/* Table Body */}
                     {getParticipantRows()}
