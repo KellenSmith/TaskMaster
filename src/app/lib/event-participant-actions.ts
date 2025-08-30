@@ -13,6 +13,27 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
             },
         });
 
+        // Check that the event isn't sold out
+        const event = await prisma.event.findUniqueOrThrow({
+            where: {
+                id: ticket.event_id,
+            },
+            include: {
+                tickets: {
+                    include: {
+                        event_participants: true,
+                    },
+                },
+            },
+        });
+        const participantIds = event.tickets.flatMap((t) =>
+            t.event_participants.map((p) => p.user_id),
+        );
+        if (participantIds.includes(userId)) throw new Error("Member is already a participant");
+        if (participantIds.length >= event.max_participants) {
+            throw new Error("Event is already sold out");
+        }
+
         // Delete the event reserve entry if it exists (within transaction)
         // DON'T USE THE deleteEventReserve FUNCTION
         await tx.eventReserve.deleteMany({

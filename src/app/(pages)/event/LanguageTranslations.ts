@@ -236,6 +236,14 @@ const LanguageTranslations = {
         [Language.english]: "Print participant list",
         [Language.swedish]: "Skriv ut deltagarlista",
     },
+    eventIsSoldOut: {
+        [Language.english]: "This event is sold out",
+        [Language.swedish]: "Detta evenemang är slutsålt",
+    },
+    alreadyRegistered: {
+        [Language.english]: "Member is already registered",
+        [Language.swedish]: "Medlemmen är redan registrerad",
+    },
 };
 
 export default LanguageTranslations;

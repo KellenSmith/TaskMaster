@@ -99,7 +99,7 @@ const TicketShop = ({
     };
 
     const isVolunteerTicketAvailable = () => {
-        const tasksAssignedToUser = tasks.filter((task) => task.assignee_id === user.id);
+        const tasksAssignedToUser = tasks.filter((task) => user && task.assignee_id === user.id);
         return tasksAssignedToUser.length > 0;
     };
 

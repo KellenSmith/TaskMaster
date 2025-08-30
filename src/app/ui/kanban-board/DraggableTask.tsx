@@ -81,7 +81,7 @@ const DraggableTask = ({
     return (
         <>
             <Card
-                draggable
+                draggable={!readOnly}
                 onDragStart={() => setDraggedTask(task)}
                 sx={{
                     padding: 2,
@@ -126,12 +126,7 @@ const DraggableTask = ({
                     action={updateTaskAction}
                     validationSchema={TaskUpdateSchema}
                     buttonLabel="save task"
-                    readOnly={
-                        !user ||
-                        isUserHost(user, event) ||
-                        isUserAdmin(user) ||
-                        task.reviewer_id === user.id
-                    }
+                    readOnly={readOnly}
                     editable={!readOnly}
                 />
                 <Button onClick={assignTaskToMe} disabled={task.assignee_id === user.id}>

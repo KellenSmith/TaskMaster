@@ -74,9 +74,29 @@ const ParticipantDashboard = ({
     const addEventParticipantAction = async (
         parsedFieldValues: z.infer<typeof AddEventParticipantSchema>,
     ) => {
+        const participantIds = eventParticipants.map((p) => p.user.id);
+        if (participantIds.includes(parsedFieldValues.user_id))
+            throw new Error(LanguageTranslations.alreadyRegistered[language]);
+        if (eventParticipants.length >= event.max_participants)
+            throw new Error(LanguageTranslations.eventIsSoldOut[language]);
         try {
-            // parsedFieldValues uses camelCase from the form; normalize when calling actions
             await addEventParticipant(parsedFieldValues.user_id, parsedFieldValues.ticket_id);
+            setAddDialogOpen(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
+    };
+
+    const addEventReserveAction = async (
+        parsedFieldValues: z.infer<typeof AddEventReserveSchema>,
+    ) => {
+        const reserveIds = eventReserves.map((r) => r.user.id);
+        if (reserveIds.includes(parsedFieldValues.user_id))
+            throw new Error(LanguageTranslations.alreadyRegistered[language]);
+        try {
+            await addEventReserve(parsedFieldValues.user_id, event.id);
+            setAddDialogOpen(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
             throw new Error(GlobalLanguageTranslations.failedSave[language]);
@@ -92,17 +112,6 @@ const ParticipantDashboard = ({
                 addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
-    };
-
-    const addEventReserveAction = async (
-        parsedFieldValues: z.infer<typeof AddEventReserveSchema>,
-    ) => {
-        try {
-            await addEventReserve(parsedFieldValues.user_id, event.id);
-            return GlobalLanguageTranslations.successfulSave[language];
-        } catch {
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
-        }
     };
 
     const deleteEventReserveAction = async (userId: string) => {

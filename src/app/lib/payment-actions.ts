@@ -7,7 +7,8 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
-import { getRelativeUrl } from "./definitions";
+import { getAbsoluteUrl, getRelativeUrl, isUserAdmin, serverRedirect } from "./definitions";
+import { getLoggedInUser } from "./user-actions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -65,14 +66,14 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 userAgent: (await headers()).get("user-agent") || "Unknown",
                 language: "en-US",
                 urls: {
-                    hostUrls: [getRelativeUrl([GlobalConstants.HOME])],
-                    completeUrl: getRelativeUrl([GlobalConstants.ORDER], {
+                    hostUrls: [getAbsoluteUrl([GlobalConstants.HOME])],
+                    completeUrl: getAbsoluteUrl([GlobalConstants.ORDER], {
                         [GlobalConstants.ORDER_ID]: orderId,
                     }),
-                    cancelUrl: getRelativeUrl([GlobalConstants.ORDER], {
+                    cancelUrl: getAbsoluteUrl([GlobalConstants.ORDER], {
                         [GlobalConstants.ORDER_ID]: orderId,
                     }),
-                    callbackUrl: getRelativeUrl([GlobalConstants.PAYMENT_CALLBACK], {
+                    callbackUrl: getAbsoluteUrl([GlobalConstants.PAYMENT_CALLBACK], {
                         [GlobalConstants.ORDER_ID]: orderId,
                     }),
                     // TODO
@@ -95,53 +96,42 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
 };
 
 export const redirectToSwedbankPayment = async (orderId: string): Promise<void> => {
-    let redirectUrl: string;
-    try {
-        const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
-        if (order?.status !== OrderStatus.pending) {
-            throw new Error("Order is not in a pending state");
-        }
-        if (order.total_amount < 1) {
-            await progressOrder(order.id, OrderStatus.paid);
-            redirectUrl = getRelativeUrl([GlobalConstants.ORDER], {
-                [GlobalConstants.ORDER_ID]: orderId,
-            });
-        } else {
-            const requestBody = await getSwedbankPaymentRequestPayload(orderId);
-            if (!requestBody) throw new Error("Failed to create payment request");
-
-            const response = await makeSwedbankApiRequest(
-                `https://api.externalintegration.payex.com/psp/paymentorders`,
-                requestBody,
-            );
-
-            if (!response.ok) {
-                throw new Error("Failed to create payment request");
-            }
-
-            const responseData: PaymentOrderResponse = await response.json();
-            const redirectOperation = responseData.operations.find(
-                (op) => op.rel === "redirect-checkout",
-            );
-
-            if (!redirectOperation || !redirectOperation.href) {
-                throw new Error("Redirect URL not found in payment response");
-            }
-
-            // Save payment order ID to the order to check status later
-            await prisma.order.update({
-                where: { id: orderId },
-                data: {
-                    payment_request_id: responseData.paymentOrder.id,
-                },
-            });
-
-            redirectUrl = redirectOperation.href;
-        }
-    } catch {
-        throw new Error("Failed to redirect to payment");
+    const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+    if (order?.status !== OrderStatus.pending) {
+        throw new Error("Order is not in a pending state");
     }
-    redirect(redirectUrl);
+    if (order.total_amount < 1) {
+        await progressOrder(order.id, OrderStatus.paid);
+    } else {
+        const requestBody = await getSwedbankPaymentRequestPayload(orderId);
+        if (!requestBody) throw new Error("Failed to create payment request");
+
+        const response = await makeSwedbankApiRequest(
+            `https://api.externalintegration.payex.com/psp/paymentorders`,
+            requestBody,
+        );
+        const responseData: PaymentOrderResponse = await response.json();
+        if (!response.ok) {
+            throw new Error(JSON.stringify(responseData));
+        }
+
+        const redirectOperation = responseData.operations.find(
+            (op) => op.rel === "redirect-checkout",
+        );
+
+        if (!redirectOperation || !redirectOperation.href) {
+            throw new Error("Redirect URL not found in payment response");
+        }
+
+        // Save payment order ID to the order to check status later
+        await prisma.order.update({
+            where: { id: orderId },
+            data: {
+                payment_request_id: responseData.paymentOrder.id,
+            },
+        });
+        redirect(redirectOperation.href);
+    }
 };
 
 export const capturePaymentFunds = async (orderId: string) => {
@@ -195,36 +185,37 @@ export const capturePaymentFunds = async (orderId: string) => {
 };
 
 export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {
-    try {
-        const order = await getOrderById(userId, orderId);
+    const order = await getOrderById(userId, orderId);
 
-        if (order.status === OrderStatus.completed) {
-            return;
-        }
+    // Only allow admins to check other users' orders
+    const loggedInUser = await getLoggedInUser();
+    if (!isUserAdmin(loggedInUser) && order.user_id !== userId) {
+        serverRedirect([GlobalConstants.HOME]);
+    }
 
-        // If the order is free, complete it immediately.
-        if (order.total_amount === 0) {
-            await progressOrder(orderId, OrderStatus.completed);
-            return;
-        }
+    if (order.status === OrderStatus.completed) {
+        return;
+    }
 
-        if (order.payment_request_id) {
-            const paymentStatusResponse = await makeSwedbankApiRequest(
-                `https://api.externalintegration.payex.com${order.payment_request_id}?$expand=paid`,
-            );
-            if (!paymentStatusResponse.ok) {
-                progressOrder(orderId, OrderStatus.error);
-                throw new Error("Failed to check payment status");
-            }
-            const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
-            const paymentStatus = paymentStatusData.paymentOrder.status;
-            const newOrderStatus = getNewOrderStatus(paymentStatus);
-            const needsCapture =
-                paymentStatusData.paymentOrder.paid.transactionType ===
-                TransactionType.Authorization;
-            await progressOrder(orderId, newOrderStatus, needsCapture);
+    // If the order is free, complete it immediately.
+    if (order.total_amount === 0) {
+        await progressOrder(orderId, OrderStatus.completed);
+        return;
+    }
+
+    if (order.payment_request_id) {
+        const paymentStatusResponse = await makeSwedbankApiRequest(
+            `https://api.externalintegration.payex.com${order.payment_request_id}?$expand=paid`,
+        );
+        if (!paymentStatusResponse.ok) {
+            progressOrder(orderId, OrderStatus.error);
+            throw new Error("Failed to check payment status");
         }
-    } catch {
-        throw new Error("Failed to check payment status");
+        const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
+        const paymentStatus = paymentStatusData.paymentOrder.status;
+        const newOrderStatus = getNewOrderStatus(paymentStatus);
+        const needsCapture =
+            paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
+        await progressOrder(orderId, newOrderStatus, needsCapture);
     }
 };

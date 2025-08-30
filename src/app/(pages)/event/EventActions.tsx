@@ -151,7 +151,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         // Only allow deleting events that only the host is participating in
         if (
             getEventParticipantCount(event) === 1 &&
-            event.tickets[0].event_participants[0].user_id === user.id
+            event.tickets.map((ticket) => ticket.event_participants).flat()[0].user_id === user.id
         ) {
             ActionButtons.unshift(
                 <MenuItem key="delete">

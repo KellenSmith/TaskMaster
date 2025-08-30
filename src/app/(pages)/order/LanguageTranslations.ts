@@ -3,32 +3,31 @@ import { Language, OrderStatus } from "@prisma/client";
 const LanguageTranslations = {
     failedCheckOrderStatus: {
         [Language.english]:
-            "Thank you for your order! Your payment has been processed and your order is complete.",
+            "Thank you for your order! Your payment has been processed and your order is complete",
         [Language.swedish]:
-            "Misslyckades med att kontrollera orderstatus. Det du ser kanske inte är aktuellt.",
+            "Misslyckades med att kontrollera orderstatus. Det du ser kanske inte är aktuellt",
     },
     orderCompleted: {
         [Language.english]:
-            "Thank you for your order! Your payment has been processed and your order is complete.",
+            "Thank you for your order! Your payment has been processed and your order is complete",
         [Language.swedish]:
-            "Tack för din beställning! Din betalning har behandlats och din beställning är slutförd.",
+            "Tack för din beställning! Din betalning har behandlats och din beställning är slutförd",
     },
     orderPaid: {
         [Language.english]:
-            "Thank you for your order! Your payment has been processed and is being fulfilled.",
+            "Thank you for your order! Your payment has been processed and is being fulfilled",
         [Language.swedish]:
-            "Tack för din beställning! Din betalning har behandlats och håller på att uppfyllas.",
+            "Tack för din beställning! Din betalning har behandlats och håller på att uppfyllas",
     },
     orderPending: {
-        [Language.english]:
-            "Your order is currently pending payment. Please complete the payment process.",
-        [Language.swedish]: "Din beställning behandlas. Vänligen slutför betalningsprocessen.",
+        [Language.english]: "Your order is currently pending payment",
+        [Language.swedish]: "Din beställning väntar på betalning",
     },
     orderCancelled: {
         [Language.english]:
-            "This order has been cancelled. If you have any questions, please contact support.",
+            "This order has been cancelled. If you have any questions, please contact support",
         [Language.swedish]:
-            "Beställning har avbrutits. Om du har några frågor, vänligen kontakta support.",
+            "Beställning har avbrutits. Om du har några frågor, vänligen kontakta support",
     },
     unknownStatus: {
         [Language.english]: "Unknown status",
@@ -69,6 +68,18 @@ const LanguageTranslations = {
     product: {
         [Language.english]: "Product",
         [Language.swedish]: "Produkt",
+    },
+    failedPaymentRedirect: {
+        [Language.english]: "Failed to redirect to payment",
+        [Language.swedish]: "Kunde inte omdirigera till betalning",
+    },
+    cancelledOrder: {
+        [Language.english]: "Cancelled order",
+        [Language.swedish]: "Avbröt beställningen",
+    },
+    pay: {
+        [Language.english]: (orderTotal: number) => (orderTotal === 0 ? "confirm" : "pay"),
+        [Language.swedish]: (orderTotal: number) => (orderTotal === 0 ? "bekräfta" : "betala"),
     },
 };
 

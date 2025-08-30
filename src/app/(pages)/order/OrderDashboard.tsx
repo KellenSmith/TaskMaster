@@ -1,6 +1,6 @@
 "use client";
 import { Prisma } from "@prisma/client";
-import PaymentHandler from "../../ui/payment/PaymentHandler";
+import PaymentHandler from "./PaymentHandler";
 import OrderSummary from "./OrderSummary";
 import { use, useEffect, useTransition } from "react";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
@@ -23,10 +23,6 @@ interface OrderDashboardProps {
 const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     const { user, refreshSession, language } = useUserContext();
     const order = use(orderPromise);
-    const router = useRouter();
-
-    // Only allow showing the user's own orders
-    if (!user || user.id !== order.user_id) clientRedirect(router, [GlobalConstants.HOME]);
 
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();

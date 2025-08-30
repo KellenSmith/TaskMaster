@@ -4,9 +4,12 @@ import React, { use } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
 import { OrderStatus, Prisma } from "@prisma/client";
 import { useNotificationContext } from "../../context/NotificationContext";
-import { allowRedirectException } from "../utils";
-import ConfirmButton from "../ConfirmButton";
+import { allowRedirectException } from "../../ui/utils";
+import ConfirmButton from "../../ui/ConfirmButton";
 import { progressOrder } from "../../lib/order-actions";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface PaymentHandlerProps {
     orderPromise: Promise<
@@ -15,6 +18,7 @@ interface PaymentHandlerProps {
 }
 
 const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
+    const { language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const order = use(orderPromise);
 
@@ -24,16 +28,16 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         } catch (error) {
             allowRedirectException(error);
             // Show notification for all other errors
-            addNotification("Failed to redirect to payment", "error");
+            addNotification(LanguageTranslations.failedPaymentRedirect[language], "error");
         }
     };
 
     const cancelOrder = async () => {
         try {
             await progressOrder(order.id, OrderStatus.cancelled);
-            addNotification("Cancelled order", "success");
+            addNotification(LanguageTranslations.cancelledOrder[language], "success");
         } catch {
-            addNotification("Failed to cancel order", "error");
+            addNotification(LanguageTranslations.cancelledOrder[language], "error");
         }
     };
 
@@ -41,10 +45,10 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         order.status === OrderStatus.pending && (
             <Stack alignItems="center">
                 <Button color="success" fullWidth onClick={redirectToPayment}>
-                    {order.total_amount === 0 ? "confirm" : "pay"}
+                    {LanguageTranslations.pay[language](order.total_amount)}
                 </Button>
                 <ConfirmButton fullWidth color="error" onClick={cancelOrder}>
-                    cancel
+                    {GlobalLanguageTranslations.cancel[language]}
                 </ConfirmButton>
             </Stack>
         )

@@ -17,11 +17,26 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
         });
         if (eventParticipant) throw new Error("User is already a participant in the event");
 
-        await prisma.eventReserve.create({
-            data: {
-                user_id: userId,
-                event_id: eventId,
+        await prisma.eventReserve.upsert({
+            where: {
+                user_id_event_id: {
+                    user_id: userId,
+                    event_id: eventId,
+                },
             },
+            create: {
+                user: {
+                    connect: {
+                        id: userId,
+                    },
+                },
+                event: {
+                    connect: {
+                        id: eventId,
+                    },
+                },
+            },
+            update: {},
         });
         revalidateTag(GlobalConstants.RESERVE_USERS);
         // Event reserves with limited data is cached with the event
