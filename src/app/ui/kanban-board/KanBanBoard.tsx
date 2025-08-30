@@ -40,16 +40,22 @@ const KanBanBoard = ({
     activeMembersPromise,
     skillBadgesPromise,
 }: KanBanBoardProps) => {
-    const { language } = useUserContext();
+    const { user, language } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
-    const [appliedFilter, setAppliedFilter] = useState(null);
+    const [appliedFilter, setAppliedFilter] = useState<Record<
+        keyof typeof filterOptions,
+        string | undefined
+    > | null>(null);
 
     const printVisibleTasksToPdf = async () => {
         const taskSchedule = await pdf(
-            <TaskSchedulePDF event={event} tasks={getFilteredTasks(appliedFilter, tasks)} />,
+            <TaskSchedulePDF
+                event={event}
+                tasks={getFilteredTasks(appliedFilter, tasks, user.id)}
+            />,
         ).toBlob();
         const url = URL.createObjectURL(taskSchedule);
         openResourceInNewTab(url);
@@ -73,6 +79,7 @@ const KanBanBoard = ({
                             tasks={getFilteredTasks(
                                 appliedFilter,
                                 tasks.filter((task) => task.status === status),
+                                user.id,
                             )}
                             activeMembersPromise={activeMembersPromise}
                             skillBadgesPromise={skillBadgesPromise}

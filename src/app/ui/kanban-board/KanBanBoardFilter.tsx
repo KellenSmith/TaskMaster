@@ -11,31 +11,34 @@ import { Prisma } from "@prisma/client";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import LanguageTranslations from "./LanguageTranslations";
 
 export const filterOptions = {
-    unassigned: (filteredTasks: Prisma.TaskGetPayload<{}>[]) =>
-        filteredTasks.filter((task) => !task.assignee_id),
-    assigned_to_me: (filteredTasks: Prisma.TaskGetPayload<{}>[], userId: string) =>
-        filteredTasks.filter((task) => task.assignee_id === userId),
-    for_me_to_review: (filteredTasks: Prisma.TaskGetPayload<{}>[], userId: string) =>
-        filteredTasks.filter((task) => task.reviewer_id === userId),
-    begins_after: (filteredTasks: Prisma.TaskGetPayload<{}>[], date: Date) =>
-        filteredTasks.filter((task) => dayjs(task.start_time).isAfter(dayjs(date))),
-    ends_before: (filteredTasks: Prisma.TaskGetPayload<{}>[], date: Date) =>
-        filteredTasks.filter((task) => dayjs(task.end_time).isBefore(dayjs(date))),
-    has_tag: (filteredTasks: Prisma.TaskGetPayload<{}>[], tag: string) =>
-        filteredTasks.filter((task) => task.tags.includes(tag)),
+    unassigned: (tasks: Prisma.TaskGetPayload<{}>[]) => tasks.filter((task) => !task.assignee_id),
+    assigned_to_me: (tasks: Prisma.TaskGetPayload<{}>[], userId: string) =>
+        tasks.filter((task) => task.assignee_id === userId),
+    for_me_to_review: (tasks: Prisma.TaskGetPayload<{}>[], userId: string) =>
+        tasks.filter((task) => task.reviewer_id === userId),
+    begins_after: (tasks: Prisma.TaskGetPayload<{}>[], date: string) =>
+        tasks.filter((task) => dayjs(task.start_time).isAfter(dayjs(date, "L HH:mm"), "minute")),
+    ends_before: (tasks: Prisma.TaskGetPayload<{}>[], date: string) =>
+        tasks.filter((task) => dayjs(task.end_time).isBefore(dayjs(date, "L HH:mm"), "minute")),
+    has_tag: (tasks: Prisma.TaskGetPayload<{}>[], tag: string) =>
+        tasks.filter((task) => task.tags.includes(tag)),
 };
 
-export const getFilteredTasks = (appliedFilter, tasks) => {
+export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
+    appliedFilter: Record<keyof typeof filterOptions, string | undefined>,
+    tasks: T[],
+    userId: string,
+): T[] => {
     if (!appliedFilter) return tasks;
     let filteredTasks = [...tasks];
+
     for (const [key, value] of Object.entries(appliedFilter)) {
-        if (value && filterOptions[key]) {
-            filteredTasks = filterOptions[key](filteredTasks, value);
-        }
+        if (value && filterOptions[key])
+            filteredTasks = filterOptions[key](filteredTasks, value, userId);
     }
     return filteredTasks;
 };
@@ -58,7 +61,7 @@ const KanBanBoardFilter = ({ tasksPromise, setAppliedFilter }: KanBanBoardFilter
     const applyFilter = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const submittedFilters = Object.fromEntries(formData);
+        const submittedFilters = Object.fromEntries(formData.entries());
         setAppliedFilter(submittedFilters);
     };
 
@@ -67,11 +70,11 @@ const KanBanBoardFilter = ({ tasksPromise, setAppliedFilter }: KanBanBoardFilter
 
         if (["begins_after", "ends_before"].includes(fieldId))
             return (
-                <DatePicker
+                <DateTimePicker
                     key={fieldId}
                     name={fieldId}
                     label={label}
-                    defaultValue={dayjs()}
+                    defaultValue={dayjs().minute(0).second(0)}
                     slotProps={{
                         textField: {
                             name: fieldId,
