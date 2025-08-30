@@ -156,7 +156,6 @@ const DroppableColumn = ({
                         <DraggableTaskShifts
                             key={taskList.map((task) => task.id).join("-")}
                             readOnly={readOnly}
-                            eventPromise={eventPromise}
                             taskList={taskList}
                             activeMembersPromise={activeMembersPromise}
                             skillBadgesPromise={skillBadgesPromise}

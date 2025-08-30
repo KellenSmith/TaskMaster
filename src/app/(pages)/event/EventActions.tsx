@@ -66,7 +66,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         },
     };
 
-    const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All);
+    const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All[language]);
 
     const publishEvent = () => {
         startTransition(async () => {
@@ -231,8 +231,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     const sendoutToEventUsers = async (parsedFieldValues: z.infer<typeof EmailSendoutSchema>) => {
         const recipientIds: string[] = [];
         if (
-            sendoutTo[language] === sendoutToOptions.Participants[language] ||
-            sendoutTo[language] === sendoutToOptions.All[language]
+            sendoutTo === sendoutToOptions.Participants[language] ||
+            sendoutTo === sendoutToOptions.All[language]
         ) {
             const eventParticipants = event.tickets
                 .map((ticket) => ticket.event_participants)
@@ -241,8 +241,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             recipientIds.push(...eventParticipants.map((ep) => ep.user_id));
         }
         if (
-            sendoutTo[language] === sendoutToOptions.Reserves[language] ||
-            sendoutTo[language] === sendoutToOptions.All[language]
+            sendoutTo === sendoutToOptions.Reserves[language] ||
+            sendoutTo === sendoutToOptions.All[language]
         )
             recipientIds.push(...event.event_reserves.map((er) => er.user_id));
 
@@ -282,16 +282,16 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             );
 
         let recipientCount = getEventParticipantCount(event);
-        if (sendoutTo[language] === sendoutToOptions.Reserves[language])
+        if (sendoutTo === sendoutToOptions.Reserves[language])
             recipientCount = event.event_reserves.length;
-        else if (sendoutTo[language] === sendoutToOptions.All[language])
+        else if (sendoutTo === sendoutToOptions.All[language])
             recipientCount += event.event_reserves.length;
 
         return (
             <>
                 <AccordionRadioGroup
                     title={SendoutLanguageTranslations.sendToRecipients[language](recipientCount)}
-                    value={sendoutTo[language]}
+                    value={sendoutTo}
                     setValue={setSendoutTo}
                     valueOptions={Object.fromEntries(
                         Object.entries(sendoutToOptions).map(([key, value]) => [

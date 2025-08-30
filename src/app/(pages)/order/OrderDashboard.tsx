@@ -6,10 +6,7 @@ import { use, useEffect, useTransition } from "react";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { useUserContext } from "../../context/UserContext";
 import { useNotificationContext } from "../../context/NotificationContext";
-import { useRouter } from "next/navigation";
-import GlobalConstants from "../../GlobalConstants";
 import { checkPaymentStatus } from "../../lib/payment-actions";
-import { clientRedirect } from "../../lib/definitions";
 import LanguageTranslations from "./LanguageTranslations";
 
 interface OrderDashboardProps {

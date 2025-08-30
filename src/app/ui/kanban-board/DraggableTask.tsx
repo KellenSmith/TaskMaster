@@ -11,11 +11,9 @@ import { Prisma } from "@prisma/client";
 import z from "zod";
 import { TaskUpdateSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { CustomOptionProps } from "../form/AutocompleteWrapper";
 
 interface DraggableTaskProps {
-    eventPromise: Promise<Prisma.EventGetPayload<true>> | undefined;
     readOnly: boolean;
     task: Prisma.TaskGetPayload<{
         include: {
@@ -40,7 +38,6 @@ interface DraggableTaskProps {
 }
 
 const DraggableTask = ({
-    eventPromise,
     readOnly,
     task,
     activeMembersPromise,
@@ -49,7 +46,6 @@ const DraggableTask = ({
 }: DraggableTaskProps) => {
     const { user } = useUserContext();
     const { addNotification } = useNotificationContext();
-    const event = eventPromise ? use(eventPromise) : null;
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const skillBadges = use(skillBadgesPromise);
     const [dialogOpen, setDialogOpen] = useState(false);

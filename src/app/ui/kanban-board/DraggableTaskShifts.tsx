@@ -22,7 +22,6 @@ import { useUserContext } from "../../context/UserContext";
 
 interface DraggableTaskShiftsProps {
     readOnly: boolean;
-    eventPromise: Promise<Prisma.EventGetPayload<true>> | undefined;
     // A list of shifts (tasks with the same name)
     taskList: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
@@ -51,7 +50,6 @@ interface DraggableTaskShiftsProps {
 
 const DraggableTaskShifts = ({
     readOnly,
-    eventPromise,
     taskList,
     activeMembersPromise,
     skillBadgesPromise,
@@ -99,7 +97,6 @@ const DraggableTaskShifts = ({
             <Card>
                 <DraggableTask
                     key={taskList[0].id}
-                    eventPromise={eventPromise}
                     readOnly={readOnly}
                     task={taskList[0]}
                     setDraggedTask={setDraggedTask}
@@ -130,7 +127,6 @@ const DraggableTaskShifts = ({
                                 <Divider />
                                 <DraggableTask
                                     readOnly={readOnly}
-                                    eventPromise={eventPromise}
                                     task={task}
                                     setDraggedTask={setDraggedTask}
                                     activeMembersPromise={activeMembersPromise}

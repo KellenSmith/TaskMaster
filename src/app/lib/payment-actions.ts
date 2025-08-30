@@ -7,7 +7,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
-import { getAbsoluteUrl, getRelativeUrl, isUserAdmin, serverRedirect } from "./definitions";
+import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./definitions";
 import { getLoggedInUser } from "./user-actions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
