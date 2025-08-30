@@ -7,7 +7,7 @@ import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { Prisma, TaskStatus } from "@prisma/client";
 import { openResourceInNewTab } from "../utils";
-import KanBanBoardFilter from "./KanBanBoardFilter";
+import KanBanBoardFilter, { filterOptions, getFilteredTasks } from "./KanBanBoardFilter";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 
@@ -45,11 +45,11 @@ const KanBanBoard = ({
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
-    const [filteredTasks, setFilteredTasks] = useState(tasks);
+    const [appliedFilter, setAppliedFilter] = useState(null);
 
     const printVisibleTasksToPdf = async () => {
         const taskSchedule = await pdf(
-            <TaskSchedulePDF event={event} tasks={filteredTasks} />,
+            <TaskSchedulePDF event={event} tasks={getFilteredTasks(appliedFilter, tasks)} />,
         ).toBlob();
         const url = URL.createObjectURL(taskSchedule);
         openResourceInNewTab(url);
@@ -62,7 +62,7 @@ const KanBanBoard = ({
                     {LanguageTranslations.assignYourselfPrompt[language]}
                 </Typography>
             )}
-            <KanBanBoardFilter tasksPromise={tasksPromise} setFilteredTasks={setFilteredTasks} />
+            <KanBanBoardFilter tasksPromise={tasksPromise} setAppliedFilter={setAppliedFilter} />
             <Grid2 container spacing={2} columns={4} height="100%">
                 {Object.values(TaskStatus).map((status) => (
                     <Grid2 size={1} key={status} height="100%">
@@ -70,7 +70,10 @@ const KanBanBoard = ({
                             readOnly={readOnly}
                             eventPromise={eventPromise}
                             status={status}
-                            tasks={filteredTasks.filter((task) => task.status === status)}
+                            tasks={getFilteredTasks(
+                                appliedFilter,
+                                tasks.filter((task) => task.status === status),
+                            )}
                             activeMembersPromise={activeMembersPromise}
                             skillBadgesPromise={skillBadgesPromise}
                             draggedTask={draggedTask}
