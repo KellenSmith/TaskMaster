@@ -7,8 +7,10 @@ dayjs.extend(localeData);
 
 const LanguageTranslations = {
     locationCapacityExceeded: {
-        [Language.english]: "The location can't handle this many participants",
-        [Language.swedish]: "Lokalen kan inte husera så många deltagare",
+        [Language.english]: (locationCapacity: number) =>
+            `The location can only handle ${locationCapacity} participants`,
+        [Language.swedish]: (locationCapacity: number) =>
+            `Lokalen kan bara ta in ${locationCapacity} deltagare`,
     },
     createEvent: {
         [Language.english]: "Create event",

@@ -127,7 +127,11 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                         </Button>
                         {isSwitchButtonDisabled() && (
                             <Typography color="error" textAlign="center">
-                                {CalendarLanguageTranslations.locationCapacityExceeded[language]}
+                                {CalendarLanguageTranslations.locationCapacityExceeded[language](
+                                    locations.find(
+                                        (location) => location.id === selectedLocationOption.id,
+                                    )?.capacity || 0,
+                                )}
                             </Typography>
                         )}
                     </Stack>

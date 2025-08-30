@@ -32,7 +32,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     ) => {
         const selectedLocation = locations.find((loc) => loc.id === parsedFieldValues.location_id);
         if (selectedLocation.capacity < parsedFieldValues.max_participants)
-            throw new Error(LanguageTranslations.locationCapacityExceeded[language]);
+            throw new Error(
+                LanguageTranslations.locationCapacityExceeded[language](selectedLocation.capacity),
+            );
 
         await createEvent(user.id, parsedFieldValues);
         return GlobalLanguageTranslations.successfulSave[language];
