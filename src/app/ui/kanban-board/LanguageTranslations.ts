@@ -3,7 +3,7 @@ import { Language, TaskStatus } from "@prisma/client";
 const LanguageTranslations = {
     assignYourselfPrompt: {
         [Language.english]: "Want to volunteer? Book a shift!",
-        [Language.swedish]: "Vill du volontära? Boka in dig på en uppgift!",
+        [Language.swedish]: "Vill du volontära? Boka in ett skift!",
     },
     printSchedule: {
         [Language.english]: "Print Schedule",
@@ -46,8 +46,8 @@ const LanguageTranslations = {
         [Language.swedish]: "Rensa",
     },
     taskSetTo: {
-        [Language.english]: "Set to",
-        [Language.swedish]: "Satt till",
+        [Language.english]: "Moved to",
+        [Language.swedish]: "Flyttad till",
     },
     [TaskStatus.toDo]: {
         [Language.english]: "Bookable shifts",
@@ -85,19 +85,25 @@ const LanguageTranslations = {
         [Language.english]: "Failed to book volunteer shift",
         [Language.swedish]: "Kunde inte boka volontärskift",
     },
-    bookButtonLabel: {
-        [Language.english]: (assignedToMe: boolean, amQualified: boolean) =>
-            assignedToMe
-                ? "This task is assigned to you"
-                : amQualified
-                  ? "Assign to me"
-                  : "You don't have the skills for this task yet",
-        [Language.swedish]: (assignedToMe: boolean, amQualified: boolean) =>
-            assignedToMe
-                ? "Bokad"
-                : amQualified
-                  ? "Boka"
-                  : "Du har inte färdigheterna för detta skift än",
+    cancelShiftBooking: {
+        [Language.english]: "Cancel shift booking",
+        [Language.swedish]: "Avboka detta skift",
+    },
+    bookThisShift: {
+        [Language.english]: "Book this shift",
+        [Language.swedish]: "Boka detta skift",
+    },
+    unassignedTask: {
+        [Language.english]: "Cancelled booked volunteer shift",
+        [Language.swedish]: "Avbokade bokat volontärskift",
+    },
+    failedUnassignTask: {
+        [Language.english]: "Failed to cancel booked volunteer shift",
+        [Language.swedish]: "Kunde inte avboka bokat volontärskift",
+    },
+    unqualifiedForShift: {
+        [Language.english]: "You don't have the skills for this shift yet",
+        [Language.swedish]: "Du har inte färdigheterna för detta skift än",
     },
 };
 

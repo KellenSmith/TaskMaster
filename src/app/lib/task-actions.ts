@@ -32,8 +32,13 @@ export const updateTaskById = async (
         reviewer_id: reviewerId,
         assignee_id: assigneeId,
         skill_badges: newSkillBadges,
-        ...tasksWithoutUsers
+        ...taskWithoutUsers
     } = parsedFieldValues;
+
+    // An assigned task is never to do, it must be in progress or further
+    if (assigneeId && taskWithoutUsers.status === TaskStatus.toDo) {
+        taskWithoutUsers.status = TaskStatus.inProgress;
+    }
 
     await prisma.$transaction(async (tx) => {
         const updatedTask = await tx.task.update({
@@ -41,7 +46,7 @@ export const updateTaskById = async (
                 id: taskId,
             },
             data: {
-                ...tasksWithoutUsers,
+                ...taskWithoutUsers,
                 tags: parsedFieldValues.tags,
                 ...(assigneeId && {
                     assignee: {
@@ -121,11 +126,17 @@ export const createTask = async (
         assignee_id: assigneeId,
         reviewer_id: reviewerId,
         skill_badges: skillBadges,
-        ...tasksWithoutUsers
+        ...taskWithoutUsers
     } = parsedFieldValues;
+
+    // An assigned task is never to do, it must be in progress or further
+    if (assigneeId && taskWithoutUsers.status === TaskStatus.toDo) {
+        taskWithoutUsers.status = TaskStatus.inProgress;
+    }
+
     await prisma.task.create({
         data: {
-            ...tasksWithoutUsers,
+            ...taskWithoutUsers,
             tags: parsedFieldValues.tags,
             ...(assigneeId && {
                 assignee: {
@@ -200,6 +211,7 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
             id: taskId,
         },
         data: {
+            status: TaskStatus.inProgress,
             assignee: {
                 connect: {
                     id: userId,
@@ -208,4 +220,22 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
         },
     });
     revalidateTag(GlobalConstants.TASK);
+};
+
+export const unassignTaskFromUser = async (userId: string, taskId: string) => {
+    await prisma.task.update({
+        where: {
+            id: taskId,
+        },
+        data: {
+            status: TaskStatus.toDo,
+            assignee: {
+                disconnect: {
+                    id: userId,
+                },
+            },
+        },
+    });
+    revalidateTag(GlobalConstants.TASK);
+    notifyTaskReviewer(userId, taskId, "The assignee of this task has cancelled their shift.");
 };

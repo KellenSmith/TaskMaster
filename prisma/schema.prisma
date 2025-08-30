@@ -165,6 +165,13 @@ model EventReserve {
     @@map("event_reserves")
 }
 
+/**
+ * TODO: Implement handling:
+ * Make a task card to show essentials when readonly
+ * Handle task assignment separately from the task edit form
+ * A rando can assign themself, eventhost or admin can assign others
+ * When a task is assigned, move to inprogress.
+ */
 enum TaskStatus {
     toDo
     inProgress
@@ -176,7 +183,7 @@ model Task {
     id          String     @id @default(uuid())
     name        String
     status      TaskStatus @default(toDo)
-    start_time  DateTime
+    start_time  DateTime?
     end_time    DateTime
     description String?
     tags        String[]   @default([])
