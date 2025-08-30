@@ -78,7 +78,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         {
             name: GlobalConstants.DELETE,
             serverAction: deleteUserAction,
-            available: (member: ImplementedDatagridEntities) => member?.id !== user.id,
+            available: (member: ImplementedDatagridEntities) => user && member?.id !== user.id,
             buttonColor: "error",
             buttonLabel: GlobalLanguageTranslations.delete[language],
         },

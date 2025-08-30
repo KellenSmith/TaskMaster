@@ -7,9 +7,11 @@ import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { Prisma, TaskStatus } from "@prisma/client";
 import { openResourceInNewTab } from "../utils";
-import KanBanBoardFilter, { filterOptions, getFilteredTasks } from "./KanBanBoardFilter";
+import KanBanBoardFilter, { getFilteredTasks } from "./KanBanBoardFilter";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
+import z from "zod";
+import { TaskFilterSchema } from "../../lib/zod-schemas";
 
 interface KanBanBoardProps {
     readOnly: boolean;
@@ -45,10 +47,9 @@ const KanBanBoard = ({
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
-    const [appliedFilter, setAppliedFilter] = useState<Record<
-        keyof typeof filterOptions,
-        string | undefined
-    > | null>(null);
+    const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
+        null,
+    );
 
     const printVisibleTasksToPdf = async () => {
         const taskSchedule = await pdf(

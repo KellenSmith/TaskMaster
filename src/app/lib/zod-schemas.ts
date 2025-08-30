@@ -22,7 +22,7 @@ const selectMultipleSchema = z
     .transform((val) => (val ? val.split(",") : []))
     .optional();
 
-// TODO: Implement swedish translations for error messages
+const switchButtonSchema = z.string().transform((val) => (val === "on" ? true : false));
 
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
@@ -308,3 +308,14 @@ export const AddEventParticipantSchema = z.object({
 export const AddEventReserveSchema = z.object({
     user_id: z.uuid(),
 });
+
+export const TaskFilterSchema = z
+    .object({
+        unassigned: switchButtonSchema,
+        assigned_to_me: switchButtonSchema,
+        for_me_to_review: switchButtonSchema,
+        begins_after: stringToISODate,
+        ends_before: stringToISODate,
+        has_tag: selectMultipleSchema,
+    })
+    .partial();

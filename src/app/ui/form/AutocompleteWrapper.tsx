@@ -13,11 +13,12 @@ export interface CustomOptionProps {
 interface AutocompleteWrapperProps {
     fieldId: string;
     label: string;
-    defaultValue: string | string[];
+    defaultValue?: string | string[];
     editMode: boolean;
     customReadOnlyFields?: string[];
     customOptions?: CustomOptionProps[];
     required?: boolean;
+    customMultiple?: boolean;
 }
 
 const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
@@ -28,9 +29,13 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
     customReadOnlyFields,
     customOptions,
     required,
+    customMultiple,
 }) => {
     const { language } = useUserContext();
-    const multiple = useMemo(() => allowSelectMultiple.includes(fieldId), [fieldId]);
+    const multiple = useMemo(
+        () => allowSelectMultiple.includes(fieldId) || customMultiple,
+        [fieldId, customMultiple],
+    );
     const options = useMemo<CustomOptionProps[]>(() => {
         if (customOptions) return customOptions;
         return selectFieldOptions[fieldId].map((option: string) => ({
@@ -79,7 +84,7 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
                 )}
                 options={options}
                 autoSelect={required}
-                multiple={allowSelectMultiple.includes(fieldId)}
+                multiple={multiple}
                 disabled={!editMode || customReadOnlyFields?.includes(fieldId)}
             />
             {/* Hidden input for form submission */}

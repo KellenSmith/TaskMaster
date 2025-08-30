@@ -74,6 +74,10 @@ const LanguageTranslations = {
         [Language.english]: "Shifts",
         [Language.swedish]: "Skift",
     },
+    filtrationError: {
+        [Language.english]: "Error applying filters",
+        [Language.swedish]: "Kunde inte tillämpa filter",
+    },
 };
 
 export default LanguageTranslations;
