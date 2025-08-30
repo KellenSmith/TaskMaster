@@ -84,33 +84,25 @@ export const resetUserCredentials = async (
 ): Promise<void> => {
     const userEmail: string = parsedFieldValues.email as unknown as string;
     const generatedPassword = await generateSalt();
-    try {
-        const user = await prisma.user.findUnique({
-            where: {
-                email: userEmail,
-            },
-        });
-        const salt = await generateSalt();
-        await prisma.userCredentials.update({
-            where: {
-                user_id: user.id,
-            },
-            data: {
-                salt,
-                hashed_password: await hashPassword(generatedPassword, salt),
-            },
-        });
-    } catch {
-        console.error("Could not reset credentials for email: ", userEmail);
-        throw new Error("Could not reset credentials");
-    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: userEmail,
+        },
+    });
+    const salt = await generateSalt();
+    await prisma.userCredentials.update({
+        where: {
+            user_id: user.id,
+        },
+        data: {
+            salt,
+            hashed_password: await hashPassword(generatedPassword, salt),
+        },
+    });
 
     // Email new credentials to user email
-    try {
-        await sendUserCredentials(userEmail, generatedPassword);
-    } catch {
-        throw new Error("Credentials were reset but could not be emailed to user");
-    }
+    await sendUserCredentials(userEmail, generatedPassword);
 };
 
 export const updateUserCredentials = async (

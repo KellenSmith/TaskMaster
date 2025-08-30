@@ -2,9 +2,8 @@ import { Language, TaskStatus } from "@prisma/client";
 
 const LanguageTranslations = {
     assignYourselfPrompt: {
-        [Language.english]: "Assign yourself to tasks and shifts to help make the event happen",
-        [Language.swedish]:
-            "Tilldela dig själv uppgifter och skift för att hjälpa till med evenemanget",
+        [Language.english]: "Want to volunteer? Book a shift!",
+        [Language.swedish]: "Vill du volontära? Boka in dig på en uppgift!",
     },
     printSchedule: {
         [Language.english]: "Print Schedule",
@@ -51,20 +50,20 @@ const LanguageTranslations = {
         [Language.swedish]: "Satt till",
     },
     [TaskStatus.toDo]: {
-        [Language.english]: "To Do",
-        [Language.swedish]: "Att Göra",
+        [Language.english]: "Bookable shifts",
+        [Language.swedish]: "Bokningsbara skift",
     },
     [TaskStatus.inProgress]: {
-        [Language.english]: "In Progress",
-        [Language.swedish]: "Pågår",
+        [Language.english]: "Booked shifts",
+        [Language.swedish]: "Bokade skift",
     },
     [TaskStatus.inReview]: {
-        [Language.english]: "In Review",
-        [Language.swedish]: "Under Granskning",
+        [Language.english]: "Requests feedback",
+        [Language.swedish]: "Efterfrågar återkoppling",
     },
     [TaskStatus.done]: {
-        [Language.english]: "Done",
-        [Language.swedish]: "Klar",
+        [Language.english]: "Done/Finished",
+        [Language.swedish]: "Klar/Avslutat",
     },
     addShift: {
         [Language.english]: "Add Shift",
@@ -77,6 +76,28 @@ const LanguageTranslations = {
     filtrationError: {
         [Language.english]: "Error applying filters",
         [Language.swedish]: "Kunde inte tillämpa filter",
+    },
+    bookedTask: {
+        [Language.english]: "Volunteer shift booked",
+        [Language.swedish]: "Volontärskift bokat",
+    },
+    failedBookTask: {
+        [Language.english]: "Failed to book volunteer shift",
+        [Language.swedish]: "Kunde inte boka volontärskift",
+    },
+    bookButtonLabel: {
+        [Language.english]: (assignedToMe: boolean, amQualified: boolean) =>
+            assignedToMe
+                ? "This task is assigned to you"
+                : amQualified
+                  ? "Assign to me"
+                  : "You don't have the skills for this task yet",
+        [Language.swedish]: (assignedToMe: boolean, amQualified: boolean) =>
+            assignedToMe
+                ? "Bokad"
+                : amQualified
+                  ? "Boka"
+                  : "Du har inte färdigheterna för detta skift än",
     },
 };
 

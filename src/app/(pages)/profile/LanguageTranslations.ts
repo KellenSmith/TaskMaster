@@ -54,12 +54,12 @@ const LanguageTranslations = {
         [Language.swedish]: "Medlemskap",
     },
     expired: {
-        [Language.english]: "Expired",
-        [Language.swedish]: "Utgått",
+        [Language.english]: "Expired membership",
+        [Language.swedish]: "Medlemskap utgått",
     },
     active: {
-        [Language.english]: "Active",
-        [Language.swedish]: "Aktiv",
+        [Language.english]: "Active membership",
+        [Language.swedish]: "Aktivt medlemskap",
     },
     membershipExpiredPrompt: {
         [Language.english]: (

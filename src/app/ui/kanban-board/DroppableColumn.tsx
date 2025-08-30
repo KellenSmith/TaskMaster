@@ -116,6 +116,10 @@ const DroppableColumn = ({
         return GlobalLanguageTranslations.successfulSave[language];
     };
 
+    // TODO: implement bookable shift/booked shifts columns instead of todo
+
+    // TODO automatically give volunteers a volunteer ticket
+
     return (
         <>
             <Paper

@@ -116,6 +116,7 @@ const EventDashboard = ({
                 );
             case eventTabs.organize:
                 return (
+                    // TODO: Exchange for simple mist of assignable tasks
                     <ErrorBoundarySuspense>
                         <KanBanBoard
                             readOnly={!(isUserHost(user, event) || isUserAdmin(user))}

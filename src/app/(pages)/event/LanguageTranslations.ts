@@ -19,8 +19,8 @@ const LanguageTranslations = {
         [Language.swedish]: "Plats",
     },
     [implementedTabs.organize]: {
-        [Language.english]: "Organize",
-        [Language.swedish]: "Organisera",
+        [Language.english]: "Volunteer",
+        [Language.swedish]: "Volontära",
     },
     [implementedTabs.tickets]: {
         [Language.english]: "Tickets",

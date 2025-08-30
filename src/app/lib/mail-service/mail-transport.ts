@@ -4,7 +4,7 @@ import { getOrganizationSettings } from "../organization-settings-actions";
 // Avoid importing nodemailer at module evaluation time. Dynamically import it
 // inside getMailTransport so bundlers don't include Node-only modules in edge
 // bundles.
-const globalMailService = global as { mailTransport?: Transporter };
+const globalMailService = global as { mailTransport? };
 
 export async function getMailTransport() {
     if (globalMailService.mailTransport) return globalMailService.mailTransport;

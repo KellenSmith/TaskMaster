@@ -12,6 +12,8 @@ import z from "zod";
 import { TaskUpdateSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { CustomOptionProps } from "../form/AutocompleteWrapper";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface DraggableTaskProps {
     readOnly: boolean;
@@ -44,7 +46,7 @@ const DraggableTask = ({
     skillBadgesPromise,
     setDraggedTask,
 }: DraggableTaskProps) => {
-    const { user } = useUserContext();
+    const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const skillBadges = use(skillBadgesPromise);
@@ -54,9 +56,9 @@ const DraggableTask = ({
         try {
             await deleteTask(task.id);
             setDialogOpen(false);
-            addNotification("Deleted task", "success");
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
         } catch {
-            addNotification("Failed to delete task", "error");
+            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
     };
 
@@ -68,9 +70,9 @@ const DraggableTask = ({
     const assignTaskToMe = async () => {
         try {
             await assignTaskToUser(user.id, task.id);
-            addNotification("Assigned task to you", "success");
+            addNotification(LanguageTranslations.bookedTask[language], "success");
         } catch {
-            addNotification("Failed to assign task", "error");
+            addNotification(LanguageTranslations.failedBookTask[language], "error");
         }
     };
 
@@ -121,20 +123,18 @@ const DraggableTask = ({
                     }}
                     action={updateTaskAction}
                     validationSchema={TaskUpdateSchema}
-                    buttonLabel="save task"
                     readOnly={readOnly}
                     editable={!readOnly}
                 />
                 <Button onClick={assignTaskToMe} disabled={task.assignee_id === user.id}>
-                    {task.assignee_id === user.id
-                        ? "This task is assigned to you"
-                        : isUserQualifiedForTask(user, task.skill_badges)
-                          ? "Assign to me"
-                          : "You don't have the skills for this task yet"}
+                    {LanguageTranslations.bookButtonLabel[language](
+                        task.assignee_id === user.id,
+                        isUserQualifiedForTask(user, task.skill_badges),
+                    )}
                 </Button>
                 {!readOnly && (
                     <ConfirmButton color="error" onClick={deleteTaskAction}>
-                        delete
+                        {GlobalLanguageTranslations.delete[language]}
                     </ConfirmButton>
                 )}
             </Dialog>
