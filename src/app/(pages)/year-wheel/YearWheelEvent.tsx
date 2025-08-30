@@ -46,12 +46,6 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
             (365 * 24 * 60 * 60 * 1000)) *
         100;
 
-    const getColorShade = () => {
-        // Pick the shade according to index. When colors run out, start again on the first color
-        const shadeIndex = index % Object.keys(colors).length;
-        return Object.values(colors)[shadeIndex];
-    };
-
     const overLappingEvents = getSortedEvents([
         event,
         ...events.filter((e) => {
@@ -75,12 +69,16 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
         }),
     ]);
 
-    const index = overLappingEvents.indexOf(event);
-
     // Ensure index is non-negative (fallback) then compute a logarithmic decrease
     // Start at 100% for index 0 and approach 50% as index grows.
-    const safeIndex = Math.max(0, index);
+    const safeIndex = Math.max(0, overLappingEvents.indexOf(event));
     const sizePercent = Math.min(100, Math.max(50, 50 + 50 / (1 + Math.log10(safeIndex + 1))));
+
+    const getColorShade = () => {
+        // Pick the shade according to index. When colors run out, start again on the first color
+        const shadeIndex = safeIndex % Object.keys(colors).length;
+        return Object.values(colors)[shadeIndex];
+    };
 
     return (
         <>
@@ -89,14 +87,14 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
                 color={getColorShade()[300]}
                 startOffset={taskStartOffset}
                 radius={sizePercent / 2}
-                zIndex={index}
+                zIndex={safeIndex}
             />
             <CircleSector
                 arcLength={eventDuration}
                 color={getColorShade()[500]}
                 startOffset={eventStartOffset}
                 radius={sizePercent / 2}
-                zIndex={index + 1}
+                zIndex={safeIndex + 1}
             />
         </>
     );
