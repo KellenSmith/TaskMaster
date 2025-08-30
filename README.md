@@ -16,7 +16,7 @@ There are a few test accounts you can use. All accounts have password 123456
 - expiredMembership@email.com
 
 At the time of writing i've prepped the database with accounts, events a.s.o to show off what the TaskMaster can do. Feel free to change things around. I can easily reset the database.
-The test accounts have been set up with various roles and permissions to help you explore the application. The event-related roles refer to the event "Test Event" happening on 2025-08-26 in the calendar.
+The test accounts have been set up with various roles and permissions to help you explore the application. The event-related roles refer to the event "Test Event" happening on 2025-08-30 in the calendar.
 
 The TaskMaster helps out by sending automatic emails related to events, orders, and user actions. The email will be sent to the address of the relevant user. If you want to test it, feel free to enter an email you have access to.
 
@@ -39,7 +39,7 @@ For payments, use the following test data:
 - ~~Ditch the task phase property and sort by start/end dates instead~~
 - ~~Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.~~
 - ~~A year wheel for admins showing planning times and current and upcoming events~~
-- Ability to translate texts and labels for menu, event descriptions etc.
+- ~~Ability to translate texts and labels for menu, event descriptions etc.~~
 - Upload images for events/products/texts
 - Add instructions for eventHosts on how to set up and manage their events or require admins to approve events before publishing
 - Buttons to message the assignee and reviewer of a task
