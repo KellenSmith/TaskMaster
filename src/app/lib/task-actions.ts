@@ -307,15 +307,17 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
         if (taskCount > 0) return;
 
         await deleteEventParticipantWithTx(tx, updatedTask.event_id, userId);
+
+        if (updatedTask.reviewer_id)
+            try {
+                await notifyTaskReviewer(
+                    userId,
+                    taskId,
+                    "The assignee of this task has cancelled their shift.",
+                );
+            } catch (error) {
+                // Still allow the user to unassign the task
+                console.error("Error notifying task reviewer:", error);
+            }
     });
-    try {
-        await notifyTaskReviewer(
-            userId,
-            taskId,
-            "The assignee of this task has cancelled their shift.",
-        );
-    } catch (error) {
-        // Still allow the user to unassign the task
-        console.error("Error notifying task reviewer:", error);
-    }
 };
