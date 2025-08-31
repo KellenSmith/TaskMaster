@@ -13,6 +13,7 @@
         "prisma-migrate-reset": "pnpm prisma migrate reset",
         "prisma-push": "pnpm prisma db push",
         "prisma-seed": "tsx prisma/seed.ts",
+        "prisma-seed-users": "tsx prisma/seed-users.ts",
         "email": "email dev --dir=./src/app/lib/mail-service/mail-templates --port=3001",
         "test": "vitest",
         "test:ui": "vitest --ui",

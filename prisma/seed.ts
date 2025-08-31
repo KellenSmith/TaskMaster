@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { parse } from "csv-parse";
+import { pathToFileURL } from "url";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +11,7 @@ function bool(v?: string) {
     return String(v).toLowerCase() === "true";
 }
 
-async function streamCsvObjects(csvPath: string) {
+export async function streamCsvObjects(csvPath: string) {
     const full = path.resolve(csvPath);
     const stream = fs.createReadStream(full);
     const parser = stream.pipe(
@@ -23,7 +24,7 @@ async function streamCsvObjects(csvPath: string) {
     return out;
 }
 
-async function seedUsers() {
+export async function seedUsers() {
     const rows = await streamCsvObjects("prisma/seed-data/users.csv");
     for (const r of rows) {
         const payload = {
@@ -48,7 +49,7 @@ async function seedUsers() {
     }
 }
 
-async function seedProducts() {
+export async function seedProducts() {
     const rows = await streamCsvObjects("prisma/seed-data/products.csv");
     for (const r of rows) {
         const payload = {
@@ -70,7 +71,7 @@ async function seedProducts() {
     }
 }
 
-async function seedEvents() {
+export async function seedEvents() {
     const rows = await streamCsvObjects("prisma/seed-data/events.csv");
     for (const r of rows) {
         // Events CSV previously used a free-text `location` column.
@@ -101,7 +102,7 @@ async function seedEvents() {
     }
 }
 
-async function seedLocations() {
+export async function seedLocations() {
     const rows = await streamCsvObjects("prisma/seed-data/locations.csv");
     for (const r of rows) {
         const payload = {
@@ -126,7 +127,7 @@ async function seedLocations() {
     }
 }
 
-async function seedTickets() {
+export async function seedTickets() {
     const rows = await streamCsvObjects("prisma/seed-data/tickets.csv");
     for (const r of rows) {
         const payload = {
@@ -147,7 +148,7 @@ async function seedTickets() {
     }
 }
 
-async function seedTextContents() {
+export async function seedTextContents() {
     const rows = await streamCsvObjects("prisma/seed-data/text_contents.csv");
     for (const r of rows) {
         // id + language is unique per schema; use createMany fallback if possible
@@ -165,7 +166,7 @@ async function seedTextContents() {
     }
 }
 
-async function seedUserCredentials() {
+export async function seedUserCredentials() {
     const rows = await streamCsvObjects("prisma/seed-data/user_credentials.csv");
     for (const r of rows) {
         const payload = {
@@ -183,7 +184,7 @@ async function seedUserCredentials() {
     }
 }
 
-async function seedMemberships() {
+export async function seedMemberships() {
     const rows = await streamCsvObjects("prisma/seed-data/memberships.csv");
     for (const r of rows) {
         const payload = {
@@ -200,7 +201,7 @@ async function seedMemberships() {
     }
 }
 
-async function seedUserMemberships() {
+export async function seedUserMemberships() {
     const rows = await streamCsvObjects("prisma/seed-data/user_memberships.csv");
     for (const r of rows) {
         const payload = {
@@ -223,7 +224,7 @@ async function seedUserMemberships() {
     }
 }
 
-async function seedOrdersAndItems() {
+export async function seedOrdersAndItems() {
     const orders = await streamCsvObjects("prisma/seed-data/orders.csv");
     for (const r of orders) {
         const payload = {
@@ -262,7 +263,7 @@ async function seedOrdersAndItems() {
     }
 }
 
-async function seedEventParticipants() {
+export async function seedEventParticipants() {
     const rows = await streamCsvObjects("prisma/seed-data/event_participants.csv");
     for (const r of rows) {
         try {
@@ -276,7 +277,7 @@ async function seedEventParticipants() {
     }
 }
 
-async function seedEventReserves() {
+export async function seedEventReserves() {
     const rows = await streamCsvObjects("prisma/seed-data/event_reserves.csv");
     for (const r of rows) {
         const data = {
@@ -293,7 +294,7 @@ async function seedEventReserves() {
     }
 }
 
-async function seedTasks() {
+export async function seedTasks() {
     const rows = await streamCsvObjects("prisma/seed-data/tasks.csv");
     for (const r of rows) {
         const payload = {
@@ -321,7 +322,7 @@ async function seedTasks() {
     }
 }
 
-async function seedOrganizationSettings() {
+export async function seedOrganizationSettings() {
     const rows = await streamCsvObjects("prisma/seed-data/organization_settings.csv");
     for (const r of rows) {
         const payload = {
@@ -349,7 +350,7 @@ async function seedOrganizationSettings() {
     }
 }
 
-async function seedSkillBadges() {
+export async function seedSkillBadges() {
     const rows = await streamCsvObjects("prisma/seed-data/skill_badges.csv");
     for (const r of rows) {
         const payload = {
@@ -371,7 +372,7 @@ async function seedSkillBadges() {
     }
 }
 
-async function seedUserSkillBadges() {
+export async function seedUserSkillBadges() {
     const rows = await streamCsvObjects("prisma/seed-data/user_skill_badges.csv");
     for (const r of rows) {
         try {
@@ -385,7 +386,7 @@ async function seedUserSkillBadges() {
     }
 }
 
-async function seedTaskSkillBadges() {
+export async function seedTaskSkillBadges() {
     const rows = await streamCsvObjects("prisma/seed-data/task_skill_badges.csv");
     for (const r of rows) {
         try {
@@ -441,11 +442,18 @@ async function main() {
     console.log("Done seeding");
 }
 
-main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+// Run main only when this file is executed directly (ESM)
+if (
+    typeof process !== "undefined" &&
+    process.argv[1] &&
+    import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+    main()
+        .catch((e) => {
+            console.error(e);
+            process.exit(1);
+        })
+        .finally(async () => {
+            await prisma.$disconnect();
+        });
+}

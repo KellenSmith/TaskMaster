@@ -127,8 +127,9 @@ model Event {
     max_participants Int
     status           EventStatus @default(draft)
 
-    host    User   @relation(fields: [host_id], references: [id])
-    host_id String
+    // Must be optional to enable deleting users
+    host    User?   @relation(fields: [host_id], references: [id])
+    host_id String?
 
     event_reserves EventReserve[]
     tasks          Task[]
@@ -310,8 +311,9 @@ model Order {
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
 
-    user    User   @relation(fields: [user_id], references: [id])
-    user_id String
+    // Must be optional to enable deleting users
+    user    User?   @relation(fields: [user_id], references: [id])
+    user_id String?
 
     order_items OrderItem[]
 

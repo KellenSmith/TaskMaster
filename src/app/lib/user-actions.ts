@@ -142,12 +142,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
     }
 
     try {
-        const deleteReservedInEventsPromise = prisma.eventReserve.deleteMany({
-            where: {
-                user_id: userId,
-            },
-        });
-        const deleteParticipantInEventsPromise = prisma.eventParticipant.deleteMany({
+        const deleteCredentialsPromise = prisma.userCredentials.deleteMany({
             where: {
                 user_id: userId,
             },
@@ -157,12 +152,22 @@ export const deleteUser = async (userId: string): Promise<void> => {
                 user_id: userId,
             },
         });
-        const deleteCredentialsPromise = prisma.userCredentials.deleteMany({
+
+        const deleteParticipantInEventsPromise = prisma.eventParticipant.deleteMany({
             where: {
                 user_id: userId,
             },
         });
-
+        const deleteReservedInEventsPromise = prisma.eventReserve.deleteMany({
+            where: {
+                user_id: userId,
+            },
+        });
+        const deleteUserSkillBadgesPromise = prisma.userSkillBadge.deleteMany({
+            where: {
+                user_id: userId,
+            },
+        });
         const deleteUser = prisma.user.delete({
             where: {
                 id: userId,
@@ -174,10 +179,11 @@ export const deleteUser = async (userId: string): Promise<void> => {
          * succeed or no action is taken to preserve data integrity.
          */
         await prisma.$transaction([
-            deleteReservedInEventsPromise,
-            deleteParticipantInEventsPromise,
-            deleteMembershipPromise,
             deleteCredentialsPromise,
+            deleteMembershipPromise,
+            deleteParticipantInEventsPromise,
+            deleteReservedInEventsPromise,
+            deleteUserSkillBadgesPromise,
             deleteUser,
         ]);
 

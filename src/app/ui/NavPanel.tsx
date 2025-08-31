@@ -139,15 +139,20 @@ const NavPanel = () => {
                     )}
                     <Tooltip title={LanguageTranslations.toggleLoggedIn[language](!!user)}>
                         {user ? (
-                            <Button variant="outlined" onClick={logOutAction}>
-                                {LoginLanguageTranslations.logout[language]} <LogoutIcon />
+                            <Button
+                                variant="outlined"
+                                onClick={logOutAction}
+                                endIcon={<LogoutIcon />}
+                            >
+                                {LoginLanguageTranslations.logout[language]}
                             </Button>
                         ) : (
                             <Button
                                 variant="outlined"
                                 onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}
+                                endIcon={<LoginIcon />}
                             >
-                                {LoginLanguageTranslations.login[language]} <LoginIcon />
+                                {LoginLanguageTranslations.login[language]}
                             </Button>
                         )}
                     </Tooltip>
