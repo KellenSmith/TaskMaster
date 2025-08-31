@@ -39,15 +39,15 @@ interface DraggableTaskProps {
             skill_badges: true;
         };
     }>;
-    activeMembersPromise: Promise<
+    activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{
             select: { id: true; nickname: true; skill_badges: true };
         }>[]
     >;
-    skillBadgesPromise: Promise<
+    skillBadgesPromise?: Promise<
         Prisma.SkillBadgeGetPayload<{ select: { id: true; name: true } }>[]
     >;
-    setDraggedTask: (
+    setDraggedTask?: (
         // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };
@@ -65,7 +65,7 @@ const DraggableTask = ({
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
-    const skillBadges = use(skillBadgesPromise);
+    const skillBadges = skillBadgesPromise ? use(skillBadgesPromise) : [];
     const [isOpen, setIsOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -117,9 +117,9 @@ const DraggableTask = ({
                 }}
             >
                 <Typography variant="body1">{task.name}</Typography>
-                <Stack direction="row" justifyContent="space-between">
+                <Stack direction="row" alignItems="center" spacing={2}>
                     <Typography variant="body2">{formatDate(task.start_time)}</Typography>
-                    {"-"}
+                    <Typography variant="body2">-</Typography>
                     <Typography variant="body2">{formatDate(task.end_time)}</Typography>
                 </Stack>
             </Card>

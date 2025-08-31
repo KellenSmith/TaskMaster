@@ -1,16 +1,32 @@
-import { Button, Drawer, FormControlLabel, Stack, Switch } from "@mui/material";
+import {
+    Box,
+    Button,
+    Drawer,
+    FormControlLabel,
+    Stack,
+    Switch,
+    Tab,
+    Tabs,
+    Typography,
+    useTheme,
+} from "@mui/material";
 import { Prisma, TaskStatus } from "@prisma/client";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import LanguageTranslations from "./LanguageTranslations";
+import LanguageTranslations, { menuTabs } from "./LanguageTranslations";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import AutocompleteWrapper from "../form/AutocompleteWrapper";
-import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import GlobalConstants from "../../GlobalConstants";
+import { ChevronRight } from "@mui/icons-material";
+import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
+import DraggableTaskShifts from "./DraggableTaskShifts";
+import TaskSchedulePDF from "./TaskSchedulePDF";
+import { pdf } from "@react-pdf/renderer";
+import { openResourceInNewTab } from "../utils";
 
 type FilterNameType = keyof typeof filterOptions & string;
 type FilterValueType = boolean | string | string[] | TaskStatus[];
@@ -52,9 +68,10 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
 };
 
 interface KanBanBoardFilterProps {
+    eventPromise?: Promise<Prisma.EventGetPayload<{}>>;
     tasksPromise: Promise<
         Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } } };
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
         }>[]
     >;
     appliedFilter: z.infer<typeof TaskFilterSchema> | null;
@@ -62,14 +79,18 @@ interface KanBanBoardFilterProps {
 }
 
 const KanBanBoardMenu = ({
+    eventPromise,
     tasksPromise,
     appliedFilter,
     setAppliedFilter,
 }: KanBanBoardFilterProps) => {
-    const { language } = useUserContext();
+    const theme = useTheme();
+    const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
+    const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
-    const [filtersOpen, setFiltersOpen] = useState(false);
+    const myTasks = tasks.filter((task) => task.assignee_id === user.id);
+    const [menuOpen, setMenuOpen] = useState(true);
     const tagsOptions = useMemo(
         () =>
             [...new Set(tasks.map((task) => task.tags).flat())].map((tag) => ({
@@ -78,6 +99,10 @@ const KanBanBoardMenu = ({
             })),
         [tasks],
     );
+
+    const [tabOpen, setTabOpen] = useState<string | null>(menuTabs.my_tasks);
+    // Drawer width - keep in sync with the Drawer paper width below.
+    const drawerWidth = useMemo(() => (menuOpen ? 360 : 0), [menuOpen]);
 
     const applyFilter = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -145,35 +170,123 @@ const KanBanBoardMenu = ({
         return null;
     };
 
+    const printVisibleTasksToPdf = async () => {
+        const taskSchedule = await pdf(
+            <TaskSchedulePDF
+                event={event}
+                tasks={getFilteredTasks(appliedFilter, tasks, user.id)}
+            />,
+        ).toBlob();
+        const url = URL.createObjectURL(taskSchedule);
+        openResourceInNewTab(url);
+    };
+
     return (
-        <>
-            <Button onClick={() => setFiltersOpen(true)}>
-                {LanguageTranslations.openFilter[language]}
-            </Button>
-            <Drawer
-                anchor="right"
-                variant="permanent"
-                open={filtersOpen}
-                onClose={() => setFiltersOpen(false)}
+        <Stack direction="row" width="fit-content" height="100%">
+            <Tabs
+                orientation="vertical"
+                value={tabOpen}
+                onChange={(_, newValue) => setTabOpen(newValue)}
+                sx={{
+                    // Place tabs above the drawer so the drawer doesn't cover them
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                    position: "absolute",
+                    top: 0,
+                    padding: 1,
+                    backgroundColor: (theme) => theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRight: null,
+                }}
             >
-                {filtersOpen && (
-                    <form key={JSON.stringify(appliedFilter)} onSubmit={applyFilter}>
-                        <Stack spacing={2}>
-                            <Button variant="outlined" onClick={() => setFiltersOpen(false)}>
-                                {GlobalLanguageTranslations.close[language]}
-                            </Button>
-                            {Object.keys(filterOptions).map((fieldId) =>
-                                getFilterOptionComp(fieldId as FilterNameType),
-                            )}
-                            <Button type="submit">{LanguageTranslations.apply[language]}</Button>
-                            <Button onClick={() => setAppliedFilter(null)}>
-                                {LanguageTranslations.clear[language]}
-                            </Button>
-                        </Stack>
-                    </form>
+                {Object.entries(menuTabs).map(
+                    ([key, label]) =>
+                        label && (
+                            <Tab
+                                key={key}
+                                onClick={() => setMenuOpen(true)}
+                                value={label}
+                                label={
+                                    <Typography
+                                        sx={{
+                                            writingMode: "vertical-rl",
+                                            transform: "rotate(180deg)",
+                                            whiteSpace: "nowrap",
+                                            display: "inline-block",
+                                        }}
+                                    >
+                                        {LanguageTranslations[label][language] as string}
+                                    </Typography>
+                                }
+                                sx={{ paddingX: 0, width: "fit-content", minWidth: 12 }}
+                            />
+                        ),
                 )}
+            </Tabs>
+            <Drawer
+                key={myTasks.map((task) => task.assignee_id).join("-")}
+                variant="persistent"
+                anchor="right"
+                sx={{
+                    width: drawerWidth,
+                    flexShrink: 0,
+                    // Ensure drawer paper has a fixed width so it doesn't unexpectedly
+                    // cover the left-side tabs.
+                    "& .MuiDrawer-paper": {
+                        width: drawerWidth,
+                    },
+                }}
+                open={menuOpen}
+                onClose={() => setMenuOpen(false)}
+            >
+                <Stack justifyContent="center" padding={2}>
+                    <Button
+                        sx={{ justifyContent: "flex-start" }}
+                        size="large"
+                        startIcon={<ChevronRight />}
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        {LanguageTranslations[tabOpen][language]}
+                    </Button>
+                    {tabOpen === menuTabs.filter && (
+                        <form key={JSON.stringify(appliedFilter)} onSubmit={applyFilter}>
+                            <Stack spacing={2}>
+                                {Object.keys(filterOptions).map((fieldId) =>
+                                    getFilterOptionComp(fieldId as FilterNameType),
+                                )}
+                                <Button type="submit">
+                                    {LanguageTranslations.apply[language]}
+                                </Button>
+                                <Button onClick={() => setAppliedFilter(null)}>
+                                    {LanguageTranslations.clear[language]}
+                                </Button>
+                                <Button onClick={printVisibleTasksToPdf}>
+                                    {LanguageTranslations.printSchedule[language]}
+                                </Button>
+                            </Stack>
+                        </form>
+                    )}
+                    {tabOpen === menuTabs.my_tasks && (
+                        <Stack spacing={2}>
+                            {myTasks.length > 0 ? (
+                                getGroupedAndSortedTasks<(typeof tasks)[0]>(myTasks).map(
+                                    (taskList) => (
+                                        <DraggableTaskShifts
+                                            key={taskList.map((task) => task.id).join("-")}
+                                            readOnly={true}
+                                            taskList={taskList}
+                                        />
+                                    ),
+                                )
+                            ) : (
+                                <Typography textAlign="center" paddingY={2}>
+                                    {LanguageTranslations.noShiftsBooked[language]}
+                                </Typography>
+                            )}
+                        </Stack>
+                    )}
+                </Stack>
             </Drawer>
-        </>
+        </Stack>
     );
 };
 

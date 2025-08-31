@@ -1,12 +1,9 @@
 "use client";
 
 import React, { use, useState } from "react";
-import { Button, Grid2, Stack, Typography } from "@mui/material";
+import { Grid2, Stack, Typography } from "@mui/material";
 import DroppableColumn from "./DroppableColumn";
-import TaskSchedulePDF from "./TaskSchedulePDF";
-import { pdf } from "@react-pdf/renderer";
 import { Prisma, TaskStatus } from "@prisma/client";
-import { openResourceInNewTab } from "../utils";
 import KanBanBoardMenu, { getFilteredTasks } from "./KanBanBoardMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -53,17 +50,6 @@ const KanBanBoard = ({
         [GlobalConstants.STATUS]: [TaskStatus.toDo],
     });
 
-    const printVisibleTasksToPdf = async () => {
-        const taskSchedule = await pdf(
-            <TaskSchedulePDF
-                event={event}
-                tasks={getFilteredTasks(appliedFilter, tasks, user.id)}
-            />,
-        ).toBlob();
-        const url = URL.createObjectURL(taskSchedule);
-        openResourceInNewTab(url);
-    };
-
     return (
         <Stack spacing={2} justifyContent="center" height="100%">
             {event && (
@@ -71,39 +57,44 @@ const KanBanBoard = ({
                     {LanguageTranslations.assignYourselfPrompt[language]}
                 </Typography>
             )}
-            <KanBanBoardMenu
-                tasksPromise={tasksPromise}
-                appliedFilter={appliedFilter}
-                setAppliedFilter={setAppliedFilter}
-            />
-            <Grid2 container spacing={2} columns={appliedFilter?.status?.length || 4} height="100%">
-                {(appliedFilter
-                    ? (appliedFilter.status as TaskStatus[])
-                    : Object.values(TaskStatus)
-                ).map((status) => (
-                    <Grid2 size={1} key={status} height="100%">
-                        <DroppableColumn
-                            readOnly={readOnly}
-                            eventPromise={eventPromise}
-                            status={status}
-                            tasks={getFilteredTasks(
-                                appliedFilter,
-                                tasks.filter((task) => task.status === status),
-                                user.id,
-                            )}
-                            activeMembersPromise={activeMembersPromise}
-                            skillBadgesPromise={skillBadgesPromise}
-                            draggedTask={draggedTask}
-                            setDraggedTask={setDraggedTask}
-                            draggedOverColumn={draggedOverColumn}
-                            setDraggedOverColumn={setDraggedOverColumn}
-                        />
-                    </Grid2>
-                ))}
-            </Grid2>
-            <Button fullWidth onClick={printVisibleTasksToPdf}>
-                {LanguageTranslations.printSchedule[language]}
-            </Button>
+            <Stack direction="row">
+                <Grid2
+                    container
+                    spacing={2}
+                    columns={appliedFilter?.status?.length || 4}
+                    height="100%"
+                    width="100%"
+                >
+                    {(appliedFilter
+                        ? (appliedFilter.status as TaskStatus[])
+                        : Object.values(TaskStatus)
+                    ).map((status) => (
+                        <Grid2 size={1} key={status} height="100%">
+                            <DroppableColumn
+                                readOnly={readOnly}
+                                eventPromise={eventPromise}
+                                status={status}
+                                tasks={getFilteredTasks(
+                                    appliedFilter,
+                                    tasks.filter((task) => task.status === status),
+                                    user.id,
+                                )}
+                                activeMembersPromise={activeMembersPromise}
+                                skillBadgesPromise={skillBadgesPromise}
+                                draggedTask={draggedTask}
+                                setDraggedTask={setDraggedTask}
+                                draggedOverColumn={draggedOverColumn}
+                                setDraggedOverColumn={setDraggedOverColumn}
+                            />
+                        </Grid2>
+                    ))}
+                </Grid2>
+                <KanBanBoardMenu
+                    tasksPromise={tasksPromise}
+                    appliedFilter={appliedFilter}
+                    setAppliedFilter={setAppliedFilter}
+                />
+            </Stack>
         </Stack>
     );
 };

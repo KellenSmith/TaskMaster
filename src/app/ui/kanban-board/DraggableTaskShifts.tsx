@@ -26,21 +26,21 @@ interface DraggableTaskShiftsProps {
     taskList: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
     }>[];
-    activeMembersPromise: Promise<
+    activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{
             select: { id: true; nickname: true; skill_badges: true };
         }>[]
     >;
-    skillBadgesPromise: Promise<
+    skillBadgesPromise?: Promise<
         Prisma.SkillBadgeGetPayload<{ select: { id: true; name: true } }>[]
     >;
-    setDraggedTask: (
+    setDraggedTask?: (
         // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };
         }> | null,
     ) => void;
-    openCreateTaskDialog: (
+    openCreateTaskDialog?: (
         // eslint-disable-next-line no-unused-vars
         defaultValues: Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };

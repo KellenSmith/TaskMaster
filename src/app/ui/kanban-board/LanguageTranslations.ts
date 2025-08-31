@@ -1,6 +1,11 @@
 import { Language, TaskStatus } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 
+export const menuTabs = {
+    my_tasks: "My shifts",
+    filter: "Filter",
+};
+
 const LanguageTranslations = {
     assignYourselfPrompt: {
         [Language.english]: "Want to volunteer? Book a shift!",
@@ -10,9 +15,13 @@ const LanguageTranslations = {
         [Language.english]: "Print Schedule",
         [Language.swedish]: "Skriv ut schema",
     },
-    openFilter: {
-        [Language.english]: "Open Filter",
-        [Language.swedish]: "Öppna filter",
+    [menuTabs.my_tasks]: {
+        [Language.english]: "My shifts",
+        [Language.swedish]: "Mina skift",
+    },
+    [menuTabs.filter]: {
+        [Language.english]: "Filter",
+        [Language.swedish]: "Filter",
     },
     unassigned: {
         [Language.english]: "Unassigned",
@@ -37,6 +46,10 @@ const LanguageTranslations = {
     has_tag: {
         [Language.english]: "Has Tag",
         [Language.swedish]: "Har tagg",
+    },
+    noShiftsBooked: {
+        [Language.english]: "No volunteer shifts booked",
+        [Language.swedish]: "Inga volontärskift bokade",
     },
     [GlobalConstants.STATUS]: {
         [Language.english]: "Status",
