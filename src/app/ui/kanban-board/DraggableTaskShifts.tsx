@@ -26,6 +26,11 @@ interface DraggableTaskShiftsProps {
     taskList: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
     }>[];
+    eventPromise?: Promise<
+        Prisma.EventGetPayload<{
+            include: { tickets: { include: { event_participants: true } } };
+        }>
+    >;
     activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{
             select: { id: true; nickname: true; skill_badges: true };
@@ -51,6 +56,7 @@ interface DraggableTaskShiftsProps {
 const DraggableTaskShifts = ({
     readOnly,
     taskList,
+    eventPromise,
     activeMembersPromise,
     skillBadgesPromise,
     setDraggedTask,
@@ -99,6 +105,7 @@ const DraggableTaskShifts = ({
                     key={taskList[0].id}
                     readOnly={readOnly}
                     task={taskList[0]}
+                    eventPromise={eventPromise}
                     setDraggedTask={setDraggedTask}
                     activeMembersPromise={activeMembersPromise}
                     skillBadgesPromise={skillBadgesPromise}
@@ -128,6 +135,7 @@ const DraggableTaskShifts = ({
                                 <DraggableTask
                                     readOnly={readOnly}
                                     task={task}
+                                    eventPromise={eventPromise}
                                     setDraggedTask={setDraggedTask}
                                     activeMembersPromise={activeMembersPromise}
                                     skillBadgesPromise={skillBadgesPromise}

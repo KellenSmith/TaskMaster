@@ -103,33 +103,29 @@ export const createOrder = async (
 };
 
 const processOrderItems = async (orderId: string): Promise<void> => {
-    try {
-        const order = await prisma.order.findUniqueOrThrow({
-            where: { id: orderId },
-            include: {
-                order_items: {
-                    include: {
-                        product: {
-                            include: {
-                                membership: true,
-                                ticket: true,
-                            },
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: orderId },
+        include: {
+            order_items: {
+                include: {
+                    product: {
+                        include: {
+                            membership: true,
+                            ticket: true,
                         },
                     },
                 },
             },
-        });
+        },
+    });
 
-        if (order.order_items.length === 0) {
-            throw new Error("No items found for this order");
-        }
+    if (order.order_items.length === 0) {
+        throw new Error("No items found for this order");
+    }
 
-        // Process each order item
-        for (const orderItem of order.order_items) {
-            await processOrderedProduct(order.user_id, orderItem);
-        }
-    } catch {
-        throw new Error(`Failed to process order items`);
+    // Process each order item
+    for (const orderItem of order.order_items) {
+        await processOrderedProduct(order.user_id, orderItem);
     }
 };
 
@@ -138,49 +134,45 @@ export const progressOrder = async (
     newStatus: OrderStatus,
     needsCapture = false,
 ): Promise<void> => {
-    try {
-        // Always allow transitioning to cancelled or error
-        if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(newStatus)) {
-            await prisma.order.update({
-                where: { id: orderId },
-                data: { status: newStatus },
-            });
-            revalidateTag(GlobalConstants.ORDER);
-            return;
-        }
-
-        let order: Prisma.OrderGetPayload<true> = await prisma.order.findUniqueOrThrow({
+    // Always allow transitioning to cancelled or error
+    if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(newStatus)) {
+        await prisma.order.update({
             where: { id: orderId },
+            data: { status: newStatus },
         });
-
-        // Pending to paid
-        if (order.status === OrderStatus.pending) {
-            order = await prisma.order.update({
-                where: { id: orderId },
-                data: { status: OrderStatus.paid },
-            });
-        }
-        // Paid to shipped
-        if (order.status === OrderStatus.paid) {
-            await processOrderItems(orderId);
-            order = await prisma.order.update({
-                where: { id: orderId },
-                data: { status: OrderStatus.shipped },
-            });
-            await sendOrderConfirmation(orderId);
-        }
-        // Shipped to completed
-        if (order.status === OrderStatus.shipped) {
-            needsCapture && (await capturePaymentFunds(orderId));
-            order = await prisma.order.update({
-                where: { id: orderId },
-                data: { status: OrderStatus.completed },
-            });
-        }
         revalidateTag(GlobalConstants.ORDER);
-    } catch {
-        throw new Error("Failed to progress order");
+        return;
     }
+
+    let order: Prisma.OrderGetPayload<true> = await prisma.order.findUniqueOrThrow({
+        where: { id: orderId },
+    });
+
+    // Pending to paid
+    if (order.status === OrderStatus.pending) {
+        order = await prisma.order.update({
+            where: { id: orderId },
+            data: { status: OrderStatus.paid },
+        });
+    }
+    // Paid to shipped
+    if (order.status === OrderStatus.paid) {
+        await processOrderItems(orderId);
+        order = await prisma.order.update({
+            where: { id: orderId },
+            data: { status: OrderStatus.shipped },
+        });
+        await sendOrderConfirmation(orderId);
+    }
+    // Shipped to completed
+    if (order.status === OrderStatus.shipped) {
+        needsCapture && (await capturePaymentFunds(orderId));
+        order = await prisma.order.update({
+            where: { id: orderId },
+            data: { status: OrderStatus.completed },
+        });
+    }
+    revalidateTag(GlobalConstants.ORDER);
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {

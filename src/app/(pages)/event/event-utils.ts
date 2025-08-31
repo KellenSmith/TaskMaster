@@ -115,3 +115,7 @@ export const isEventSoldOut = (
 
 export const isEventCancelled = (event: Prisma.EventGetPayload<true>) =>
     event && event.status === EventStatus.cancelled;
+
+export const doDateRangesOverlap = (start1: Date, end1: Date, start2: Date, end2: Date) => {
+    return dayjs(start1).isBefore(end2) && dayjs(end1).isAfter(start2);
+};

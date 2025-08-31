@@ -118,10 +118,38 @@ const LanguageTranslations = {
         [Language.swedish]: "Avboka detta skift",
     },
     areYouSureBookThisShift: {
+        [Language.english]: "Are you sure you want to book this shift?",
+        [Language.swedish]: "Är du säker på att du vill boka detta skift?",
+    },
+    areYouSureBookThisEventShift: {
         [Language.english]:
-            "Are you sure you want to book this shift? You will get a volunteer ticket to the event. If you just want to help out but can't attend the event, please cancel your ticket in the tickets-tab above so someone else can take your spot.",
+            "Are you sure you want to book this shift?" +
+            " You will get a volunteer ticket to the event." +
+            " If you just want to help out but can't attend the event," +
+            " please cancel your ticket in the tickets-tab above so someone" +
+            " else can take your spot.",
         [Language.swedish]:
-            "Är du säker på att du vill boka detta skift? Du kommer få en volontärbiljett till eventet. Om du bara vill hjälpa till men inte kan delta i eventet, vänligen avsäg dig din biljett i biljett-fliken ovan så att någon annan kan få din plats.",
+            "Är du säker på att du vill boka detta skift?" +
+            " Du kommer få en volontärbiljett till eventet." +
+            " Om du bara vill hjälpa till men inte kan delta i eventet," +
+            " vänligen avsäg dig din biljett i biljett-fliken ovan så att" +
+            " någon annan kan få din plats.",
+    },
+    areYouSureBookThisSoldOutEventShift: {
+        [Language.english]:
+            "Are you sure you want to book this shift?" +
+            " The event is sold out and you will not get a volunteer ticket." +
+            " We still appreciate the help.",
+        [Language.swedish]:
+            "Är du säker på att du vill boka detta skift?" +
+            " Du kommer inte få en volontärbiljett." +
+            " Vi uppskattar fortfarande hjälpen.",
+    },
+    eventSoldOutTooltip: {
+        [Language.english]:
+            "This event is sold out." + " You can't book a shift happening during the event.",
+        [Language.swedish]:
+            "Evenemanget är slutsålt. Du kan inte boka ett skift som inträffar under evenemanget.",
     },
     bookThisShift: {
         [Language.english]: "Book this shift",

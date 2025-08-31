@@ -19,7 +19,9 @@ import LanguageTranslations from "./LanguageTranslations";
 
 interface DroppableColumnProps {
     readOnly: boolean;
-    eventPromise?: Promise<Prisma.EventGetPayload<true>>;
+    eventPromise?: Promise<
+        Prisma.EventGetPayload<{ include: { tickets: { include: { event_participants: true } } } }>
+    >;
     status: TaskStatus;
     tasks: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
@@ -157,6 +159,7 @@ const DroppableColumn = ({
                             key={taskList.map((task) => task.id).join("-")}
                             readOnly={readOnly}
                             taskList={taskList}
+                            eventPromise={eventPromise}
                             activeMembersPromise={activeMembersPromise}
                             skillBadgesPromise={skillBadgesPromise}
                             setDraggedTask={setDraggedTask}

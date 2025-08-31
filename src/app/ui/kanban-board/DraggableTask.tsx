@@ -33,10 +33,23 @@ import LanguageTranslations from "./LanguageTranslations";
 import RichTextField from "../form/RichTextField";
 import { getRelativeUrl, isUserAdmin, isUserHost } from "../../lib/definitions";
 import { CheckCircle, Delete, Edit, Info, OpenInNew, Warning } from "@mui/icons-material";
+import {
+    doDateRangesOverlap,
+    isEventSoldOut,
+    isUserParticipant,
+} from "../../(pages)/event/event-utils";
+import isBetween from "dayjs/plugin/isBetween";
+import dayjs from "dayjs";
+
+dayjs.extend(isBetween);
 
 interface DraggableTaskProps {
     readOnly: boolean;
-    eventPromise: Promise<Prisma.EventGetPayload<{}>>;
+    eventPromise?: Promise<
+        Prisma.EventGetPayload<{
+            include: { tickets: { include: { event_participants: true } } };
+        }>
+    >;
     task: Prisma.TaskGetPayload<{
         include: {
             assignee: { select: { id: true; nickname: true } };
@@ -72,7 +85,6 @@ const DraggableTask = ({
     const event = eventPromise ? use(eventPromise) : null;
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const skillBadges = skillBadgesPromise ? use(skillBadgesPromise) : [];
-    const [isOpen, setIsOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     const deleteTaskAction = async () => {
@@ -108,6 +120,56 @@ const DraggableTask = ({
         }
     };
 
+    const getTaskActionButton = () => {
+        if (task.assignee_id === user.id)
+            return (
+                <ConfirmButton
+                    onClick={unassignFromTask}
+                    color="error"
+                    variant="outlined"
+                    startIcon={<Delete />}
+                    confirmText={LanguageTranslations.areYouSureCancelShiftBooking[language]}
+                >
+                    {LanguageTranslations.cancelShiftBooking[language]}
+                </ConfirmButton>
+            );
+        if (!isUserQualifiedForTask(user, task.skill_badges))
+            return (
+                <Tooltip title={LanguageTranslations.unqualifiedForShiftTooltip[language]}>
+                    <Warning color="warning" />
+                </Tooltip>
+            );
+
+        if (
+            event &&
+            isEventSoldOut(event) &&
+            !isUserParticipant(user, event) &&
+            doDateRangesOverlap(event.start_time, event.end_time, task.start_time, task.end_time)
+        )
+            return (
+                <Tooltip title={LanguageTranslations.eventSoldOutTooltip[language]}>
+                    <Warning color="warning" />
+                </Tooltip>
+            );
+        let confirmText = LanguageTranslations.areYouSureBookThisShift[language];
+        if (event) {
+            if (isEventSoldOut(event) && !isUserParticipant(user, event)) {
+                confirmText = LanguageTranslations.areYouSureBookThisSoldOutEventShift[language];
+            } else confirmText = LanguageTranslations.areYouSureBookThisEventShift[language];
+        }
+        return (
+            <ConfirmButton
+                onClick={assignTaskToMe}
+                color="success"
+                variant="outlined"
+                startIcon={<CheckCircle />}
+                confirmText={confirmText}
+            >
+                {LanguageTranslations.bookThisShift[language]}
+            </ConfirmButton>
+        );
+    };
+
     return (
         <>
             <Card
@@ -140,16 +202,18 @@ const DraggableTask = ({
                         </Stack>
                     </Stack>
 
-                    <Stack direction="row" flexWrap="wrap" gap={1} justifyContent="center">
-                        {isUserAdmin(user) ||
-                            (isUserHost(user, event) && (
-                                <Button
-                                    startIcon={<Edit />}
-                                    onClick={() => setEditDialogOpen(true)}
-                                >
-                                    {GlobalLanguageTranslations.edit[language]}
-                                </Button>
-                            ))}
+                    <Stack
+                        direction="row"
+                        flexWrap="wrap"
+                        gap={1}
+                        justifyContent="center"
+                        alignItems="center"
+                    >
+                        {(isUserAdmin(user) || isUserHost(user, event)) && (
+                            <Button startIcon={<Edit />} onClick={() => setEditDialogOpen(true)}>
+                                {GlobalLanguageTranslations.edit[language]}
+                            </Button>
+                        )}
                         <Button
                             variant="outlined"
                             color="info"
@@ -165,67 +229,10 @@ const DraggableTask = ({
                         >
                             {LanguageTranslations.moreInfo[language]}
                         </Button>
-                        {task.assignee_id === user.id ? (
-                            <ConfirmButton
-                                onClick={unassignFromTask}
-                                color="error"
-                                variant="outlined"
-                                startIcon={<Delete />}
-                                confirmText={
-                                    LanguageTranslations.areYouSureCancelShiftBooking[language]
-                                }
-                            >
-                                {LanguageTranslations.cancelShiftBooking[language]}
-                            </ConfirmButton>
-                        ) : isUserQualifiedForTask(user, task.skill_badges) ? (
-                            <ConfirmButton
-                                onClick={assignTaskToMe}
-                                color="success"
-                                variant="outlined"
-                                startIcon={<CheckCircle />}
-                                confirmText={LanguageTranslations.areYouSureBookThisShift[language]}
-                            >
-                                {LanguageTranslations.bookThisShift[language]}
-                            </ConfirmButton>
-                        ) : (
-                            // TODO: Check what this looks like
-                            <Tooltip
-                                title={LanguageTranslations.unqualifiedForShiftTooltip[language]}
-                            >
-                                <Warning color="warning" />
-                            </Tooltip>
-                        )}
+                        {getTaskActionButton()}
                     </Stack>
                 </Stack>
             </Card>
-            <Dialog open={isOpen} onClose={() => setIsOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle>{task.name}</DialogTitle>
-                <DialogContent>
-                    <Stack direction="row" spacing={4}>
-                        <Stack
-                            sx={{ position: "relative", width: 300, height: 300, flexShrink: 0 }}
-                        ></Stack>
-                        <Stack width="100%" spacing={2}>
-                            <Stack direction="row" justifyContent="space-between">
-                                <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
-                                    {formatDate(task.start_time)} - {formatDate(task.end_time)}
-                                </Typography>
-                                {task.tags.map((tag) => (
-                                    <Stack sx={{ mt: 2 }}>
-                                        <Chip label={tag} color={"info"} />
-                                    </Stack>
-                                ))}
-                            </Stack>
-                            <RichTextField defaultValue={task.description} />
-                        </Stack>
-                    </Stack>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsOpen(false)}>
-                        {GlobalLanguageTranslations.close[language]}
-                    </Button>
-                </DialogActions>
-            </Dialog>
             <Dialog
                 fullWidth
                 maxWidth="xl"
