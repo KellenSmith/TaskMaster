@@ -37,15 +37,22 @@ const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = (
                     </Column>
                 </Row>
             </Section>
-            <Section style={{ textAlign: "left" }}>
-                <Text style={{ fontWeight: "bold" }}>Message:</Text>
-                {parsedFieldValues.member_application_prompt &&
-                    parsedFieldValues.member_application_prompt.split("\n").map((line, index) => (
-                        <Text key={index} style={{ marginTop: "10px" }}>
-                            {line}
-                        </Text>
-                    ))}
-            </Section>
+            {parsedFieldValues.member_application_prompt && (
+                <Section style={{ textAlign: "left" }}>
+                    <Column>
+                        <Text style={{ fontWeight: "bold" }}>Message:</Text>
+                    </Column>
+                    <Column>
+                        {parsedFieldValues.member_application_prompt
+                            .split("\n")
+                            .map((line, index) => (
+                                <Text key={index} style={{ marginTop: "10px" }}>
+                                    {line}
+                                </Text>
+                            ))}
+                    </Column>
+                </Section>
+            )}
             <Button
                 style={mailTheme.components.button}
                 href={getAbsoluteUrl([GlobalConstants.MEMBERS])}
