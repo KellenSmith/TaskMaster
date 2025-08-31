@@ -105,6 +105,10 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Du deltar inte i några evenemang. Kolla kalendern för att engagera dig!",
     },
+    draft: {
+        [Language.english]: "Draft",
+        [Language.swedish]: "Utkast",
+    },
     eventHost: {
         [Language.english]: "Host",
         [Language.swedish]: "Värd",

@@ -27,10 +27,10 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
 
     // Helper function to get user status
     const getStatusChipColor = () => {
-        if (isUserHost(user, event)) return theme.palette.secondary.main;
-        if (isUserParticipant(user, event)) return theme.palette.success.main;
-        if (isUserReserve(user, event)) return theme.palette.warning.main;
-        return theme.palette.info.main;
+        if (isUserHost(user, event)) return "secondary";
+        if (isUserParticipant(user, event)) return "success";
+        if (isUserReserve(user, event)) return "warning";
+        return "info";
     };
 
     const getStatusLabel = () => {
@@ -60,18 +60,15 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             {!isEventPublished(event) && (
                                 <Chip
-                                    sx={{ border: `1px solid ${getStatusChipColor()}` }}
-                                    label="Draft"
+                                    label={LanguageTranslations.draft[language]}
                                     size="small"
                                     color="warning"
                                     variant="outlined"
                                 />
                             )}
                             <Chip
-                                sx={{
-                                    color: getStatusChipColor(),
-                                    border: `1px solid ${getStatusChipColor()}`,
-                                }}
+                                variant="outlined"
+                                color={getStatusChipColor()}
                                 label={getStatusLabel()}
                                 size="small"
                             />
