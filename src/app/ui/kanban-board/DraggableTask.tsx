@@ -56,14 +56,6 @@ interface DraggableTaskProps {
             skill_badges: true;
         };
     }>;
-    activeMembersPromise?: Promise<
-        Prisma.UserGetPayload<{
-            select: { id: true; nickname: true; skill_badges: true };
-        }>[]
-    >;
-    skillBadgesPromise?: Promise<
-        Prisma.SkillBadgeGetPayload<{ select: { id: true; name: true } }>[]
-    >;
     setDraggedTask?: (
         // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
@@ -72,35 +64,10 @@ interface DraggableTaskProps {
     ) => void;
 }
 
-const DraggableTask = ({
-    readOnly,
-    eventPromise,
-    task,
-    activeMembersPromise,
-    skillBadgesPromise,
-    setDraggedTask,
-}: DraggableTaskProps) => {
+const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: DraggableTaskProps) => {
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const event = eventPromise ? use(eventPromise) : null;
-    const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
-    const skillBadges = skillBadgesPromise ? use(skillBadgesPromise) : [];
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-
-    const deleteTaskAction = async () => {
-        try {
-            await deleteTask(task.id);
-            setEditDialogOpen(false);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
-        } catch {
-            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
-        }
-    };
-
-    const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
-        await updateTaskById(task.id, parsedFieldValues, task.event_id);
-        return "Updated task";
-    };
 
     const assignTaskToMe = async () => {
         try {
@@ -209,11 +176,6 @@ const DraggableTask = ({
                         justifyContent="center"
                         alignItems="center"
                     >
-                        {(isUserAdmin(user) || isUserHost(user, event)) && (
-                            <Button startIcon={<Edit />} onClick={() => setEditDialogOpen(true)}>
-                                {GlobalLanguageTranslations.edit[language]}
-                            </Button>
-                        )}
                         <Button
                             variant="outlined"
                             color="info"
@@ -233,46 +195,6 @@ const DraggableTask = ({
                     </Stack>
                 </Stack>
             </Card>
-            <Dialog
-                fullWidth
-                maxWidth="xl"
-                open={editDialogOpen}
-                onClose={() => setEditDialogOpen(false)}
-            >
-                <Form
-                    name={GlobalConstants.TASK}
-                    defaultValues={{
-                        ...task,
-                        skill_badges: (task.skill_badges || []).map((b: any) => b.skill_badge_id),
-                    }}
-                    customOptions={{
-                        [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(
-                            activeMembers,
-                            task.skill_badges,
-                        ),
-                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
-                            activeMembers,
-                            task.skill_badges,
-                        ),
-                        [GlobalConstants.SKILL_BADGES]: skillBadges.map(
-                            (b) =>
-                                ({
-                                    id: b.id,
-                                    label: b.name,
-                                }) as CustomOptionProps,
-                        ),
-                    }}
-                    action={updateTaskAction}
-                    validationSchema={TaskUpdateSchema}
-                    readOnly={readOnly}
-                    editable={!readOnly}
-                />
-                {!readOnly && (
-                    <ConfirmButton color="error" onClick={deleteTaskAction}>
-                        {GlobalLanguageTranslations.delete[language]}
-                    </ConfirmButton>
-                )}
-            </Dialog>
         </>
     );
 };

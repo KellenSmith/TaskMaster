@@ -145,6 +145,11 @@ const LanguageTranslations = {
             " Du kommer inte få en volontärbiljett." +
             " Vi uppskattar fortfarande hjälpen.",
     },
+    unqualifiedForShiftTooltip: {
+        [Language.english]: "You don't have the skills for this shift yet. Contact us to learn!",
+        [Language.swedish]:
+            "Du har inte färdigheterna för detta skift än. Kontakta oss för att lära dig!",
+    },
     eventSoldOutTooltip: {
         [Language.english]:
             "This event is sold out." + " You can't book a shift happening during the event.",

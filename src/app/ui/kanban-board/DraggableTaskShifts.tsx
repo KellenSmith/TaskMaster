@@ -31,14 +31,6 @@ interface DraggableTaskShiftsProps {
             include: { tickets: { include: { event_participants: true } } };
         }>
     >;
-    activeMembersPromise?: Promise<
-        Prisma.UserGetPayload<{
-            select: { id: true; nickname: true; skill_badges: true };
-        }>[]
-    >;
-    skillBadgesPromise?: Promise<
-        Prisma.SkillBadgeGetPayload<{ select: { id: true; name: true } }>[]
-    >;
     setDraggedTask?: (
         // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
@@ -57,8 +49,6 @@ const DraggableTaskShifts = ({
     readOnly,
     taskList,
     eventPromise,
-    activeMembersPromise,
-    skillBadgesPromise,
     setDraggedTask,
     openCreateTaskDialog,
 }: DraggableTaskShiftsProps) => {
@@ -107,8 +97,6 @@ const DraggableTaskShifts = ({
                     task={taskList[0]}
                     eventPromise={eventPromise}
                     setDraggedTask={setDraggedTask}
-                    activeMembersPromise={activeMembersPromise}
-                    skillBadgesPromise={skillBadgesPromise}
                 />
                 {getAddShiftButton()}
             </Card>
@@ -137,8 +125,6 @@ const DraggableTaskShifts = ({
                                     task={task}
                                     eventPromise={eventPromise}
                                     setDraggedTask={setDraggedTask}
-                                    activeMembersPromise={activeMembersPromise}
-                                    skillBadgesPromise={skillBadgesPromise}
                                 />
                             </Stack>
                         ))}

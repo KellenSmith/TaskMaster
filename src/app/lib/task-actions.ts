@@ -22,6 +22,31 @@ export const deleteTask = async (taskId: string): Promise<void> => {
     revalidateTag(GlobalConstants.TASK);
 };
 
+export const getTaskById = async (
+    taskId: string,
+): Promise<
+    Prisma.TaskGetPayload<{
+        include: {
+            assignee: { select: { id: true; nickname: true } };
+            reviewer: { select: { id: true; nickname: true } };
+            event: true;
+            skill_badges: true;
+        };
+    }>
+> => {
+    return await prisma.task.findUniqueOrThrow({
+        where: {
+            id: taskId,
+        },
+        include: {
+            assignee: { select: { id: true, nickname: true } },
+            reviewer: { select: { id: true, nickname: true } },
+            event: true,
+            skill_badges: true,
+        },
+    });
+};
+
 export const updateTaskById = async (
     taskId: string,
     parsedFieldValues: z.infer<typeof TaskUpdateSchema>,

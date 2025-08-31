@@ -160,8 +160,6 @@ const DroppableColumn = ({
                             readOnly={readOnly}
                             taskList={taskList}
                             eventPromise={eventPromise}
-                            activeMembersPromise={activeMembersPromise}
-                            skillBadgesPromise={skillBadgesPromise}
                             setDraggedTask={setDraggedTask}
                             openCreateTaskDialog={openCreateTaskDialog}
                         />

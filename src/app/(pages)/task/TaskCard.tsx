@@ -1,0 +1,251 @@
+import {
+    Button,
+    Card,
+    CardContent,
+    Stack,
+    Typography,
+    Chip,
+    Box,
+    useTheme,
+    Tooltip,
+    Badge,
+    Dialog,
+    Avatar,
+} from "@mui/material";
+import { formatDate } from "../../ui/utils";
+import GlobalConstants from "../../GlobalConstants";
+import { clientRedirect } from "../../lib/definitions";
+import { useUserContext } from "../../context/UserContext";
+import { useRouter } from "next/navigation";
+import { FC, use, useState } from "react";
+import { Prisma } from "@prisma/client";
+import LanguageTranslations from "../event/LanguageTranslations";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import Form from "../../ui/form/Form";
+import { TaskUpdateSchema } from "../../lib/zod-schemas";
+import z from "zod";
+import { updateTaskById } from "../../lib/task-actions";
+import { getUserSelectOptions } from "../../ui/form/FieldCfg";
+import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
+import ConfirmButton from "../../ui/ConfirmButton";
+import { LocalPolice } from "@mui/icons-material";
+import { implementedTabs } from "../profile/LanguageTranslations";
+
+interface TaskCardProps {
+    taskPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: {
+                assignee: { select: { id: true; nickname: true } };
+                reviewer: { select: { id: true; nickname: true } };
+                skill_badges: true;
+            };
+        }>
+    >;
+    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<{}>[]>;
+    activeMembersPromise: Promise<
+        Prisma.UserGetPayload<{
+            select: { id: true; nickname: true; skill_badges: true };
+        }>[]
+    >;
+}
+
+const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMembersPromise }) => {
+    const { user, language } = useUserContext();
+    const router = useRouter();
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const task = use(taskPromise);
+    const skillBadges = use(skillBadgesPromise);
+    const activeMembers = use(activeMembersPromise);
+
+    if (!user) return null;
+
+    const getStatusColor = () => {
+        const status = task.status;
+        if (!status) return "default" as any;
+        if (status === GlobalConstants.TO_DO) return "info" as any;
+        if (status === GlobalConstants.IN_PROGRESS) return "warning" as any;
+        if (status === GlobalConstants.IN_REVIEW) return "secondary" as any;
+        if (status === GlobalConstants.DONE) return "success" as any;
+        return "default" as any;
+    };
+
+    const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
+        try {
+            await updateTaskById(task.id, parsedFieldValues, task.event_id);
+            setEditDialogOpen(false);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
+    };
+
+    return (
+        <>
+            <Card
+                key={task.id}
+                sx={{
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: 3,
+                    },
+                }}
+            >
+                <CardContent sx={{ p: 3 }}>
+                    <Stack spacing={2}>
+                        <Stack
+                            direction="row"
+                            justifyContent="space-between"
+                            alignItems="flex-start"
+                        >
+                            <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
+                                {task.name}
+                            </Typography>
+                            {task.skill_badges && task.skill_badges.length > 0 && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Typography variant="body2" color="text.secondary">
+                                        Required Skill Badges:
+                                    </Typography>
+                                    {task.skill_badges.map((badge) => (
+                                        <Tooltip
+                                            title={
+                                                skillBadges.find(
+                                                    (b) => b.id === badge.skill_badge_id,
+                                                )?.name || ""
+                                            }
+                                            key={badge.skill_badge_id}
+                                        >
+                                            <Avatar
+                                                sx={{ cursor: "pointer", height: 24, width: 24 }}
+                                                color="primary"
+                                                onClick={() =>
+                                                    clientRedirect(
+                                                        router,
+                                                        [GlobalConstants.PROFILE],
+                                                        {
+                                                            tab: implementedTabs.skill_badges,
+                                                        },
+                                                    )
+                                                }
+                                            >
+                                                <LocalPolice />
+                                            </Avatar>
+                                        </Tooltip>
+                                    ))}
+                                </Stack>
+                            )}
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                alignItems="center"
+                                sx={{ flexWrap: "wrap" }}
+                            >
+                                <Chip
+                                    variant="outlined"
+                                    color={getStatusColor()}
+                                    label={task.status}
+                                    size="small"
+                                />
+                                {task.event_id && (
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() =>
+                                            clientRedirect(router, [GlobalConstants.EVENT], {
+                                                [GlobalConstants.EVENT_ID]: task.event_id,
+                                            })
+                                        }
+                                        sx={{ minWidth: 80 }}
+                                    >
+                                        View event
+                                    </Button>
+                                )}
+                            </Stack>
+                        </Stack>
+
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+                            <Stack spacing={1}>
+                                {task.start_time && (
+                                    <Typography color="text.secondary">
+                                        <strong>Start:</strong> {formatDate(task.start_time)}
+                                    </Typography>
+                                )}
+                                {task.end_time && (
+                                    <Typography color="text.secondary">
+                                        <strong>End:</strong> {formatDate(task.end_time)}
+                                    </Typography>
+                                )}
+                                {task.assignee?.nickname && (
+                                    <Typography color="text.secondary">
+                                        <strong>Assignee:</strong> {task.assignee.nickname}
+                                    </Typography>
+                                )}
+                                {task.reviewer?.nickname && (
+                                    <Typography color="text.secondary">
+                                        <strong>Reviewer:</strong> {task.reviewer.nickname}
+                                    </Typography>
+                                )}
+                                {task.tags && task.tags.length > 0 && (
+                                    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                                        {task.tags.map((t) => (
+                                            <Chip key={t} label={t} size="small" />
+                                        ))}
+                                    </Box>
+                                )}
+                                {task.description && (
+                                    <Typography color="text.secondary">
+                                        {task.description}
+                                    </Typography>
+                                )}
+                            </Stack>
+                            <Stack direction={"row"}>
+                                {task.reviewer_id === user.id && (
+                                    <Button onClick={() => setEditDialogOpen(true)}>
+                                        {GlobalLanguageTranslations.edit[language]}
+                                    </Button>
+                                )}
+                            </Stack>
+                        </Stack>
+                    </Stack>
+                </CardContent>
+            </Card>
+            <Dialog
+                fullWidth
+                maxWidth="xl"
+                open={editDialogOpen}
+                onClose={() => setEditDialogOpen(false)}
+            >
+                <Form
+                    name={GlobalConstants.TASK}
+                    defaultValues={{
+                        ...task,
+                        skill_badges: (task.skill_badges || []).map((b: any) => b.skill_badge_id),
+                    }}
+                    customOptions={{
+                        [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(
+                            activeMembers,
+                            task.skill_badges,
+                        ),
+                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
+                            activeMembers,
+                            task.skill_badges,
+                        ),
+                        [GlobalConstants.SKILL_BADGES]: skillBadges.map(
+                            (b) =>
+                                ({
+                                    id: b.id,
+                                    label: b.name,
+                                }) as CustomOptionProps,
+                        ),
+                    }}
+                    action={updateTaskAction}
+                    validationSchema={TaskUpdateSchema}
+                    readOnly={false}
+                    editable={true}
+                />
+            </Dialog>
+        </>
+    );
+};
+
+export default TaskCard;

@@ -15,6 +15,7 @@ import z from "zod";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { allowRedirectException } from "../../ui/utils";
 
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
@@ -40,7 +41,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             await createEvent(user.id, parsedFieldValues);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
-            console.error("Error creating event:", error);
+            allowRedirectException(error);
             throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
     };
