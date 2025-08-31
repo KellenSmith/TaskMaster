@@ -6,9 +6,7 @@ import {
     Typography,
     Chip,
     Box,
-    useTheme,
     Tooltip,
-    Badge,
     Dialog,
     Avatar,
 } from "@mui/material";
@@ -19,17 +17,17 @@ import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC, use, useState } from "react";
 import { Prisma } from "@prisma/client";
-import LanguageTranslations from "../event/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { TaskUpdateSchema } from "../../lib/zod-schemas";
 import z from "zod";
-import { updateTaskById } from "../../lib/task-actions";
+import { deleteTask, updateTaskById } from "../../lib/task-actions";
 import { getUserSelectOptions } from "../../ui/form/FieldCfg";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { LocalPolice } from "@mui/icons-material";
 import { implementedTabs } from "../profile/LanguageTranslations";
+import { useNotificationContext } from "../../context/NotificationContext";
 
 interface TaskCardProps {
     taskPromise: Promise<
@@ -51,6 +49,7 @@ interface TaskCardProps {
 
 const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMembersPromise }) => {
     const { user, language } = useUserContext();
+    const { addNotification } = useNotificationContext();
     const router = useRouter();
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const task = use(taskPromise);
@@ -76,6 +75,16 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
             throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
+    };
+
+    const deleteTaskAction = async () => {
+        try {
+            await deleteTask(task.id);
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+            clientRedirect(router, [GlobalConstants.CALENDAR]);
+        } catch {
+            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
     };
 
@@ -198,13 +207,21 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     </Typography>
                                 )}
                             </Stack>
-                            <Stack direction={"row"}>
-                                {task.reviewer_id === user.id && (
+                            {task.reviewer_id === user.id && (
+                                <Stack direction={"row"}>
                                     <Button onClick={() => setEditDialogOpen(true)}>
                                         {GlobalLanguageTranslations.edit[language]}
                                     </Button>
-                                )}
-                            </Stack>
+                                    <ConfirmButton
+                                        onClick={deleteTaskAction}
+                                        color="error"
+                                        variant="outlined"
+                                        size="small"
+                                    >
+                                        {GlobalLanguageTranslations.delete[language]}
+                                    </ConfirmButton>
+                                </Stack>
+                            )}
                         </Stack>
                     </Stack>
                 </CardContent>

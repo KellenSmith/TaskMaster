@@ -1,38 +1,15 @@
-import {
-    Button,
-    Card,
-    Chip,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Stack,
-    Tooltip,
-    Typography,
-} from "@mui/material";
+import { Button, Card, Stack, Tooltip, Typography } from "@mui/material";
 import { formatDate, isUserQualifiedForTask, openResourceInNewTab } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
-import {
-    assignTaskToUser,
-    deleteTask,
-    unassignTaskFromUser,
-    updateTaskById,
-} from "../../lib/task-actions";
-import Form from "../form/Form";
-import { use, useState } from "react";
+import { assignTaskToUser, unassignTaskFromUser } from "../../lib/task-actions";
+import { use } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
-import { getUserSelectOptions } from "../form/FieldCfg";
 import { Prisma } from "@prisma/client";
-import z from "zod";
-import { TaskUpdateSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
-import { CustomOptionProps } from "../form/AutocompleteWrapper";
-import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
-import RichTextField from "../form/RichTextField";
-import { getRelativeUrl, isUserAdmin, isUserHost } from "../../lib/definitions";
-import { CheckCircle, Delete, Edit, Info, OpenInNew, Warning } from "@mui/icons-material";
+import { getRelativeUrl } from "../../lib/definitions";
+import { CheckCircle, Delete, Info, OpenInNew, Warning } from "@mui/icons-material";
 import {
     doDateRangesOverlap,
     isEventSoldOut,

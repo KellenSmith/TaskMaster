@@ -61,7 +61,7 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
     if (!appliedFilter) return tasks;
     let filteredTasks = [...tasks];
     for (const [key, value] of Object.entries(appliedFilter)) {
-        if (!!value)
+        if (value)
             filteredTasks = filterOptions[key]({ tasks: filteredTasks, value, userId }) as T[];
     }
     return filteredTasks;

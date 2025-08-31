@@ -1,4 +1,3 @@
-import { Transporter } from "nodemailer";
 import { getOrganizationSettings } from "../organization-settings-actions";
 
 // Avoid importing nodemailer at module evaluation time. Dynamically import it

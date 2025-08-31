@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Stack, Typography, Chip, Box, useTheme } from "@mui/material";
+import { Button, Card, CardContent, Stack, Typography, Chip, Box } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserHost, clientRedirect } from "../../lib/definitions";
@@ -22,7 +22,6 @@ interface EventCardProps {
 
 const EventCard: FC<EventCardProps> = ({ event }) => {
     const { user, language } = useUserContext();
-    const theme = useTheme();
     const router = useRouter();
 
     // Helper function to get user status
