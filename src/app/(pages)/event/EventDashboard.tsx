@@ -98,6 +98,8 @@ const EventDashboard = ({
         [searchParams, eventTabs],
     );
 
+    if (!user) return null;
+
     const setOpenTab = (tab: string) =>
         clientRedirect(router, [GlobalConstants.EVENT], {
             [GlobalConstants.EVENT_ID]: event.id,

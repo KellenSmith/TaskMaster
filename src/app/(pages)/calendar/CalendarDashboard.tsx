@@ -36,8 +36,12 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                 LanguageTranslations.locationCapacityExceeded[language](selectedLocation.capacity),
             );
 
-        await createEvent(user.id, parsedFieldValues);
-        return GlobalLanguageTranslations.successfulSave[language];
+        try {
+            await createEvent(user.id, parsedFieldValues);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const getDaysInFirstWeekButNotInMonth = () => {
