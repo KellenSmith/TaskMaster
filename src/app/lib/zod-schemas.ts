@@ -56,24 +56,20 @@ export const OrganizationSettingsUpdateSchema = z
 // USER SCHEMAS
 // =============================================================================
 
-export const UserCreateSchema = z
-    .object({
-        id: z.string().optional(),
-        email: z.email(),
-        nickname: z.string().optional(),
-        role: UserRoleSchema.optional(),
-        consentToNewsletters: z.coerce.boolean().optional(),
+export const UserCreateSchema = z.object({
+    id: z.string().optional(),
+    email: z.email(),
+    nickname: z.string().optional(),
+    role: UserRoleSchema.optional(),
+    consentToNewsletters: z.coerce.boolean().optional(),
 
-        first_name: z.string().optional(),
-        sur_name: z.string().optional(),
-        pronoun: z.string().optional(),
-        phone: z.string().optional(),
+    first_name: z.string().optional(),
+    sur_name: z.string().optional(),
+    pronoun: z.string().optional(),
+    phone: z.string().optional(),
 
-        member_application_prompt: z.string().optional(),
-
-        skill_badges: selectMultipleSchema,
-    })
-    .omit({ member_application_prompt: true });
+    skill_badges: selectMultipleSchema,
+});
 
 export const UserUpdateSchema = UserCreateSchema.partial();
 
@@ -274,8 +270,8 @@ export const TextContentUpdateSchema = TextContentCreateSchema.partial().extend(
 // CUSTOM SCHEMAS
 // =============================================================================
 
-export const MembershipApplicationSchema = UserCreateSchema.partial().extend({
-    memberApplicationPrompt: z.string().optional(),
+export const MembershipApplicationSchema = UserCreateSchema.extend({
+    member_application_prompt: z.string().optional(),
 });
 
 export const LoginSchema = z.object({

@@ -38,8 +38,9 @@ const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = (
                 </Row>
             </Section>
             <Section style={{ textAlign: "left" }}>
-                {parsedFieldValues.memberApplicationPrompt &&
-                    parsedFieldValues.memberApplicationPrompt.split("\n").map((line, index) => (
+                <Text style={{ fontWeight: "bold" }}>Message:</Text>
+                {parsedFieldValues.member_application_prompt &&
+                    parsedFieldValues.member_application_prompt.split("\n").map((line, index) => (
                         <Text key={index} style={{ marginTop: "10px" }}>
                             {line}
                         </Text>
