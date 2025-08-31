@@ -12,6 +12,7 @@ import {
     Tooltip,
     ListSubheader,
     Stack,
+    Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -25,7 +26,7 @@ import {
     routeToPath,
     clientRedirect,
 } from "../lib/definitions";
-import { Article, Cancel, Edit } from "@mui/icons-material";
+import { Article, Cancel, ChevronLeft, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
@@ -159,9 +160,12 @@ const NavPanel = () => {
                 </Toolbar>
             </AppBar>
             <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
-                <Button variant="outlined" onClick={toggleDrawerOpen}>
-                    {GlobalLanguageTranslations.close[language]}
-                </Button>
+                <Button
+                    sx={{ justifyContent: "flex-end" }}
+                    onClick={toggleDrawerOpen}
+                    endIcon={<ChevronLeft />}
+                ></Button>
+                <Divider />
                 <List>
                     {Object.keys(applicationRoutes).map((privacyStatus) =>
                         getLinkGroup(privacyStatus),

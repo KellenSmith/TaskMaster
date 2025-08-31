@@ -46,6 +46,7 @@ For payments, use the following test data:
 - Event tags (munch/playparty/section etc...)
 - Enable task assignees to submit receipts
 - Solidarity and community funded event tickets - one bought solidarity ticket funds a ticket for someone else
+- Mobile friendly layout
 - Merch store
 
 ## Contributions

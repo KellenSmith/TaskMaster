@@ -1,6 +1,6 @@
 import {
-    Box,
     Button,
+    Divider,
     Drawer,
     FormControlLabel,
     Stack,
@@ -191,7 +191,8 @@ const KanBanBoardMenu = ({
                     // Place tabs above the drawer so the drawer doesn't cover them
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                     position: "absolute",
-                    top: 0,
+                    top: 90,
+                    right: drawerWidth,
                     padding: 1,
                     backgroundColor: (theme) => theme.palette.background.paper,
                     border: `1px solid ${theme.palette.divider}`,
@@ -208,16 +209,19 @@ const KanBanBoardMenu = ({
                                 label={
                                     <Typography
                                         sx={{
-                                            writingMode: "vertical-rl",
-                                            transform: "rotate(180deg)",
                                             whiteSpace: "nowrap",
                                             display: "inline-block",
+                                            // Only show vertical, rotated tab labels on small screens (mobile).
+                                            [theme.breakpoints.down("sm")]: {
+                                                writingMode: "vertical-rl",
+                                                transform: "rotate(180deg)",
+                                            },
                                         }}
                                     >
                                         {LanguageTranslations[label][language] as string}
                                     </Typography>
                                 }
-                                sx={{ paddingX: 0, width: "fit-content", minWidth: 12 }}
+                                sx={{ paddingX: 1, width: "fit-content", minWidth: 12 }}
                             />
                         ),
                 )}
@@ -247,6 +251,7 @@ const KanBanBoardMenu = ({
                     >
                         {LanguageTranslations[tabOpen][language]}
                     </Button>
+                    <Divider />
                     {tabOpen === menuTabs.filter && (
                         <form key={JSON.stringify(appliedFilter)} onSubmit={applyFilter}>
                             <Stack spacing={2}>
