@@ -39,7 +39,8 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         try {
             await createEvent(user.id, parsedFieldValues);
             return GlobalLanguageTranslations.successfulSave[language];
-        } catch {
+        } catch (error) {
+            console.error("Error creating event:", error);
             throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
     };

@@ -24,8 +24,8 @@ const LanguageTranslations = {
         [Language.swedish]: "Filter",
     },
     unassigned: {
-        [Language.english]: "Unassigned",
-        [Language.swedish]: "Ej tilldelad",
+        [Language.english]: "Not booked",
+        [Language.swedish]: "Ej bokat",
     },
     assigned_to_me: {
         [Language.english]: "Booked for me",
@@ -87,6 +87,10 @@ const LanguageTranslations = {
         [Language.english]: "Add Shift",
         [Language.swedish]: "Lägg till Skift",
     },
+    moreInfo: {
+        [Language.english]: "More Info",
+        [Language.swedish]: "Mer Info",
+    },
     shifts: {
         [Language.english]: "Shifts",
         [Language.swedish]: "Skift",
@@ -103,9 +107,21 @@ const LanguageTranslations = {
         [Language.english]: "Failed to book volunteer shift",
         [Language.swedish]: "Kunde inte boka volontärskift",
     },
+    areYouSureCancelShiftBooking: {
+        [Language.english]:
+            "Are you sure you want to cancel this shift booking? If you are not booked for any other shifts, you will lose your volunteer ticket.",
+        [Language.swedish]:
+            "Är du säker på att du vill avboka detta skift? Om du inte är bokad för några andra skift kommer du att förlora din volontärbiljett.",
+    },
     cancelShiftBooking: {
         [Language.english]: "Cancel shift booking",
         [Language.swedish]: "Avboka detta skift",
+    },
+    areYouSureBookThisShift: {
+        [Language.english]:
+            "Are you sure you want to book this shift? You will get a volunteer ticket to the event. If you just want to help out but can't attend the event, please cancel your ticket in the tickets-tab above so someone else can take your spot.",
+        [Language.swedish]:
+            "Är du säker på att du vill boka detta skift? Du kommer få en volontärbiljett till eventet. Om du bara vill hjälpa till men inte kan delta i eventet, vänligen avsäg dig din biljett i biljett-fliken ovan så att någon annan kan få din plats.",
     },
     bookThisShift: {
         [Language.english]: "Book this shift",
@@ -120,8 +136,9 @@ const LanguageTranslations = {
         [Language.swedish]: "Kunde inte avboka bokat volontärskift",
     },
     unqualifiedForShift: {
-        [Language.english]: "You don't have the skills for this shift yet",
-        [Language.swedish]: "Du har inte färdigheterna för detta skift än",
+        [Language.english]: "You don't have the skills for this shift yet. Contact us to learn!",
+        [Language.swedish]:
+            "Du har inte färdigheterna för detta skift än. Kontakta oss för att lära dig!",
     },
 };
 

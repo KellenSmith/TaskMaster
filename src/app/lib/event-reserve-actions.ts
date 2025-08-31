@@ -4,65 +4,69 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 
-export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
-    try {
-        // Check that the user is not on the participant list
-        const eventParticipant = await prisma.eventParticipant.findFirst({
-            where: {
-                user_id: userId,
-                ticket: {
-                    event_id: eventId,
-                },
+export const addEventReserveWithTx = async (tx, userId: string, eventId: string) => {
+    // Check that the user is not on the participant list
+    const eventParticipant = await tx.eventParticipant.findFirst({
+        where: {
+            user_id: userId,
+            ticket: {
+                event_id: eventId,
             },
-        });
-        if (eventParticipant) throw new Error("User is already a participant in the event");
+        },
+    });
+    if (eventParticipant) throw new Error("User is already a participant in the event");
 
-        await prisma.eventReserve.upsert({
-            where: {
-                user_id_event_id: {
-                    user_id: userId,
-                    event_id: eventId,
+    await tx.eventReserve.upsert({
+        where: {
+            user_id_event_id: {
+                user_id: userId,
+                event_id: eventId,
+            },
+        },
+        create: {
+            user: {
+                connect: {
+                    id: userId,
                 },
             },
-            create: {
-                user: {
-                    connect: {
-                        id: userId,
-                    },
-                },
-                event: {
-                    connect: {
-                        id: eventId,
-                    },
+            event: {
+                connect: {
+                    id: eventId,
                 },
             },
-            update: {},
-        });
-        revalidateTag(GlobalConstants.RESERVE_USERS);
-        // Event reserves with limited data is cached with the event
-        revalidateTag(GlobalConstants.EVENT);
-    } catch {
-        throw new Error("Failed to add user to event reserves");
-    }
+        },
+        update: {},
+    });
+    revalidateTag(GlobalConstants.RESERVE_USERS);
+    // Event reserves with limited data is cached with the event
+    revalidateTag(GlobalConstants.EVENT);
+};
+
+export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
+    await prisma.$transaction(async (tx) => {
+        await addEventReserveWithTx(tx, userId, eventId);
+    });
+};
+
+export const deleteEventReserveWithTx = async (tx, userId: string, eventId: string) => {
+    // Delete the event reserve entry if it exists
+    await tx.eventReserve.delete({
+        where: {
+            user_id_event_id: {
+                user_id: userId,
+                event_id: eventId,
+            },
+        },
+    });
+    revalidateTag(GlobalConstants.RESERVE_USERS);
+    // Event reserves with limited data is cached with the event
+    revalidateTag(GlobalConstants.EVENT);
 };
 
 export const deleteEventReserve = async (userId: string, eventId: string) => {
-    try {
-        // Delete the event reserve entry if it exists
-        await prisma.eventReserve.delete({
-            where: {
-                user_id_event_id: {
-                    user_id: userId,
-                    event_id: eventId,
-                },
-            },
-        });
-        revalidateTag(GlobalConstants.RESERVE_USERS);
-        // Event reserves with limited data is cached with the event
-        revalidateTag(GlobalConstants.EVENT);
-    } catch {
-        throw new Error("Failed to delete event reserve");
-    }
+    await prisma.$transaction(async (tx) => {
+        await deleteEventReserveWithTx(tx, userId, eventId);
+    });
 };
 
 export const getEventReserves = async (eventId: string) => {

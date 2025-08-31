@@ -10,6 +10,7 @@ import { useUserContext } from "../../context/UserContext";
 import z from "zod";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
 import GlobalConstants from "../../GlobalConstants";
+import { isUserAdmin, isUserHost } from "../../lib/definitions";
 
 interface KanBanBoardProps {
     readOnly: boolean;
@@ -45,15 +46,19 @@ const KanBanBoard = ({
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
-    const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>({
-        unassigned: true,
-        [GlobalConstants.STATUS]: [TaskStatus.toDo],
-    });
+    const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
+        !(isUserHost(user, event) || isUserAdmin(user))
+            ? {
+                  unassigned: true,
+                  [GlobalConstants.STATUS]: [TaskStatus.toDo],
+              }
+            : null,
+    );
 
     return (
         <Stack spacing={2} justifyContent="center" height="100%">
             {event && (
-                <Typography textAlign="center" variant="h4" color="primary">
+                <Typography variant="h4" color="primary" paddingTop={2}>
                     {LanguageTranslations.assignYourselfPrompt[language]}
                 </Typography>
             )}
