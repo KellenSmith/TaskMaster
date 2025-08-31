@@ -35,11 +35,6 @@ export const updateTaskById = async (
         ...taskWithoutUsers
     } = parsedFieldValues;
 
-    // An assigned task is never to do, it must be in progress or further
-    if (assigneeId && taskWithoutUsers.status === TaskStatus.toDo) {
-        taskWithoutUsers.status = TaskStatus.inProgress;
-    }
-
     await prisma.$transaction(async (tx) => {
         const updatedTask = await tx.task.update({
             where: {
@@ -129,11 +124,6 @@ export const createTask = async (
         ...taskWithoutUsers
     } = parsedFieldValues;
 
-    // An assigned task is never to do, it must be in progress or further
-    if (assigneeId && taskWithoutUsers.status === TaskStatus.toDo) {
-        taskWithoutUsers.status = TaskStatus.inProgress;
-    }
-
     await prisma.task.create({
         data: {
             ...taskWithoutUsers,
@@ -211,7 +201,6 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
             id: taskId,
         },
         data: {
-            status: TaskStatus.inProgress,
             assignee: {
                 connect: {
                     id: userId,

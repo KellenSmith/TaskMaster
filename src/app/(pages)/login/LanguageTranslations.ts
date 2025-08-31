@@ -5,6 +5,10 @@ const LanguageTranslations = {
         [Language.swedish]: "Logga in",
         [Language.english]: "Login",
     },
+    logout: {
+        [Language.swedish]: "Logga ut",
+        [Language.english]: "Logout",
+    },
     loggingIn: {
         [Language.swedish]: "Loggade in. Omdirigerar...",
         [Language.english]: "Logged in. Redirecting...",

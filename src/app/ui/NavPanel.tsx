@@ -35,6 +35,7 @@ import LanguageMenu from "./LanguageMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserRole } from "@prisma/client";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
+import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -127,21 +128,33 @@ const NavPanel = () => {
                             </Button>
                         </Tooltip>
                     )}
+                    {!user && (
+                        <Button
+                            variant="outlined"
+                            sx={{ marginX: 2 }}
+                            onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}
+                        >
+                            {LoginLanguageTranslations.applyForMembership[language]}
+                        </Button>
+                    )}
                     <Tooltip title={LanguageTranslations.toggleLoggedIn[language](!!user)}>
                         {user ? (
-                            <Button onClick={logOutAction}>
-                                <LogoutIcon />
+                            <Button variant="outlined" onClick={logOutAction}>
+                                {LoginLanguageTranslations.logout[language]} <LogoutIcon />
                             </Button>
                         ) : (
-                            <Button onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}>
-                                <LoginIcon />
+                            <Button
+                                variant="outlined"
+                                onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}
+                            >
+                                {LoginLanguageTranslations.login[language]} <LoginIcon />
                             </Button>
                         )}
                     </Tooltip>
                 </Toolbar>
             </AppBar>
             <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
-                <Button sx={{ justifyContent: "flex-end" }} onClick={toggleDrawerOpen}>
+                <Button variant="outlined" onClick={toggleDrawerOpen}>
                     {GlobalLanguageTranslations.close[language]}
                 </Button>
                 <List>

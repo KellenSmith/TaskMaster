@@ -59,7 +59,7 @@ model User {
     email                  String   @unique
     nickname               String   @unique @default(uuid())
     role                   UserRole @default(member)
-    consent_to_newsletters Boolean  @default(true)
+    consent_to_newsletters Boolean  @default(false)
 
     first_name String?
     sur_name   String?

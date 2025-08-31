@@ -9,6 +9,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import AutocompleteWrapper from "../form/AutocompleteWrapper";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 export const filterOptions = {
     unassigned: (tasks: Prisma.TaskGetPayload<{}>[]) => tasks.filter((task) => !task.assignee_id),
@@ -116,7 +117,9 @@ const KanBanBoardFilter = ({ tasksPromise, setAppliedFilter }: KanBanBoardFilter
             <Drawer anchor="right" open={filtersOpen} onClose={() => setFiltersOpen(false)}>
                 <form onSubmit={applyFilter}>
                     <Stack spacing={2}>
-                        <Button onClick={() => setFiltersOpen(false)}>Close</Button>
+                        <Button variant="outlined" onClick={() => setFiltersOpen(false)}>
+                            {GlobalLanguageTranslations.close[language]}
+                        </Button>
                         {Object.keys(filterOptions).map((fieldId) =>
                             getFilterOptionComp(fieldId as keyof typeof filterOptions),
                         )}

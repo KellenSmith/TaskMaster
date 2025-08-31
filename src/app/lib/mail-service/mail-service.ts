@@ -89,7 +89,6 @@ export const sendUserCredentials = async (
         ),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
-    console.log(mailResponse);
     return mailResponse;
 };
 
