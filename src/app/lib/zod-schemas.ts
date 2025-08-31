@@ -5,10 +5,12 @@ import dayjs from "dayjs";
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
-    .refine((val) => dayjs(val, "DD/MM/YYYY HH:mm").isValid(), {
+    .refine((val) => !val || dayjs(val, "DD/MM/YYYY HH:mm").isValid(), {
         message: "Invalid date",
     })
-    .transform((val) => dayjs(val, "DD/MM/YYYY HH:mm").toISOString()) as z.ZodType<string>;
+    .transform((val) =>
+        val ? dayjs(val, "DD/MM/YYYY HH:mm").toISOString() : "",
+    ) as z.ZodType<string>;
 
 const passwordSchema = z.string().min(6).max(100);
 
@@ -313,5 +315,6 @@ export const TaskFilterSchema = z
         begins_after: stringToISODate,
         ends_before: stringToISODate,
         has_tag: selectMultipleSchema,
+        status: selectMultipleSchema,
     })
     .partial();

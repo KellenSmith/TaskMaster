@@ -1,4 +1,5 @@
 import { Language, TaskStatus } from "@prisma/client";
+import GlobalConstants from "../../GlobalConstants";
 
 const LanguageTranslations = {
     assignYourselfPrompt: {
@@ -18,12 +19,12 @@ const LanguageTranslations = {
         [Language.swedish]: "Ej tilldelad",
     },
     assigned_to_me: {
-        [Language.english]: "Assigned to Me",
-        [Language.swedish]: "Tilldelad till mig",
+        [Language.english]: "Booked for me",
+        [Language.swedish]: "Bokat för mig",
     },
     for_me_to_review: {
-        [Language.english]: "For Me to Review",
-        [Language.swedish]: "För mig att granska",
+        [Language.english]: "Needs my feedback",
+        [Language.swedish]: "Behöver min återkoppling",
     },
     begins_after: {
         [Language.english]: "Begins After",
@@ -36,6 +37,10 @@ const LanguageTranslations = {
     has_tag: {
         [Language.english]: "Has Tag",
         [Language.swedish]: "Har tagg",
+    },
+    [GlobalConstants.STATUS]: {
+        [Language.english]: "Status",
+        [Language.swedish]: "Status",
     },
     apply: {
         [Language.english]: "Apply",
@@ -50,20 +55,20 @@ const LanguageTranslations = {
         [Language.swedish]: "Flyttad till",
     },
     [TaskStatus.toDo]: {
-        [Language.english]: "Bookable shifts",
-        [Language.swedish]: "Bokningsbara skift",
+        [Language.english]: "To Do",
+        [Language.swedish]: "Att Göra",
     },
     [TaskStatus.inProgress]: {
-        [Language.english]: "Booked shifts",
-        [Language.swedish]: "Bokade skift",
+        [Language.english]: "Being worked on",
+        [Language.swedish]: "Jobbas på",
     },
     [TaskStatus.inReview]: {
         [Language.english]: "Requests feedback",
         [Language.swedish]: "Efterfrågar återkoppling",
     },
     [TaskStatus.done]: {
-        [Language.english]: "Done/Finished",
-        [Language.swedish]: "Klar/Avslutat",
+        [Language.english]: "Done",
+        [Language.swedish]: "Klart",
     },
     addShift: {
         [Language.english]: "Add Shift",

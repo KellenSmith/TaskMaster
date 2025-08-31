@@ -7,11 +7,12 @@ import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { Prisma, TaskStatus } from "@prisma/client";
 import { openResourceInNewTab } from "../utils";
-import KanBanBoardFilter, { getFilteredTasks } from "./KanBanBoardFilter";
+import KanBanBoardMenu, { getFilteredTasks } from "./KanBanBoardMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import z from "zod";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
+import GlobalConstants from "../../GlobalConstants";
 
 interface KanBanBoardProps {
     readOnly: boolean;
@@ -47,9 +48,10 @@ const KanBanBoard = ({
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
-    const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
-        null,
-    );
+    const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>({
+        unassigned: true,
+        [GlobalConstants.STATUS]: [TaskStatus.toDo],
+    });
 
     const printVisibleTasksToPdf = async () => {
         const taskSchedule = await pdf(
@@ -69,9 +71,16 @@ const KanBanBoard = ({
                     {LanguageTranslations.assignYourselfPrompt[language]}
                 </Typography>
             )}
-            <KanBanBoardFilter tasksPromise={tasksPromise} setAppliedFilter={setAppliedFilter} />
-            <Grid2 container spacing={2} columns={4} height="100%">
-                {Object.values(TaskStatus).map((status) => (
+            <KanBanBoardMenu
+                tasksPromise={tasksPromise}
+                appliedFilter={appliedFilter}
+                setAppliedFilter={setAppliedFilter}
+            />
+            <Grid2 container spacing={2} columns={appliedFilter?.status?.length || 4} height="100%">
+                {(appliedFilter
+                    ? (appliedFilter.status as TaskStatus[])
+                    : Object.values(TaskStatus)
+                ).map((status) => (
                     <Grid2 size={1} key={status} height="100%">
                         <DroppableColumn
                             readOnly={readOnly}
