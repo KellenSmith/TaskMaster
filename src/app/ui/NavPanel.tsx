@@ -68,8 +68,8 @@ const NavPanel = () => {
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         GlobalConstants.RESET,
-        GlobalConstants.APPLY,
         GlobalConstants.ORDER,
+        GlobalConstants.TASK,
     ];
 
     const getLinkGroup = (privacyStatus: UserRole | string) => {
@@ -129,34 +129,6 @@ const NavPanel = () => {
                             </Button>
                         </Tooltip>
                     )}
-                    {!user && (
-                        <Button
-                            variant="outlined"
-                            sx={{ marginX: 2 }}
-                            onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}
-                        >
-                            {LoginLanguageTranslations.applyForMembership[language]}
-                        </Button>
-                    )}
-                    <Tooltip title={LanguageTranslations.toggleLoggedIn[language](!!user)}>
-                        {user ? (
-                            <Button
-                                variant="outlined"
-                                onClick={logOutAction}
-                                endIcon={<LogoutIcon />}
-                            >
-                                {LoginLanguageTranslations.logout[language]}
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="outlined"
-                                onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}
-                                endIcon={<LoginIcon />}
-                            >
-                                {LoginLanguageTranslations.login[language]}
-                            </Button>
-                        )}
-                    </Tooltip>
                 </Toolbar>
             </AppBar>
             <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
@@ -167,6 +139,19 @@ const NavPanel = () => {
                 ></Button>
                 <Divider />
                 <List>
+                    {user ? (
+                        <Button variant="outlined" onClick={logOutAction} endIcon={<LogoutIcon />}>
+                            {LoginLanguageTranslations.logout[language]}
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outlined"
+                            onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}
+                            endIcon={<LoginIcon />}
+                        >
+                            {LoginLanguageTranslations.login[language]}
+                        </Button>
+                    )}
                     {Object.keys(applicationRoutes).map((privacyStatus) =>
                         getLinkGroup(privacyStatus),
                     )}

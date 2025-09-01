@@ -17,6 +17,10 @@ const LanguageTranslations = {
         },
     },
     routeLabel: {
+        [GlobalConstants.APPLY]: {
+            [Language.english]: "Apply",
+            [Language.swedish]: "Ansök",
+        },
         [GlobalConstants.CONTACT]: {
             [Language.english]: "Contact",
             [Language.swedish]: "Kontakt",

@@ -60,7 +60,7 @@ export const applicationRoutes = {
         GlobalConstants.CONTACT,
         GlobalConstants.ORDER,
     ],
-    [UserRole.member]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR],
+    [UserRole.member]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR, GlobalConstants.TASK],
     [UserRole.admin]: [
         GlobalConstants.LOCATIONS,
         GlobalConstants.TASKS,
