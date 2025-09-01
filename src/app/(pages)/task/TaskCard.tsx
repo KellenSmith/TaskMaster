@@ -9,6 +9,8 @@ import {
     Tooltip,
     Dialog,
     Avatar,
+    useTheme,
+    useMediaQuery,
 } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
@@ -49,6 +51,8 @@ interface TaskCardProps {
 
 const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMembersPromise }) => {
     const { user, language } = useUserContext();
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { addNotification } = useNotificationContext();
     const router = useRouter();
     const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -227,6 +231,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                 </CardContent>
             </Card>
             <Dialog
+                fullScreen={isSmallScreen}
                 fullWidth
                 maxWidth="xl"
                 open={editDialogOpen}
@@ -260,6 +265,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                     readOnly={false}
                     editable={true}
                 />
+                <Button onClick={() => setEditDialogOpen(false)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </>
     );

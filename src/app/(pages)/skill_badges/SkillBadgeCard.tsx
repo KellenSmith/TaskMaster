@@ -13,8 +13,12 @@ import {
     DialogActions,
     Button,
     Stack,
+    useTheme,
+    useMediaQuery,
 } from "@mui/material";
 import RichTextField from "../../ui/form/RichTextField";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { useUserContext } from "../../context/UserContext";
 
 interface SkillBadgeProps {
     badge: SkillBadge;
@@ -23,7 +27,10 @@ interface SkillBadgeProps {
 }
 
 const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) => {
+    const { language } = useUserContext();
     const [isOpen, setIsOpen] = useState(false);
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
     return (
         <>
@@ -57,7 +64,13 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
                     </Typography>
                 </CardContent>
             </Card>
-            <Dialog open={isOpen} onClose={() => setIsOpen(false)} maxWidth="md" fullWidth>
+            <Dialog
+                fullScreen={isSmallScreen}
+                open={isOpen}
+                onClose={() => setIsOpen(false)}
+                maxWidth="md"
+                fullWidth
+            >
                 <DialogTitle>{badge.name}</DialogTitle>
                 <DialogContent>
                     <Stack direction="row" width="100%" spacing={4}>
@@ -75,9 +88,9 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
                         <RichTextField defaultValue={badge.description} editMode={false} />
                     </Stack>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsOpen(false)}>Close</Button>
-                </DialogActions>
+                <Button onClick={() => setIsOpen(false)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </>
     );

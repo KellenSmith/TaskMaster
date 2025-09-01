@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Dialog, Divider, Stack } from "@mui/material";
+import { Button, Dialog, Divider, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { use, useState, useTransition } from "react";
 import LocationCard from "./LocationCard";
 import { Location } from "@prisma/client";
@@ -20,6 +20,8 @@ interface LocationsDashboardProps {
 }
 
 const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const locations = use(locationsPromise);
@@ -96,6 +98,7 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
                     ))}
             </Stack>
             <Dialog
+                fullScreen={isSmallScreen}
                 open={!!editLocationId || createNew}
                 onClose={() => {
                     setEditLocationId(null);
@@ -115,6 +118,9 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
                     editable={true}
                     readOnly={false}
                 />
+                <Button onClick={() => setEditLocationId(null)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </Stack>
     );

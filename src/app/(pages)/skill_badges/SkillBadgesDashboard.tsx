@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Dialog, Divider, Stack } from "@mui/material";
+import { Button, Dialog, Divider, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { use, useState, useTransition } from "react";
 import SkillBadgeCard from "./SkillBadgeCard";
 import { Prisma } from "@prisma/client";
@@ -25,6 +25,8 @@ interface SkillBadgesDashboardProps {
 
 const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps) => {
     const { language } = useUserContext();
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { addNotification } = useNotificationContext();
     const badges = use(skillBadgesPromise);
     const [editBadgeId, setEditBadgeId] = useState<string | null>(null);
@@ -93,6 +95,7 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
                     ))}
             </Stack>
             <Dialog
+                fullScreen={isSmallScreen}
                 open={!!editBadgeId || createNew}
                 onClose={() => setEditBadgeId(null)}
                 fullWidth
@@ -107,6 +110,9 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
                     editable={true}
                     readOnly={false}
                 />
+                <Button onClick={() => setEditBadgeId(null)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </>
     );

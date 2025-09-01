@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Dialog, Stack } from "@mui/material";
+import { Button, Dialog, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid, GridColDef, useGridApiRef } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import { checkboxFields, datePickerFields, FieldLabels, priceFields } from "./form/FieldCfg";
@@ -91,6 +91,8 @@ const Datagrid: React.FC<DatagridProps> = ({
     customFormOptions = {},
 }) => {
     const { language } = useUserContext();
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const apiRef = useGridApiRef();
     const { addNotification } = useNotificationContext();
     const datagridRows = use(dataGridRowsPromise);
@@ -203,6 +205,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 </Button>
             )}
             <Dialog
+                fullScreen={isSmallScreen}
                 fullWidth
                 maxWidth="xl"
                 open={clickedRow !== null || addNew}
@@ -228,6 +231,14 @@ const Datagrid: React.FC<DatagridProps> = ({
                 {!addNew &&
                     !!rowActions &&
                     rowActions.map((rowAction) => getRowActionButton(clickedRow, rowAction))}
+                <Button
+                    onClick={() => {
+                        setClickedRow(null);
+                        setAddNew(false);
+                    }}
+                >
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </Stack>
     );

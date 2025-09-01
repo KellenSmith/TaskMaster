@@ -247,7 +247,7 @@ export default function ProductCard({
                             fullWidth={isSmDown}
                             variant="outlined"
                         >
-                            {GlobalLanguageTranslations.close[language]}
+                            {GlobalLanguageTranslations.cancel[language]}
                         </Button>
                     </Stack>
                 </DialogActions>

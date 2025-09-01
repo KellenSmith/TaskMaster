@@ -1,6 +1,6 @@
 "use client";
 import { use, useState } from "react";
-import { Stack, Typography, useTheme, Button, Dialog } from "@mui/material";
+import { Stack, Typography, useTheme, Button, Dialog, useMediaQuery } from "@mui/material";
 import { Prisma, TicketType } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import { createOrder } from "../../lib/order-actions";
@@ -42,6 +42,7 @@ const TicketShop = ({
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const event = use(eventPromise);
     const tickets = use(eventTicketsPromise);
     const tasks = use(eventTasksPromise);
@@ -181,7 +182,13 @@ const TicketShop = ({
                 </Stack>
             )}
 
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xl" fullWidth>
+            <Dialog
+                fullScreen={isSmallScreen}
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                maxWidth="xl"
+                fullWidth
+            >
                 <Form
                     name={GlobalConstants.TICKET}
                     action={editingTicketId ? updateTicketAction : createTicketAction}
