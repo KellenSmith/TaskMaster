@@ -17,6 +17,8 @@ import {
     Tooltip,
     Stack,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { Lock } from "@mui/icons-material";
 import { formatPrice } from "../utils";
 import RichTextField from "../form/RichTextField";
@@ -43,6 +45,8 @@ export default function ProductCard({
     const { language } = useUserContext();
     const [isOpen, setIsOpen] = useState(false);
     const defaultImage = "/images/product-placeholder.svg";
+    const theme = useTheme();
+    const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
 
     const getStockChipLabel = () => {
         if (product.unlimited_stock || product.stock > 5) {
@@ -71,7 +75,7 @@ export default function ProductCard({
                 <Card
                     sx={{
                         maxWidth: 250,
-                        width: "fit-content",
+                        width: { xs: "100%", sm: "fit-content" },
                         cursor: "pointer",
                         transition: "0.3s",
                         opacity: isAvailable ? 1 : 0.6,
@@ -83,7 +87,7 @@ export default function ProductCard({
                     }}
                     onClick={onClick || (() => setIsOpen(true))}
                 >
-                    <CardMedia sx={{ position: "relative" }}>
+                    <CardMedia sx={{ position: "relative", px: { xs: 1, sm: 0 } }}>
                         <Image
                             src={product.image_url || defaultImage}
                             alt={product.name}
@@ -92,7 +96,8 @@ export default function ProductCard({
                             style={{
                                 objectFit: "contain",
                                 maxHeight: 250,
-                                maxWidth: 250,
+                                maxWidth: "100%",
+                                width: "100%",
                             }}
                         />
                         {!isAvailable && (
@@ -128,8 +133,10 @@ export default function ProductCard({
                             sx={{
                                 mt: 2,
                                 display: "flex",
+                                flexDirection: { xs: "column", sm: "row" },
                                 justifyContent: "space-between",
-                                alignItems: "center",
+                                alignItems: { xs: "flex-start", sm: "center" },
+                                gap: { xs: 1, sm: 0 },
                             }}
                         >
                             <Typography variant="h6" color="primary">
@@ -147,12 +154,23 @@ export default function ProductCard({
                 </Card>
             </Tooltip>
 
-            <Dialog open={isOpen} onClose={() => setIsOpen(false)} maxWidth="md" fullWidth>
+            <Dialog
+                open={isOpen}
+                onClose={() => setIsOpen(false)}
+                maxWidth="md"
+                fullWidth
+                fullScreen={isSmDown}
+            >
                 <DialogTitle>{product.name}</DialogTitle>
                 <DialogContent>
-                    <Stack direction="row" spacing={4}>
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
                         <Stack
-                            sx={{ position: "relative", width: 300, height: 300, flexShrink: 0 }}
+                            sx={{
+                                position: "relative",
+                                width: { xs: "100%", sm: 300 },
+                                height: { xs: 200, sm: 300 },
+                                flexShrink: 0,
+                            }}
                         >
                             <Image
                                 src={product.image_url || defaultImage}
@@ -203,22 +221,35 @@ export default function ProductCard({
                         </Stack>
                     </Stack>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsOpen(false)}>
-                        {GlobalLanguageTranslations.close[language]}
-                    </Button>
-                    {onAddToCart && (
+                <DialogActions sx={{ p: { xs: 2, sm: 1 } }}>
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1}
+                        sx={{ width: "100%" }}
+                    >
+                        {onAddToCart && (
+                            <Button
+                                onClick={() => onAddToCart(product.id)}
+                                disabled={
+                                    !isAvailable ||
+                                    (!product.unlimited_stock && product.stock === 0)
+                                }
+                                fullWidth={isSmDown}
+                                variant="contained"
+                            >
+                                {ProductLanguageTranslations.buyButtonLabel[language](
+                                    product,
+                                ).toUpperCase()}
+                            </Button>
+                        )}
                         <Button
-                            onClick={() => onAddToCart(product.id)}
-                            disabled={
-                                !isAvailable || (!product.unlimited_stock && product.stock === 0)
-                            }
+                            onClick={() => setIsOpen(false)}
+                            fullWidth={isSmDown}
+                            variant="outlined"
                         >
-                            {ProductLanguageTranslations.buyButtonLabel[language](
-                                product,
-                            ).toUpperCase()}
+                            {GlobalLanguageTranslations.close[language]}
                         </Button>
-                    )}
+                    </Stack>
                 </DialogActions>
             </Dialog>
         </>
