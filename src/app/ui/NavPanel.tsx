@@ -13,6 +13,8 @@ import {
     ListSubheader,
     Stack,
     Divider,
+    IconButton,
+    ListItemButton,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -70,6 +72,7 @@ const NavPanel = () => {
         GlobalConstants.RESET,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
+        ...(user && [GlobalConstants.APPLY]),
     ];
 
     const getLinkGroup = (privacyStatus: UserRole | string) => {
@@ -104,43 +107,56 @@ const NavPanel = () => {
         <>
             <AppBar position="static">
                 <Toolbar>
-                    <Button onClick={toggleDrawerOpen}>
+                    <IconButton
+                        edge="start"
+                        color="inherit"
+                        aria-label="open navigation"
+                        onClick={toggleDrawerOpen}
+                    >
                         <MenuIcon />
-                    </Button>
+                    </IconButton>
                     <Typography
                         variant="h6"
-                        style={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
+                        sx={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
+                        noWrap
                         onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                     >
                         {organizationSettings?.organization_name || "Organization Name"}
                     </Typography>
                     <LanguageMenu />
                     <Tooltip title={`${GlobalLanguageTranslations.open[language]} README.md`}>
-                        <Button onClick={() => openResourceInNewTab("/README.pdf")}>
-                            <Article />
-                        </Button>
-                    </Tooltip>
-                    {isUserAdmin(user) && (
-                        <Tooltip
-                            title={LanguageTranslations.toggleAdminEditMode[language](editMode)}
+                        <IconButton
+                            aria-label="open readme"
+                            color="inherit"
+                            onClick={() => openResourceInNewTab("/README.pdf")}
                         >
-                            <Button onClick={() => setEditMode((prev: boolean) => !prev)}>
-                                {editMode ? <Cancel /> : <Edit />}
-                            </Button>
-                        </Tooltip>
-                    )}
+                            <Article />
+                        </IconButton>
+                    </Tooltip>
                 </Toolbar>
             </AppBar>
-            <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawerOpen}>
-                <Button
-                    sx={{ justifyContent: "flex-end" }}
+            <Drawer
+                anchor="left"
+                open={drawerOpen}
+                onClose={toggleDrawerOpen}
+                PaperProps={{ sx: { width: { xs: "85vw", sm: 320 } } }}
+            >
+                <IconButton
+                    sx={{ alignSelf: "flex-end", m: 1 }}
                     onClick={toggleDrawerOpen}
-                    endIcon={<ChevronLeft />}
-                ></Button>
+                    aria-label="close navigation"
+                >
+                    <ChevronLeft />
+                </IconButton>
                 <Divider />
                 <List>
                     {user ? (
-                        <Button variant="outlined" onClick={logOutAction} endIcon={<LogoutIcon />}>
+                        <Button
+                            variant="outlined"
+                            onClick={logOutAction}
+                            endIcon={<LogoutIcon />}
+                            fullWidth
+                        >
                             {LoginLanguageTranslations.logout[language]}
                         </Button>
                     ) : (
@@ -148,12 +164,23 @@ const NavPanel = () => {
                             variant="outlined"
                             onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}
                             endIcon={<LoginIcon />}
+                            fullWidth
                         >
                             {LoginLanguageTranslations.login[language]}
                         </Button>
                     )}
                     {Object.keys(applicationRoutes).map((privacyStatus) =>
                         getLinkGroup(privacyStatus),
+                    )}
+                    {isUserAdmin(user) && (
+                        <Button
+                            aria-label={editMode ? "exit edit mode" : "enter edit mode"}
+                            variant="outlined"
+                            endIcon={editMode ? <Cancel /> : <Edit />}
+                            onClick={() => setEditMode((prev: boolean) => !prev)}
+                        >
+                            {LanguageTranslations.toggleAdminEditMode[language](editMode)}
+                        </Button>
                     )}
                 </List>
             </Drawer>
