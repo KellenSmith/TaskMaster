@@ -1,5 +1,5 @@
 "use client";
-import { Stack, Tab, Tabs } from "@mui/material";
+import { Stack, Tab, Tabs, useMediaQuery, useTheme } from "@mui/material";
 import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AccountTab from "./AccountTab";
@@ -12,6 +12,10 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import GlobalConstants from "../../GlobalConstants";
 import SkillBadgesTab from "./SkillBadgesTab";
 import LanguageTranslations, { implementedTabs } from "./LanguageTranslations";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import EventIcon from "@mui/icons-material/Event";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import BadgeIcon from "@mui/icons-material/Badge";
 
 interface ProfileDashboardProps {
     tasksPromise: Promise<
@@ -41,6 +45,8 @@ const ProfileDashboard = ({
     skillBadgesPromise,
 }: ProfileDashboardProps) => {
     const { user, language } = useUserContext();
+    const theme = useTheme();
+    const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
     const tabs = useMemo(() => {
         const availableTabs = {
             account: implementedTabs.account,
@@ -88,16 +94,43 @@ const ProfileDashboard = ({
             <Tabs
                 value={openTab || implementedTabs.account}
                 onChange={(_, newTab) => setOpenTab(newTab)}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                aria-label="profile tabs"
             >
-                {Object.keys(tabs).map((tabKey) =>
-                    tabs[tabKey] ? (
+                {Object.keys(tabs).map((tabKey) => {
+                    const tabVal = tabs[tabKey];
+                    if (!tabVal) return null;
+                    const label = LanguageTranslations[tabVal][language] as string;
+                    const icon =
+                        tabVal === implementedTabs.account ? (
+                            <AccountCircleIcon fontSize={isSmall ? "small" : "medium"} />
+                        ) : tabVal === implementedTabs.events ? (
+                            <EventIcon fontSize={isSmall ? "small" : "medium"} />
+                        ) : tabVal === implementedTabs.tasks ? (
+                            <AssignmentIcon fontSize={isSmall ? "small" : "medium"} />
+                        ) : tabVal === implementedTabs.skill_badges ? (
+                            <BadgeIcon fontSize={isSmall ? "small" : "medium"} />
+                        ) : undefined;
+
+                    return (
                         <Tab
                             key={tabKey}
-                            value={tabs[tabKey]}
-                            label={LanguageTranslations[tabs[tabKey]][language] as string}
+                            value={tabVal}
+                            label={isSmall ? undefined : label}
+                            icon={icon}
+                            iconPosition="start"
+                            wrapped
+                            sx={{
+                                minWidth: isSmall ? 64 : 120,
+                                px: isSmall ? 0.5 : 1,
+                                fontSize: isSmall ? "0.75rem" : "0.875rem",
+                                textTransform: "none",
+                            }}
                         />
-                    ) : null,
-                )}
+                    );
+                })}
             </Tabs>
             <ErrorBoundarySuspense>{getTabComp()}</ErrorBoundarySuspense>
         </Stack>
