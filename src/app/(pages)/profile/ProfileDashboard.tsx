@@ -14,7 +14,7 @@ import SkillBadgesTab from "./SkillBadgesTab";
 import LanguageTranslations, { implementedTabs } from "./LanguageTranslations";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventIcon from "@mui/icons-material/Event";
-import AssignmentIcon from "@mui/icons-material/Assignment";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import BadgeIcon from "@mui/icons-material/Badge";
 
 interface ProfileDashboardProps {
@@ -109,7 +109,7 @@ const ProfileDashboard = ({
                         ) : tabVal === implementedTabs.events ? (
                             <EventIcon fontSize={isSmall ? "small" : "medium"} />
                         ) : tabVal === implementedTabs.tasks ? (
-                            <AssignmentIcon fontSize={isSmall ? "small" : "medium"} />
+                            <VolunteerActivismIcon fontSize={isSmall ? "small" : "medium"} />
                         ) : tabVal === implementedTabs.skill_badges ? (
                             <BadgeIcon fontSize={isSmall ? "small" : "medium"} />
                         ) : undefined;

@@ -1,12 +1,18 @@
 "use client";
 
-import { Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
+import { Stack, Tab, Tabs, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { use, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { isUserHost, clientRedirect, isUserAdmin } from "../../lib/definitions";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
 import EventDetails from "./EventDetails";
+import EventIcon from "@mui/icons-material/Event";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import PeopleIcon from "@mui/icons-material/People";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
 import { EventStatus, Prisma } from "@prisma/client";
 import TicketShop from "./TicketShop";
 import EventActions from "./EventActions";
@@ -70,6 +76,7 @@ const EventDashboard = ({
 }: EventDashboardProps) => {
     const theme = useTheme();
     const router = useRouter();
+    const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
     const searchParams = useSearchParams();
     const { user, language } = useUserContext();
     const event = use(eventPromise);
@@ -191,24 +198,61 @@ const EventDashboard = ({
             </Stack>
 
             <Stack
-                direction="row"
-                padding="0 24px 0 24px "
+                direction={isSmall ? "column" : "row"}
+                padding="0 24px 0 24px"
                 justifyContent="space-between"
                 spacing={2}
+                alignItems="center"
             >
-                <Tabs value={openTab} onChange={(_, newTab) => setOpenTab(newTab)}>
-                    {Object.entries(eventTabs).map(
-                        ([key, label]) =>
-                            label && (
-                                <Tab
-                                    key={key}
-                                    value={label}
-                                    label={LanguageTranslations[label][language] as string}
-                                />
-                            ),
-                    )}
+                <Tabs
+                    value={openTab || implementedTabs.details}
+                    onChange={(_, newTab) => setOpenTab(newTab)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
+                    aria-label="event tabs"
+                    sx={{ width: isSmall ? "100%" : "auto" }}
+                >
+                    {Object.keys(eventTabs).map((tabKey) => {
+                        // @ts-ignore -- dynamic indexing matches project pattern
+                        const tabVal = eventTabs[tabKey];
+                        if (!tabVal) return null;
+                        const label = LanguageTranslations[tabVal][language] as string;
+                        const icon =
+                            tabVal === implementedTabs.details ? (
+                                <EventIcon fontSize={isSmall ? "small" : "medium"} />
+                            ) : tabVal === implementedTabs.location ? (
+                                <LocationOnIcon fontSize={isSmall ? "small" : "medium"} />
+                            ) : tabVal === implementedTabs.organize ? (
+                                <VolunteerActivismIcon fontSize={isSmall ? "small" : "medium"} />
+                            ) : tabVal === implementedTabs.tickets ? (
+                                <ConfirmationNumberIcon fontSize={isSmall ? "small" : "medium"} />
+                            ) : tabVal === implementedTabs.participants ? (
+                                <PeopleIcon fontSize={isSmall ? "small" : "medium"} />
+                            ) : tabVal === implementedTabs.reserveList ? (
+                                <BookmarkIcon fontSize={isSmall ? "small" : "medium"} />
+                            ) : undefined;
+
+                        return (
+                            <Tab
+                                key={tabKey}
+                                value={tabVal}
+                                label={isSmall ? undefined : label}
+                                icon={icon}
+                                iconPosition="start"
+                                wrapped
+                                sx={{
+                                    minWidth: isSmall ? 64 : 120,
+                                    px: isSmall ? 0.5 : 1,
+                                    fontSize: isSmall ? "0.75rem" : "0.875rem",
+                                    textTransform: "none",
+                                }}
+                            />
+                        );
+                    })}
                 </Tabs>
-                <Stack width={50}>
+
+                <Stack width={isSmall ? "100%" : 50}>
                     <ErrorBoundarySuspense>
                         <EventActions
                             eventPromise={eventPromise}
