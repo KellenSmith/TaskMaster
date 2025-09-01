@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Tooltip, useTheme } from "@mui/material";
+import { Card, Tooltip, useTheme, Typography } from "@mui/material";
 import { FC } from "react";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
@@ -22,28 +22,42 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
         clientRedirect(router, [GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: event.id });
 
     // TODO: mark green if participating
-    return (
-        <Tooltip title={`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}>
-            <Card
-                elevation={0}
-                sx={{
-                    backgroundColor:
-                        event.status === EventStatus.draft
-                            ? theme.palette.warning.light
-                            : event.status === EventStatus.published
-                              ? theme.palette.primary.dark
-                              : theme.palette.error.dark,
-                    ...(user && { cursor: "pointer" }),
-                    textDecoration:
-                        event.status === EventStatus.cancelled ? "line-through" : "none",
-                    paddingLeft: 1,
-                }}
-                {...(user && {
-                    onClick: goToEventPage,
-                })}
-            >
+    const content = (
+        <Card
+            elevation={0}
+            sx={{
+                backgroundColor:
+                    event.status === EventStatus.draft
+                        ? theme.palette.warning.light
+                        : event.status === EventStatus.published
+                          ? theme.palette.primary.dark
+                          : theme.palette.error.dark,
+                ...(user && { cursor: "pointer" }),
+                textDecoration: event.status === EventStatus.cancelled ? "line-through" : "none",
+                paddingLeft: 1,
+                paddingY: 0.75,
+                paddingRight: 1,
+                display: "block",
+            }}
+            {...(user && {
+                onClick: goToEventPage,
+            })}
+        >
+            <Typography noWrap variant="body2" sx={{ color: "common.white" }}>
                 {event.title}
-            </Card>
+            </Typography>
+        </Card>
+    );
+
+    // Hide Tooltip on small screens to avoid interfering with touch; Tooltip provides extra info on desktop
+    const isSmallScreen = /Mobi|Android|iPhone|iPad|iPod/.test(
+        typeof navigator !== "undefined" ? navigator.userAgent : "",
+    );
+    return isSmallScreen ? (
+        content
+    ) : (
+        <Tooltip title={`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}>
+            {content}
         </Tooltip>
     );
 };

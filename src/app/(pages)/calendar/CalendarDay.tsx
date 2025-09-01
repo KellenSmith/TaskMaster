@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, use, useMemo } from "react";
+import { FC, use, useMemo, useCallback } from "react";
 import { Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import CalendarEvent from "./CalendarEvent";
 import dayjs from "dayjs";
@@ -22,26 +22,32 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
-    const shouldShowEvent = (event: Prisma.EventGetPayload<true>) => {
-        let startTime = dayjs(event.start_time);
-        let endTime = dayjs(event.end_time);
+    const shouldShowEvent = useCallback(
+        (event: Prisma.EventGetPayload<true>) => {
+            let startTime = dayjs(event.start_time);
+            let endTime = dayjs(event.end_time);
 
-        // Count events ending before 04:00 as belonging to the day before
-        if (0 <= endTime.hour() && endTime.hour() <= 4) {
-            const newEndTime = endTime.subtract(1, "day").hour(23).minute(59);
-            if (newEndTime.isAfter(startTime)) endTime = newEndTime;
-        }
+            // Count events ending before 04:00 as belonging to the day before
+            if (0 <= endTime.hour() && endTime.hour() <= 4) {
+                const newEndTime = endTime.subtract(1, "day").hour(23).minute(59);
+                if (newEndTime.isAfter(startTime)) endTime = newEndTime;
+            }
 
-        const eventInDay = date.isBetween(startTime, endTime, "day", "[]");
-        if (!eventInDay) return false;
-        return true;
-    };
+            const eventInDay = date.isBetween(startTime, endTime, "day", "[]");
+            if (!eventInDay) return false;
+            return true;
+        },
+        [date],
+    );
 
-    const eventsForDay = useMemo(() => events.filter((event) => shouldShowEvent(event)), [events]);
+    const eventsForDay = useMemo(
+        () => events.filter((event) => shouldShowEvent(event)),
+        [events, shouldShowEvent],
+    );
 
     const getEmptyDay = () => <Paper key={`empty-end-${date.date()}`} elevation={0} />;
 
-    if (eventsForDay.length < 1) return isSmallScreen ? null : getEmptyDay();
+    if (eventsForDay.length < 1 && isSmallScreen) return null;
 
     const getDayComp = () => {
         if (eventsForDay.length < 1) return getEmptyDay();
@@ -68,7 +74,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     };
 
     return (
-        <Paper sx={{ height: "100%", width: "100%" }}>
+        <Paper sx={{ height: "100%", width: "100%", minHeight: { xs: 80, sm: "auto" } }}>
             <Stack spacing={1}>
                 <Stack direction="row" alignItems="center">
                     {/* Localized short weekday (Monday-first) */}

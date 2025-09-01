@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, use, useMemo, useState } from "react";
+import React, { FC, use, useState } from "react";
 import {
     Stack,
     Typography,
@@ -141,21 +141,31 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
 
     return (
         <>
-            <Stack sx={{ height: "100%" }} padding={4}>
+            <Stack sx={{ height: "100%", width: "100%" }} padding={isSmallScreen ? 2 : 4}>
                 <Stack direction="row" justifyContent="center">
                     <Stack direction="row" width="100%" justifyContent="space-between">
                         {user && (
-                            <Button onClick={() => setCreateOpen(true)}>
-                                {LanguageTranslations.createEvent[language]}
+                            <Button
+                                size={isSmallScreen ? "small" : "medium"}
+                                onClick={() => setCreateOpen(true)}
+                            >
+                                {isSmallScreen
+                                    ? LanguageTranslations.createEvent[language]
+                                    : LanguageTranslations.createEvent[language]}
                             </Button>
                         )}
                         <Stack direction="row">
                             <Button
                                 onClick={() => setSelectedDate((prev) => prev.subtract(1, "month"))}
+                                size={isSmallScreen ? "small" : "medium"}
                             >
                                 <ArrowLeft />
                             </Button>
-                            <Typography color="primary" alignSelf="center" variant="h4">
+                            <Typography
+                                color="primary"
+                                alignSelf="center"
+                                variant={isSmallScreen ? "h6" : "h4"}
+                            >
                                 {selectedDate.format("YYYY/MM")}
                             </Typography>
                             <Button onClick={() => setSelectedDate((prev) => prev.add(1, "month"))}>
@@ -166,7 +176,13 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                 </Stack>
                 {(() => (isSmallScreen ? getCalendarList() : getCalendarGrid()))()}
             </Stack>
-            <Dialog fullWidth maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
+            <Dialog
+                fullWidth
+                fullScreen={isSmallScreen}
+                maxWidth={isSmallScreen ? "sm" : "xl"}
+                open={createOpen}
+                onClose={() => setCreateOpen(false)}
+            >
                 <DialogContent>
                     <Form
                         name={GlobalConstants.EVENT}
@@ -180,6 +196,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                         editable={false}
                     />
                 </DialogContent>
+                <Button fullWidth onClick={() => setCreateOpen(false)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </>
     );
