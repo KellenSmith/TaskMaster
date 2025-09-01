@@ -1,7 +1,16 @@
 "use client";
 
-import React, { FC, use, useState } from "react";
-import { Stack, Typography, Button, Grid2, Dialog, DialogContent } from "@mui/material";
+import React, { FC, use, useMemo, useState } from "react";
+import {
+    Stack,
+    Typography,
+    Button,
+    Grid2,
+    Dialog,
+    DialogContent,
+    useMediaQuery,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
 import { createEvent } from "../../lib/event-actions";
@@ -27,6 +36,8 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
     const createEventWithHostAndTicket = async (
         parsedFieldValues: z.infer<typeof EventCreateSchema>,
@@ -107,6 +118,21 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         );
     };
 
+    const getCalendarList = () => {
+        const days = getDaysOfMonth();
+        return (
+            <Stack spacing={2} sx={{ width: "100%" }}>
+                {days.map((date) => (
+                    <CalendarDay
+                        key={date.format("YYYY-MM-DD")}
+                        date={date}
+                        eventsPromise={eventsPromise}
+                    />
+                ))}
+            </Stack>
+        );
+    };
+
     const getLocationOptions = (): CustomOptionProps[] =>
         locations.map((location) => ({
             id: location.id,
@@ -138,7 +164,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                         </Stack>
                     </Stack>
                 </Stack>
-                {getCalendarGrid()}
+                {(() => (isSmallScreen ? getCalendarList() : getCalendarGrid()))()}
             </Stack>
             <Dialog fullWidth maxWidth="xl" open={createOpen} onClose={() => setCreateOpen(false)}>
                 <DialogContent>
