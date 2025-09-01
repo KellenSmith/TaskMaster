@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use, useState } from "react";
-import { Grid2, Stack, Typography } from "@mui/material";
+import { Grid2, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DroppableColumn from "./DroppableColumn";
 import { Prisma, TaskStatus } from "@prisma/client";
 import KanBanBoardMenu, { getFilteredTasks } from "./KanBanBoardMenu";
@@ -41,6 +41,8 @@ const KanBanBoard = ({
     activeMembersPromise,
     skillBadgesPromise,
 }: KanBanBoardProps) => {
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
@@ -66,7 +68,7 @@ const KanBanBoard = ({
                 <Grid2
                     container
                     spacing={2}
-                    columns={appliedFilter?.status?.length || 4}
+                    columns={isSmallScreen ? 1 : appliedFilter?.status?.length || 4}
                     height="100%"
                     width="100%"
                 >

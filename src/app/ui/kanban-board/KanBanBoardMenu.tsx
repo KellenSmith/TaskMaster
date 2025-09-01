@@ -1,13 +1,18 @@
 import {
+    Badge,
     Button,
     Divider,
-    Drawer,
     FormControlLabel,
     Stack,
+    SwipeableDrawer,
     Switch,
     Tab,
     Tabs,
     Typography,
+    IconButton,
+    Fab,
+    Box,
+    useMediaQuery,
     useTheme,
 } from "@mui/material";
 import { Prisma, TaskStatus } from "@prisma/client";
@@ -21,12 +26,13 @@ import { TaskFilterSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import AutocompleteWrapper from "../form/AutocompleteWrapper";
 import GlobalConstants from "../../GlobalConstants";
-import { ChevronRight } from "@mui/icons-material";
+import { ChevronRight, Menu, VolunteerActivismRounded } from "@mui/icons-material";
 import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
 import DraggableTaskShifts from "./DraggableTaskShifts";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { openResourceInNewTab } from "../utils";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 
 type FilterNameType = keyof typeof filterOptions & string;
 type FilterValueType = boolean | string | string[] | TaskStatus[];
@@ -85,6 +91,11 @@ const KanBanBoardMenu = ({
     setAppliedFilter,
 }: KanBanBoardFilterProps) => {
     const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+    const isIOSDevice = useMemo(
+        () => typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent),
+        [],
+    );
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const event = eventPromise ? use(eventPromise) : null;
@@ -181,117 +192,129 @@ const KanBanBoardMenu = ({
         openResourceInNewTab(url);
     };
 
+    // Tabs moved inside the drawer to make the control easier to reach on mobile
+
     return (
-        <Stack direction="row" width="fit-content" height="100%">
-            <Tabs
-                orientation="vertical"
-                value={tabOpen}
-                onChange={(_, newValue) => setTabOpen(newValue)}
+        <Box sx={{ position: "relative" }}>
+            {/* Desktop edge button */}
+            <IconButton
+                aria-label="open kanban menu"
+                onClick={(prev) => setMenuOpen(!prev)}
                 sx={{
-                    // Place tabs above the drawer so the drawer doesn't cover them
-                    zIndex: (theme) => theme.zIndex.drawer + 1,
                     position: "absolute",
-                    top: 90,
-                    right: drawerWidth,
-                    padding: 1,
-                    backgroundColor: (theme) => theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRight: null,
+                    right: drawerWidth + 8,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    display: { xs: "none", sm: "inline-flex" },
+                    zIndex: (theme) => theme.zIndex.drawer + 2,
                 }}
             >
-                {Object.entries(menuTabs).map(
-                    ([key, label]) =>
-                        label && (
-                            <Tab
-                                key={key}
-                                onClick={() => setMenuOpen(true)}
-                                value={label}
-                                label={
-                                    <Typography
-                                        sx={{
-                                            whiteSpace: "nowrap",
-                                            display: "inline-block",
-                                            // Only show vertical, rotated tab labels on small screens (mobile).
-                                            [theme.breakpoints.down("sm")]: {
-                                                writingMode: "vertical-rl",
-                                                transform: "rotate(180deg)",
-                                            },
-                                        }}
-                                    >
-                                        {LanguageTranslations[label][language] as string}
-                                    </Typography>
-                                }
-                                sx={{ paddingX: 1, width: "fit-content", minWidth: 12 }}
-                            />
-                        ),
-                )}
-            </Tabs>
-            <Drawer
-                key={myTasks.map((task) => task.assignee_id).join("-")}
-                variant="persistent"
-                anchor="right"
+                <Menu />
+            </IconButton>
+            {/* Mobile FAB */}
+            <Fab
+                color="primary"
+                size="small"
+                aria-label="open kanban menu"
+                onClick={(prev) => setMenuOpen(!prev)}
                 sx={{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    // Ensure drawer paper has a fixed width so it doesn't unexpectedly
-                    // cover the left-side tabs.
-                    "& .MuiDrawer-paper": {
-                        width: drawerWidth,
-                    },
+                    position: "fixed",
+                    right: 16,
+                    bottom: 16,
+                    display: { xs: "inline-flex", sm: "none" },
+                    zIndex: (theme) => theme.zIndex.drawer + 2,
                 }}
-                open={menuOpen}
-                onClose={() => setMenuOpen(false)}
             >
-                <Stack justifyContent="center" padding={2}>
-                    <Button
-                        sx={{ justifyContent: "flex-start" }}
-                        size="large"
-                        startIcon={<ChevronRight />}
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        {LanguageTranslations[tabOpen][language]}
-                    </Button>
-                    <Divider />
-                    {tabOpen === menuTabs.filter && (
-                        <form key={JSON.stringify(appliedFilter)} onSubmit={applyFilter}>
-                            <Stack spacing={2}>
-                                {Object.keys(filterOptions).map((fieldId) =>
-                                    getFilterOptionComp(fieldId as FilterNameType),
-                                )}
-                                <Button type="submit">
-                                    {LanguageTranslations.apply[language]}
-                                </Button>
-                                <Button onClick={() => setAppliedFilter(null)}>
-                                    {LanguageTranslations.clear[language]}
-                                </Button>
-                                <Button onClick={printVisibleTasksToPdf}>
-                                    {LanguageTranslations.printSchedule[language]}
-                                </Button>
-                            </Stack>
-                        </form>
-                    )}
-                    {tabOpen === menuTabs.my_tasks && (
-                        <Stack spacing={2}>
-                            {myTasks.length > 0 ? (
-                                getGroupedAndSortedTasks<(typeof tasks)[0]>(myTasks).map(
-                                    (taskList) => (
-                                        <DraggableTaskShifts
-                                            key={taskList.map((task) => task.id).join("-")}
-                                            readOnly={true}
-                                            taskList={taskList}
+                <Menu />
+            </Fab>
+            <Stack direction="row" width="fit-content" height="100%">
+                {/* Tabs moved inside the drawer for better mobile UX */}
+                <SwipeableDrawer
+                    key={myTasks.map((task) => task.assignee_id).join("-")}
+                    anchor="right"
+                    open={menuOpen}
+                    onClose={() => setMenuOpen(false)}
+                    onOpen={() => setMenuOpen(true)}
+                    disableBackdropTransition={isIOSDevice}
+                    disableDiscovery={isIOSDevice}
+                    swipeAreaWidth={24}
+                    sx={{ flexShrink: 0 }}
+                    slotProps={{ paper: { sx: { width: { xs: "85vw", sm: drawerWidth } } } }}
+                >
+                    <Stack justifyContent="center" padding={2} spacing={2}>
+                        <Button
+                            sx={{ justifyContent: "flex-start" }}
+                            size="small"
+                            startIcon={<ChevronRight />}
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            {GlobalLanguageTranslations.close[language] || "Close"}
+                        </Button>
+                        <Divider />
+                        <Tabs
+                            value={tabOpen}
+                            onChange={(_, newValue) => setTabOpen(newValue)}
+                            variant="fullWidth"
+                            centered
+                        >
+                            {Object.entries(menuTabs).map(
+                                ([, label]) =>
+                                    label && (
+                                        <Tab
+                                            key={label}
+                                            value={label}
+                                            label={LanguageTranslations[label][language] as string}
                                         />
                                     ),
-                                )
-                            ) : (
-                                <Typography textAlign="center" paddingY={2}>
-                                    {LanguageTranslations.noShiftsBooked[language]}
-                                </Typography>
                             )}
-                        </Stack>
-                    )}
-                </Stack>
-            </Drawer>
-        </Stack>
+                        </Tabs>
+
+                        {tabOpen === menuTabs.filter && (
+                            <form key={JSON.stringify(appliedFilter)} onSubmit={applyFilter}>
+                                <Stack spacing={2}>
+                                    {Object.keys(filterOptions).map((fieldId) =>
+                                        getFilterOptionComp(fieldId as FilterNameType),
+                                    )}
+                                    <Button type="submit">
+                                        {LanguageTranslations.apply[language]}
+                                    </Button>
+                                    <Button color="error" onClick={() => setAppliedFilter(null)}>
+                                        {LanguageTranslations.clear[language]}
+                                    </Button>
+                                    <Button onClick={printVisibleTasksToPdf}>
+                                        {LanguageTranslations.printSchedule[language]}
+                                    </Button>
+                                </Stack>
+                            </form>
+                        )}
+                        {tabOpen === menuTabs.my_tasks && (
+                            <Stack spacing={2}>
+                                {myTasks.length > 0 ? (
+                                    getGroupedAndSortedTasks<(typeof tasks)[0]>(myTasks).map(
+                                        (taskList) => (
+                                            <DraggableTaskShifts
+                                                key={taskList.map((task) => task.id).join("-")}
+                                                readOnly={true}
+                                                taskList={taskList}
+                                            />
+                                        ),
+                                    )
+                                ) : (
+                                    <Typography textAlign="center" paddingY={2}>
+                                        {LanguageTranslations.noShiftsBooked[language]}
+                                    </Typography>
+                                )}
+                            </Stack>
+                        )}
+                    </Stack>
+                </SwipeableDrawer>
+                {isSmallScreen && myTasks.length > 0 && (
+                    <Badge variant="dot" color="secondary">
+                        <VolunteerActivismRounded />
+                    </Badge>
+                )}
+            </Stack>
+        </Box>
     );
 };
 
