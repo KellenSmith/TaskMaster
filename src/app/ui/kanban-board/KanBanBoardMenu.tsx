@@ -26,7 +26,13 @@ import { TaskFilterSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import AutocompleteWrapper from "../form/AutocompleteWrapper";
 import GlobalConstants from "../../GlobalConstants";
-import { ChevronRight, Menu, VolunteerActivismRounded } from "@mui/icons-material";
+import {
+    ChevronRight,
+    Menu,
+    MenuBookOutlined,
+    MenuBookRounded,
+    VolunteerActivismRounded,
+} from "@mui/icons-material";
 import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
 import DraggableTaskShifts from "./DraggableTaskShifts";
 import TaskSchedulePDF from "./TaskSchedulePDF";
@@ -192,31 +198,55 @@ const KanBanBoardMenu = ({
         openResourceInNewTab(url);
     };
 
-    // Tabs moved inside the drawer to make the control easier to reach on mobile
-
     return (
         <Box sx={{ position: "relative" }}>
-            {/* Desktop edge button */}
-            <IconButton
-                aria-label="open kanban menu"
-                onClick={(prev) => setMenuOpen(!prev)}
+            {/* Desktop subtle off-canvas handle - mostly hidden until hover */}
+            <Box
                 sx={{
-                    position: "absolute",
-                    right: drawerWidth + 8,
+                    position: "fixed",
                     top: "50%",
+                    right: 0,
                     transform: "translateY(-50%)",
-                    display: { xs: "none", sm: "inline-flex" },
+                    display: { xs: "none", sm: "flex" },
                     zIndex: (theme) => theme.zIndex.drawer + 2,
+                    alignItems: "center",
                 }}
             >
-                <Menu />
-            </IconButton>
+                <Box
+                    sx={{
+                        width: 36,
+                        height: 64,
+                        borderTopLeftRadius: 8,
+                        borderBottomLeftRadius: 8,
+                        bgcolor: "background.paper",
+                        boxShadow: 1,
+                        transform: "translateX(50%)",
+                        transition: "transform 200ms ease",
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        "&:hover": {
+                            transform: "translateX(0)",
+                        },
+                    }}
+                >
+                    <IconButton
+                        aria-label="open kanban menu"
+                        onClick={() => setMenuOpen(true)}
+                        size="small"
+                        sx={{ p: 0 }}
+                    >
+                        <ChevronRight />
+                    </IconButton>
+                </Box>
+            </Box>
             {/* Mobile FAB */}
             <Fab
                 color="primary"
                 size="small"
                 aria-label="open kanban menu"
-                onClick={(prev) => setMenuOpen(!prev)}
+                onClick={() => setMenuOpen((prev) => !prev)}
                 sx={{
                     position: "fixed",
                     right: 16,
