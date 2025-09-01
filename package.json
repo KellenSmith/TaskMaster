@@ -57,6 +57,7 @@
         "@tiptap/extension-underline": "^2.26.1",
         "@tiptap/pm": "^2.26.1",
         "@tiptap/react": "^2.26.1",
+        "@vercel/blob": "^1.1.1",
         "axios": "^1.11.0",
         "dayjs": "^1.11.13",
         "jose": "^5.10.0",

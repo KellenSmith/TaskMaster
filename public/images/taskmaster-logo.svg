@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">TaskMaster</title>
+  <g font-family="Segoe UI, Roboto, system-ui, -apple-system, 'Helvetica Neue', Arial" font-weight="700">
+    <text x="100" y="26" font-size="18" text-anchor="middle" fill="#ffffff">TaskMaster</text>
+  </g>
+</svg>

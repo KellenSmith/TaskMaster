@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import {
     AppBar,
     Toolbar,
+    Box,
     Typography,
     List,
     ListItem,
@@ -118,14 +119,22 @@ const NavPanel = () => {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography
-                        variant="h6"
-                        sx={{ flexGrow: 1, textAlign: "center", cursor: "pointer" }}
-                        noWrap
-                        onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
+                    <Box
+                        sx={{
+                            flexGrow: 1,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}
                     >
-                        {organizationSettings?.organization_name || "Organization Name"}
-                    </Typography>
+                        <Box
+                            component="img"
+                            src="/images/taskmaster-logo.svg"
+                            alt={organizationSettings?.organization_name || "TaskMaster"}
+                            sx={{ height: 40, cursor: "pointer" }}
+                            onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
+                        />
+                    </Box>
                     <LanguageMenu />
                     <Tooltip title={`${GlobalLanguageTranslations.open[language]} README.md`}>
                         <IconButton
