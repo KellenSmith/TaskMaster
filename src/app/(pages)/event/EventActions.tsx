@@ -3,7 +3,16 @@
 import { FC, use, useState, useTransition } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
-import { Button, Dialog, Menu, MenuItem, MenuList, Stack } from "@mui/material";
+import {
+    Button,
+    Dialog,
+    Menu,
+    MenuItem,
+    MenuList,
+    Stack,
+    useMediaQuery,
+    useTheme,
+} from "@mui/material";
 import { EventStatus, Language, Prisma } from "@prisma/client";
 import Form from "../../ui/form/Form";
 import {
@@ -41,6 +50,8 @@ interface IEventActions {
 }
 
 const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => {
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(null);
@@ -349,7 +360,13 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                     )}
                 </MenuList>
             </Menu>
-            <Dialog open={!!dialogOpen} onClose={() => setDialogOpen(null)} fullWidth maxWidth="xl">
+            <Dialog
+                fullScreen={isSmallScreen}
+                open={!!dialogOpen}
+                onClose={() => setDialogOpen(null)}
+                fullWidth
+                maxWidth="xl"
+            >
                 {getDialogForm()}
                 <Button onClick={() => setDialogOpen(null)}>
                     {GlobalLanguageTranslations.cancel[language]}
