@@ -79,24 +79,34 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     };
 
     return (
-        <Stack direction="row" spacing={2} justifyContent="stretch">
-            <LocationCard
-                location={getSelectedLocation()}
-                renderedFields={
-                    isUserAdmin(user) || isUserHost(user, event)
-                        ? RenderedFields[GlobalConstants.LOCATION]
-                        : [
-                              GlobalConstants.NAME,
-                              GlobalConstants.ADDRESS,
-                              GlobalConstants.ACCESSIBILITY_INFO,
-                              GlobalConstants.DESCRIPTION,
-                          ]
-                }
-            />
+        <Stack
+            sx={{
+                flexDirection: { xs: "column-reverse", sm: "row" },
+                gap: 2,
+                alignItems: "stretch",
+            }}
+        >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+                <LocationCard
+                    location={getSelectedLocation()}
+                    renderedFields={
+                        isUserAdmin(user) || isUserHost(user, event)
+                            ? RenderedFields[GlobalConstants.LOCATION]
+                            : [
+                                  GlobalConstants.NAME,
+                                  GlobalConstants.ADDRESS,
+                                  GlobalConstants.ACCESSIBILITY_INFO,
+                                  GlobalConstants.DESCRIPTION,
+                              ]
+                    }
+                />
+            </Box>
+
             {(isUserAdmin(user) || isUserHost(user, event)) && locations.length > 1 && (
-                <Card sx={{ width: "100%" }}>
-                    <CardContent>
+                <Card sx={{ width: { xs: "100%", sm: 360 }, flexShrink: 0 }}>
+                    <CardContent sx={{ p: 2 }}>
                         <Autocomplete
+                            fullWidth
                             value={selectedLocationOption}
                             onChange={(_: any, newValue: any) =>
                                 setSelectedLocationOption(newValue)
@@ -104,6 +114,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
+                                    fullWidth
                                     label={
                                         FieldLabels[GlobalConstants.LOCATION_ID][language] as string
                                     }
@@ -114,9 +125,10 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             disabled={isPending}
                         />
                     </CardContent>
-                    <Stack>
+                    <Stack spacing={1} sx={{ p: 2 }}>
                         <Button
                             fullWidth
+                            variant="contained"
                             disabled={
                                 isSwitchButtonDisabled() ||
                                 selectedLocationOption.id === event.location_id
@@ -126,7 +138,11 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             {LanguageTranslations.switchEventLocation[language]}
                         </Button>
                         {isSwitchButtonDisabled() && (
-                            <Typography color="error" textAlign="center">
+                            <Typography
+                                color="error"
+                                textAlign="center"
+                                sx={{ fontSize: "0.95rem" }}
+                            >
                                 {CalendarLanguageTranslations.locationCapacityExceeded[language](
                                     locations.find(
                                         (location) => location.id === selectedLocationOption.id,
