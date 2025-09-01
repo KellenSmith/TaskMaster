@@ -11,12 +11,13 @@ import {
     useTheme,
     Dialog,
     IconButton,
+    useMediaQuery,
+    Button,
 } from "@mui/material";
 import { Prisma } from "@prisma/client";
 import { use, useState, useTransition } from "react";
 import { isUserHost } from "../../lib/definitions";
 import { Add, Delete, Person } from "@mui/icons-material";
-import { Button } from "@react-email/components";
 import { FieldLabels, getUserSelectOptions } from "../../ui/form/FieldCfg";
 import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
@@ -70,6 +71,7 @@ const ParticipantDashboard = ({
     const activeMembers = use(activeMembersPromise);
     const [addDialogOpen, setAddDialogOpen] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
+    const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
 
     const addEventParticipantAction = async (
         parsedFieldValues: z.infer<typeof AddEventParticipantSchema>,
@@ -187,8 +189,8 @@ const ParticipantDashboard = ({
         tickets.map((t) => ({ id: t.id, label: t.product.name }) as CustomOptionProps);
 
     return (
-        <>
-            <Stack direction="row" justifyContent="space-around" spacing={2}>
+        <Stack>
+            <Stack direction={isSmDown ? "column" : "row"} justifyContent="center" spacing={2}>
                 {isPending ? (
                     <LoadingFallback />
                 ) : (
@@ -203,7 +205,12 @@ const ParticipantDashboard = ({
                     </>
                 )}
             </Stack>
-            <Dialog fullWidth open={!!addDialogOpen} onClose={() => setAddDialogOpen(null)}>
+            <Dialog
+                fullWidth
+                fullScreen={isSmDown}
+                open={!!addDialogOpen}
+                onClose={() => setAddDialogOpen(null)}
+            >
                 {/* Dialog content goes here */}
                 <Form
                     name={addDialogOpen}
@@ -219,8 +226,11 @@ const ParticipantDashboard = ({
                     editable={true}
                     readOnly={false}
                 />
+                <Button onClick={() => setAddDialogOpen(null)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
-        </>
+        </Stack>
     );
 };
 
