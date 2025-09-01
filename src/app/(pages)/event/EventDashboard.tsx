@@ -125,49 +125,40 @@ const EventDashboard = ({
                 );
             case eventTabs.organize:
                 return (
-                    // TODO: Exchange for simple mist of assignable tasks
-                    <ErrorBoundarySuspense>
-                        <KanBanBoard
-                            readOnly={!(isUserHost(user, event) || isUserAdmin(user))}
-                            eventPromise={eventPromise}
-                            tasksPromise={eventTasksPromise}
-                            activeMembersPromise={activeMembersPromise}
-                            skillBadgesPromise={skillBadgesPromise}
-                        />
-                    </ErrorBoundarySuspense>
+                    <KanBanBoard
+                        readOnly={!(isUserHost(user, event) || isUserAdmin(user))}
+                        eventPromise={eventPromise}
+                        tasksPromise={eventTasksPromise}
+                        activeMembersPromise={activeMembersPromise}
+                        skillBadgesPromise={skillBadgesPromise}
+                    />
                 );
             case eventTabs.tickets:
                 if (!isUserHost(user, event) && isUserParticipant(user, event))
                     return (
-                        <ErrorBoundarySuspense>
-                            <TicketDashboard
-                                eventPromise={eventPromise}
-                                ticketsPromise={eventTicketsPromise}
-                            />
-                        </ErrorBoundarySuspense>
+                        <TicketDashboard
+                            eventPromise={eventPromise}
+                            ticketsPromise={eventTicketsPromise}
+                        />
                     );
                 return (
-                    <ErrorBoundarySuspense>
-                        <TicketShop
-                            eventPromise={eventPromise}
-                            eventTicketsPromise={eventTicketsPromise}
-                            eventTasksPromise={eventTasksPromise}
-                            goToOrganizeTab={goToOrganizeTab}
-                        />
-                    </ErrorBoundarySuspense>
+                    <TicketShop
+                        eventPromise={eventPromise}
+                        eventTicketsPromise={eventTicketsPromise}
+                        eventTasksPromise={eventTasksPromise}
+                        goToOrganizeTab={goToOrganizeTab}
+                    />
                 );
 
             case eventTabs.participants:
                 return (
-                    <ErrorBoundarySuspense>
-                        <ParticipantDashboard
-                            eventPromise={eventPromise}
-                            eventParticipantsPromise={eventParticipantsPromise}
-                            eventReservesPromise={eventReservesPromise}
-                            eventTicketsPromise={eventTicketsPromise}
-                            activeMembersPromise={activeMembersPromise}
-                        />
-                    </ErrorBoundarySuspense>
+                    <ParticipantDashboard
+                        eventPromise={eventPromise}
+                        eventParticipantsPromise={eventParticipantsPromise}
+                        eventReservesPromise={eventReservesPromise}
+                        eventTicketsPromise={eventTicketsPromise}
+                        activeMembersPromise={activeMembersPromise}
+                    />
                 );
             case eventTabs.reserveList:
                 return <ReserveDashboard eventPromise={eventPromise} />;
@@ -198,10 +189,11 @@ const EventDashboard = ({
             </Stack>
 
             <Stack
-                direction={isSmall ? "column" : "row"}
-                padding="0 24px 0 24px"
+                direction="row"
+                flexWrap="nowrap"
+                padding={isSmall ? 0 : "0 24px 0 24px"}
                 justifyContent="space-between"
-                spacing={2}
+                spacing={isSmall ? 0 : 2}
                 alignItems="center"
             >
                 <Tabs
@@ -211,7 +203,7 @@ const EventDashboard = ({
                     scrollButtons="auto"
                     allowScrollButtonsMobile
                     aria-label="event tabs"
-                    sx={{ width: isSmall ? "100%" : "auto" }}
+                    sx={{ flex: 1, minWidth: 0 }}
                 >
                     {Object.keys(eventTabs).map((tabKey) => {
                         // @ts-ignore -- dynamic indexing matches project pattern
@@ -252,7 +244,7 @@ const EventDashboard = ({
                     })}
                 </Tabs>
 
-                <Stack width={isSmall ? "100%" : 50}>
+                <Stack sx={{ flexShrink: 0 }}>
                     <ErrorBoundarySuspense>
                         <EventActions
                             eventPromise={eventPromise}
