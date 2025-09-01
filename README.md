@@ -40,13 +40,13 @@ For payments, use the following test data:
 - ~~Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.~~
 - ~~A year wheel for admins showing planning times and current and upcoming events~~
 - ~~Ability to translate texts and labels for menu, event descriptions etc.~~
+- Mobile friendly layout
 - Upload images for events/products/texts
 - Add instructions for eventHosts on how to set up and manage their events or require admins to approve events before publishing
 - Buttons to message the assignee and reviewer of a task
 - Event tags (munch/playparty/section etc...)
 - Enable task assignees to submit receipts
 - Solidarity and community funded event tickets - one bought solidarity ticket funds a ticket for someone else
-- Mobile friendly layout
 - Merch store
 
 ## Contributions
