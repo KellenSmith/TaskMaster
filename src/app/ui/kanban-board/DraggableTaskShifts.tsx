@@ -102,23 +102,34 @@ const DraggableTaskShifts = ({
             </Card>
         );
     return (
-        <Card key={taskList[0].id}>
-            <Stack padding="1rem 1rem 0rem 1rem" direction="row" justifyContent="space-between">
-                <Typography variant="body1">{taskList[0][GlobalConstants.NAME]}</Typography>
-                <Typography variant="body1">
+        <Card key={taskList[0].id} sx={{ width: "100%" }}>
+            <Stack
+                sx={{ p: 1, pt: 1, pb: 0 }}
+                direction={{ xs: "column", sm: "row" }}
+                justifyContent="space-between"
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                spacing={{ xs: 0.5, sm: 0 }}
+            >
+                <Typography variant="body1" sx={{ wordBreak: "break-word" }} noWrap={false}>
+                    {taskList[0][GlobalConstants.NAME]}
+                </Typography>
+                <Typography
+                    variant="body2"
+                    sx={{ mt: { xs: 0.5, sm: 0 }, textAlign: { xs: "left", sm: "right" } }}
+                >
                     {formatDate(getEarliestStartTime(taskList)) +
                         " - " +
                         formatDate(getLatestEndTime())}
                 </Typography>
             </Stack>
             {taskList.length > 1 && (
-                <Accordion>
-                    <AccordionSummary {...(taskList.length > 1 && { expandIcon: <ExpandMore /> })}>
+                <Accordion sx={{ mt: 0 }}>
+                    <AccordionSummary expandIcon={<ExpandMore />} sx={{ py: 0.5, pl: 1 }}>
                         {LanguageTranslations.shifts[language]}
                     </AccordionSummary>
-                    <Stack paddingLeft={2}>
+                    <Stack sx={{ pl: 1 }}>
                         {taskList.sort(sortTasks).map((task) => (
-                            <Stack key={task.id}>
+                            <Stack key={task.id} spacing={0}>
                                 <Divider />
                                 <DraggableTask
                                     readOnly={readOnly}

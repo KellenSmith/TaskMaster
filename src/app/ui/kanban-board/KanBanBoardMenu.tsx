@@ -242,11 +242,10 @@ const KanBanBoardMenu = ({
                 </Box>
             </Box>
             {/* Mobile FAB */}
-            <Fab
-                color="primary"
-                size="small"
-                aria-label="open kanban menu"
-                onClick={() => setMenuOpen((prev) => !prev)}
+            <Badge
+                variant="dot"
+                invisible={myTasks.length === 0}
+                color="secondary"
                 sx={{
                     position: "fixed",
                     right: 16,
@@ -255,8 +254,15 @@ const KanBanBoardMenu = ({
                     zIndex: (theme) => theme.zIndex.drawer + 2,
                 }}
             >
-                <Menu />
-            </Fab>
+                <Fab
+                    color="primary"
+                    size="small"
+                    aria-label="open kanban menu"
+                    onClick={() => setMenuOpen((prev) => !prev)}
+                >
+                    <Menu />
+                </Fab>
+            </Badge>
             <Stack direction="row" width="fit-content" height="100%">
                 {/* Tabs moved inside the drawer for better mobile UX */}
                 <SwipeableDrawer
@@ -338,11 +344,6 @@ const KanBanBoardMenu = ({
                         )}
                     </Stack>
                 </SwipeableDrawer>
-                {isSmallScreen && myTasks.length > 0 && (
-                    <Badge variant="dot" color="secondary">
-                        <VolunteerActivismRounded />
-                    </Badge>
-                )}
             </Stack>
         </Box>
     );

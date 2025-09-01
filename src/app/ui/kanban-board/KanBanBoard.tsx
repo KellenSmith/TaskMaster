@@ -58,7 +58,7 @@ const KanBanBoard = ({
     );
 
     return (
-        <Stack spacing={2} justifyContent="center" height="100%">
+        <Stack spacing={2} justifyContent="center">
             {event && (
                 <Typography variant="h4" color="primary" paddingTop={2}>
                     {LanguageTranslations.assignYourselfPrompt[language]}
@@ -69,14 +69,13 @@ const KanBanBoard = ({
                     container
                     spacing={2}
                     columns={isSmallScreen ? 1 : appliedFilter?.status?.length || 4}
-                    height="100%"
                     width="100%"
                 >
                     {(appliedFilter
                         ? (appliedFilter.status as TaskStatus[])
                         : Object.values(TaskStatus)
                     ).map((status) => (
-                        <Grid2 size={1} key={status} height="100%">
+                        <Grid2 size={1} key={status}>
                             <DroppableColumn
                                 readOnly={readOnly}
                                 eventPromise={eventPromise}

@@ -2,7 +2,7 @@ import { Button, Card, Stack, Tooltip, Typography } from "@mui/material";
 import { formatDate, isUserQualifiedForTask, openResourceInNewTab } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
 import { assignTaskToUser, unassignTaskFromUser } from "../../lib/task-actions";
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
@@ -69,6 +69,7 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
             return (
                 <ConfirmButton
                     onClick={unassignFromTask}
+                    fullWidth
                     color="error"
                     variant="outlined"
                     startIcon={<Delete />}
@@ -104,6 +105,7 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
         return (
             <ConfirmButton
                 onClick={assignTaskToMe}
+                fullWidth
                 color="success"
                 variant="outlined"
                 startIcon={<CheckCircle />}
@@ -120,7 +122,7 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
                 draggable={!readOnly}
                 onDragStart={() => setDraggedTask(task)}
                 sx={{
-                    padding: 2,
+                    padding: { xs: 1, sm: 2 },
                     ...(readOnly ? {} : { cursor: "grab" }),
                     transition: "transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease",
                     "&:hover": {
@@ -131,30 +133,34 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
                 }}
             >
                 <Stack
-                    direction="row"
+                    direction={{ xs: "column", sm: "row" }}
                     flexWrap="wrap"
                     width="100%"
                     gap={1}
                     justifyContent="space-between"
+                    alignItems={{ xs: "stretch", sm: "center" }}
                 >
-                    <Stack flexWrap="wrap">
-                        <Typography variant="body1">{task.name}</Typography>
-                        <Stack flexWrap="wrap" direction="row" alignItems="center" gap={2}>
+                    <Stack flexWrap="wrap" sx={{ width: { xs: "100%", sm: "auto" } }}>
+                        <Typography variant="body1" sx={{ wordBreak: "break-word" }}>
+                            {task.name}
+                        </Typography>
+                        <Stack
+                            flexWrap="wrap"
+                            direction="row"
+                            alignItems="center"
+                            gap={2}
+                            sx={{ mt: 0.5 }}
+                        >
                             <Typography variant="body2">{formatDate(task.start_time)}</Typography>
                             <Typography variant="body2">-</Typography>
                             <Typography variant="body2">{formatDate(task.end_time)}</Typography>
                         </Stack>
                     </Stack>
 
-                    <Stack
-                        direction="row"
-                        flexWrap="wrap"
-                        gap={1}
-                        justifyContent="center"
-                        alignItems="center"
-                    >
+                    <Stack spacing={1} width="100%">
                         <Button
                             variant="outlined"
+                            fullWidth
                             color="info"
                             startIcon={<Info />}
                             endIcon={<OpenInNew />}
@@ -165,6 +171,7 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
                                     }),
                                 )
                             }
+                            sx={{ width: { xs: "100%", sm: "auto" } }}
                         >
                             {LanguageTranslations.moreInfo[language]}
                         </Button>

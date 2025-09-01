@@ -1,4 +1,14 @@
-import { Button, Dialog, Divider, Paper, Stack, Typography, useTheme } from "@mui/material";
+import {
+    Button,
+    Dialog,
+    Divider,
+    IconButton,
+    Paper,
+    Stack,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
@@ -60,6 +70,7 @@ const DroppableColumn = ({
     setDraggedOverColumn,
 }: DroppableColumnProps) => {
     const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [taskFormDefaultValues, setTaskFormDefaultValues] = useState(null);
@@ -129,24 +140,37 @@ const DroppableColumn = ({
                 onDrop={() => handleDrop(status)}
                 sx={{
                     height: "100%",
-                    padding: "16px",
+                    padding: isSmallScreen ? "8px" : "16px",
+                    // make columns scrollable on small screens so content doesn't overflow the viewport
+                    overflowY: isSmallScreen ? "auto" : undefined,
+                    maxHeight: isSmallScreen ? "calc(100vh - 120px)" : undefined,
+                    touchAction: "manipulation",
                     ...(draggedOverColumn === status && {
                         backgroundColor: theme.palette.primary.light,
                     }),
                 }}
             >
-                <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="h6">
+                <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    spacing={isSmallScreen ? 1 : 0}
+                >
+                    <Typography variant={isSmallScreen ? "subtitle1" : "h6"}>
                         {LanguageTranslations[status][language].toUpperCase()}
                     </Typography>
                     {!readOnly && (
-                        <Button onClick={() => openCreateTaskDialog(null)}>
+                        <IconButton
+                            onClick={() => openCreateTaskDialog(null)}
+                            size={isSmallScreen ? "large" : "medium"}
+                            aria-label={GlobalLanguageTranslations.save[language]}
+                        >
                             <Add />
-                        </Button>
+                        </IconButton>
                     )}
                 </Stack>
                 <Divider />
-                <Stack spacing={2}>
+                <Stack spacing={2} sx={{ width: "100%" }}>
                     {getGroupedAndSortedTasks<
                         Prisma.TaskGetPayload<{
                             include: {
@@ -169,6 +193,7 @@ const DroppableColumn = ({
             <Dialog
                 fullWidth
                 maxWidth="xl"
+                fullScreen={isSmallScreen}
                 open={!!taskFormDefaultValues}
                 onClose={() => setTaskFormDefaultValues(null)}
             >
@@ -207,6 +232,9 @@ const DroppableColumn = ({
                     readOnly={false}
                     editable={false}
                 />
+                <Button onClick={() => setTaskFormDefaultValues(null)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
             </Dialog>
         </>
     );
