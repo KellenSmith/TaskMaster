@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
     AppBar,
     Toolbar,
     Typography,
-    Drawer,
     List,
     ListItem,
     Button,
@@ -14,7 +13,7 @@ import {
     Stack,
     Divider,
     IconButton,
-    ListItemButton,
+    SwipeableDrawer,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -42,6 +41,10 @@ import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const isIOSDevice = useMemo(
+        () => typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent),
+        [],
+    );
     const { user, editMode, setEditMode, refreshSession, language } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
@@ -135,11 +138,14 @@ const NavPanel = () => {
                     </Tooltip>
                 </Toolbar>
             </AppBar>
-            <Drawer
+            <SwipeableDrawer
                 anchor="left"
                 open={drawerOpen}
-                onClose={toggleDrawerOpen}
-                PaperProps={{ sx: { width: { xs: "85vw", sm: 320 } } }}
+                onClose={() => setDrawerOpen(false)}
+                onOpen={() => setDrawerOpen(true)}
+                disableBackdropTransition={isIOSDevice}
+                disableDiscovery={isIOSDevice}
+                slotProps={{ paper: { sx: { width: { xs: "85vw", sm: 320 } } } }}
             >
                 <IconButton
                     sx={{ alignSelf: "flex-end", m: 1 }}
@@ -174,6 +180,7 @@ const NavPanel = () => {
                     )}
                     {isUserAdmin(user) && (
                         <Button
+                            fullWidth
                             aria-label={editMode ? "exit edit mode" : "enter edit mode"}
                             variant="outlined"
                             endIcon={editMode ? <Cancel /> : <Edit />}
@@ -183,7 +190,7 @@ const NavPanel = () => {
                         </Button>
                     )}
                 </List>
-            </Drawer>
+            </SwipeableDrawer>
         </>
     );
 };

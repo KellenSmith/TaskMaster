@@ -74,7 +74,7 @@ const LanguageTranslations = {
         [Language.english]: (editMode: boolean) =>
             `${editMode ? "Disable" : "Enable"} admin edit mode`,
         [Language.swedish]: (editMode: boolean) =>
-            `${editMode ? "Slå av" : "Aktivera"} redigeringsläge som administratör`,
+            `${editMode ? "Slå av" : "Aktivera"} redigeringsläge`,
     },
     toggleLoggedIn: {
         [Language.english]: (loggedIn: boolean) => (loggedIn ? "Log out" : "Log in"),
