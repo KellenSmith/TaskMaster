@@ -12,8 +12,6 @@ import {
     IconButton,
     Fab,
     Box,
-    useMediaQuery,
-    useTheme,
 } from "@mui/material";
 import { Prisma, TaskStatus } from "@prisma/client";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
@@ -90,8 +88,6 @@ const KanBanBoardMenu = ({
     appliedFilter,
     setAppliedFilter,
 }: KanBanBoardFilterProps) => {
-    const theme = useTheme();
-    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const isIOSDevice = useMemo(
         () => typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent),
         [],

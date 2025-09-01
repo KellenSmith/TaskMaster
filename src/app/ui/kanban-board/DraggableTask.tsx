@@ -2,7 +2,7 @@ import { Button, Card, Stack, Tooltip, Typography } from "@mui/material";
 import { formatDate, isUserQualifiedForTask, openResourceInNewTab } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
 import { assignTaskToUser, unassignTaskFromUser } from "../../lib/task-actions";
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
