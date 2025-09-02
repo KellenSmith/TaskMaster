@@ -5,7 +5,6 @@ import {
     AppBar,
     Toolbar,
     Box,
-    Typography,
     List,
     ListItem,
     Button,
