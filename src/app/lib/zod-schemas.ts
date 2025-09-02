@@ -51,6 +51,7 @@ export const OrganizationSettingsUpdateSchema = z
         purge_members_after_days_unvalidated: z.coerce.number().int().positive().optional(),
         default_task_shift_length: z.coerce.number().int().positive().optional(),
         member_application_prompt: z.string().optional(),
+        logo_url: z.string().optional(),
     })
     .omit({ id: true });
 

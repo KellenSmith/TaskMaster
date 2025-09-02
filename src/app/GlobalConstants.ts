@@ -34,6 +34,7 @@ const GlobalConstants = {
     REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remind_membership_expires_in_days",
     PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purge_members_after_days_unvalidated",
     MEMBER_APPLICATION_PROMPT: "member_application_prompt",
+    LOGO_URL: "logo_url",
     // User
     USER: "user",
     USER_ID: "user_id",

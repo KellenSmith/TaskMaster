@@ -25,10 +25,12 @@ import {
     priceFields,
     multiLineTextFields,
     explanatoryTexts,
+    fileUploadFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
+import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
 import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
 import { useNotificationContext } from "../../context/NotificationContext";
@@ -38,6 +40,7 @@ import dayjs from "dayjs";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "../LanguageTranslations";
+import { upload } from "@vercel/blob/client";
 
 interface FormProps {
     name: string;
@@ -85,6 +88,23 @@ const Form: FC<FormProps> = ({
         [name, customRequiredFields],
     );
 
+    const uploadFiles = async (formData: FormData) => {
+        try {
+            for (let fieldId of fileUploadFields) {
+                const file = formData.get(fieldId) as File;
+                if (!file) continue;
+                const newBlob = await upload(file.name, file, {
+                    access: "public",
+                    handleUploadUrl: "/api/upload",
+                });
+                formData.set(fieldId, newBlob.url);
+            }
+            return formData;
+        } catch {
+            addNotification("File upload failed", "error");
+        }
+    };
+
     const validateFormData = (formData: FormData): z.infer<typeof validationSchema> | null => {
         const formDataObject = Object.fromEntries(formData);
         if (!validationSchema) return formDataObject;
@@ -111,19 +131,20 @@ const Form: FC<FormProps> = ({
     const submitForm = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const parsedFieldValues = validateFormData(formData);
-        if (parsedFieldValues) {
-            startTransition(async () => {
-                try {
-                    const submitResult = await action(parsedFieldValues);
-                    addNotification(submitResult, "success");
-                    !(editable && !readOnly) && setEditMode(false);
-                } catch (error) {
-                    allowRedirectException(error);
-                    addNotification(error.message, "error");
-                }
-            });
-        }
+        const formDataWithFileUrls = await uploadFiles(formData);
+        if (!formDataWithFileUrls) return;
+        const parsedFieldValues = validateFormData(formDataWithFileUrls);
+        if (!parsedFieldValues) return;
+        startTransition(async () => {
+            try {
+                const submitResult = await action(parsedFieldValues);
+                addNotification(submitResult, "success");
+                !(editable && !readOnly) && setEditMode(false);
+            } catch (error) {
+                allowRedirectException(error);
+                addNotification(error.message, "error");
+            }
+        });
     };
 
     // Make the Form rerender fields when default values change
@@ -198,6 +219,17 @@ const Form: FC<FormProps> = ({
                     fieldId={fieldId}
                     editMode={editMode || customReadOnlyFields.includes(fieldId)}
                     defaultValue={defaultValues?.[fieldId] || ""}
+                />
+            );
+        }
+        if (fileUploadFields.includes(fieldId)) {
+            // FileUploadField renders the file button + filename. It includes the input named by fieldId
+            return (
+                <FileUploadField
+                    key={getFieldCompKey(fieldId)}
+                    fieldId={fieldId}
+                    editMode={editMode}
+                    customReadOnlyFields={customReadOnlyFields}
                 />
             );
         }

@@ -11,9 +11,9 @@ const OrganizationSettingsPage = () => {
     const { organizationSettings } = useOrganizationSettingsContext();
 
     const saveOrganizationSettings = async (
-        fieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
+        parsedFieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
     ) => {
-        await updateOrganizationSettings(fieldValues);
+        await updateOrganizationSettings(parsedFieldValues);
         return "Updated organization settings";
     };
 

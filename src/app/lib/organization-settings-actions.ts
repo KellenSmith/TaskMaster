@@ -26,18 +26,14 @@ export const getOrganizationName = async (): Promise<string> => {
 };
 
 export const updateOrganizationSettings = async (
-    fieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
+    parsedFieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
 ): Promise<void> => {
-    try {
-        const settings = await getOrganizationSettings();
-        await prisma.organizationSettings.update({
-            where: {
-                id: settings?.id,
-            },
-            data: fieldValues,
-        });
-        revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
-    } catch {
-        throw new Error(`Failed to update organization settings`);
-    }
+    const settings = await getOrganizationSettings();
+    await prisma.organizationSettings.update({
+        where: {
+            id: settings?.id,
+        },
+        data: parsedFieldValues,
+    });
+    revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
 };

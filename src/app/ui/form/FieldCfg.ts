@@ -82,6 +82,7 @@ export const RenderedFields = {
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
         GlobalConstants.MEMBER_APPLICATION_PROMPT,
+        GlobalConstants.LOGO_URL,
     ],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -295,3 +296,5 @@ export const multiLineTextFields = [
     GlobalConstants.MEMBER_APPLICATION_PROMPT,
     GlobalConstants.ACCESSIBILITY_INFO,
 ];
+
+export const fileUploadFields = [GlobalConstants.LOGO_URL, GlobalConstants.IMAGE_URL];
