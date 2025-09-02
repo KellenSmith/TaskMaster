@@ -93,9 +93,9 @@ const Form: FC<FormProps> = ({
             for (let fieldId of fileUploadFields) {
                 const file = formData.get(fieldId) as File;
                 if (!file) continue;
-                const newBlob = await upload(file.name, file, {
+                const newBlob = await upload(`${name}/${file.name}`, file, {
                     access: "public",
-                    handleUploadUrl: "/api/upload",
+                    handleUploadUrl: "/api/file-upload",
                 });
                 formData.set(fieldId, newBlob.url);
             }
