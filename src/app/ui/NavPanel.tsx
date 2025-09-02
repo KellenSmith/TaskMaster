@@ -38,6 +38,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import { UserRole } from "@prisma/client";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
+import Image from "next/image";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -126,11 +127,12 @@ const NavPanel = () => {
                             alignItems: "center",
                         }}
                     >
-                        <Box
-                            component="img"
-                            src="/images/taskmaster-logo.svg"
+                        <Image
+                            src={organizationSettings?.logo_url || "/images/taskmaster-logo.svg"}
                             alt={organizationSettings?.organization_name || "TaskMaster"}
-                            sx={{ height: 40, cursor: "pointer" }}
+                            title={organizationSettings?.organization_name || "TaskMaster"}
+                            height={40}
+                            width={200}
                             onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                         />
                     </Box>

@@ -13,6 +13,7 @@ import z from "zod";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { addEventParticipant } from "./event-participant-actions";
+import { deleteBlob, updateBlob } from "./organization-settings-actions";
 
 export const getAllProducts = async (): Promise<Product[]> => {
     return await prisma.product.findMany();
@@ -48,41 +49,41 @@ export const updateProduct = async (
     productId: string,
     parsedFieldValues: z.infer<typeof ProductUpdateSchema>,
 ): Promise<void> => {
+    const oldProduct = await prisma.product.findUnique({ where: { id: productId } });
+
     await prisma.product.update({
         where: { id: productId },
         data: parsedFieldValues,
     });
+    await updateBlob(oldProduct.image_url, parsedFieldValues.image_url);
     revalidateTag(GlobalConstants.PRODUCT);
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
-    const membership = await prisma.membership.findUnique({
-        where: { product_id: productId },
-    });
-    const ticket = await prisma.ticket.findUnique({
-        where: { product_id: productId },
-    });
+    await prisma.$transaction(async (tx) => {
+        const membership = await prisma.membership.findUnique({
+            where: { product_id: productId },
+        });
+        const ticket = await prisma.ticket.findUnique({
+            where: { product_id: productId },
+            include: { product: true },
+        });
 
-    const deleteRelationsPromises = [];
-    if (membership)
-        deleteRelationsPromises.push(
-            prisma.membership.delete({
+        if (membership)
+            await prisma.membership.delete({
                 where: { product_id: productId },
-            }),
-        );
-    if (ticket)
-        deleteRelationsPromises.push(
-            prisma.ticket.delete({
-                where: { product_id: productId },
-            }),
-        );
+            });
 
-    await prisma.$transaction([
-        ...deleteRelationsPromises,
-        prisma.product.delete({
+        if (ticket)
+            await prisma.ticket.delete({
+                where: { product_id: productId },
+            });
+        await prisma.product.delete({
             where: { id: productId },
-        }),
-    ]);
+        });
+        await deleteBlob(ticket.product.image_url);
+    });
+
     revalidateTag(GlobalConstants.PRODUCT);
     revalidateTag(GlobalConstants.TICKET);
     revalidateTag(GlobalConstants.MEMBERSHIP);
