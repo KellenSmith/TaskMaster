@@ -43,6 +43,7 @@ For payments, use the following test data:
 - ~~Mobile friendly layout~~
 - ~~Upload images for events/products/texts~~
 - ~~Add approval for events posted by non-admins~~
+- Move task shift start and end time when cloning an event
 - Buttons to message the assignee and reviewer of a task
 - Event tags (munch/playparty/section etc...)
 - Enable task assignees to submit receipts
