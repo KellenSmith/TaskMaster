@@ -87,6 +87,7 @@ const GlobalConstants = {
     RESERVE_USERS: "reserveUsers",
     QUEUEING_SINCE: "queueing_since",
     ARRIVED: "arrived",
+    CLONE_EVENT: "cloneEvent",
     // Location
     LOCATION: "location",
     LOCATIONS: "locations",

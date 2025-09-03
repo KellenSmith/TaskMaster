@@ -3,7 +3,7 @@
 import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../../prisma/prisma-client";
-import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
+import { CloneEventSchema, EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
 import {
     informOfCancelledEvent,
     notifyEventReserves,
@@ -383,113 +383,122 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 
 // TODO: Find a way of retrieving the user from the server session rather
 // than taking it as an argument
-export const cloneEvent = async (userId: string, eventId: string) => {
-    try {
-        const {
-            id: eventIdToOmit, // eslint-disable-line no-unused-vars
-            host_id: hostIdToOmit, // eslint-disable-line no-unused-vars
-            location_id,
-            ...eventData
-        } = await prisma.event.findUniqueOrThrow({
-            where: { id: eventId },
-        });
-        const tickets = await prisma.ticket.findMany({
-            where: { event_id: eventId },
-            include: { product: true },
-        });
-        const tasks = await prisma.task.findMany({
-            where: { event_id: eventId },
-        });
+export const cloneEvent = async (
+    eventId: string,
+    parsedFieldValues: z.infer<typeof CloneEventSchema>,
+) => {
+    const {
+        id: eventIdToOmit, // eslint-disable-line no-unused-vars
+        host_id: hostIdToOmit, // eslint-disable-line no-unused-vars
+        location_id,
+        ...eventData
+    } = await prisma.event.findUniqueOrThrow({
+        where: { id: eventId },
+    });
+    const tickets = await prisma.ticket.findMany({
+        where: { event_id: eventId },
+        include: { product: true },
+    });
+    const tasks = await prisma.task.findMany({
+        where: { event_id: eventId },
+    });
 
-        const eventClone = await prisma.$transaction(async (tx) => {
-            // Copy event itself with default values
-            const createdEvent = await tx.event.create({
-                data: {
-                    ...{
-                        ...eventData,
-                        status: EventStatus.draft,
-                        title: `${eventData.title} (Clone)`,
-                        start_time: dayjs().hour(18).minute(0).toDate(),
-                        end_time: dayjs().hour(22).minute(0).toDate(),
-                    },
-                    host: {
-                        connect: { id: userId },
-                    },
-                    ...(location_id && { location: { connect: { id: location_id } } }),
+    const loggedInUser = await getLoggedInUser();
+
+    const eventClone = await prisma.$transaction(async (tx) => {
+        // Copy event itself with default values
+        const createdEvent = await tx.event.create({
+            data: {
+                ...{
+                    ...eventData,
+                    status: EventStatus.draft,
+                    title: `${eventData.title} (Clone)`,
+                    start_time: parsedFieldValues.start_time,
+                    end_time: dayjs(parsedFieldValues.start_time)
+                        .add(dayjs(eventData.end_time).diff(eventData.start_time))
+                        .toISOString(),
                 },
-            });
+                host: {
+                    connect: { id: loggedInUser.id },
+                },
+                ...(location_id && { location: { connect: { id: location_id } } }),
+            },
+        });
 
-            // Copy tickets
-            const clonedTickets = await Promise.all(
-                tickets.map(async (ticket) => {
-                    const {
-                        id: ticketIdToOmit, // eslint-disable-line no-unused-vars
-                        event_id: eventIdToOmit, // eslint-disable-line no-unused-vars
-                        product_id: ticketProductIdToOmit, // eslint-disable-line no-unused-vars
-                        product,
-                        ...ticketData
-                    } = ticket;
-                    // eslint-disable-next-line no-unused-vars
-                    const { id: productIdToOmit, ...productData } = product;
-                    return tx.ticket.create({
-                        data: {
-                            ...ticketData,
-                            type: ticket.type,
-                            product: {
-                                create: {
-                                    ...productData,
-                                    // The event host is a participant
-                                    stock: eventData.max_participants - 1,
-                                },
-                            },
-                            event: {
-                                connect: { id: createdEvent.id },
+        // Copy tickets
+        const clonedTickets = await Promise.all(
+            tickets.map(async (ticket) => {
+                const {
+                    id: ticketIdToOmit, // eslint-disable-line no-unused-vars
+                    event_id: eventIdToOmit, // eslint-disable-line no-unused-vars
+                    product_id: ticketProductIdToOmit, // eslint-disable-line no-unused-vars
+                    product,
+                    ...ticketData
+                } = ticket;
+                // eslint-disable-next-line no-unused-vars
+                const { id: productIdToOmit, ...productData } = product;
+                return tx.ticket.create({
+                    data: {
+                        ...ticketData,
+                        type: ticket.type,
+                        product: {
+                            create: {
+                                ...productData,
+                                // The event host is a participant
+                                stock: eventData.max_participants - 1,
                             },
                         },
-                    });
-                }),
-            );
+                        event: {
+                            connect: { id: createdEvent.id },
+                        },
+                    },
+                });
+            }),
+        );
 
-            // Add the event host as participant
-            const volunteerTicket = clonedTickets.find((t) => t.type === TicketType.volunteer);
-            await tx.eventParticipant.create({
-                data: {
-                    user: {
-                        connect: { id: userId },
-                    },
-                    ticket: {
-                        connect: { id: volunteerTicket.id },
-                    },
+        // Add the event host as participant
+        const volunteerTicket = clonedTickets.find((t) => t.type === TicketType.volunteer);
+        await tx.eventParticipant.create({
+            data: {
+                user: {
+                    connect: { id: loggedInUser.id },
                 },
-            });
-
-            // Copy tasks
-            await tx.task.createMany({
-                data: tasks.map((task) => {
-                    const {
-                        id: taskIdToOmit, // eslint-disable-line no-unused-vars
-                        // Create the tasks as unassigned
-                        assignee_id: taskAssigneeIdToOmit, // eslint-disable-line no-unused-vars
-                        reviewer_id: taskReviewerIdToOmit, // eslint-disable-line no-unused-vars
-                        ...taskData
-                    } = task;
-                    return {
-                        ...taskData,
-                        event_id: createdEvent.id,
-                        // Add logged in user as reviewer
-                        reviewer_id: userId,
-                        // Create tasks as "To Do"
-                        status: TaskStatus.toDo,
-                    } as Prisma.TaskCreateManyInput;
-                }),
-            });
-            return createdEvent;
+                ticket: {
+                    connect: { id: volunteerTicket.id },
+                },
+            },
         });
 
-        revalidateTag(GlobalConstants.EVENT);
-        serverRedirect([GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: eventClone.id });
-    } catch (error) {
-        allowRedirectException(error);
-        throw new Error("Failed to clone event");
-    }
+        // Copy tasks
+        const moveTaskTimeForward = (taskTime: Date) =>
+            dayjs(taskTime)
+                .add(dayjs(parsedFieldValues.start_time).diff(dayjs(eventData.start_time)))
+                .toISOString();
+
+        await tx.task.createMany({
+            data: tasks.map((task) => {
+                const {
+                    id: taskIdToOmit, // eslint-disable-line no-unused-vars
+                    // Create the tasks as unassigned
+                    assignee_id: taskAssigneeIdToOmit, // eslint-disable-line no-unused-vars
+                    reviewer_id: taskReviewerIdToOmit, // eslint-disable-line no-unused-vars
+                    ...taskData
+                } = task;
+                return {
+                    ...taskData,
+                    event_id: createdEvent.id,
+                    // Add logged in user as reviewer
+                    reviewer_id: loggedInUser.id,
+                    // Create tasks as "To Do"
+                    status: TaskStatus.toDo,
+                    start_time: moveTaskTimeForward(taskData.start_time),
+                    end_time: moveTaskTimeForward(taskData.end_time),
+                } as Prisma.TaskCreateManyInput;
+            }),
+        });
+        return createdEvent;
+    });
+
+    revalidateTag(GlobalConstants.EVENT);
+    serverRedirect([GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: eventClone.id });
 };

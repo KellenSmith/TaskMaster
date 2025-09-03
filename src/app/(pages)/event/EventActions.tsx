@@ -31,7 +31,7 @@ import ParticipantListPDF from "./ParticipantListPDF";
 import { MoreHoriz } from "@mui/icons-material";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z from "zod";
-import { EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
+import { CloneEventSchema, EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { isUserAdmin, isUserHost } from "../../lib/definitions";
@@ -61,6 +61,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const event = use(eventPromise);
+    const [isCloneEventDialogOpen, setIsCloneEventDialogOpen] = useState(false);
     // TODO: It doesn't need to use locations if the user is not host or admin
     // Move host actions to separate component to optimize data fetching
     const locations = use(locationsPromise);
@@ -132,15 +133,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         });
     };
 
-    const cloneAction = () => {
-        startTransition(async () => {
-            try {
-                await cloneEvent(user.id, event.id);
-            } catch (error) {
-                allowRedirectException(error);
-                addNotification("Failed to clone event", "error");
-            }
-        });
+    const cloneAction = async (parsedFieldValues: z.infer<typeof CloneEventSchema>) => {
+        await cloneEvent(event.id, parsedFieldValues);
+        return GlobalLanguageTranslations.successfulSave[language];
     };
 
     const printParticipantList = async () => {
@@ -237,12 +232,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     const getMenuItems = () => {
         const ActionButtons = [
             <MenuItem key="clone">
-                <ConfirmButton
-                    onClick={cloneAction}
-                    confirmText={LanguageTranslations.areYouSureClone[language]}
-                >
+                <Button onClick={() => setIsCloneEventDialogOpen(true)}>
                     {LanguageTranslations.cloneEvent[language]}
-                </ConfirmButton>
+                </Button>
             </MenuItem>,
         ];
 
@@ -433,6 +425,22 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                 <Button onClick={() => setDialogOpen(null)}>
                     {GlobalLanguageTranslations.cancel[language]}
                 </Button>
+            </Dialog>
+            <Dialog
+                fullScreen={isSmallScreen}
+                open={isCloneEventDialogOpen}
+                onClose={() => setIsCloneEventDialogOpen(false)}
+                fullWidth
+                maxWidth="xl"
+            >
+                <Form
+                    name={GlobalConstants.CLONE_EVENT}
+                    validationSchema={CloneEventSchema}
+                    defaultValues={event}
+                    action={cloneAction}
+                    editable={true}
+                    readOnly={false}
+                />
             </Dialog>
         </>
     );

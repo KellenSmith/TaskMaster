@@ -104,7 +104,7 @@ const DroppableColumn = ({
         (event ? dayjs(event.start_time) : dayjs().minute(0)).toDate();
 
     const getTaskDefaultEndTime = (): Date =>
-        dayjs(getTaskDefaultStartTime()).add(1, "day").toDate();
+        (event ? dayjs(event.end_time) : dayjs().minute(0)).toDate();
 
     const openCreateTaskDialog = (shiftProps: Task | null) => {
         const defaultTask = {

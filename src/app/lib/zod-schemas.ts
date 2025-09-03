@@ -320,3 +320,7 @@ export const TaskFilterSchema = z
         status: selectMultipleSchema,
     })
     .partial();
+
+export const CloneEventSchema = z.object({
+    start_time: stringToISODate,
+});

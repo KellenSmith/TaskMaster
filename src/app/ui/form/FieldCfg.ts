@@ -119,6 +119,7 @@ export const RenderedFields = {
         GlobalConstants.MAX_PARTICIPANTS,
         GlobalConstants.DESCRIPTION,
     ],
+    [GlobalConstants.CLONE_EVENT]: [GlobalConstants.START_TIME],
     [GlobalConstants.LOCATION]: [
         GlobalConstants.NAME,
         GlobalConstants.CONTACT_PERSON,

@@ -216,10 +216,6 @@ const LanguageTranslations = {
         [Language.english]: "Failed to print participant list",
         [Language.swedish]: "Kunde inte skriva ut deltagarlistan",
     },
-    areYouSureClone: {
-        [Language.english]: "Are you sure you want to clone this event?",
-        [Language.swedish]: "Är du säker på att du vill klona detta evenemang?",
-    },
     cloneEvent: {
         [Language.english]: "Clone event",
         [Language.swedish]: "Klona evenemang",
