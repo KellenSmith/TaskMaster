@@ -9,19 +9,17 @@ import { getAbsoluteUrl } from "../../definitions";
 
 /**
  * Props for the MembershipApplicationTemplate component.
- * @property organizationName - The name of the organization.
+ * @property parsedFFieldValues - The parsed field values from the membership application form.
  */
 interface IMembershipApplicationTemplateProps {
-    organizationName: string;
     parsedFieldValues: z.infer<typeof MembershipApplicationSchema>;
 }
 
 const MembershipApplicationTemplate: FC<IMembershipApplicationTemplateProps> = ({
-    organizationName,
     parsedFieldValues,
 }) => {
     return (
-        <MailTemplate organizationName={organizationName}>
+        <MailTemplate>
             <Section style={{ textAlign: "left" }}>
                 <Text style={{ fontSize: "18px", fontWeight: "bold" }}>
                     {`New Membership Application from ${parsedFieldValues.nickname}`}

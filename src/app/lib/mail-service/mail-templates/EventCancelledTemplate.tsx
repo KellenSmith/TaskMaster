@@ -9,12 +9,11 @@ interface EventCancelledTemplateProps {
         id: string;
         title: string;
     };
-    organizationName?: string;
 }
 
-const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({ event, organizationName }) => {
+const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({ event }) => {
     return (
-        <MailTemplate organizationName={organizationName}>
+        <MailTemplate>
             <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Go to the event for more details.`}</Text>
             <Button
                 href={getAbsoluteUrl([GlobalConstants.EVENT], {

@@ -9,18 +9,16 @@ import { FC } from "react";
  * @property totalAmount - The total amount of the order.
  */
 interface ITaskUpdateTemplateProps {
-    organizationName?: string;
     taskName: string;
     notificationMessage: string;
 }
 
-const TaskUpdateTemplate: FC<ITaskUpdateTemplateProps> = ({
-    organizationName,
+const TaskUpdateTemplate: FC<ITaskUpdateTemplateProps> = async ({
     taskName,
     notificationMessage,
 }) => {
     return (
-        <MailTemplate organizationName={organizationName}>
+        <MailTemplate>
             <Text>{`A task you are reviewing has been updated!`}</Text>
             <Text>{`Task Name: ${taskName}`}</Text>
             <Text>{"Message:"}</Text>

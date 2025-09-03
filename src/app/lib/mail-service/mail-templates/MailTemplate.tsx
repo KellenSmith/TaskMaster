@@ -2,19 +2,20 @@ import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
 import mailTheme from "../mail-theme";
 import { getAbsoluteUrl } from "../../definitions";
+import { getOrganizationName } from "../../organization-settings-actions";
 
 interface MailTemplateProps {
     children?: ReactNode;
     html?: string;
-    // callers might pass organizationName (camelCase) or organization_name (snake_case)
-    organizationName?: string;
 }
 
-const MailTemplate: FC<MailTemplateProps> = ({ children, html, organizationName }) => {
+const MailTemplate: FC<MailTemplateProps> = async ({ children, html }) => {
     const renderHtml = () => {
         if (!html) return null;
         return <div dangerouslySetInnerHTML={{ __html: html }} />;
     };
+
+    const organizationName = await getOrganizationName();
 
     return (
         <Html>

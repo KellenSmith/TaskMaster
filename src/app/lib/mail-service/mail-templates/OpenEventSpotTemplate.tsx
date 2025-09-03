@@ -12,15 +12,14 @@ import { getAbsoluteUrl } from "../../definitions";
  * @property event - The event details.
  */
 interface IOpenEventSpotTemplateProps {
-    organizationName: string;
     event: Prisma.EventGetPayload<true>;
 }
 
-const OpenEventSpotTemplate: FC<IOpenEventSpotTemplateProps> = ({ organizationName, event }) => {
+const OpenEventSpotTemplate: FC<IOpenEventSpotTemplateProps> = ({ event }) => {
     if (!event) throw new Error("Event not found");
 
     return (
-        <MailTemplate organizationName={organizationName}>
+        <MailTemplate>
             <Text>A spot has opened up for the event: {event.title}</Text>
             <Button
                 style={mailTheme.components.button}

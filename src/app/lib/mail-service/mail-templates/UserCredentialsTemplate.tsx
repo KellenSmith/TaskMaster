@@ -1,6 +1,7 @@
 import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
+import { getOrganizationName } from "../../organization-settings-actions";
 
 /**
  * Props for the UserCredentialsTemplate component.
@@ -10,20 +11,16 @@ import { FC } from "react";
 interface IUserCredentialsTemplateProps {
     userEmail: string;
     password: string;
-    organization_name?: string;
-    organizationName?: string;
 }
 
-const UserCredentialsTemplate: FC<IUserCredentialsTemplateProps> = ({
+const UserCredentialsTemplate: FC<IUserCredentialsTemplateProps> = async ({
     userEmail,
     password,
-    organization_name,
-    organizationName,
 }) => {
-    const org = organization_name ?? organizationName ?? "";
+    const organizationName = await getOrganizationName();
     return (
-        <MailTemplate organizationName={organizationName}>
-            <Text>{`You have a new password for your account at ${org}!`}</Text>
+        <MailTemplate>
+            <Text>{`You have a new password for your account at ${organizationName}!`}</Text>
             <Text> You can now log in with the following credentials:</Text>
             <Text>Email: {userEmail}</Text>
             <Text>Password: {password}</Text>

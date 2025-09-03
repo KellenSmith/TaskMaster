@@ -42,8 +42,7 @@ For payments, use the following test data:
 - ~~Ability to translate texts and labels for menu, event descriptions etc.~~
 - ~~Mobile friendly layout~~
 - ~~Upload images for events/products/texts~~
-- Add approval for events posted by non-admins
-- Add instructions for eventHosts on how to set up and manage their events or require admins to approve events before publishing
+- ~~Add approval for events posted by non-admins~~
 - Buttons to message the assignee and reviewer of a task
 - Event tags (munch/playparty/section etc...)
 - Enable task assignees to submit receipts

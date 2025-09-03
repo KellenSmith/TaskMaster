@@ -4,10 +4,14 @@ import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
-import { informOfCancelledEvent, notifyEventReserves } from "./mail-service/mail-service";
+import {
+    informOfCancelledEvent,
+    notifyEventReserves,
+    sendEmailNotification,
+} from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
-import { isUserAdmin, serverRedirect } from "./definitions";
+import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./definitions";
 import { allowRedirectException } from "../ui/utils";
 import dayjs from "dayjs";
 import { getLoggedInUser } from "./user-actions";
@@ -221,7 +225,7 @@ export const updateEvent = async (
     let notifyEventReservesPromise;
     const eventToUpdate = await prisma.event.findUniqueOrThrow({
         where: { id: eventId },
-        include: { tickets: { include: { product: true } } },
+        include: { tickets: { include: { product: true } }, host: true },
     });
 
     // Don't allow non-admins to update events to published if event_manager_email is set
@@ -263,6 +267,48 @@ export const updateEvent = async (
             });
             if (deltaMaxParticipants > 0) notifyEventReservesPromise = notifyEventReserves(eventId);
         }
+
+        // Notify event manager if event is update to pending approval
+        const organizationSettings = await getOrganizationSettings();
+        if (
+            organizationSettings.event_manager_email &&
+            eventToUpdate.status !== EventStatus.pending_approval &&
+            parsedFieldValues.status === EventStatus.pending_approval
+        )
+            sendEmailNotification(
+                organizationSettings.event_manager_email,
+                "Event requires approval",
+                "An event has been submitted for approval.",
+                [
+                    {
+                        buttonName: "Go to event",
+                        url: getAbsoluteUrl([GlobalConstants.EVENT], {
+                            [GlobalConstants.EVENT_ID]: eventId,
+                        }),
+                    },
+                ],
+            );
+
+        // Notify event host if the event is published
+        if (
+            eventToUpdate.status !== EventStatus.published &&
+            parsedFieldValues.status === EventStatus.published
+        ) {
+            sendEmailNotification(
+                eventToUpdate.host.email,
+                "Event published",
+                "Your event has been published.",
+                [
+                    {
+                        buttonName: "Go to event",
+                        url: getAbsoluteUrl([GlobalConstants.EVENT], {
+                            [GlobalConstants.EVENT_ID]: eventId,
+                        }),
+                    },
+                ],
+            );
+        }
+
         await prisma.event.update({
             where: { id: eventId },
             data: parsedFieldValues,
