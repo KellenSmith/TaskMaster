@@ -112,6 +112,7 @@ export const EventCreateSchema = z
         end_time: stringToISODate,
         description: z.string().optional(),
         max_participants: z.coerce.number().int().positive(),
+        tags: selectMultipleSchema.optional(),
     })
     .omit({
         id: true,

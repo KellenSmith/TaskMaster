@@ -52,13 +52,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     const getDayComp = () => {
         if (eventsForDay.length < 1) return getEmptyDay();
         return (
-            <Stack
-                spacing={0.5}
-                sx={{
-                    overflow: "auto",
-                    flex: 1,
-                }}
-            >
+            <Stack spacing={0.5}>
                 {eventsForDay
                     .sort((a, b) => dayjs(a.start_time).unix() - dayjs(b.start_time).unix())
                     .map((event) => (
@@ -74,7 +68,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
     };
 
     return (
-        <Paper sx={{ height: "100%", width: "100%", minHeight: { xs: 80, sm: "auto" } }}>
+        <Paper sx={{ width: "100%", minHeight: { xs: 80, sm: "auto" } }}>
             <Stack spacing={1}>
                 <Stack direction="row" alignItems="center">
                     {/* Localized short weekday (Monday-first) */}

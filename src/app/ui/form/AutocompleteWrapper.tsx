@@ -1,14 +1,16 @@
 "use client";
 
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, createFilterOptions, TextField } from "@mui/material";
 import { FC, useCallback, useMemo, useState } from "react";
-import { allowSelectMultiple, FieldLabels, selectFieldOptions } from "./FieldCfg";
+import { allowSelectMultiple, FieldLabels, allowAddNew, selectFieldOptions } from "./FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 
 export interface CustomOptionProps {
     id: string;
     label: string;
 }
+
+const filter = createFilterOptions<CustomOptionProps>();
 
 interface AutocompleteWrapperProps {
     fieldId: string;
@@ -57,9 +59,9 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
         return defaultValue.map((val) => getOptionWithId(val)).filter(Boolean);
     }, [defaultValue, multiple, getOptionWithId]);
 
-    const [selectedOption, setSelectedOption] = useState<CustomOptionProps | CustomOptionProps[]>(
-        getInitialValue(),
-    );
+    const [selectedOption, setSelectedOption] = useState<
+        CustomOptionProps | CustomOptionProps[] | null
+    >(getInitialValue());
 
     const getHiddenValue = useCallback((): string => {
         if (!selectedOption) return "";
@@ -83,8 +85,25 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
                     <TextField {...params} label={label} required={required} />
                 )}
                 options={options}
+                filterOptions={(options, params) => {
+                    const filtered = filter(options, params);
+                    if (!allowAddNew.includes(fieldId)) return filtered;
+
+                    const { inputValue } = params;
+                    // Suggest the creation of a new value
+                    const isExisting = options.some((option) => inputValue === option.title);
+                    if (inputValue !== "" && !isExisting) {
+                        filtered.push({
+                            id: inputValue,
+                            label: inputValue,
+                        });
+                    }
+                    return filtered;
+                }}
                 autoSelect={required}
                 multiple={multiple}
+                selectOnFocus
+                clearOnBlur
                 disabled={!editMode || customReadOnlyFields?.includes(fieldId)}
             />
             {/* Hidden input for form submission */}

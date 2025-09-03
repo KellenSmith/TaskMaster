@@ -1,10 +1,11 @@
 import { CalendarMonth, LocationOn } from "@mui/icons-material";
-import { Paper, Stack, Typography, Box } from "@mui/material";
+import { Paper, Stack, Typography, Box, Chip, useTheme, useMediaQuery } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import RichTextField from "../../ui/form/RichTextField";
 import { Prisma } from "@prisma/client";
 import { use } from "react";
 import LanguageTranslations from "./LanguageTranslations";
+import { taskFieldLabels } from "../../ui/form/LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 
 interface EventDetailsProps {
@@ -69,11 +70,44 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                                 {event.location.name}, {event.location.address}
                             </Typography>
                         </Stack>
+                        {event.tags && event.tags.length > 0 && (
+                            <Box>
+                                <Typography
+                                    sx={{
+                                        fontSize: { xs: "0.85rem", sm: "1rem" },
+                                        color: "text.secondary",
+                                        mb: 0.5,
+                                    }}
+                                >
+                                    {taskFieldLabels["tags"][language] || "Tags"}
+                                </Typography>
+                                <TagChips tags={event.tags} />
+                            </Box>
+                        )}
                     </Stack>
                     <RichTextField editMode={false} defaultValue={event.description} />
                 </Stack>
             </Paper>
         </Stack>
+    );
+};
+
+const TagChips = ({ tags }: { tags: string[] }) => {
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+    return (
+        <Box role="list" sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+            {tags.map((t) => (
+                <Chip
+                    role="listitem"
+                    key={t}
+                    label={t}
+                    size={isSmallScreen ? "small" : "medium"}
+                    variant="outlined"
+                />
+            ))}
+        </Box>
     );
 };
 

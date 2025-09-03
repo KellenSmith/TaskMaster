@@ -41,6 +41,7 @@ import SendoutLanguageTranslations from "../sendout/LanguageTranslations";
 import EventLanguageTranslations from "../profile/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
+import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -49,9 +50,10 @@ interface IEventActions {
         }>
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
+    eventTagsPromise: Promise<string[]>;
 }
 
-const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => {
+const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, eventTagsPromise }) => {
     const theme = useTheme();
     const { organizationSettings } = useOrganizationSettingsContext();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
@@ -65,6 +67,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     // TODO: It doesn't need to use locations if the user is not host or admin
     // Move host actions to separate component to optimize data fetching
     const locations = use(locationsPromise);
+    const eventTags = use(eventTagsPromise);
 
     const sendoutToOptions = {
         All: {
@@ -345,7 +348,10 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
                     readOnly={false}
                     action={updateEventById}
                     validationSchema={EventUpdateSchema}
-                    customOptions={{ [GlobalConstants.LOCATION_ID]: getLocationOptions() }}
+                    customOptions={{
+                        [GlobalConstants.LOCATION_ID]: getLocationOptions(),
+                        [GlobalConstants.TAGS]: stringsToSelectOptions(eventTags),
+                    }}
                     defaultValues={event}
                 />
             );

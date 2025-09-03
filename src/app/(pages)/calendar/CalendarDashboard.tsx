@@ -95,8 +95,8 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
 
     const getCalendarGrid = () => {
         return (
-            <Stack sx={{ height: "100%", width: "100%" }}>
-                <Grid2 container spacing={2} columns={7} sx={{ height: "100%" }}>
+            <Stack sx={{ width: "100%" }}>
+                <Grid2 container spacing={2} columns={7}>
                     {LanguageTranslations.weekDaysShort[language].map((day) => (
                         <Grid2 key={day} size={1} alignContent="center">
                             <Typography
@@ -141,7 +141,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
 
     return (
         <>
-            <Stack sx={{ height: "100%", width: "100%" }} padding={isSmallScreen ? 2 : 4}>
+            <Stack sx={{ width: "100%" }} padding={isSmallScreen ? 2 : 4}>
                 <Stack direction="row" justifyContent="center">
                     <Stack direction="row" width="100%" justifyContent="space-between">
                         {user && (

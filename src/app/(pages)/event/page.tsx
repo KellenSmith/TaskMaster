@@ -1,5 +1,5 @@
 "use server";
-import { getEventById } from "../../lib/event-actions";
+import { getEventById, getEventTags } from "../../lib/event-actions";
 import { getFilteredTasks } from "../../lib/task-actions";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
@@ -48,6 +48,9 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const locationsPromise = unstable_cache(getAllLocations, [], {
         tags: [GlobalConstants.LOCATION],
     })();
+    const eventTagsPromise = unstable_cache(getEventTags, [], {
+        tags: [GlobalConstants.EVENT],
+    })();
 
     return (
         <ErrorBoundarySuspense>
@@ -60,6 +63,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
                 eventParticipantsPromise={eventParticipantsPromise}
                 eventReservesPromise={eventReservesPromise}
                 locationsPromise={locationsPromise}
+                eventTagsPromise={eventTagsPromise}
             />
         </ErrorBoundarySuspense>
     );

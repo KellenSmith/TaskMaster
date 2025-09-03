@@ -130,6 +130,7 @@ model Event {
     description      String?
     max_participants Int
     status           EventStatus @default(draft)
+    tags             String[]    @default([])
 
     // Must be optional to enable deleting users
     host    User?   @relation(fields: [host_id], references: [id])

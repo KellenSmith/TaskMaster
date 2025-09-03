@@ -103,6 +103,11 @@ export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPaylo
     });
 };
 
+export const getEventTags = async (): Promise<string[]> => {
+    const events = await prisma.event.findMany({ select: { tags: true } });
+    return [...new Set(events.flatMap((event) => event.tags))];
+};
+
 export const getFilteredEvents = async (
     filters: Prisma.EventWhereInput,
 ): Promise<

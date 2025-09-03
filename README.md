@@ -45,7 +45,7 @@ For payments, use the following test data:
 - ~~Add approval for events posted by non-admins~~
 - ~~Move task shift start and end time when cloning an event~~
 - Buttons to message the assignee and reviewer of a task
-- Event tags (munch/playparty/section etc...)
+- ~~Event tags (munch/playparty/section etc...)~~
 - Enable task assignees to submit receipts
 - Solidarity and community funded event tickets - one bought solidarity ticket funds a ticket for someone else
 - Merch store

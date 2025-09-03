@@ -15,6 +15,7 @@ import {
     userCredentialsFieldLabels,
     userFieldLabels,
 } from "./LanguageTranslations";
+import { CustomOptionProps } from "./AutocompleteWrapper";
 
 export const FieldLabels = {
     [GlobalConstants.ID]: {
@@ -118,6 +119,7 @@ export const RenderedFields = {
         GlobalConstants.END_TIME,
         GlobalConstants.MAX_PARTICIPANTS,
         GlobalConstants.DESCRIPTION,
+        GlobalConstants.TAGS,
     ],
     [GlobalConstants.CLONE_EVENT]: [GlobalConstants.START_TIME],
     [GlobalConstants.LOCATION]: [
@@ -263,6 +265,7 @@ export const selectFieldOptions = {
 };
 
 export const allowSelectMultiple = [GlobalConstants.TAGS, GlobalConstants.SKILL_BADGES];
+export const allowAddNew = [GlobalConstants.TAGS];
 
 export const datePickerFields = [
     GlobalConstants.CREATED_AT,
@@ -302,6 +305,13 @@ export const getUserSelectOptions = (
     return qualifiedMembers.map((user) => ({
         id: user.id,
         label: user.nickname,
+    }));
+};
+
+export const stringsToSelectOptions = (strings: string[]): CustomOptionProps[] => {
+    return strings.map((str) => ({
+        id: str,
+        label: str,
     }));
 };
 

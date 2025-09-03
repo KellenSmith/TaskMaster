@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Tooltip, useTheme, Typography } from "@mui/material";
+import { Card, Tooltip, useTheme, Typography, Box, Chip } from "@mui/material";
 import { FC } from "react";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
@@ -37,6 +37,48 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     };
 
     // TODO: mark green if participating
+    const uniqueTags = Array.from(new Set(event.tags || []));
+
+    // Detect small screen (used only for tag sizing and tooltip behavior)
+    const isSmallScreen = /Mobi|Android|iPhone|iPad|iPod/.test(
+        typeof navigator !== "undefined" ? navigator.userAgent : "",
+    );
+
+    const renderCompactTags = (isSmall: boolean) => {
+        if (!uniqueTags || uniqueTags.length === 0) return null;
+        const maxShown = 2;
+        const shown = uniqueTags.slice(0, maxShown);
+        const remaining = uniqueTags.length - shown.length;
+
+        return (
+            <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", ml: 1 }}>
+                {shown.map((t) => (
+                    <Chip
+                        key={t}
+                        label={t}
+                        size={isSmall ? "small" : "small"}
+                        variant="filled"
+                        sx={{
+                            height: 18,
+                            fontSize: "0.6rem",
+                            bgcolor: "rgba(255,255,255,0.12)",
+                            color: "common.white",
+                            px: 0.5,
+                        }}
+                    />
+                ))}
+                {remaining > 0 && (
+                    <Chip
+                        label={`+${remaining}`}
+                        size={isSmall ? "small" : "small"}
+                        variant="outlined"
+                        sx={{ height: 18, fontSize: "0.6rem", px: 0.5 }}
+                    />
+                )}
+            </Box>
+        );
+    };
+
     const content = (
         <Card
             elevation={0}
@@ -45,24 +87,26 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
                 ...(user && { cursor: "pointer" }),
                 textDecoration: event.status === EventStatus.cancelled ? "line-through" : "none",
                 paddingLeft: 1,
-                paddingY: 0.75,
+                paddingY: 0.5,
                 paddingRight: 1,
                 display: "block",
+                width: "100%",
+                mb: 0.5,
             }}
             {...(user && {
                 onClick: goToEventPage,
             })}
         >
-            <Typography noWrap variant="body2" sx={{ color: "common.white" }}>
-                {event.title}
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Typography noWrap variant="body2" sx={{ color: "common.white", mr: 1 }}>
+                    {event.title}
+                </Typography>
+                {renderCompactTags(isSmallScreen)}
+            </Box>
         </Card>
     );
 
     // Hide Tooltip on small screens to avoid interfering with touch; Tooltip provides extra info on desktop
-    const isSmallScreen = /Mobi|Android|iPhone|iPad|iPod/.test(
-        typeof navigator !== "undefined" ? navigator.userAgent : "",
-    );
     return isSmallScreen ? (
         content
     ) : (
