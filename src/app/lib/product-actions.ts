@@ -12,7 +12,7 @@ import { renewUserMembership } from "./user-membership-actions";
 import z from "zod";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { addEventParticipant } from "./event-participant-actions";
+import { addEventParticipant, addEventParticipantWithTx } from "./event-participant-actions";
 import { deleteBlob, updateBlob } from "./organization-settings-actions";
 
 export const getAllProducts = async (): Promise<Product[]> => {
@@ -89,8 +89,8 @@ export const deleteProduct = async (productId: string): Promise<void> => {
     revalidateTag(GlobalConstants.MEMBERSHIP);
 };
 
-// TODO: Do this in a transaction to avoid partial successes
 export const processOrderedProduct = async (
+    tx,
     userId: string,
     orderItem: Prisma.OrderItemGetPayload<{
         include: { product: { include: { membership: true; ticket: true } } };
@@ -102,13 +102,13 @@ export const processOrderedProduct = async (
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {
             try {
-                await renewUserMembership(userId, orderItem.product.membership.id);
+                await renewUserMembership(tx, userId, orderItem.product.membership.id);
             } catch {
                 failedProducts.push(`Failed to renew membership for user ${userId}`);
             }
         } else if (orderItem.product.ticket) {
             try {
-                await addEventParticipant(userId, orderItem.product.ticket.id);
+                await addEventParticipantWithTx(tx, orderItem.product.ticket.id, userId);
             } catch (error) {
                 failedProducts.push(
                     `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.event_id}: ${error.message}`,

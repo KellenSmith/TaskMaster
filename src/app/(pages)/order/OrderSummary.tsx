@@ -53,11 +53,22 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
         <Card>
             <CardContent>
                 <Stack spacing={3}>
-                    <Stack direction="row" justifyContent="space-between">
+                    <Stack
+                        direction="row"
+                        flexWrap="wrap"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        gap={2}
+                    >
                         <Typography variant="h5">
                             {LanguageTranslations.orderSummary[language]}
                         </Typography>
-                        <Typography textTransform="capitalize" variant="h6" color="primary">
+                        <Typography
+                            textTransform="capitalize"
+                            variant="h6"
+                            color="primary"
+                            sx={{ minWidth: 180, flexShrink: 0 }}
+                        >
                             Status: {LanguageTranslations[order.status][language]}
                         </Typography>
                     </Stack>

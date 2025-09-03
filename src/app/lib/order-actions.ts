@@ -102,8 +102,8 @@ export const createOrder = async (
     serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
 };
 
-const processOrderItems = async (orderId: string): Promise<void> => {
-    const order = await prisma.order.findUniqueOrThrow({
+const processOrderItems = async (tx, orderId: string): Promise<void> => {
+    const order = await tx.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
             order_items: {
@@ -125,7 +125,7 @@ const processOrderItems = async (orderId: string): Promise<void> => {
 
     // Process each order item
     for (const orderItem of order.order_items) {
-        await processOrderedProduct(order.user_id, orderItem);
+        await processOrderedProduct(tx, order.user_id, orderItem);
     }
 };
 
@@ -157,12 +157,14 @@ export const progressOrder = async (
     }
     // Paid to shipped
     if (order.status === OrderStatus.paid) {
-        await processOrderItems(orderId);
-        order = await prisma.order.update({
-            where: { id: orderId },
-            data: { status: OrderStatus.shipped },
+        await prisma.$transaction(async (tx) => {
+            await processOrderItems(tx, orderId);
+            order = await prisma.order.update({
+                where: { id: orderId },
+                data: { status: OrderStatus.shipped },
+            });
+            await sendOrderConfirmation(orderId);
         });
-        await sendOrderConfirmation(orderId);
     }
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {

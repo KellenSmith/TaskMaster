@@ -386,8 +386,6 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
     }
 };
 
-// TODO: Find a way of retrieving the user from the server session rather
-// than taking it as an argument
 export const cloneEvent = async (
     eventId: string,
     parsedFieldValues: z.infer<typeof CloneEventSchema>,
