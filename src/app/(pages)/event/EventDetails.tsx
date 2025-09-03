@@ -20,11 +20,7 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
             <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 } }}>
                 <Stack spacing={2}>
                     {/* Dates and location - stack vertically on small screens */}
-                    <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        spacing={2}
-                        sx={{ alignItems: { xs: "flex-start", sm: "center" } }}
-                    >
+                    <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
                         <Stack
                             direction="row"
                             spacing={1}

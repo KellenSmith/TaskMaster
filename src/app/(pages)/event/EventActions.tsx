@@ -38,7 +38,9 @@ import { isUserAdmin, isUserHost } from "../../lib/definitions";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import SendoutLanguageTranslations from "../sendout/LanguageTranslations";
+import EventLanguageTranslations from "../profile/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -51,6 +53,7 @@ interface IEventActions {
 
 const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => {
     const theme = useTheme();
+    const { organizationSettings } = useOrganizationSettingsContext();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
@@ -78,6 +81,20 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
     };
 
     const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All[language]);
+
+    const submitForApproval = () => {
+        startTransition(async () => {
+            try {
+                await updateEvent(event.id, {
+                    status: EventStatus.pending_approval,
+                });
+                addNotification(LanguageTranslations.submittedEvent[language], "success");
+                closeActionMenu();
+            } catch {
+                addNotification(LanguageTranslations.failedSubmitEvent[language], "error");
+            }
+        });
+    };
 
     const publishEvent = () => {
         startTransition(async () => {
@@ -149,6 +166,74 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
         });
     };
 
+    const getStatusActionButton = () => {
+        const requireApprovalBeforePublish = !!organizationSettings.event_manager_email;
+        switch (event.status) {
+            case EventStatus.draft: {
+                if (requireApprovalBeforePublish) {
+                    return (
+                        <MenuItem key="statusAction">
+                            <ConfirmButton
+                                color="success"
+                                confirmText={LanguageTranslations.areYouSureSubmitEvent[language]}
+                                onClick={submitForApproval}
+                            >
+                                {LanguageTranslations.submitEvent[language]}
+                            </ConfirmButton>
+                        </MenuItem>
+                    );
+                }
+                return (
+                    <MenuItem key="statusAction">
+                        <ConfirmButton
+                            color="success"
+                            confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
+                            onClick={publishEvent}
+                        >
+                            {LanguageTranslations.publishEvent[language]}
+                        </ConfirmButton>
+                    </MenuItem>
+                );
+            }
+            case EventStatus.pending_approval: {
+                if (isUserAdmin(user))
+                    return (
+                        <MenuItem key="statusAction">
+                            <ConfirmButton
+                                color="success"
+                                confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
+                                onClick={publishEvent}
+                            >
+                                {LanguageTranslations.publishEvent[language]}
+                            </ConfirmButton>
+                        </MenuItem>
+                    );
+                return (
+                    <MenuItem key="statusAction">
+                        <Button disabled>
+                            {EventLanguageTranslations[event.status][language] as string}
+                        </Button>
+                    </MenuItem>
+                );
+            }
+            case EventStatus.published: {
+                return (
+                    <MenuItem key="statusAction">
+                        <ConfirmButton
+                            color="error"
+                            confirmText={LanguageTranslations.areYouSureCancelEvent[language](
+                                getEventParticipantCount(event),
+                            )}
+                            onClick={cancelAction}
+                        >
+                            {LanguageTranslations.cancelEvent[language] as string}
+                        </ConfirmButton>
+                    </MenuItem>
+                );
+            }
+        }
+    };
+
     const getMenuItems = () => {
         const ActionButtons = [
             <MenuItem key="clone">
@@ -177,30 +262,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise }) => 
             );
         }
 
-        if (event.status !== EventStatus.cancelled)
-            ActionButtons.unshift(
-                <MenuItem key="statusAction">
-                    {event.status === EventStatus.published ? (
-                        <ConfirmButton
-                            color="error"
-                            confirmText={LanguageTranslations.areYouSureCancelEvent[language](
-                                getEventParticipantCount(event),
-                            )}
-                            onClick={cancelAction}
-                        >
-                            {LanguageTranslations.cancelEvent[language]}
-                        </ConfirmButton>
-                    ) : (
-                        <ConfirmButton
-                            color="success"
-                            confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
-                            onClick={publishEvent}
-                        >
-                            {LanguageTranslations.publishEvent[language]}
-                        </ConfirmButton>
-                    )}
-                </MenuItem>,
-            );
+        ActionButtons.unshift(getStatusActionButton());
 
         ActionButtons.unshift(
             <MenuItem key="edit">

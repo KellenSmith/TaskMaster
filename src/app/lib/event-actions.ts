@@ -10,6 +10,8 @@ import { revalidateTag } from "next/cache";
 import { isUserAdmin, serverRedirect } from "./definitions";
 import { allowRedirectException } from "../ui/utils";
 import dayjs from "dayjs";
+import { getLoggedInUser } from "./user-actions";
+import { getOrganizationSettings } from "./organization-settings-actions";
 
 export const createEvent = async (
     userId: string,
@@ -217,56 +219,63 @@ export const updateEvent = async (
     parsedFieldValues: z.infer<typeof EventUpdateSchema>,
 ): Promise<void> => {
     let notifyEventReservesPromise;
-    try {
-        const eventToUpdate = await prisma.event.findUniqueOrThrow({
-            where: { id: eventId },
-            include: { tickets: { include: { product: true } } },
-        });
+    const eventToUpdate = await prisma.event.findUniqueOrThrow({
+        where: { id: eventId },
+        include: { tickets: { include: { product: true } } },
+    });
 
-        await prisma.$transaction(async (tx) => {
-            const eventParticipantsCount = (await getEventParticipants(eventId)).length;
+    // Don't allow non-admins to update events to published if event_manager_email is set
+    const organizationSettings = await getOrganizationSettings();
+    const requireApprovalBeforePublish = !!organizationSettings.event_manager_email;
+    const loggedInUser = await getLoggedInUser();
+    if (
+        requireApprovalBeforePublish &&
+        !isUserAdmin(loggedInUser) &&
+        eventToUpdate.status !== EventStatus.published &&
+        parsedFieldValues.status === EventStatus.published
+    ) {
+        throw new Error("You are not authorized to publish this event");
+    }
 
-            // Ensure that the new max_participants is not lower than the current number of participants
-            if (eventParticipantsCount > parsedFieldValues.max_participants) {
-                throw new Error(
-                    `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
-                );
-            }
+    await prisma.$transaction(async (tx) => {
+        const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
-            // Add or remove the new number of available tickets to product stock
-            // deltaMaxParticipants might be negative
-            const deltaMaxParticipants =
-                parsedFieldValues.max_participants - eventToUpdate.max_participants;
-            if (Math.abs(deltaMaxParticipants)) {
-                const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
-                await tx.product.updateMany({
-                    where: { id: { in: productsToUpdate.map((product) => product.id) } },
-                    data: {
-                        stock: {
-                            increment: deltaMaxParticipants,
-                        },
+        // Ensure that the new max_participants is not lower than the current number of participants
+        if (eventParticipantsCount > parsedFieldValues.max_participants) {
+            throw new Error(
+                `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
+            );
+        }
+
+        // Add or remove the new number of available tickets to product stock
+        // deltaMaxParticipants might be negative
+        const deltaMaxParticipants =
+            parsedFieldValues.max_participants - eventToUpdate.max_participants;
+        if (Math.abs(deltaMaxParticipants)) {
+            const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
+            await tx.product.updateMany({
+                where: { id: { in: productsToUpdate.map((product) => product.id) } },
+                data: {
+                    stock: {
+                        increment: deltaMaxParticipants,
                     },
-                });
-                if (deltaMaxParticipants > 0)
-                    notifyEventReservesPromise = notifyEventReserves(eventId);
-            }
-        });
+                },
+            });
+            if (deltaMaxParticipants > 0) notifyEventReservesPromise = notifyEventReserves(eventId);
+        }
         await prisma.event.update({
             where: { id: eventId },
             data: parsedFieldValues,
         });
         revalidateTag(GlobalConstants.EVENT);
         revalidateTag(GlobalConstants.TICKET);
-    } catch (error) {
-        console.error("Failed to update event:", error.message);
-        throw new Error("Failed to update event");
-    }
-
-    try {
-        if (notifyEventReservesPromise) await notifyEventReservesPromise;
-    } catch {
-        console.error("Failed to notify reserves in event of extra available tickets");
-    }
+        try {
+            if (notifyEventReservesPromise) await notifyEventReservesPromise;
+        } catch {
+            // Allow the update despite failed notification
+            console.error("Failed to notify reserves in event of extra available tickets");
+        }
+    });
 };
 
 export const cancelEvent = async (eventId: string): Promise<void> => {

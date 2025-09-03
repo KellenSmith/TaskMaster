@@ -47,6 +47,12 @@ export const explanatoryTexts = {
         [Language.swedish]:
             "E-postadressen som automatiserade e-postmeddelanden skickas från och som bör övervakas för svar",
     },
+    [GlobalConstants.EVENT_MANAGER_EMAIL]: {
+        [Language.english]:
+            "If given, events must be submitted for approval before publishing to the calendar. This email will receive a notification.",
+        [Language.swedish]:
+            "Om den anges måste evenemang skickas in för godkännande innan de publiceras i kalendern. Denna e-postadress kommer att få en notis.",
+    },
     [GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH]: {
         [Language.english]:
             "The default length of task shifts when added from a task board belonging to an event",
@@ -78,6 +84,7 @@ export const RenderedFields = {
     [GlobalConstants.ORGANIZATION_SETTINGS]: [
         GlobalConstants.ORGANIZATION_NAME,
         GlobalConstants.ORGANIZATION_EMAIL,
+        GlobalConstants.EVENT_MANAGER_EMAIL,
         GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,

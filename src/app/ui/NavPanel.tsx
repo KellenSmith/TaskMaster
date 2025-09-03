@@ -61,10 +61,12 @@ const NavPanel = () => {
             // If logout is successful, redirect exception is thrown
             // We do not expect to run this line
             addNotification(LanguageTranslations.failedToLogOut[language], "error");
+            setDrawerOpen(false);
         } catch (error) {
             // Catch redirect exception and refresh session before moving on.
             if (error?.digest?.startsWith("NEXT_REDIRECT")) {
                 refreshSession();
+                setDrawerOpen(false);
                 throw error;
             }
         }
@@ -178,7 +180,10 @@ const NavPanel = () => {
                     ) : (
                         <Button
                             variant="outlined"
-                            onClick={() => clientRedirect(router, [GlobalConstants.LOGIN])}
+                            onClick={() => {
+                                setDrawerOpen(false);
+                                clientRedirect(router, [GlobalConstants.LOGIN]);
+                            }}
                             endIcon={<LoginIcon />}
                             fullWidth
                         >

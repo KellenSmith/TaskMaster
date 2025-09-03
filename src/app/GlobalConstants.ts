@@ -35,6 +35,7 @@ const GlobalConstants = {
     PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purge_members_after_days_unvalidated",
     MEMBER_APPLICATION_PROMPT: "member_application_prompt",
     LOGO_URL: "logo_url",
+    EVENT_MANAGER_EMAIL: "event_manager_email",
     // User
     USER: "user",
     USER_ID: "user_id",

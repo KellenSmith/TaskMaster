@@ -61,24 +61,24 @@ export const updateProduct = async (
 
 export const deleteProduct = async (productId: string): Promise<void> => {
     await prisma.$transaction(async (tx) => {
-        const membership = await prisma.membership.findUnique({
+        const membership = await tx.membership.findUnique({
             where: { product_id: productId },
         });
-        const ticket = await prisma.ticket.findUnique({
+        const ticket = await tx.ticket.findUnique({
             where: { product_id: productId },
             include: { product: true },
         });
 
         if (membership)
-            await prisma.membership.delete({
+            await tx.membership.delete({
                 where: { product_id: productId },
             });
 
         if (ticket)
-            await prisma.ticket.delete({
+            await tx.ticket.delete({
                 where: { product_id: productId },
             });
-        await prisma.product.delete({
+        await tx.product.delete({
             where: { id: productId },
         });
         await deleteBlob(ticket.product.image_url);

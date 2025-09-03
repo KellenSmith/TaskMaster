@@ -1,4 +1,4 @@
-import { Language, Prisma, UserRole } from "@prisma/client";
+import { EventStatus, Language, Prisma, UserRole } from "@prisma/client";
 import { isMembershipExpired } from "../../lib/definitions";
 import UILanguageTranslations from "../../ui/LanguageTranslations";
 import GlobalConstants from "../../GlobalConstants";
@@ -105,9 +105,17 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Du deltar inte i några evenemang. Kolla kalendern för att engagera dig!",
     },
-    draft: {
+    [EventStatus.draft]: {
         [Language.english]: "Draft",
         [Language.swedish]: "Utkast",
+    },
+    [EventStatus.pending_approval]: {
+        [Language.english]: "Pending Approval",
+        [Language.swedish]: "Väntar på godkännande",
+    },
+    [EventStatus.cancelled]: {
+        [Language.english]: "Cancelled",
+        [Language.swedish]: "Inställt",
     },
     eventHost: {
         [Language.english]: "Host",

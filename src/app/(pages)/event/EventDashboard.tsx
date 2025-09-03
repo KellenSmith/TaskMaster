@@ -171,8 +171,29 @@ const EventDashboard = ({
         <Stack>
             <Stack padding="0 24px 0 24px" spacing={2}>
                 {event.status === EventStatus.draft && (
-                    <Typography variant="h4" color={theme.palette.warning.light}>
-                        This is an event draft and is only visible to the host
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            border: `1px solid ${theme.palette.warning.light}`,
+                            borderRadius: 2,
+                            textAlign: "center",
+                            color: theme.palette.warning.light,
+                        }}
+                    >
+                        {LanguageTranslations.eventDraftNote[language]}
+                    </Typography>
+                )}
+                {event.status === EventStatus.pending_approval && (
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            border: `1px solid ${theme.palette.info.light}`,
+                            borderRadius: 2,
+                            textAlign: "center",
+                            color: theme.palette.info.light,
+                        }}
+                    >
+                        {LanguageTranslations.pendingApprovalNote[language]}
                     </Typography>
                 )}
                 <Typography
@@ -182,6 +203,7 @@ const EventDashboard = ({
                             ? theme.palette.error.main
                             : theme.palette.primary.main,
                         textDecoration: isEventCancelled(event) ? "line-through" : "none",
+                        textAlign: isSmall ? "center" : "left",
                     }}
                 >
                     {`${event.title} ${isEventCancelled(event) ? `"${LanguageTranslations.cancelled[language].toUpperCase()}"` : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}

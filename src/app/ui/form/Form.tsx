@@ -88,19 +88,29 @@ const Form: FC<FormProps> = ({
         [name, customRequiredFields],
     );
 
-    const uploadFiles = async (formData: FormData) => {
+    const uploadFileAndGetUrl = async (file: File): Promise<string> => {
+        const newBlob = await upload(`${name}/${file.name}`, file, {
+            access: "public",
+            handleUploadUrl: "/api/file-upload",
+        });
+        return newBlob.url;
+    };
+
+    const uploadFiles = async (formData: FormData): Promise<FormData | null> => {
         try {
-            for (let fieldId of fileUploadFields) {
+            for (let fieldId of formData.keys()) {
+                if (!fileUploadFields.includes(fieldId)) continue;
                 const file = formData.get(fieldId) as File;
-                if (!file) continue;
-                const newBlob = await upload(`${name}/${file.name}`, file, {
-                    access: "public",
-                    handleUploadUrl: "/api/file-upload",
-                });
-                formData.set(fieldId, newBlob.url);
+                if (!file?.name || file.size === 0) {
+                    formData.delete(fieldId);
+                    continue;
+                }
+                const newBlobUrl = await uploadFileAndGetUrl(file);
+                formData.set(fieldId, newBlobUrl);
             }
             return formData;
-        } catch {
+        } catch (error) {
+            console.error("File upload error:", error);
             addNotification("File upload failed", "error");
         }
     };
@@ -139,6 +149,7 @@ const Form: FC<FormProps> = ({
             try {
                 const submitResult = await action(parsedFieldValues);
                 addNotification(submitResult, "success");
+                console.log(editable, readOnly);
                 !(editable && !readOnly) && setEditMode(false);
             } catch (error) {
                 allowRedirectException(error);

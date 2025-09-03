@@ -38,6 +38,11 @@ const LanguageTranslations = {
         [Language.english]: "This is an event draft and is only visible to the host",
         [Language.swedish]: "Detta är ett utkast och är bara synligt för värden",
     },
+    pendingApprovalNote: {
+        [Language.english]: "This event will be visible to members once approved by an admin.",
+        [Language.swedish]:
+            "Evenemanget kommer vara synligt för medlemmar när det har godkänts av en administratör.",
+    },
     cancelled: {
         [Language.english]: "Cancelled",
         [Language.swedish]: "Inställt",
@@ -172,6 +177,24 @@ const LanguageTranslations = {
             isReserve ? "Leave Reserve List" : "Join Reserve List",
         [Language.swedish]: (isReserve: boolean) =>
             isReserve ? "Lämna Reservlistan" : "Gå med i Reservlistan",
+    },
+    submitEvent: {
+        [Language.english]: "Submit for approval",
+        [Language.swedish]: "Skicka för godkännande",
+    },
+    submittedEvent: {
+        [Language.english]: "Submitted for approval",
+        [Language.swedish]: "Skickade för godkännande",
+    },
+    failedSubmitEvent: {
+        [Language.english]: "Failed to submit for approval",
+        [Language.swedish]: "Kunde inte skicka för godkännande",
+    },
+    areYouSureSubmitEvent: {
+        [Language.english]:
+            "Are you sure you want to submit this event for approval? It will be published and visible after it has been approved",
+        [Language.swedish]:
+            "Är du säker på att du vill skicka detta evenemang för godkännande? Det kommer att publiceras och bli synligt for alla medlemmar efter att det har godkänts.",
     },
     publishedEvent: {
         [Language.english]: "Published event",

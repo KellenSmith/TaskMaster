@@ -46,7 +46,8 @@ export const OrganizationSettingsUpdateSchema = z
     .object({
         id: z.string().optional(),
         organization_name: z.string().optional(),
-        organization_email: z.string().email().optional(),
+        organization_email: z.email().optional(),
+        event_manager_email: z.email().optional(),
         remind_membership_expires_in_days: z.coerce.number().int().positive().optional(),
         purge_members_after_days_unvalidated: z.coerce.number().int().positive().optional(),
         default_task_shift_length: z.coerce.number().int().positive().optional(),

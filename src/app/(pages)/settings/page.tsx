@@ -24,7 +24,7 @@ const OrganizationSettingsPage = () => {
             action={saveOrganizationSettings}
             validationSchema={OrganizationSettingsUpdateSchema}
             readOnly={false}
-            editable={false}
+            editable={true}
             defaultValues={organizationSettings || {}}
         />
     );

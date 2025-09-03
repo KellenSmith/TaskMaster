@@ -36,6 +36,10 @@ export const organizationSettingsFieldLabels = {
         [Language.english]: "Send us a message",
         [Language.swedish]: "Skicka oss ett meddelande",
     },
+    [GlobalConstants.EVENT_MANAGER_EMAIL]: {
+        [Language.english]: "Event Manager Email",
+        [Language.swedish]: "Eventkoordinatorns e-post",
+    },
 };
 
 export const textContentFieldLabels = {

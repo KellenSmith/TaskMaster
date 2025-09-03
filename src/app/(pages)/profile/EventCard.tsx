@@ -59,7 +59,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             {!isEventPublished(event) && (
                                 <Chip
-                                    label={LanguageTranslations.draft[language]}
+                                    label={LanguageTranslations[event.status][language] as string}
                                     size="small"
                                     color="warning"
                                     variant="outlined"

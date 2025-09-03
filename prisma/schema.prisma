@@ -23,6 +23,8 @@ model OrganizationSettings {
     //TODO: configure fields for ticket instructions
     ticket_instructions       String?
 
+    event_manager_email String? // If given, events must be approved by a manager before publishing
+
     @@map("organization_settings")
 }
 
@@ -113,6 +115,7 @@ model Location {
 
 enum EventStatus {
     draft
+    pending_approval
     published
     cancelled
 }
