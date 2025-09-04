@@ -50,54 +50,45 @@ export const renewUserMembership = async (
 export const getMembershipProduct = async (): Promise<
     Prisma.ProductGetPayload<{ select: { id: true; price: true } }>
 > => {
-    try {
-        // Try to find existing membership product
-        const membershipProduct = await prisma.product.findFirst({
-            where: { membership: { isNot: null } },
-            select: {
-                id: true,
-                price: true,
-            },
-        });
-        if (membershipProduct) {
-            return membershipProduct;
-        }
-        // If no membership product exists, create it
-        const newMembershipProduct = await prisma.product.create({
-            data: {
-                name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
-                description: "Annual membership",
-                price: 0,
-                unlimited_stock: true,
+    // Try to find existing membership product
+    const membershipProduct = await prisma.product.findFirst({
+        where: { membership: { isNot: null } },
+        select: {
+            id: true,
+            price: true,
+        },
+    });
+    if (membershipProduct) {
+        return membershipProduct;
+    }
+    // If no membership product exists, create it
+    const newMembershipProduct = await prisma.product.create({
+        data: {
+            name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
+            description: "Annual membership",
+            price: 0,
+            unlimited_stock: true,
 
-                membership: {
-                    create: {
-                        duration: 365,
-                    },
+            membership: {
+                create: {
+                    duration: 365,
                 },
             },
-            select: { id: true, price: true },
-        });
-        return newMembershipProduct;
-    } catch (error) {
-        throw new Error(`Failed to get/create membership product: ${error.message}`);
-    }
+        },
+        select: { id: true, price: true },
+    });
+    return newMembershipProduct;
 };
 
 export const createMembershipOrder = async (userId: string): Promise<void> => {
     let orderItems: Prisma.OrderItemCreateManyOrderInput[];
-    try {
-        // Get or create the membership product
-        const membershipProduct = await getMembershipProduct();
 
-        orderItems = [
-            { product_id: membershipProduct.id, price: membershipProduct.price, quantity: 1 },
-        ];
-    } catch {
-        throw new Error("Failed to create order for membership");
-    }
-    if (!orderItems || orderItems.length === 0) {
-        throw new Error("Failed to create order for membership");
-    }
+    // Get or create the membership product
+    const membershipProduct = await getMembershipProduct();
+
+    orderItems = [
+        { product_id: membershipProduct.id, price: membershipProduct.price, quantity: 1 },
+    ];
+
     await createOrder(userId, orderItems);
 };

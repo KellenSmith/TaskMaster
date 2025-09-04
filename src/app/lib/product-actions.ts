@@ -97,26 +97,12 @@ export const processOrderedProduct = async (
     }>,
 ) => {
     if (!orderItem.product.unlimited_stock && orderItem.quantity > orderItem.product.stock)
-        throw new Error("Insufficient stock");
-    const failedProducts: string[] = [];
+        throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {
-            try {
-                await renewUserMembership(tx, userId, orderItem.product.membership.id);
-            } catch {
-                failedProducts.push(`Failed to renew membership for user ${userId}`);
-            }
+            await renewUserMembership(tx, userId, orderItem.product.membership.id);
         } else if (orderItem.product.ticket) {
-            try {
-                await addEventParticipantWithTx(tx, orderItem.product.ticket.id, userId);
-            } catch (error) {
-                failedProducts.push(
-                    `Failed to create participant for user ${userId} in event ${orderItem.product.ticket.event_id}: ${error.message}`,
-                );
-            }
+            await addEventParticipantWithTx(tx, orderItem.product.ticket.id, userId);
         }
-    }
-    if (failedProducts.length > 0) {
-        throw new Error("Error for order item " + orderItem.id + ": " + failedProducts.join(", "));
     }
 };

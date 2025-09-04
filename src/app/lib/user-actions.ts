@@ -63,7 +63,12 @@ export const submitMemberApplication = async (
     revalidateTag(GlobalConstants.USER);
 
     // Send membership application to organization email
-    await notifyOfMembershipApplication(parsedFieldValues);
+    try {
+        await notifyOfMembershipApplication(parsedFieldValues);
+    } catch (error) {
+        console.error(error);
+        // Submit the membership application despite failed notification
+    }
 };
 
 export const getAllUsers = async (): Promise<

@@ -119,28 +119,24 @@ export const getFilteredEvents = async (
         };
     }>[]
 > => {
-    try {
-        const events = await prisma.event.findMany({
-            where: filters,
-            include: {
-                location: true,
-                host: {
-                    select: {
-                        id: true,
-                    },
+    const events = await prisma.event.findMany({
+        where: filters,
+        include: {
+            location: true,
+            host: {
+                select: {
+                    id: true,
                 },
-                tickets: {
-                    include: {
-                        event_participants: true,
-                    },
-                },
-                event_reserves: true,
             },
-        });
-        return events;
-    } catch {
-        throw new Error("Failed to fetch events");
-    }
+            tickets: {
+                include: {
+                    event_participants: true,
+                },
+            },
+            event_reserves: true,
+        },
+    });
+    return events;
 };
 
 export const getAllEventsWithTasks = async (): Promise<
@@ -201,26 +197,22 @@ export const getEventParticipants = async (
         include: { user: { select: { id: true; nickname: true } } };
     }>[]
 > => {
-    try {
-        const participants = await prisma.eventParticipant.findMany({
-            where: {
-                ticket: {
-                    event_id: eventId,
+    const participants = await prisma.eventParticipant.findMany({
+        where: {
+            ticket: {
+                event_id: eventId,
+            },
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    nickname: true,
                 },
             },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        nickname: true,
-                    },
-                },
-            },
-        });
-        return participants;
-    } catch {
-        throw new Error("Failed to fetch event participants");
-    }
+        },
+    });
+    return participants;
 };
 
 export const updateEvent = async (
@@ -330,60 +322,53 @@ export const updateEvent = async (
 };
 
 export const cancelEvent = async (eventId: string): Promise<void> => {
-    try {
-        await updateEvent(eventId, { status: EventStatus.cancelled });
-        revalidateTag(GlobalConstants.EVENT);
-    } catch {
-        throw new Error("Failed to cancel event");
-    }
+    await updateEvent(eventId, { status: EventStatus.cancelled });
+    revalidateTag(GlobalConstants.EVENT);
+
     try {
         await informOfCancelledEvent(eventId);
     } catch (error) {
-        throw new Error(error.message);
+        // Allow cancelling despite failed notification
+        console.error("Failed to inform of cancelled event:", error);
     }
 };
 
 export const deleteEvent = async (eventId: string): Promise<void> => {
-    try {
-        const event = await prisma.event.findUniqueOrThrow({
-            where: { id: eventId },
-            include: {
-                tickets: {
-                    include: {
-                        event_participants: true,
-                    },
+    const event = await prisma.event.findUniqueOrThrow({
+        where: { id: eventId },
+        include: {
+            tickets: {
+                include: {
+                    event_participants: true,
                 },
             },
-        });
+        },
+    });
 
-        const eventParticipants = await getEventParticipants(eventId);
-        const onlyHostIsParticipating =
-            eventParticipants.length === 1 && eventParticipants[0].user_id === event.host_id;
-        if (!onlyHostIsParticipating)
-            throw new Error(
-                "The event has participants and cannot be deleted. Cancel the event instead",
-            );
+    const eventParticipants = await getEventParticipants(eventId);
+    const onlyHostIsParticipating =
+        eventParticipants.length === 1 && eventParticipants[0].user_id === event.host_id;
+    if (!onlyHostIsParticipating)
+        throw new Error(
+            "The event has participants and cannot be deleted. Cancel the event instead",
+        );
 
-        await prisma.$transaction([
-            prisma.eventReserve.deleteMany({
-                where: { event_id: eventId },
-            }),
-            prisma.eventParticipant.deleteMany({
-                where: { ticket: { event_id: eventId } },
-            }),
-            prisma.ticket.deleteMany({
-                where: { event_id: eventId },
-            }),
-            prisma.event.delete({
-                where: { id: eventId },
-            }),
-        ]);
-        revalidateTag(GlobalConstants.EVENT);
-        serverRedirect([GlobalConstants.CALENDAR]);
-    } catch (error) {
-        allowRedirectException(error);
-        throw new Error("Failed to delete event");
-    }
+    await prisma.$transaction([
+        prisma.eventReserve.deleteMany({
+            where: { event_id: eventId },
+        }),
+        prisma.eventParticipant.deleteMany({
+            where: { ticket: { event_id: eventId } },
+        }),
+        prisma.ticket.deleteMany({
+            where: { event_id: eventId },
+        }),
+        prisma.event.delete({
+            where: { id: eventId },
+        }),
+    ]);
+    revalidateTag(GlobalConstants.EVENT);
+    serverRedirect([GlobalConstants.CALENDAR]);
 };
 
 export const cloneEvent = async (

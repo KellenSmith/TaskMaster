@@ -32,12 +32,10 @@ export const addEventParticipantWithTx = async (tx, ticketId: string, userId: st
         throw new Error("Event is already sold out");
     }
 
-    try {
-        await deleteEventReserveWithTx(tx, userId, ticket.event_id);
-        revalidateTag(GlobalConstants.RESERVE_USERS);
-    } catch {
-        // Delete the user from the  reserve list if they're on it
-    }
+    await deleteEventReserveWithTx(tx, userId, ticket.event_id);
+    revalidateTag(GlobalConstants.RESERVE_USERS);
+
+    // TODO: Delete the user from the  reserve list if they're on it
 
     // Decrement the product stock of all tickets with limited stock belonging to the same event
     // Ticket product stock reflects the total number of available tickets across all types

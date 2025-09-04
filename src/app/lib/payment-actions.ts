@@ -49,50 +49,44 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
         payeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
     }
 
-    try {
-        // Update order with payeeRef
-        const order = await prisma.order.update({
-            where: { id: orderId },
-            data: { payee_ref: payeeRef },
-        });
+    // Update order with payeeRef
+    const order = await prisma.order.update({
+        where: { id: orderId },
+        data: { payee_ref: payeeRef },
+    });
 
-        return {
-            paymentorder: {
-                operation: "Purchase",
-                currency: "SEK",
-                amount: order.total_amount,
-                vatAmount: 0,
-                description: `Purchase`,
-                userAgent: (await headers()).get("user-agent") || "Unknown",
-                language: "en-US",
-                urls: {
-                    hostUrls: [getAbsoluteUrl([GlobalConstants.HOME])],
-                    completeUrl: getAbsoluteUrl([GlobalConstants.ORDER], {
-                        [GlobalConstants.ORDER_ID]: orderId,
-                    }),
-                    cancelUrl: getAbsoluteUrl([GlobalConstants.ORDER], {
-                        [GlobalConstants.ORDER_ID]: orderId,
-                    }),
-                    callbackUrl: getAbsoluteUrl([GlobalConstants.PAYMENT_CALLBACK], {
-                        [GlobalConstants.ORDER_ID]: orderId,
-                    }),
-                    // TODO
-                    // logoUrl: "https://example.com/logo.png",
-                    // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
-                },
-                payeeInfo: {
-                    payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
-                    payeeReference: payeeRef, // Compliant: alphanumeric, max 30 chars, unique
-                    payeeName: await getOrganizationName(),
-                    orderReference: orderId, // Your internal order reference (can contain hyphens)
-                },
+    return {
+        paymentorder: {
+            operation: "Purchase",
+            currency: "SEK",
+            amount: order.total_amount,
+            vatAmount: 0,
+            description: `Purchase`,
+            userAgent: (await headers()).get("user-agent") || "Unknown",
+            language: "en-US",
+            urls: {
+                hostUrls: [getAbsoluteUrl([GlobalConstants.HOME])],
+                completeUrl: getAbsoluteUrl([GlobalConstants.ORDER], {
+                    [GlobalConstants.ORDER_ID]: orderId,
+                }),
+                cancelUrl: getAbsoluteUrl([GlobalConstants.ORDER], {
+                    [GlobalConstants.ORDER_ID]: orderId,
+                }),
+                callbackUrl: getAbsoluteUrl([GlobalConstants.PAYMENT_CALLBACK], {
+                    [GlobalConstants.ORDER_ID]: orderId,
+                }),
+                // TODO
+                // logoUrl: "https://example.com/logo.png",
+                // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
             },
-        };
-    } catch (error) {
-        throw new Error(
-            `Failed to update order with payee reference ${payeeRef}: ` + error.message,
-        );
-    }
+            payeeInfo: {
+                payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
+                payeeReference: payeeRef, // Compliant: alphanumeric, max 30 chars, unique
+                payeeName: await getOrganizationName(),
+                orderReference: orderId, // Your internal order reference (can contain hyphens)
+            },
+        },
+    };
 };
 
 export const redirectToSwedbankPayment = async (orderId: string): Promise<void> => {
@@ -135,53 +129,47 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
 };
 
 export const capturePaymentFunds = async (orderId: string) => {
-    try {
-        const order = await prisma.order.findUniqueOrThrow({
-            where: { id: orderId },
-        });
-        // Use the same payeeReference that was used for the original authorization
-        // This maintains the connection between authorization and capture operations
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: orderId },
+    });
+    // Use the same payeeReference that was used for the original authorization
+    // This maintains the connection between authorization and capture operations
 
-        if (!order.payee_ref) {
-            throw new Error(
-                `Order ${order.id} is missing payeeRef - cannot capture payment safely`,
-            );
-        }
-
-        // Create a unique capture reference by appending "CAPTURE" to the original payeeRef
-        // This ensures each capture attempt has a unique reference while maintaining traceability
-        const capturePayeeRef = `${order.payee_ref}CAP`.substring(0, 30);
-
-        const capturePaymentResponse = await makeSwedbankApiRequest(
-            `https://api.externalintegration.payex.com${order.payment_request_id}/captures`,
-            {
-                transaction: {
-                    description: "Capturing authorized payment",
-                    amount: order.total_amount, // Convert to smallest currency unit
-                    vatAmount: 0,
-                    payeeReference: capturePayeeRef, // Unique reference for capture operation
-                },
-            },
-        );
-
-        if (!capturePaymentResponse.ok) {
-            const errorText = await capturePaymentResponse.text();
-            console.error(
-                `Failed to capture payment funds for order ${order.id}:`,
-                capturePaymentResponse.status,
-                capturePaymentResponse.statusText,
-                errorText,
-            );
-            throw new Error(
-                `Payment capture failed: ${capturePaymentResponse.status} ${capturePaymentResponse.statusText}`,
-            );
-        }
-
-        const responseText = await capturePaymentResponse.text();
-        return responseText;
-    } catch {
-        throw new Error("Failed to capture payment funds");
+    if (!order.payee_ref) {
+        throw new Error(`Order ${order.id} is missing payeeRef - cannot capture payment safely`);
     }
+
+    // Create a unique capture reference by appending "CAPTURE" to the original payeeRef
+    // This ensures each capture attempt has a unique reference while maintaining traceability
+    const capturePayeeRef = `${order.payee_ref}CAP`.substring(0, 30);
+
+    const capturePaymentResponse = await makeSwedbankApiRequest(
+        `https://api.externalintegration.payex.com${order.payment_request_id}/captures`,
+        {
+            transaction: {
+                description: "Capturing authorized payment",
+                amount: order.total_amount, // Convert to smallest currency unit
+                vatAmount: 0,
+                payeeReference: capturePayeeRef, // Unique reference for capture operation
+            },
+        },
+    );
+
+    if (!capturePaymentResponse.ok) {
+        const errorText = await capturePaymentResponse.text();
+        console.error(
+            `Failed to capture payment funds for order ${order.id}:`,
+            capturePaymentResponse.status,
+            capturePaymentResponse.statusText,
+            errorText,
+        );
+        throw new Error(
+            `Payment capture failed: ${capturePaymentResponse.status} ${capturePaymentResponse.statusText}`,
+        );
+    }
+
+    const responseText = await capturePaymentResponse.text();
+    return responseText;
 };
 
 export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {

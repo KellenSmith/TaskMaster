@@ -39,24 +39,20 @@ export const getAllOrders = async (): Promise<
         };
     }>[]
 > => {
-    try {
-        return prisma.order.findMany({
-            include: {
-                user: {
-                    select: {
-                        nickname: true,
-                    },
-                },
-                order_items: {
-                    include: {
-                        product: true,
-                    },
+    return prisma.order.findMany({
+        include: {
+            user: {
+                select: {
+                    nickname: true,
                 },
             },
-        });
-    } catch {
-        throw new Error("Failed to fetch orders");
-    }
+            order_items: {
+                include: {
+                    product: true,
+                },
+            },
+        },
+    });
 };
 
 export const createOrder = async (
@@ -163,7 +159,12 @@ export const progressOrder = async (
                 where: { id: orderId },
                 data: { status: OrderStatus.shipped },
             });
-            await sendOrderConfirmation(orderId);
+            try {
+                await sendOrderConfirmation(orderId);
+            } catch (error) {
+                // Allow progressing order despite failed confirmation
+                console.error("Failed to send order confirmation:", error);
+            }
         });
     }
     // Shipped to completed
@@ -178,18 +179,14 @@ export const progressOrder = async (
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
-    try {
-        await prisma.$transaction(async (tx) => {
-            // Delete all order items first
-            await tx.orderItem.deleteMany({
-                where: { order_id: orderId },
-            });
-            // Then delete the order
-            await tx.order.delete({
-                where: { id: orderId },
-            });
+    await prisma.$transaction(async (tx) => {
+        // Delete all order items first
+        await tx.orderItem.deleteMany({
+            where: { order_id: orderId },
         });
-    } catch {
-        throw new Error("Failed to delete order");
-    }
+        // Then delete the order
+        await tx.order.delete({
+            where: { id: orderId },
+        });
+    });
 };

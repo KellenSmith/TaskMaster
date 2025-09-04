@@ -14,13 +14,9 @@ export const getAllLocations = async (): Promise<Location[]> => {
 export const createLocation = async (
     parsedFieldValues: z.infer<typeof LocationCreateSchema>,
 ): Promise<Location> => {
-    try {
-        const location = await prisma.location.create({ data: parsedFieldValues });
-        revalidateTag(GlobalConstants.LOCATION);
-        return location;
-    } catch {
-        throw new Error("Failed creating location");
-    }
+    const location = await prisma.location.create({ data: parsedFieldValues });
+    revalidateTag(GlobalConstants.LOCATION);
+    return location;
 };
 
 export const updateLocation = async (
@@ -33,11 +29,7 @@ export const updateLocation = async (
 };
 
 export const deleteLocation = async (locationId: string): Promise<void> => {
-    try {
-        await prisma.location.delete({ where: { id: locationId } });
-        revalidateTag(GlobalConstants.LOCATION);
-        revalidateTag(GlobalConstants.EVENT);
-    } catch {
-        throw new Error(`Failed deleting location ${locationId}`);
-    }
+    await prisma.location.delete({ where: { id: locationId } });
+    revalidateTag(GlobalConstants.LOCATION);
+    revalidateTag(GlobalConstants.EVENT);
 };

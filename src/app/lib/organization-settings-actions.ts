@@ -13,7 +13,8 @@ export const getOrganizationSettings = async (): Promise<
 > => {
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
-        orgSettings = await prisma.organizationSettings.create({});
+        // Create using an explicit empty `data` so Prisma uses database defaults.
+        orgSettings = await prisma.organizationSettings.create({ data: {} });
     }
     return orgSettings;
 };
@@ -66,7 +67,7 @@ export const deleteBlob = async (blobUrl: string): Promise<void> => {
             }
         } catch (error) {
             // Log for inspection.
-            console.error("Failed to delete logo blob:", error);
+            console.error(`Failed to delete logo blob with url ${blobUrl}:`, error);
         }
     }
 };

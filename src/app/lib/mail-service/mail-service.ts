@@ -46,24 +46,20 @@ const getEmailPayload = async (
 export const notifyOfMembershipApplication = async (
     parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
 ): Promise<void> => {
-    try {
-        const organizationSettings = await getOrganizationSettings();
-        const mailContent = createElement(MembershipApplicationTemplate, {
-            parsedFieldValues,
-        });
+    const organizationSettings = await getOrganizationSettings();
+    const mailContent = createElement(MembershipApplicationTemplate, {
+        parsedFieldValues,
+    });
 
-        const transport = await getMailTransport();
-        const mailResponse = await transport.sendMail(
-            await getEmailPayload(
-                [organizationSettings.organization_email],
-                `New membership application received`,
-                mailContent,
-            ),
-        );
-        if (mailResponse.error) throw new Error(mailResponse.error.message);
-    } catch {
-        throw new Error("Failed to notify of membership application");
-    }
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(
+        await getEmailPayload(
+            [organizationSettings.organization_email],
+            `New membership application received`,
+            mailContent,
+        ),
+    );
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
 };
 
 /**
@@ -135,48 +131,40 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
  * @throws Error if email fails
  */
 export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
-    try {
-        const participantEmails = await getEventParticipantEmails(eventId);
-        const reserveEmails = await getEventReservesEmails(eventId);
-        if (participantEmails.length === 0 && reserveEmails.length === 0) return;
+    const participantEmails = await getEventParticipantEmails(eventId);
+    const reserveEmails = await getEventReservesEmails(eventId);
+    if (participantEmails.length === 0 && reserveEmails.length === 0) return;
 
-        const event = await prisma.event.findUniqueOrThrow({
-            where: { id: eventId },
-            select: { id: true, title: true },
-        });
-        const mailContent = createElement(EventCancelledTemplate, {
-            event: event,
-        });
+    const event = await prisma.event.findUniqueOrThrow({
+        where: { id: eventId },
+        select: { id: true, title: true },
+    });
+    const mailContent = createElement(EventCancelledTemplate, {
+        event: event,
+    });
 
-        const mailPayload = await getEmailPayload(
-            [...participantEmails, ...reserveEmails],
-            `Cancelled event: ${event.title}`,
-            mailContent,
+    const mailPayload = await getEmailPayload(
+        [...participantEmails, ...reserveEmails],
+        `Cancelled event: ${event.title}`,
+        mailContent,
+    );
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(mailPayload);
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    const rejectedEmails = mailResponse?.rejected;
+    if (rejectedEmails.length > 0)
+        throw new Error(
+            `Failed to inform ${rejectedEmails.length} participants and reserves of cancelled event: ${rejectedEmails.join("\n")}`,
         );
-        const transport = await getMailTransport();
-        const mailResponse = await transport.sendMail(mailPayload);
-        if (mailResponse.error) throw new Error(mailResponse.error.message);
-        const rejectedEmails = mailResponse?.rejected;
-        if (rejectedEmails.length > 0)
-            throw new Error(
-                `Failed to inform ${rejectedEmails.length} participants and reserves of cancelled event: ${rejectedEmails.join("\n")}`,
-            );
-    } catch {
-        throw new Error(`Failed to inform participants and reserves of cancelled event`);
-    }
 };
 
 export const getEmailRecipientCount = async (
     recipientCriteria: Prisma.UserWhereInput,
 ): Promise<number> => {
-    try {
-        const recipientCount = await prisma.user.count({
-            where: recipientCriteria,
-        });
-        return recipientCount;
-    } catch {
-        throw new Error("Failed to get email recipient count");
-    }
+    const recipientCount = await prisma.user.count({
+        where: recipientCriteria,
+    });
+    return recipientCount;
 };
 
 /**
@@ -240,49 +228,44 @@ export const sendEmailNotification = async (
  * @throws Error if email fails
  */
 export const sendOrderConfirmation = async (orderId: string): Promise<string> => {
-    try {
-        // Fetch order details with items, products, and user email
-        const orderDetails = await prisma.order.findUniqueOrThrow({
-            where: { id: orderId },
-            include: {
-                user: {
-                    select: {
-                        email: true,
-                    },
+    // Fetch order details with items, products, and user email
+    const orderDetails = await prisma.order.findUniqueOrThrow({
+        where: { id: orderId },
+        include: {
+            user: {
+                select: {
+                    email: true,
                 },
-                order_items: {
-                    include: {
-                        product: {
-                            select: {
-                                name: true,
-                                description: true,
-                            },
+            },
+            order_items: {
+                include: {
+                    product: {
+                        select: {
+                            name: true,
+                            description: true,
                         },
                     },
                 },
             },
-        });
-        const mailContent = createElement(OrderConfirmationTemplate, {
-            orderId: orderDetails.id,
-            orderItems: orderDetails.order_items,
-            totalAmount: orderDetails.total_amount,
-        });
+        },
+    });
+    const mailContent = createElement(OrderConfirmationTemplate, {
+        orderId: orderDetails.id,
+        orderItems: orderDetails.order_items,
+        totalAmount: orderDetails.total_amount,
+    });
 
-        const transport = await getMailTransport();
-        const mailResponse = await transport.sendMail(
-            await getEmailPayload(
-                [orderDetails.user.email],
-                `Order Confirmation - ${await getOrganizationName()}`,
-                mailContent,
-            ),
-        );
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(
+        await getEmailPayload(
+            [orderDetails.user.email],
+            `Order Confirmation - ${await getOrganizationName()}`,
+            mailContent,
+        ),
+    );
 
-        if (mailResponse.error) throw new Error(mailResponse.error.message);
-        return mailResponse;
-    } catch (error) {
-        console.error(`Failed to send order confirmation email for order ${orderId}: `, error);
-        throw new Error("Failed to send order confirmation email");
-    }
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    return mailResponse;
 };
 
 export const notifyTaskReviewer = async (

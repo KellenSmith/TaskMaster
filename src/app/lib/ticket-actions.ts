@@ -16,71 +16,63 @@ export const createEventTicket = async (
     eventId: string,
     parsedFieldValues: z.infer<typeof TicketCreateSchema>,
 ) => {
-    try {
-        const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
-        const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
+    const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
+    const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
 
-        // Find the number of participants in the event
-        const eventParticipantsCount = await prisma.eventParticipant.count({
-            where: {
-                ticket: {
-                    event_id: eventId,
-                },
+    // Find the number of participants in the event
+    const eventParticipantsCount = await prisma.eventParticipant.count({
+        where: {
+            ticket: {
+                event_id: eventId,
             },
-        });
-        const event = await prisma.event.findFirstOrThrow({
-            where: {
-                id: eventId,
-            },
-            select: { max_participants: true },
-        });
+        },
+    });
+    const event = await prisma.event.findFirstOrThrow({
+        where: {
+            id: eventId,
+        },
+        select: { max_participants: true },
+    });
 
-        await prisma.ticket.create({
-            data: {
-                ...ticketFieldValues,
-                product: {
-                    create: {
-                        ...productFieldValues,
-                        stock: event.max_participants - eventParticipantsCount,
-                    },
-                },
-                event: {
-                    connect: {
-                        id: eventId,
-                    },
+    await prisma.ticket.create({
+        data: {
+            ...ticketFieldValues,
+            product: {
+                create: {
+                    ...productFieldValues,
+                    stock: event.max_participants - eventParticipantsCount,
                 },
             },
-        });
-        revalidateTag(GlobalConstants.TICKET);
-    } catch {
-        throw new Error("Failed to create event ticket");
-    }
+            event: {
+                connect: {
+                    id: eventId,
+                },
+            },
+        },
+    });
+    revalidateTag(GlobalConstants.TICKET);
 };
 
 export const updateEventTicket = async (
     ticketId: string,
     parsedFieldValues: z.infer<typeof TicketUpdateSchema>,
 ) => {
-    try {
-        const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
-        const productFieldValues = ProductUpdateSchema.parse(parsedFieldValues);
-        await prisma.ticket.update({
-            where: {
-                id: ticketId,
-            },
-            data: {
-                ...ticketFieldValues,
-                product: {
-                    update: {
-                        ...productFieldValues,
-                    },
+    const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
+    const productFieldValues = ProductUpdateSchema.parse(parsedFieldValues);
+    await prisma.ticket.update({
+        where: {
+            id: ticketId,
+        },
+        data: {
+            ...ticketFieldValues,
+            product: {
+                update: {
+                    ...productFieldValues,
                 },
             },
-        });
-        revalidateTag(GlobalConstants.TICKET);
-    } catch {
-        throw new Error("Failed to update event ticket");
-    }
+        },
+    });
+    revalidateTag(GlobalConstants.TICKET);
 };
 
 export const deleteEventTicket = async (ticketId: string) => {
@@ -100,17 +92,13 @@ export const deleteEventTicket = async (ticketId: string) => {
 };
 
 export const getEventTickets = async (eventId: string) => {
-    try {
-        return await prisma.ticket.findMany({
-            where: {
-                event_id: eventId,
-            },
-            include: {
-                product: true,
-                event_participants: true,
-            },
-        });
-    } catch {
-        throw new Error("Failed to fetch event tickets");
-    }
+    return await prisma.ticket.findMany({
+        where: {
+            event_id: eventId,
+        },
+        include: {
+            product: true,
+            event_participants: true,
+        },
+    });
 };

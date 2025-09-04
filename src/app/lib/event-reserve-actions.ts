@@ -70,37 +70,29 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
 };
 
 export const getEventReserves = async (eventId: string) => {
-    try {
-        return await prisma.eventReserve.findMany({
-            where: { event_id: eventId },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        nickname: true,
-                    },
+    return await prisma.eventReserve.findMany({
+        where: { event_id: eventId },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    nickname: true,
                 },
             },
-        });
-    } catch {
-        throw new Error("Failed to get event reserves");
-    }
+        },
+    });
 };
 
 export const getEventReservesEmails = async (eventId: string): Promise<string[]> => {
-    try {
-        const reserves = await prisma.eventReserve.findMany({
-            where: { event_id: eventId },
-            select: {
-                user: {
-                    select: {
-                        email: true,
-                    },
+    const reserves = await prisma.eventReserve.findMany({
+        where: { event_id: eventId },
+        select: {
+            user: {
+                select: {
+                    email: true,
                 },
             },
-        });
-        return reserves.map((reserve) => reserve.user.email);
-    } catch {
-        throw new Error("Failed to get event reserves emails");
-    }
+        },
+    });
+    return reserves.map((reserve) => reserve.user.email);
 };
