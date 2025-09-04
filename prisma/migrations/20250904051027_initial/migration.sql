@@ -1,8 +1,11 @@
 -- CreateEnum
+CREATE TYPE "public"."Language" AS ENUM ('swedish', 'english');
+
+-- CreateEnum
 CREATE TYPE "public"."UserRole" AS ENUM ('member', 'admin');
 
 -- CreateEnum
-CREATE TYPE "public"."EventStatus" AS ENUM ('draft', 'published', 'cancelled');
+CREATE TYPE "public"."EventStatus" AS ENUM ('draft', 'pending_approval', 'published', 'cancelled');
 
 -- CreateEnum
 CREATE TYPE "public"."TaskStatus" AS ENUM ('toDo', 'inProgress', 'inReview', 'done');
@@ -18,11 +21,13 @@ CREATE TABLE "public"."organization_settings" (
     "id" TEXT NOT NULL,
     "organization_name" TEXT NOT NULL DEFAULT 'Task Master',
     "organization_email" TEXT NOT NULL DEFAULT 'kellensmith407@gmail.com',
+    "logo_url" TEXT,
     "remind_membership_expires_in_days" INTEGER NOT NULL DEFAULT 7,
     "purge_members_after_days_unvalidated" INTEGER NOT NULL DEFAULT 180,
     "default_task_shift_length" INTEGER NOT NULL DEFAULT 2,
     "member_application_prompt" TEXT,
     "ticket_instructions" TEXT,
+    "event_manager_email" TEXT,
 
     CONSTRAINT "organization_settings_pkey" PRIMARY KEY ("id")
 );
@@ -30,11 +35,19 @@ CREATE TABLE "public"."organization_settings" (
 -- CreateTable
 CREATE TABLE "public"."text_contents" (
     "id" TEXT NOT NULL,
-    "language" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
     "category" TEXT DEFAULT 'organization',
 
     CONSTRAINT "text_contents_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."text_translations" (
+    "id" TEXT NOT NULL,
+    "text" TEXT NOT NULL,
+    "language" "public"."Language" NOT NULL,
+    "text_content_id" TEXT NOT NULL,
+
+    CONSTRAINT "text_translations_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -43,7 +56,7 @@ CREATE TABLE "public"."users" (
     "email" TEXT NOT NULL,
     "nickname" TEXT NOT NULL,
     "role" "public"."UserRole" NOT NULL DEFAULT 'member',
-    "consent_to_newsletters" BOOLEAN NOT NULL DEFAULT true,
+    "consent_to_newsletters" BOOLEAN NOT NULL DEFAULT false,
     "first_name" TEXT,
     "sur_name" TEXT,
     "pronoun" TEXT DEFAULT 'they/them',
@@ -87,7 +100,8 @@ CREATE TABLE "public"."events" (
     "description" TEXT,
     "max_participants" INTEGER NOT NULL,
     "status" "public"."EventStatus" NOT NULL DEFAULT 'draft',
-    "host_id" TEXT NOT NULL,
+    "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "host_id" TEXT,
 
     CONSTRAINT "events_pkey" PRIMARY KEY ("id")
 );
@@ -114,7 +128,7 @@ CREATE TABLE "public"."tasks" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "status" "public"."TaskStatus" NOT NULL DEFAULT 'toDo',
-    "start_time" TIMESTAMP(3) NOT NULL,
+    "start_time" TIMESTAMP(3),
     "end_time" TIMESTAMP(3) NOT NULL,
     "description" TEXT,
     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
@@ -202,7 +216,7 @@ CREATE TABLE "public"."orders" (
     "payee_ref" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "user_id" TEXT,
 
     CONSTRAINT "orders_pkey" PRIMARY KEY ("id")
 );
@@ -219,7 +233,7 @@ CREATE TABLE "public"."order_items" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "text_contents_id_language_key" ON "public"."text_contents"("id", "language");
+CREATE UNIQUE INDEX "text_translations_language_text_content_id_key" ON "public"."text_translations"("language", "text_content_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
@@ -246,13 +260,16 @@ CREATE UNIQUE INDEX "orders_payment_request_id_key" ON "public"."orders"("paymen
 CREATE UNIQUE INDEX "orders_payee_ref_key" ON "public"."orders"("payee_ref");
 
 -- AddForeignKey
+ALTER TABLE "public"."text_translations" ADD CONSTRAINT "text_translations_text_content_id_fkey" FOREIGN KEY ("text_content_id") REFERENCES "public"."text_contents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."user_credentials" ADD CONSTRAINT "user_credentials_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."events" ADD CONSTRAINT "events_location_id_fkey" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."events" ADD CONSTRAINT "events_host_id_fkey" FOREIGN KEY ("host_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."events" ADD CONSTRAINT "events_host_id_fkey" FOREIGN KEY ("host_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -303,7 +320,7 @@ ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_product_id_fkey" FOREIGN 
 ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
