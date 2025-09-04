@@ -369,7 +369,7 @@ export const contactTaskMember = async (
         recipient.email,
         sender.email,
         `About ${task.name}`,
-        `${sender.nickname} is contacting you regarding the task ${task.name}.`,
+        `${sender.nickname} is contacting you regarding the task ${task.name}. Please observe that your email address will be revealed if you reply to this message.`,
         parsedFieldValues.content,
     );
 
