@@ -1,7 +1,6 @@
 import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
-import { Prisma } from "@prisma/client";
 
 /**
  * Props for the OrderConfirmationTemplate component.

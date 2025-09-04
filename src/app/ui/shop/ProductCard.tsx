@@ -45,7 +45,6 @@ export default function ProductCard({
     const { language } = useUserContext();
     const [isOpen, setIsOpen] = useState(false);
     const defaultProductImage = "/images/product-placeholder.svg";
-    const defaultTicketImage = "/images/ticket-placeholder.svg";
     const theme = useTheme();
     const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
 
