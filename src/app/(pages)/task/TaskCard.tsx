@@ -21,15 +21,16 @@ import { FC, use, useState } from "react";
 import { Prisma } from "@prisma/client";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
-import { TaskUpdateSchema } from "../../lib/zod-schemas";
+import { ContactMemberSchema, TaskUpdateSchema } from "../../lib/zod-schemas";
 import z from "zod";
-import { deleteTask, updateTaskById } from "../../lib/task-actions";
+import { contactTaskMember, deleteTask, updateTaskById } from "../../lib/task-actions";
 import { getUserSelectOptions } from "../../ui/form/FieldCfg";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { LocalPolice } from "@mui/icons-material";
+import { LocalPolice, Warning } from "@mui/icons-material";
 import { implementedTabs } from "../profile/LanguageTranslations";
 import { useNotificationContext } from "../../context/NotificationContext";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface TaskCardProps {
     taskPromise: Promise<
@@ -56,6 +57,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
     const { addNotification } = useNotificationContext();
     const router = useRouter();
     const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [messageRecipientId, setMessageRecipientId] = useState<string | null>(null);
     const task = use(taskPromise);
     const skillBadges = use(skillBadgesPromise);
     const activeMembers = use(activeMembersPromise);
@@ -82,6 +84,16 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         }
     };
 
+    const contactMemberAction = async (parsedFieldValues: z.infer<typeof ContactMemberSchema>) => {
+        try {
+            await contactTaskMember(messageRecipientId, parsedFieldValues, task.id);
+            setMessageRecipientId(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
+    };
+
     const deleteTaskAction = async () => {
         try {
             await deleteTask(task.id);
@@ -92,6 +104,61 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         } catch {
             addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
+    };
+
+    const getDialogForm = () => {
+        if (messageRecipientId) {
+            return (
+                <>
+                    <Card sx={{ p: 2 }}>
+                        <Warning color="warning" />
+                        <Typography variant="caption" sx={{ p: 2 }} color="warning">
+                            {LanguageTranslations.privacyWarning[language]}
+                        </Typography>
+                    </Card>
+                    <Form
+                        name={GlobalConstants.CONTACT_MEMBER}
+                        validationSchema={ContactMemberSchema}
+                        action={contactMemberAction}
+                        defaultValues={{
+                            [GlobalConstants.CONTENT]: LanguageTranslations.messagePrompt[language],
+                        }}
+                        editable={true}
+                        readOnly={false}
+                    />
+                </>
+            );
+        }
+        return (
+            <Form
+                name={GlobalConstants.TASK}
+                defaultValues={{
+                    ...task,
+                    skill_badges: (task.skill_badges || []).map((b: any) => b.skill_badge_id),
+                }}
+                customOptions={{
+                    [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(
+                        activeMembers,
+                        task.skill_badges,
+                    ),
+                    [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
+                        activeMembers,
+                        task.skill_badges,
+                    ),
+                    [GlobalConstants.SKILL_BADGES]: skillBadges.map(
+                        (b) =>
+                            ({
+                                id: b.id,
+                                label: b.name,
+                            }) as CustomOptionProps,
+                    ),
+                }}
+                action={updateTaskAction}
+                validationSchema={TaskUpdateSchema}
+                readOnly={false}
+                editable={true}
+            />
+        );
     };
 
     return (
@@ -109,7 +176,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                 <CardContent sx={{ p: 3 }}>
                     <Stack spacing={2}>
                         <Stack
-                            direction="row"
+                            direction={isSmallScreen ? "column" : "row"}
                             justifyContent="space-between"
                             alignItems="flex-start"
                         >
@@ -153,7 +220,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                 direction="row"
                                 spacing={2}
                                 alignItems="center"
+                                justifyContent="space-between"
                                 sx={{ flexWrap: "wrap" }}
+                                width="100%"
                             >
                                 <Chip
                                     variant="outlined"
@@ -213,8 +282,20 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     </Typography>
                                 )}
                             </Stack>
+                        </Stack>
+                        <Stack
+                            direction={isSmallScreen ? "column" : "row"}
+                            width="100%"
+                            justifyContent="space-between"
+                        >
+                            <Button onClick={() => setMessageRecipientId(task.assignee?.id)}>
+                                {LanguageTranslations.contactAssignee[language]}
+                            </Button>
+                            <Button onClick={() => setMessageRecipientId(task.reviewer?.id)}>
+                                {LanguageTranslations.contactReviewer[language]}
+                            </Button>
                             {task.reviewer_id === user.id && (
-                                <Stack direction={"row"}>
+                                <>
                                     <Button onClick={() => setEditDialogOpen(true)}>
                                         {GlobalLanguageTranslations.edit[language]}
                                     </Button>
@@ -226,7 +307,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     >
                                         {GlobalLanguageTranslations.delete[language]}
                                     </ConfirmButton>
-                                </Stack>
+                                </>
                             )}
                         </Stack>
                     </Stack>
@@ -236,38 +317,16 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                 fullScreen={isSmallScreen}
                 fullWidth
                 maxWidth="xl"
-                open={editDialogOpen}
+                open={editDialogOpen || !!messageRecipientId}
                 onClose={() => setEditDialogOpen(false)}
             >
-                <Form
-                    name={GlobalConstants.TASK}
-                    defaultValues={{
-                        ...task,
-                        skill_badges: (task.skill_badges || []).map((b: any) => b.skill_badge_id),
+                {getDialogForm()}
+                <Button
+                    onClick={() => {
+                        setEditDialogOpen(false);
+                        setMessageRecipientId(null);
                     }}
-                    customOptions={{
-                        [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(
-                            activeMembers,
-                            task.skill_badges,
-                        ),
-                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
-                            activeMembers,
-                            task.skill_badges,
-                        ),
-                        [GlobalConstants.SKILL_BADGES]: skillBadges.map(
-                            (b) =>
-                                ({
-                                    id: b.id,
-                                    label: b.name,
-                                }) as CustomOptionProps,
-                        ),
-                    }}
-                    action={updateTaskAction}
-                    validationSchema={TaskUpdateSchema}
-                    readOnly={false}
-                    editable={true}
-                />
-                <Button onClick={() => setEditDialogOpen(false)}>
+                >
                     {GlobalLanguageTranslations.cancel[language]}
                 </Button>
             </Dialog>

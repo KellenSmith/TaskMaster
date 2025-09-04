@@ -5,13 +5,14 @@ import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import z from "zod";
-import { TaskCreateSchema, TaskUpdateSchema } from "./zod-schemas";
-import { notifyTaskReviewer } from "./mail-service/mail-service";
+import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema } from "./zod-schemas";
+import { memberContactMember, notifyTaskReviewer } from "./mail-service/mail-service";
 import {
     addEventParticipantWithTx,
     deleteEventParticipantWithTx,
 } from "./event-participant-actions";
 import { addEventReserveWithTx } from "./event-reserve-actions";
+import { getLoggedInUser } from "./user-actions";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     await prisma.task.delete({
@@ -345,4 +346,32 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
                 console.error("Error notifying task reviewer:", error);
             }
     });
+};
+
+export const contactTaskMember = async (
+    recipientId: string,
+    parsedFieldValues: z.infer<typeof ContactMemberSchema>,
+    taskId: string | null,
+): Promise<void> => {
+    const recipient = await prisma.user.findUniqueOrThrow({
+        where: {
+            id: recipientId,
+        },
+    });
+    const sender = await getLoggedInUser();
+    const task = await prisma.task.findUniqueOrThrow({
+        where: {
+            id: taskId,
+        },
+    });
+
+    await memberContactMember(
+        recipient.email,
+        sender.email,
+        `About ${task.name}`,
+        `${sender.nickname} is contacting you regarding the task ${task.name}.`,
+        parsedFieldValues.content,
+    );
+
+    // Implementation goes here
 };

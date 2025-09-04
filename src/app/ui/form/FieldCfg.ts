@@ -145,6 +145,7 @@ export const RenderedFields = {
         GlobalConstants.DESCRIPTION,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
+    [GlobalConstants.CONTACT_MEMBER]: [GlobalConstants.CONTENT],
     [GlobalConstants.PRODUCT]: [
         GlobalConstants.NAME,
         GlobalConstants.PRICE,

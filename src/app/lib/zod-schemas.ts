@@ -329,3 +329,7 @@ export const CloneEventSchema = z.object({
 export const AddMembershipSchema = z.object({
     expires_at: stringToISODate,
 });
+
+export const ContactMemberSchema = z.object({
+    content: z.string().min(2).max(1000),
+});

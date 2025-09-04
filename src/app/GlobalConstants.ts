@@ -145,6 +145,7 @@ const GlobalConstants = {
     SUBJECT: "subject",
     CONTENT: "content",
     RECIPIENT_CRITERIA: "recipientCriteria",
+    CONTACT_MEMBER: "contactMember",
     // TextContent
     TEXT_CONTENT: "textContent",
     TEXT: "text",

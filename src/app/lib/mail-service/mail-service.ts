@@ -21,10 +21,12 @@ import TaskUpdateTemplate from "./mail-templates/TaskUpdateTemplate";
 import EmailNotificationTemplate, {
     MailButtonLink,
 } from "./mail-templates/MailNotificationTemplate";
+import MemberContactMemberTemplate from "./mail-templates/MemberContactMemberTemplate";
 
 interface EmailPayload {
     from: string;
     bcc: string;
+    replyTo?: string;
     subject: string;
     html: string;
 }
@@ -33,14 +35,17 @@ const getEmailPayload = async (
     receivers: string[],
     subject: string,
     mailContent: ReactElement,
+    replyTo?: string,
 ): Promise<EmailPayload> => {
     const organizationSettings = await getOrganizationSettings();
-    return {
+    const payload: EmailPayload = {
         from: `${await getOrganizationName()} <${organizationSettings?.organization_email}>`,
         bcc: receivers.join(", "),
         subject: subject,
         html: await render(mailContent),
     };
+    if (replyTo) payload.replyTo = replyTo;
+    return payload;
 };
 
 export const notifyOfMembershipApplication = async (
@@ -280,4 +285,23 @@ export const notifyTaskReviewer = async (
 
     const transport = await getMailTransport();
     return transport.sendMail(await getEmailPayload([reviewerEmail], `Task updated`, mailContent));
+};
+
+export const memberContactMember = async (
+    recipientEmail: string,
+    senderEmail: string,
+    subject: string,
+    reason: string,
+    content: string,
+) => {
+    const mailContent = createElement(MemberContactMemberTemplate, {
+        reason,
+        content,
+    });
+
+    const transport = await getMailTransport();
+    // Set replyTo to the sender so the recipient can reply directly to the member
+    return transport.sendMail(
+        await getEmailPayload([recipientEmail], subject, mailContent, senderEmail),
+    );
 };
