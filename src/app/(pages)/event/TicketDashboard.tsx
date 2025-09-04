@@ -44,7 +44,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
             t.event_participants?.find((ep: any) => ep.user_id === user.id),
         );
         if (!participantTicket) return null;
-        return tickets.find((ticket) => ticket.id === participantTicket?.id);
+        return tickets.find((ticket) => ticket.product_id === participantTicket?.product_id);
     }, [tickets, user, event]);
 
     const leaveParticipantList = async () => {

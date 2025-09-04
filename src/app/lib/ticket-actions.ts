@@ -61,7 +61,7 @@ export const updateEventTicket = async (
     const productFieldValues = ProductUpdateSchema.parse(parsedFieldValues);
     await prisma.ticket.update({
         where: {
-            id: ticketId,
+            product_id: ticketId,
         },
         data: {
             ...ticketFieldValues,
@@ -79,7 +79,7 @@ export const deleteEventTicket = async (ticketId: string) => {
     await prisma.$transaction(async (tx) => {
         const deletedTicket = await tx.ticket.delete({
             where: {
-                id: ticketId,
+                product_id: ticketId,
             },
         });
         await tx.product.delete({

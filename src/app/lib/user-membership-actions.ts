@@ -8,13 +8,25 @@ import { createOrder } from "./order-actions";
 import { isMembershipExpired } from "./definitions";
 import { revalidateTag } from "next/cache";
 
+export const addUserMembership = async (userId: string, expiresAt: string): Promise<void> => {
+    const membershipProduct = await getMembershipProduct();
+    await prisma.userMembership.create({
+        data: {
+            user: { connect: { id: userId } },
+            membership: { connect: { product_id: membershipProduct.id } },
+            expires_at: expiresAt,
+        },
+    });
+    revalidateTag(GlobalConstants.USER);
+};
+
 export const renewUserMembership = async (
     tx,
     userId: string,
     membershipId: string,
 ): Promise<void> => {
     const membership = await tx.membership.findUniqueOrThrow({
-        where: { id: membershipId },
+        where: { product_id: membershipId },
     });
     const userMembership = await tx.userMembership.findUnique({
         where: { user_id: userId },

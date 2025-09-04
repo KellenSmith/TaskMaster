@@ -9,7 +9,7 @@ import { deleteEventReserveWithTx } from "./event-reserve-actions";
 export const addEventParticipantWithTx = async (tx, ticketId: string, userId: string) => {
     const ticket = await prisma.ticket.findUniqueOrThrow({
         where: {
-            id: ticketId,
+            product_id: ticketId,
         },
     });
 
@@ -65,7 +65,7 @@ export const addEventParticipantWithTx = async (tx, ticketId: string, userId: st
             },
             ticket: {
                 connect: {
-                    id: ticketId,
+                    product_id: ticketId,
                 },
             },
         },
@@ -96,7 +96,7 @@ export const deleteEventParticipantWithTx = async (tx, eventId: string, userId: 
         where: {
             user_id_ticket_id: {
                 user_id: userId,
-                ticket_id: ticket.id,
+                ticket_id: ticket.product_id,
             },
         },
     });

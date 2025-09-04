@@ -1,8 +1,0 @@
-"id","email","nickname","role","consent_to_newsletters","first_name","sur_name","pronoun","phone","created_at"
-"09266ce5-ae5d-41b9-990e-e15421354587","eventReserve@email.com","eventReserve","member","true","eventReserve","eventReserve","eventReserve","eventReserve","2025-08-25 03:57:26.537"
-"4238dd9a-f7f5-47a0-bd19-f9eea166f841","expiredMembership@email.com","expiredMembership","member","true","expiredMembership","expiredMembership","expiredMembership","expiredMembership","2025-08-25 03:58:32.842"
-"495796c7-c5f0-4e25-a949-4d0db3966480","eventHost@email.com","eventHost","member","true","eventHost","eventHost","eventHost","eventHost","2025-08-25 03:56:13.941"
-"511b206c-1046-4aaa-a6bd-9a5fe1f3970f","admin@email.com","admin","admin","true","admin","admin","admin","admin","2025-08-25 03:55:14.854"
-"9379a85d-89f0-4384-beb4-e966435343c6","pendingMembership@email.com","pendingMembership","member","true","pendingMembership","pendingMembership","pendingMembership","pendingMembership","2025-08-25 03:58:59.223"
-"99838494-f142-44a3-892d-c372db90f93c","eventParticipant@email.com","eventParticipant","member","true","eventParticipant","eventParticipant","eventParticipant","eventParticipant","2025-08-25 03:56:37.495"
-"c59d5d50-964f-464e-914b-db2466c1b85f","eventVolunteer@email.com","eventVolunteer","member","true","eventVolunteer","eventVolunteer","eventVolunteer","eventVolunteer","2025-08-25 03:58:07.279"

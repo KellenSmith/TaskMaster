@@ -186,7 +186,7 @@ const ParticipantDashboard = ({
     );
 
     const getTicketsOptions = () =>
-        tickets.map((t) => ({ id: t.id, label: t.product.name }) as CustomOptionProps);
+        tickets.map((t) => ({ id: t.product_id, label: t.product.name }) as CustomOptionProps);
 
     return (
         <Stack>

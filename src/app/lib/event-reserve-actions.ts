@@ -49,13 +49,11 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
 };
 
 export const deleteEventReserveWithTx = async (tx, userId: string, eventId: string) => {
-    // Delete the event reserve entry if it exists
-    await tx.eventReserve.delete({
+    // Delete the event reserve entry if it exists (use deleteMany to avoid error)
+    await tx.eventReserve.deleteMany({
         where: {
-            user_id_event_id: {
-                user_id: userId,
-                event_id: eventId,
-            },
+            user_id: userId,
+            event_id: eventId,
         },
     });
     revalidateTag(GlobalConstants.RESERVE_USERS);

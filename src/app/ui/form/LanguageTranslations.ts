@@ -119,6 +119,10 @@ export const userFieldLabels = {
         [Language.english]: "Expired",
         [Language.swedish]: "Utgått",
     },
+    [GlobalConstants.EXPIRES_AT]: {
+        [Language.english]: "Expires At",
+        [Language.swedish]: "Utgår Datum",
+    },
 };
 
 export const userCredentialsFieldLabels = {
@@ -282,8 +286,8 @@ export const productFieldLabels = {
     [GlobalConstants.STOCK]: ProductLanguageTranslations.stock,
     [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations[GlobalConstants.UNLIMITED_STOCK],
     [GlobalConstants.IMAGE_URL]: {
-        [Language.english]: "Image URL",
-        [Language.swedish]: "Bild-URL",
+        [Language.english]: "Image",
+        [Language.swedish]: "Bild",
     },
 };
 

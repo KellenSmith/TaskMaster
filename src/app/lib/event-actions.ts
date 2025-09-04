@@ -12,7 +12,6 @@ import {
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./definitions";
-import { allowRedirectException } from "../ui/utils";
 import dayjs from "dayjs";
 import { getLoggedInUser } from "./user-actions";
 import { getOrganizationSettings } from "./organization-settings-actions";
@@ -68,7 +67,7 @@ export const createEvent = async (
         await tx.eventParticipant.create({
             data: {
                 user_id: userId,
-                ticket_id: volunteerTicket.id,
+                ticket_id: volunteerTicket.product_id,
             },
         });
 
@@ -417,7 +416,7 @@ export const cloneEvent = async (
         const clonedTickets = await Promise.all(
             tickets.map(async (ticket) => {
                 const {
-                    id: ticketIdToOmit, // eslint-disable-line no-unused-vars
+                    product_id: ticketIdToOmit, // eslint-disable-line no-unused-vars
                     event_id: eventIdToOmit, // eslint-disable-line no-unused-vars
                     product_id: ticketProductIdToOmit, // eslint-disable-line no-unused-vars
                     product,
@@ -452,7 +451,7 @@ export const cloneEvent = async (
                     connect: { id: loggedInUser.id },
                 },
                 ticket: {
-                    connect: { id: volunteerTicket.id },
+                    connect: { product_id: volunteerTicket.product_id },
                 },
             },
         });

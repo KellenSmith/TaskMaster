@@ -12,11 +12,15 @@ import { renewUserMembership } from "./user-membership-actions";
 import z from "zod";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { addEventParticipant, addEventParticipantWithTx } from "./event-participant-actions";
-import { deleteBlob, updateBlob } from "./organization-settings-actions";
+import { addEventParticipantWithTx } from "./event-participant-actions";
+import { deleteOldBlob } from "./organization-settings-actions";
 
-export const getAllProducts = async (): Promise<Product[]> => {
-    return await prisma.product.findMany();
+export const getAllNonTicketProducts = async (): Promise<Product[]> => {
+    return await prisma.product.findMany({
+        where: {
+            ticket: null,
+        },
+    });
 };
 
 export const createProduct = async (
@@ -55,38 +59,20 @@ export const updateProduct = async (
         where: { id: productId },
         data: parsedFieldValues,
     });
-    await updateBlob(oldProduct.image_url, parsedFieldValues.image_url);
+    await deleteOldBlob(oldProduct.image_url, parsedFieldValues.image_url);
     revalidateTag(GlobalConstants.PRODUCT);
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
-    await prisma.$transaction(async (tx) => {
-        const membership = await tx.membership.findUnique({
-            where: { product_id: productId },
-        });
-        const ticket = await tx.ticket.findUnique({
-            where: { product_id: productId },
-            include: { product: true },
-        });
-
-        if (membership)
-            await tx.membership.delete({
-                where: { product_id: productId },
-            });
-
-        if (ticket)
-            await tx.ticket.delete({
-                where: { product_id: productId },
-            });
-        await tx.product.delete({
-            where: { id: productId },
-        });
-        await deleteBlob(ticket.product.image_url);
+    const deletedProduct = await prisma.product.delete({
+        where: { id: productId },
+        include: { membership: true, ticket: true },
     });
+    await deleteOldBlob(deletedProduct.image_url);
 
+    if (deletedProduct.membership) revalidateTag(GlobalConstants.MEMBERSHIP);
+    if (deletedProduct.ticket) revalidateTag(GlobalConstants.TICKET);
     revalidateTag(GlobalConstants.PRODUCT);
-    revalidateTag(GlobalConstants.TICKET);
-    revalidateTag(GlobalConstants.MEMBERSHIP);
 };
 
 export const processOrderedProduct = async (
@@ -100,9 +86,9 @@ export const processOrderedProduct = async (
         throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {
-            await renewUserMembership(tx, userId, orderItem.product.membership.id);
+            await renewUserMembership(tx, userId, orderItem.product.membership.product_id);
         } else if (orderItem.product.ticket) {
-            await addEventParticipantWithTx(tx, orderItem.product.ticket.id, userId);
+            await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);
         }
     }
 };

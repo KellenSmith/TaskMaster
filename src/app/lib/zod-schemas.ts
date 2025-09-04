@@ -45,14 +45,14 @@ export const OrderStatusSchema = z.enum(OrderStatus);
 export const OrganizationSettingsUpdateSchema = z
     .object({
         id: z.string().optional(),
-        organization_name: z.string().optional(),
-        organization_email: z.email().optional(),
-        event_manager_email: z.email().optional(),
+        organization_name: z.string().nullable().optional(),
+        organization_email: z.email().nullable().optional(),
+        event_manager_email: z.union([z.email().nullable().optional(), z.literal("")]),
         remind_membership_expires_in_days: z.coerce.number().int().positive().optional(),
         purge_members_after_days_unvalidated: z.coerce.number().int().positive().optional(),
         default_task_shift_length: z.coerce.number().int().positive().optional(),
-        member_application_prompt: z.string().optional(),
-        logo_url: z.string().optional(),
+        member_application_prompt: z.string().nullable().optional(),
+        logo_url: z.string().nullable().optional(),
     })
     .omit({ id: true });
 
@@ -65,7 +65,7 @@ export const UserCreateSchema = z.object({
     email: z.email(),
     nickname: z.string().optional(),
     role: UserRoleSchema.optional(),
-    consentToNewsletters: z.coerce.boolean().optional(),
+    consent_to_newsletters: z.coerce.boolean().optional(),
 
     first_name: z.string().optional(),
     sur_name: z.string().optional(),
@@ -159,7 +159,7 @@ export const TaskCreateSchema = z
         tags: selectMultipleSchema,
 
         assignee_id: z.string().nullable(),
-        reviewer_id: z.string().nullable(),
+        reviewer_id: z.string(),
 
         skill_badges: selectMultipleSchema,
 
@@ -324,4 +324,8 @@ export const TaskFilterSchema = z
 
 export const CloneEventSchema = z.object({
     start_time: stringToISODate,
+});
+
+export const AddMembershipSchema = z.object({
+    expires_at: stringToISODate,
 });

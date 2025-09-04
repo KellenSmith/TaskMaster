@@ -8,8 +8,6 @@ import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { hashPassword, signIn, signOut } from "./auth";
 import { getRelativeUrl } from "./definitions";
-import { CredentialsSignin } from "next-auth";
-import { allowRedirectException } from "../ui/utils";
 
 export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Promise<void> => {
     await signIn("credentials", {

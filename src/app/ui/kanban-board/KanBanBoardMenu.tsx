@@ -321,7 +321,8 @@ const KanBanBoardMenu = ({
                                             <DraggableTaskShifts
                                                 key={taskList.map((task) => task.id).join("-")}
                                                 readOnly={true}
-                                                taskList={taskList}
+                                                taskName={taskList[0].name}
+                                                tasksPromise={tasksPromise}
                                             />
                                         ),
                                     )

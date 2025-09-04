@@ -124,6 +124,7 @@ const Form: FC<FormProps> = ({
             return parsedFieldValues;
         } catch (error) {
             if (error instanceof ZodError) {
+                console.log(formDataObject);
                 const zodIssues = error.issues;
                 if (zodIssues.length > 0) {
                     const errorField = zodIssues[0]?.path[0];
@@ -149,7 +150,6 @@ const Form: FC<FormProps> = ({
             try {
                 const submitResult = await action(parsedFieldValues);
                 addNotification(submitResult, "success");
-                console.log(editable, readOnly);
                 !(editable && !readOnly) && setEditMode(false);
             } catch (error) {
                 allowRedirectException(error);
@@ -171,7 +171,7 @@ const Form: FC<FormProps> = ({
         if (datePickerFields.includes(fieldId))
             return requiredFields.includes(fieldId) ? dayjs().hour(18).minute(0).second(0) : null;
         if (checkboxFields.includes(fieldId)) return false;
-        return "";
+        return null;
     };
 
     const getFieldComp = (fieldId: string) => {

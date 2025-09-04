@@ -19,13 +19,16 @@ import dayjs from "dayjs";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
+import { use } from "react";
 
 interface DraggableTaskShiftsProps {
     readOnly: boolean;
-    // A list of shifts (tasks with the same name)
-    taskList: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-    }>[];
+    taskName: string;
+    tasksPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+        }>[]
+    >;
     eventPromise?: Promise<
         Prisma.EventGetPayload<{
             include: { tickets: { include: { event_participants: true } } };
@@ -47,13 +50,17 @@ interface DraggableTaskShiftsProps {
 
 const DraggableTaskShifts = ({
     readOnly,
-    taskList,
+    taskName,
+    tasksPromise,
     eventPromise,
     setDraggedTask,
     openCreateTaskDialog,
 }: DraggableTaskShiftsProps) => {
     const { organizationSettings } = useOrganizationSettingsContext();
     const { language } = useUserContext();
+    const tasks = use(tasksPromise);
+    const taskList = tasks.filter((task) => task.name === taskName);
+
     const getLatestEndTime = () =>
         taskList
             .map((task) => task.end_time)
@@ -72,6 +79,7 @@ const DraggableTaskShifts = ({
         newTaskShift.end_time = dayjs(newTaskShift.start_time)
             .add(organizationSettings.default_task_shift_length, "hour")
             .toDate();
+        console.log(newTaskShift);
         return newTaskShift;
     };
 
@@ -94,7 +102,8 @@ const DraggableTaskShifts = ({
                 <DraggableTask
                     key={taskList[0].id}
                     readOnly={readOnly}
-                    task={taskList[0]}
+                    taskId={taskList[0].id}
+                    tasksPromise={tasksPromise}
                     eventPromise={eventPromise}
                     setDraggedTask={setDraggedTask}
                 />
@@ -133,8 +142,9 @@ const DraggableTaskShifts = ({
                                 <Divider />
                                 <DraggableTask
                                     readOnly={readOnly}
-                                    task={task}
+                                    taskId={task.id}
                                     eventPromise={eventPromise}
+                                    tasksPromise={tasksPromise}
                                     setDraggedTask={setDraggedTask}
                                 />
                             </Stack>

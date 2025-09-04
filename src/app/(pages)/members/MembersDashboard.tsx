@@ -1,5 +1,14 @@
 "use client";
-import { Chip, Stack, Tooltip, Typography } from "@mui/material";
+import {
+    Button,
+    Chip,
+    Dialog,
+    Stack,
+    Tooltip,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from "@mui/material";
 import { createUser, deleteUser, updateUser } from "../../lib/user-actions";
 import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
@@ -8,7 +17,7 @@ import { FieldLabels } from "../../ui/form/FieldCfg";
 import { isMembershipExpired } from "../../lib/definitions";
 import { validateUserMembership } from "../../lib/user-credentials-actions";
 import { Prisma } from "@prisma/client";
-import { UserUpdateSchema } from "../../lib/zod-schemas";
+import { AddMembershipSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import {
     Check as CheckIcon,
@@ -16,16 +25,19 @@ import {
     Shield,
     Warning as WarningIcon,
 } from "@mui/icons-material";
-import { FC, use } from "react";
+import { FC, use, useState } from "react";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import Form from "../../ui/form/Form";
+import z from "zod";
+import { addUserMembership } from "../../lib/user-membership-actions";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
         Prisma.UserGetPayload<{
             include: {
-                user_credentials: { select: { id: true } };
+                user_credentials: { select: { user_id: true } };
                 user_membership: true;
                 skill_badges: true;
             };
@@ -35,8 +47,12 @@ interface MembersDashboardProps {
 }
 
 const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadgesPromise }) => {
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { user, language } = useUserContext();
     const skillBadges = use(skillBadgesPromise);
+    const [addMembershipDialogOpen, setAddMembershipDialogOpen] =
+        useState<ImplementedDatagridEntities | null>(null);
 
     const isMembershipPending = (member: ImplementedDatagridEntities) =>
         !(
@@ -52,9 +68,18 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     const validateMembershipAction = async (member: ImplementedDatagridEntities) => {
         try {
             await validateUserMembership(member.id);
-            return "Validated user membership";
+            return LanguageTranslations.validatedMembership[language];
         } catch {
-            throw new Error("Failed validating user membership");
+            throw new Error(LanguageTranslations.failedValidatedMembership[language]);
+        }
+    };
+
+    const addMembershipAction = async (fieldValues: z.infer<typeof AddMembershipSchema>) => {
+        try {
+            await addUserMembership(addMembershipDialogOpen!.id, fieldValues.expires_at);
+            return LanguageTranslations.addedMembership[language];
+        } catch {
+            throw new Error(LanguageTranslations.failedAddedMembership[language]);
         }
     };
 
@@ -81,6 +106,24 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             available: (member: ImplementedDatagridEntities) => user && member?.id !== user.id,
             buttonColor: "error",
             buttonLabel: GlobalLanguageTranslations.delete[language],
+        },
+        {
+            name: GlobalConstants.ADD_MEMBERSHIP,
+            serverAction: async (member: ImplementedDatagridEntities) => {
+                setAddMembershipDialogOpen(member);
+                return "Opened add membership dialog";
+            },
+            available: (row: ImplementedDatagridEntities) => {
+                const member = row as Prisma.UserGetPayload<{
+                    include: {
+                        user_credentials: { select: { user_id: true } };
+                        user_membership: true;
+                        skill_badges: true;
+                    };
+                }>;
+                return member && isMembershipExpired(member) && !isMembershipPending(member);
+            },
+            buttonLabel: LanguageTranslations.addMembership[language],
         },
     ];
 
@@ -236,6 +279,24 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     ),
                 }}
             />
+            <Dialog
+                open={!!addMembershipDialogOpen}
+                onClose={() => setAddMembershipDialogOpen(null)}
+                fullWidth
+                maxWidth="md"
+                fullScreen={isSmallScreen}
+            >
+                <Form
+                    name={GlobalConstants.ADD_MEMBERSHIP}
+                    validationSchema={AddMembershipSchema}
+                    action={addMembershipAction}
+                    editable={true}
+                    readOnly={false}
+                />
+                <Button onClick={() => setAddMembershipDialogOpen(null)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
+            </Dialog>
         </Stack>
     );
 };

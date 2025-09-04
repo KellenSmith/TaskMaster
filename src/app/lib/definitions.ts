@@ -57,13 +57,18 @@ export const applicationRoutes = {
         GlobalConstants.LOGIN,
         GlobalConstants.RESET,
         GlobalConstants.APPLY,
+
         GlobalConstants.CONTACT,
         GlobalConstants.ORDER,
     ],
-    [UserRole.member]: [GlobalConstants.PROFILE, GlobalConstants.CALENDAR, GlobalConstants.TASK],
+    [UserRole.member]: [
+        GlobalConstants.PROFILE,
+        GlobalConstants.CALENDAR,
+        GlobalConstants.TASK,
+        GlobalConstants.TASKS,
+    ],
     [UserRole.admin]: [
         GlobalConstants.LOCATIONS,
-        GlobalConstants.TASKS,
         GlobalConstants.YEAR_WHEEL,
         GlobalConstants.SKILL_BADGES,
         GlobalConstants.SENDOUT,

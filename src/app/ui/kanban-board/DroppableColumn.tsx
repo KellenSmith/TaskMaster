@@ -14,11 +14,11 @@ import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
 import { use, useState } from "react";
 import { Add } from "@mui/icons-material";
-import { getUserSelectOptions } from "../form/FieldCfg";
+import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
 import { Prisma, Task, TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import z from "zod";
-import { TaskCreateSchema } from "../../lib/zod-schemas";
+import { TaskCreateSchema, TaskFilterSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import DraggableTaskShifts from "./DraggableTaskShifts";
@@ -26,6 +26,7 @@ import { CustomOptionProps } from "../form/AutocompleteWrapper";
 import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
+import { getFilteredTasks } from "./KanBanBoardMenu";
 
 interface DroppableColumnProps {
     readOnly: boolean;
@@ -33,9 +34,12 @@ interface DroppableColumnProps {
         Prisma.EventGetPayload<{ include: { tickets: { include: { event_participants: true } } } }>
     >;
     status: TaskStatus;
-    tasks: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-    }>[];
+    tasksPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+        }>[]
+    >;
+    appliedFilter: z.infer<typeof TaskFilterSchema> | null;
     activeMembersPromise?: Promise<
         Prisma.UserGetPayload<{
             select: { id: true; nickname: true; skill_badges: true };
@@ -61,7 +65,8 @@ const DroppableColumn = ({
     readOnly,
     eventPromise,
     status,
-    tasks,
+    tasksPromise,
+    appliedFilter,
     activeMembersPromise,
     skillBadgesPromise,
     draggedTask,
@@ -77,6 +82,12 @@ const DroppableColumn = ({
     const event = eventPromise ? use(eventPromise) : null;
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const skillBadges = use(skillBadgesPromise);
+    const tasks = use(tasksPromise);
+    const filteredTasks = getFilteredTasks(
+        appliedFilter,
+        tasks.filter((task) => task.status === status),
+        user.id,
+    );
 
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {
@@ -124,10 +135,6 @@ const DroppableColumn = ({
         setTaskFormDefaultValues(null);
         return GlobalLanguageTranslations.successfulSave[language];
     };
-
-    // TODO: implement bookable shift/booked shifts columns instead of todo
-
-    // TODO automatically give volunteers a volunteer ticket
 
     return (
         <>
@@ -178,11 +185,12 @@ const DroppableColumn = ({
                                 skill_badges: true;
                             };
                         }>
-                    >(tasks.filter((task) => task.status === status)).map((taskList) => (
+                    >(filteredTasks.filter((task) => task.status === status)).map((taskList) => (
                         <DraggableTaskShifts
                             key={taskList.map((task) => task.id).join("-")}
                             readOnly={readOnly}
-                            taskList={taskList}
+                            taskName={taskList[0].name}
+                            tasksPromise={tasksPromise}
                             eventPromise={eventPromise}
                             setDraggedTask={setDraggedTask}
                             openCreateTaskDialog={openCreateTaskDialog}
@@ -216,10 +224,7 @@ const DroppableColumn = ({
                             activeMembers,
                             taskFormDefaultValues?.skill_badges || [],
                         ),
-                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(
-                            activeMembers,
-                            taskFormDefaultValues?.skill_badges || [],
-                        ),
+                        [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(activeMembers),
                         [GlobalConstants.SKILL_BADGES]: skillBadges.map(
                             (b) =>
                                 ({
@@ -227,6 +232,9 @@ const DroppableColumn = ({
                                     label: b.name,
                                 }) as CustomOptionProps,
                         ),
+                        [GlobalConstants.TAGS]: stringsToSelectOptions([
+                            ...new Set(tasks.flatMap((t) => t.tags || [])),
+                        ]),
                     }}
                     buttonLabel={GlobalLanguageTranslations.save[language]}
                     readOnly={false}

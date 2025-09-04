@@ -68,12 +68,11 @@ CREATE TABLE "public"."users" (
 
 -- CreateTable
 CREATE TABLE "public"."user_credentials" (
-    "id" TEXT NOT NULL,
     "salt" TEXT NOT NULL,
     "hashed_password" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
 
-    CONSTRAINT "user_credentials_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_credentials_pkey" PRIMARY KEY ("user_id")
 );
 
 -- CreateTable
@@ -180,31 +179,28 @@ CREATE TABLE "public"."products" (
 
 -- CreateTable
 CREATE TABLE "public"."memberships" (
-    "id" TEXT NOT NULL,
     "product_id" TEXT NOT NULL,
     "duration" INTEGER NOT NULL DEFAULT 365,
 
-    CONSTRAINT "memberships_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "memberships_pkey" PRIMARY KEY ("product_id")
 );
 
 -- CreateTable
 CREATE TABLE "public"."user_memberships" (
-    "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "membership_id" TEXT NOT NULL,
     "expires_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "user_memberships_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_memberships_pkey" PRIMARY KEY ("user_id","membership_id")
 );
 
 -- CreateTable
 CREATE TABLE "public"."tickets" (
-    "id" TEXT NOT NULL,
-    "type" "public"."TicketType" NOT NULL DEFAULT 'standard',
     "product_id" TEXT NOT NULL,
+    "type" "public"."TicketType" NOT NULL DEFAULT 'standard',
     "event_id" TEXT NOT NULL,
 
-    CONSTRAINT "tickets_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "tickets_pkey" PRIMARY KEY ("product_id")
 );
 
 -- CreateTable
@@ -223,13 +219,12 @@ CREATE TABLE "public"."orders" (
 
 -- CreateTable
 CREATE TABLE "public"."order_items" (
-    "id" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "price" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "order_id" TEXT NOT NULL,
     "product_id" TEXT NOT NULL,
 
-    CONSTRAINT "order_items_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "order_items_pkey" PRIMARY KEY ("order_id","product_id")
 );
 
 -- CreateIndex
@@ -242,16 +237,7 @@ CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
 CREATE UNIQUE INDEX "users_nickname_key" ON "public"."users"("nickname");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "user_credentials_user_id_key" ON "public"."user_credentials"("user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "memberships_product_id_key" ON "public"."memberships"("product_id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "user_memberships_user_id_key" ON "public"."user_memberships"("user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "tickets_product_id_key" ON "public"."tickets"("product_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "orders_payment_request_id_key" ON "public"."orders"("payment_request_id");
@@ -260,10 +246,10 @@ CREATE UNIQUE INDEX "orders_payment_request_id_key" ON "public"."orders"("paymen
 CREATE UNIQUE INDEX "orders_payee_ref_key" ON "public"."orders"("payee_ref");
 
 -- AddForeignKey
-ALTER TABLE "public"."text_translations" ADD CONSTRAINT "text_translations_text_content_id_fkey" FOREIGN KEY ("text_content_id") REFERENCES "public"."text_contents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."text_translations" ADD CONSTRAINT "text_translations_text_content_id_fkey" FOREIGN KEY ("text_content_id") REFERENCES "public"."text_contents"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_credentials" ADD CONSTRAINT "user_credentials_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."user_credentials" ADD CONSTRAINT "user_credentials_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."events" ADD CONSTRAINT "events_location_id_fkey" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -272,16 +258,16 @@ ALTER TABLE "public"."events" ADD CONSTRAINT "events_location_id_fkey" FOREIGN K
 ALTER TABLE "public"."events" ADD CONSTRAINT "events_host_id_fkey" FOREIGN KEY ("host_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_ticket_id_fkey" FOREIGN KEY ("ticket_id") REFERENCES "public"."tickets"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_ticket_id_fkey" FOREIGN KEY ("ticket_id") REFERENCES "public"."tickets"("product_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_assignee_id_fkey" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -290,40 +276,40 @@ ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_assignee_id_fkey" FOREIGN KEY
 ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_reviewer_id_fkey" FOREIGN KEY ("reviewer_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_skill_badges" ADD CONSTRAINT "user_skill_badges_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."user_skill_badges" ADD CONSTRAINT "user_skill_badges_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_skill_badges" ADD CONSTRAINT "user_skill_badges_skill_badge_id_fkey" FOREIGN KEY ("skill_badge_id") REFERENCES "public"."skill_badges"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."user_skill_badges" ADD CONSTRAINT "user_skill_badges_skill_badge_id_fkey" FOREIGN KEY ("skill_badge_id") REFERENCES "public"."skill_badges"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."task_skill_badges" ADD CONSTRAINT "task_skill_badges_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "public"."tasks"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."task_skill_badges" ADD CONSTRAINT "task_skill_badges_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "public"."tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."task_skill_badges" ADD CONSTRAINT "task_skill_badges_skill_badge_id_fkey" FOREIGN KEY ("skill_badge_id") REFERENCES "public"."skill_badges"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."task_skill_badges" ADD CONSTRAINT "task_skill_badges_skill_badge_id_fkey" FOREIGN KEY ("skill_badge_id") REFERENCES "public"."skill_badges"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."memberships" ADD CONSTRAINT "memberships_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."memberships" ADD CONSTRAINT "memberships_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_memberships" ADD CONSTRAINT "user_memberships_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."user_memberships" ADD CONSTRAINT "user_memberships_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_memberships" ADD CONSTRAINT "user_memberships_membership_id_fkey" FOREIGN KEY ("membership_id") REFERENCES "public"."memberships"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."user_memberships" ADD CONSTRAINT "user_memberships_membership_id_fkey" FOREIGN KEY ("membership_id") REFERENCES "public"."memberships"("product_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

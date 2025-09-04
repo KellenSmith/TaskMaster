@@ -7,9 +7,15 @@ export const menuTabs = {
 };
 
 const LanguageTranslations = {
-    assignYourselfPrompt: {
+    assignYourselfEventPrompt: {
         [Language.english]: "Want to volunteer? Book a shift!",
         [Language.swedish]: "Vill du volontära? Boka in ett skift!",
+    },
+    assignYourselfPrompt: {
+        [Language.english]:
+            "A little work every day keeps our community running. Sign up for a shift to join the fun!",
+        [Language.swedish]:
+            "Lite arbete varje dag håller vår förening igång. Anmäl dig för ett skift för att delta i det roliga!",
     },
     printSchedule: {
         [Language.english]: "Print Schedule",

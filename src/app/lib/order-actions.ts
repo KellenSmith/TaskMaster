@@ -150,22 +150,34 @@ export const progressOrder = async (
             where: { id: orderId },
             data: { status: OrderStatus.paid },
         });
+        revalidateTag(GlobalConstants.ORDER);
     }
+
     // Paid to shipped
     if (order.status === OrderStatus.paid) {
-        await prisma.$transaction(async (tx) => {
-            await processOrderItems(tx, orderId);
-            order = await prisma.order.update({
-                where: { id: orderId },
-                data: { status: OrderStatus.shipped },
-            });
-            try {
-                await sendOrderConfirmation(orderId);
-            } catch (error) {
-                // Allow progressing order despite failed confirmation
-                console.error("Failed to send order confirmation:", error);
-            }
-        });
+        // This transaction may perform multiple updates and external work; increase timeout locally.
+        await prisma.$transaction(
+            async (tx) => {
+                await processOrderItems(tx, orderId);
+                order = await prisma.order.update({
+                    where: { id: orderId },
+                    data: { status: OrderStatus.shipped },
+                });
+                revalidateTag(GlobalConstants.ORDER);
+                try {
+                    await sendOrderConfirmation(orderId);
+                } catch (error) {
+                    // Allow progressing order despite failed confirmation
+                    console.error("Failed to send order confirmation:", error);
+                }
+            },
+            {
+                // timeout in ms for this interactive transaction; set to 30s for safety
+                timeout: 30000,
+                // max wait to acquire a connection for transaction
+                maxWait: 5000,
+            },
+        );
     }
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {
@@ -174,19 +186,12 @@ export const progressOrder = async (
             where: { id: orderId },
             data: { status: OrderStatus.completed },
         });
+        revalidateTag(GlobalConstants.ORDER);
     }
-    revalidateTag(GlobalConstants.ORDER);
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
-    await prisma.$transaction(async (tx) => {
-        // Delete all order items first
-        await tx.orderItem.deleteMany({
-            where: { order_id: orderId },
-        });
-        // Then delete the order
-        await tx.order.delete({
-            where: { id: orderId },
-        });
+    await prisma.order.delete({
+        where: { id: orderId },
     });
 };

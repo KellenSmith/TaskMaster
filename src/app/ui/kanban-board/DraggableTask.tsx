@@ -27,12 +27,15 @@ interface DraggableTaskProps {
             include: { tickets: { include: { event_participants: true } } };
         }>
     >;
-    task: Prisma.TaskGetPayload<{
-        include: {
-            assignee: { select: { id: true; nickname: true } };
-            skill_badges: true;
-        };
-    }>;
+    taskId: string;
+    tasksPromise: Promise<
+        Prisma.TaskGetPayload<{
+            include: {
+                assignee: { select: { id: true; nickname: true } };
+                skill_badges: true;
+            };
+        }>[]
+    >;
     setDraggedTask?: (
         // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
@@ -41,10 +44,18 @@ interface DraggableTaskProps {
     ) => void;
 }
 
-const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: DraggableTaskProps) => {
+const DraggableTask = ({
+    readOnly,
+    eventPromise,
+    taskId,
+    tasksPromise,
+    setDraggedTask,
+}: DraggableTaskProps) => {
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const event = eventPromise ? use(eventPromise) : null;
+    const tasks = use(tasksPromise);
+    const task = tasks.find((task) => task.id === taskId);
 
     const assignTaskToMe = async () => {
         try {
@@ -80,9 +91,12 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
             );
         if (!isUserQualifiedForTask(user, task.skill_badges))
             return (
-                <Tooltip title={LanguageTranslations.unqualifiedForShiftTooltip[language]}>
-                    <Warning color="warning" />
-                </Tooltip>
+                <Stack direction="row" alignItems="center" gap={1}>
+                    <Warning color="warning" />{" "}
+                    <Typography variant="caption" color="warning.main">
+                        {LanguageTranslations.unqualifiedForShiftTooltip[language]}
+                    </Typography>
+                </Stack>
             );
 
         if (

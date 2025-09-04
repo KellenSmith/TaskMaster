@@ -97,14 +97,18 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                                 <Typography variant="body1" component="div">
                                                     {item.product.name}
                                                 </Typography>
-                                                {item.product.membership && (
-                                                    <Typography variant="subtitle2" color="warning">
-                                                        {
-                                                            LanguageTranslations
-                                                                .logInToSeeMembership[language]
-                                                        }
-                                                    </Typography>
-                                                )}
+                                                {order.status === OrderStatus.completed &&
+                                                    item.product.membership && (
+                                                        <Typography
+                                                            variant="subtitle2"
+                                                            color="warning"
+                                                        >
+                                                            {
+                                                                LanguageTranslations
+                                                                    .logInToSeeMembership[language]
+                                                            }
+                                                        </Typography>
+                                                    )}
                                             </Stack>
                                         </TableCell>
                                         <TableCell align="right">

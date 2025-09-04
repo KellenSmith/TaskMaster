@@ -74,7 +74,7 @@ export const submitMemberApplication = async (
 export const getAllUsers = async (): Promise<
     Prisma.UserGetPayload<{
         include: {
-            user_credentials: { select: { id: true } };
+            user_credentials: { select: { user_id: true } };
             user_membership: true;
             skill_badges: true;
         };
@@ -82,7 +82,7 @@ export const getAllUsers = async (): Promise<
 > => {
     return await prisma.user.findMany({
         include: {
-            user_credentials: { select: { id: true } },
+            user_credentials: { select: { user_id: true } },
             user_membership: true,
             skill_badges: true,
         },
@@ -102,17 +102,19 @@ export const updateUser = async (
             data: userData,
         });
         // Update skill badges
-        await tx.userSkillBadge.deleteMany({
-            where: {
-                user_id: userId,
-            },
-        });
-        await tx.userSkillBadge.createMany({
-            data: skill_badge_ids.map((badgeId) => ({
-                user_id: userId,
-                skill_badge_id: badgeId,
-            })),
-        });
+        if (skill_badge_ids && skill_badge_ids.length > 0) {
+            await tx.userSkillBadge.deleteMany({
+                where: {
+                    user_id: userId,
+                },
+            });
+            await tx.userSkillBadge.createMany({
+                data: skill_badge_ids.map((badgeId) => ({
+                    user_id: userId,
+                    skill_badge_id: badgeId,
+                })),
+            });
+        }
     });
 
     revalidateTag(GlobalConstants.USER);
@@ -133,32 +135,6 @@ export const deleteUser = async (userId: string): Promise<void> => {
         }
     }
 
-    const deleteCredentialsPromise = prisma.userCredentials.deleteMany({
-        where: {
-            user_id: userId,
-        },
-    });
-    const deleteMembershipPromise = prisma.userMembership.deleteMany({
-        where: {
-            user_id: userId,
-        },
-    });
-
-    const deleteParticipantInEventsPromise = prisma.eventParticipant.deleteMany({
-        where: {
-            user_id: userId,
-        },
-    });
-    const deleteReservedInEventsPromise = prisma.eventReserve.deleteMany({
-        where: {
-            user_id: userId,
-        },
-    });
-    const deleteUserSkillBadgesPromise = prisma.userSkillBadge.deleteMany({
-        where: {
-            user_id: userId,
-        },
-    });
     const deleteUser = prisma.user.delete({
         where: {
             id: userId,
@@ -169,14 +145,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
      * Delete dependencies and user in a transaction where all actions must
      * succeed or no action is taken to preserve data integrity.
      */
-    await prisma.$transaction([
-        deleteCredentialsPromise,
-        deleteMembershipPromise,
-        deleteParticipantInEventsPromise,
-        deleteReservedInEventsPromise,
-        deleteUserSkillBadgesPromise,
-        deleteUser,
-    ]);
+    await prisma.$transaction([deleteUser]);
 
     // TODO: Check revalidation tags for all caches
     revalidateTag(GlobalConstants.USER);

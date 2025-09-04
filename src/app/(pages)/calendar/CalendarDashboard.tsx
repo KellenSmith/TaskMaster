@@ -25,6 +25,7 @@ import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { allowRedirectException } from "../../ui/utils";
+import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
 
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
@@ -36,6 +37,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
+    const events = use(eventsPromise);
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -191,6 +193,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                         validationSchema={EventCreateSchema}
                         customOptions={{
                             [GlobalConstants.LOCATION_ID]: getLocationOptions(),
+                            [GlobalConstants.TAGS]: stringsToSelectOptions(
+                                events.flatMap((e) => e.tags || []),
+                            ),
                         }}
                         readOnly={false}
                         editable={false}

@@ -112,6 +112,7 @@ export const RenderedFields = {
         GlobalConstants.NEW_PASSWORD,
         GlobalConstants.REPEAT_PASSWORD,
     ],
+    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
         GlobalConstants.LOCATION_ID,
@@ -200,6 +201,7 @@ export const RequiredFields = {
         GlobalConstants.NICKNAME,
         GlobalConstants.EMAIL,
     ],
+    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL, GlobalConstants.PASSWORD],
     // Reset
@@ -260,7 +262,6 @@ export const selectFieldOptions = {
     // User
     [GlobalConstants.ROLE]: Object.values(UserRole),
     [GlobalConstants.STATUS]: Object.values(TaskStatus),
-    [GlobalConstants.TAGS]: ["Decoration", "Wardrobe", "Bartending", "Music"],
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
 };
 
@@ -272,6 +273,7 @@ export const datePickerFields = [
     GlobalConstants.UPDATED_AT,
     GlobalConstants.START_TIME,
     GlobalConstants.END_TIME,
+    GlobalConstants.EXPIRES_AT,
 ];
 
 export const richTextFields = [

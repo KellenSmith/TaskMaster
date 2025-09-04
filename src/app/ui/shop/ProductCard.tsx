@@ -44,7 +44,8 @@ export default function ProductCard({
 }: ProductCardProps) {
     const { language } = useUserContext();
     const [isOpen, setIsOpen] = useState(false);
-    const defaultImage = "/images/product-placeholder.svg";
+    const defaultProductImage = "/images/product-placeholder.svg";
+    const defaultTicketImage = "/images/ticket-placeholder.svg";
     const theme = useTheme();
     const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -89,7 +90,7 @@ export default function ProductCard({
                 >
                     <CardMedia sx={{ position: "relative", px: { xs: 1, sm: 0 } }}>
                         <Image
-                            src={product.image_url || defaultImage}
+                            src={product.image_url || defaultProductImage}
                             alt={product.name}
                             width={400}
                             height={400}
@@ -129,13 +130,12 @@ export default function ProductCard({
                         <Typography gutterBottom variant="h6" component="h2">
                             {product.name}
                         </Typography>
-                        <Box
+                        <Stack
+                            direction="row"
                             sx={{
                                 mt: 2,
-                                display: "flex",
-                                flexDirection: { xs: "column", sm: "row" },
                                 justifyContent: "space-between",
-                                alignItems: { xs: "flex-start", sm: "center" },
+                                alignItems: "center",
                                 gap: { xs: 1, sm: 0 },
                             }}
                         >
@@ -149,7 +149,7 @@ export default function ProductCard({
                                     size="small"
                                 />
                             )}
-                        </Box>
+                        </Stack>
                     </CardContent>
                 </Card>
             </Tooltip>
@@ -173,7 +173,7 @@ export default function ProductCard({
                             }}
                         >
                             <Image
-                                src={product.image_url || defaultImage}
+                                src={product.image_url || defaultProductImage}
                                 alt={product.name}
                                 fill
                                 style={{ objectFit: "cover", borderRadius: 8 }}
@@ -209,12 +209,7 @@ export default function ProductCard({
                                     {`${formatPrice(product.price)} SEK`}
                                 </Typography>
                                 {product.stock !== null && (
-                                    <Box sx={{ mt: 2 }}>
-                                        <Chip
-                                            label={getStockChipLabel()}
-                                            color={getStockChipColor()}
-                                        />
-                                    </Box>
+                                    <Chip label={getStockChipLabel()} color={getStockChipColor()} />
                                 )}
                             </Stack>
                             <RichTextField defaultValue={product.description} />
@@ -223,6 +218,7 @@ export default function ProductCard({
                 </DialogContent>
                 <DialogActions sx={{ p: { xs: 2, sm: 1 } }}>
                     <Stack
+                        justifyContent={isSmDown ? "center" : "flex-end"}
                         direction={{ xs: "column", sm: "row" }}
                         spacing={1}
                         sx={{ width: "100%" }}

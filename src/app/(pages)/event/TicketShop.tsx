@@ -111,7 +111,7 @@ const TicketShop = ({
 
     const getFormDefaultValues = () => {
         if (!editingTicketId) return null;
-        const ticket = tickets.find((t) => t.id === editingTicketId);
+        const ticket = tickets.find((t) => t.product_id === editingTicketId);
         if (!ticket) return null;
         return { ...ticket, ...ticket.product };
     };
@@ -148,9 +148,9 @@ const TicketShop = ({
             ) : (
                 <Stack direction="row" flexWrap="wrap" gap={2}>
                     {getSortedTickets().map((ticket) => (
-                        <Stack key={ticket.id}>
+                        <Stack key={ticket.product_id}>
                             <ProductCard
-                                key={ticket.id}
+                                key={ticket.product_id}
                                 product={ticket.product}
                                 onAddToCart={createTicketOrder}
                                 {...(ticket.type === TicketType.volunteer && {
@@ -164,13 +164,13 @@ const TicketShop = ({
                             />
                             {(isUserHost(user, event) || isUserAdmin(user)) && (
                                 <Stack>
-                                    <Button onClick={() => handleEditTicket(ticket.id)}>
+                                    <Button onClick={() => handleEditTicket(ticket.product_id)}>
                                         {GlobalLanguageTranslations.edit[language]}
                                     </Button>
                                     {allowDeleteTicket(ticket) && (
                                         <ConfirmButton
                                             color="error"
-                                            onClick={() => deleteTicketAction(ticket.id)}
+                                            onClick={() => deleteTicketAction(ticket.product_id)}
                                         >
                                             {GlobalLanguageTranslations.delete[language]}
                                         </ConfirmButton>

@@ -57,27 +57,34 @@ export const updateTextContent = async (
             create: {
                 id,
                 category: category || null,
+                translations: {
+                    create: {
+                        language,
+                        text,
+                    },
+                },
             },
             update: {
                 category: category || null,
+                translations: {
+                    upsert: {
+                        where: {
+                            language_text_content_id: {
+                                language,
+                                text_content_id: id,
+                            },
+                        },
+                        create: {
+                            language,
+                            text,
+                        },
+                        update: {
+                            text,
+                        },
+                    },
+                },
             },
         });
-    });
-    await prisma.textTranslation.upsert({
-        where: {
-            language_text_content_id: {
-                language,
-                text_content_id: id,
-            },
-        },
-        create: {
-            language,
-            text,
-            text_content_id: id,
-        },
-        update: {
-            text,
-        },
     });
     revalidateTag(GlobalConstants.TEXT_CONTENT);
 };

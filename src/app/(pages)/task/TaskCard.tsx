@@ -86,7 +86,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         try {
             await deleteTask(task.id);
             addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
-            clientRedirect(router, [GlobalConstants.CALENDAR]);
+            clientRedirect(router, [
+                task.event_id ? GlobalConstants.CALENDAR : GlobalConstants.TASKS,
+            ]);
         } catch {
             addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }

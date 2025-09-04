@@ -8,7 +8,6 @@ import {
     List,
     ListItem,
     Button,
-    Tooltip,
     ListSubheader,
     Stack,
     Divider,
@@ -27,16 +26,14 @@ import {
     routeToPath,
     clientRedirect,
 } from "../lib/definitions";
-import { Article, Cancel, ChevronLeft, Edit } from "@mui/icons-material";
+import { Cancel, ChevronLeft, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { openResourceInNewTab } from "./utils";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
 import { logOut } from "../lib/user-credentials-actions";
 import LanguageMenu from "./LanguageMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserRole } from "@prisma/client";
-import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
 import Image from "next/image";
 
@@ -96,6 +93,8 @@ const NavPanel = () => {
                 {authorizedRoutes.map((route) => (
                     <ListItem key={route} dense>
                         <Button
+                            fullWidth
+                            sx={{ justifyContent: "flex-start" }}
                             onClick={() => {
                                 setDrawerOpen(false);
                                 clientRedirect(router, [route]);
@@ -135,19 +134,11 @@ const NavPanel = () => {
                             title={organizationSettings?.organization_name || "TaskMaster"}
                             height={40}
                             width={200}
+                            style={{ cursor: "pointer" }}
                             onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                         />
                     </Box>
                     <LanguageMenu />
-                    <Tooltip title={`${GlobalLanguageTranslations.open[language]} README.md`}>
-                        <IconButton
-                            aria-label="open readme"
-                            color="inherit"
-                            onClick={() => openResourceInNewTab("/README.pdf")}
-                        >
-                            <Article />
-                        </IconButton>
-                    </Tooltip>
                 </Toolbar>
             </AppBar>
             <SwipeableDrawer

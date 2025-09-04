@@ -27,9 +27,9 @@ const ApplyPage = () => {
         try {
             await submitMemberApplication(parsedFieldValues);
             clientRedirect(router, [GlobalConstants.LOGIN]);
-            return "Application submitted successfully";
+            return LanguageTranslations.applicationSubmitted[language];
         } catch {
-            throw new Error("Failed to submit application");
+            throw new Error(LanguageTranslations.failedApplicationSubmit[language]);
         }
     };
 

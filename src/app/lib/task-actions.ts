@@ -266,7 +266,7 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
             throw new Error("Volunteer ticket not found for event: " + updatedTask.event_id);
 
         try {
-            await addEventParticipantWithTx(tx, volunteerTicket.id, userId);
+            await addEventParticipantWithTx(tx, volunteerTicket.product_id, userId);
         } catch {
             // Allow assigning task even if adding event participant fails
             // The event might be sold out.

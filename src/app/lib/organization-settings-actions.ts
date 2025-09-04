@@ -30,10 +30,7 @@ export const updateOrganizationSettings = async (
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
     // attempt to delete the old blob from Vercel Blob storage.
-    // Only attempt deletion for URLs that look like Vercel blob URLs to avoid
-    // trying to delete external resources.
-
-    await updateBlob(settings.logo_url, parsedFieldValues.logo_url);
+    await deleteOldBlob(settings.logo_url, parsedFieldValues.logo_url);
 
     await prisma.organizationSettings.update({
         where: {
@@ -44,30 +41,23 @@ export const updateOrganizationSettings = async (
     revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
 };
 
-export const updateBlob = async (oldUrl: string, blobUrl: string): Promise<void> => {
-    if (oldUrl && blobUrl && oldUrl !== blobUrl) {
+export const deleteOldBlob = async (
+    oldBlobUrl: string,
+    updateBlobUrl: string = null,
+): Promise<void> => {
+    // Only delete if the new url is not equal to the old
+    if (oldBlobUrl && oldBlobUrl !== updateBlobUrl) {
         try {
             // Quick guard: Vercel public blob URLs contain 'blob.vercel-storage.com'
-            if (blobUrl.includes("blob.vercel-storage.com")) {
-                await del(blobUrl);
-            }
-        } catch (error) {
-            // Don't block the database update if deletion fails. Log for inspection.
-            console.error("Failed to update logo blob:", error);
-        }
-    }
-};
+            // Only attempt deletion for URLs that look like Vercel blob URLs to avoid
+            // trying to delete external resources.
 
-export const deleteBlob = async (blobUrl: string): Promise<void> => {
-    if (blobUrl) {
-        try {
-            // Quick guard: Vercel public blob URLs contain 'blob.vercel-storage.com'
-            if (blobUrl.includes("blob.vercel-storage.com")) {
-                await del(blobUrl);
+            if (oldBlobUrl.includes("blob.vercel-storage.com")) {
+                await del(oldBlobUrl);
             }
         } catch (error) {
             // Log for inspection.
-            console.error(`Failed to delete logo blob with url ${blobUrl}:`, error);
+            console.error(`Failed to delete logo blob with url ${oldBlobUrl}:`, error);
         }
     }
 };

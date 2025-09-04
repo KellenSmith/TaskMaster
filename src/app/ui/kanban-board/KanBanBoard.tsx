@@ -4,7 +4,7 @@ import React, { use, useState } from "react";
 import { Grid2, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DroppableColumn from "./DroppableColumn";
 import { Prisma, TaskStatus } from "@prisma/client";
-import KanBanBoardMenu, { getFilteredTasks } from "./KanBanBoardMenu";
+import KanBanBoardMenu from "./KanBanBoardMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import z from "zod";
@@ -47,23 +47,22 @@ const KanBanBoard = ({
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
-    const tasks = use(tasksPromise);
     const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
         !(isUserHost(user, event) || isUserAdmin(user))
             ? {
                   unassigned: true,
-                  [GlobalConstants.STATUS]: [TaskStatus.toDo],
+                  [GlobalConstants.STATUS]: event ? [TaskStatus.toDo] : Object.values(TaskStatus),
               }
             : null,
     );
 
     return (
         <Stack spacing={2} justifyContent="center">
-            {event && (
-                <Typography variant="h4" color="primary" paddingTop={2}>
-                    {LanguageTranslations.assignYourselfPrompt[language]}
-                </Typography>
-            )}
+            <Typography variant="h4" color="primary" paddingTop={2} textAlign="center">
+                {event
+                    ? LanguageTranslations.assignYourselfEventPrompt[language]
+                    : LanguageTranslations.assignYourselfPrompt[language]}
+            </Typography>
             <Stack direction="row">
                 <Grid2
                     container
@@ -80,11 +79,8 @@ const KanBanBoard = ({
                                 readOnly={readOnly}
                                 eventPromise={eventPromise}
                                 status={status}
-                                tasks={getFilteredTasks(
-                                    appliedFilter,
-                                    tasks.filter((task) => task.status === status),
-                                    user.id,
-                                )}
+                                tasksPromise={tasksPromise}
+                                appliedFilter={appliedFilter}
                                 activeMembersPromise={activeMembersPromise}
                                 skillBadgesPromise={skillBadgesPromise}
                                 draggedTask={draggedTask}

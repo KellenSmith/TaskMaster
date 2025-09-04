@@ -6,7 +6,7 @@ import { SkillBadgeCreateSchema } from "./zod-schemas";
 import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { deleteBlob, updateBlob } from "./organization-settings-actions";
+import { deleteOldBlob } from "./organization-settings-actions";
 
 export const getAllSkillBadges = async (): Promise<Prisma.SkillBadgeGetPayload<true>[]> => {
     return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
@@ -24,13 +24,13 @@ export const updateSkillBadge = async (
     parsedFieldValues: z.infer<typeof SkillBadgeCreateSchema>,
 ): Promise<void> => {
     const oldSkillBadge = await prisma.skillBadge.findUnique({ where: { id: skillBadgeId } });
-    await updateBlob(oldSkillBadge.image_url, parsedFieldValues.image_url);
+    await deleteOldBlob(oldSkillBadge.image_url, parsedFieldValues.image_url);
     await prisma.skillBadge.update({ where: { id: skillBadgeId }, data: parsedFieldValues });
     revalidateTag(GlobalConstants.SKILL_BADGES);
 };
 
 export const deleteSkillBadge = async (skillBadgeId: string): Promise<void> => {
     const deletedSkillBadge = await prisma.skillBadge.delete({ where: { id: skillBadgeId } });
-    await deleteBlob(deletedSkillBadge.image_url);
+    await deleteOldBlob(deletedSkillBadge.image_url);
     revalidateTag(GlobalConstants.SKILL_BADGES);
 };
