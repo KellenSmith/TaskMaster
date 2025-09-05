@@ -27,8 +27,8 @@ export const getAbsoluteUrl = (
     pathSegments: string[] = [],
     searchParams: { [key: string]: string } = {},
 ): string => {
-    const baseUrl = process.env.VERCEL_URL
-        ? "https://" + process.env.VERCEL_URL
+    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? "https://" + process.env.VERCEL_PROJECT_PRODUCTION_URL
         : window?.location?.origin;
     if (!baseUrl) throw new Error("Base URL not found");
 
