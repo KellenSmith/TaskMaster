@@ -75,7 +75,7 @@ const NavPanel = () => {
         GlobalConstants.RESET,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
-        ...(user ? [GlobalConstants.APPLY] : []),
+        GlobalConstants.APPLY,
     ];
 
     const getLinkGroup = (privacyStatus: UserRole | string) => {

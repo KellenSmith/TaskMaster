@@ -293,8 +293,8 @@ const Form: FC<FormProps> = ({
                 <Stack spacing={2}>
                     {renderedFields.map((fieldId) => (
                         <Stack key={fieldId}>
-                            {getFieldComp(fieldId)}
                             {getInfoTextComp(fieldId)}
+                            {getFieldComp(fieldId)}
                         </Stack>
                     ))}
                     {validationError && <Typography color="error">{validationError}</Typography>}

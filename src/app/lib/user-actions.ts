@@ -10,6 +10,7 @@ import z from "zod";
 import { MembershipApplicationSchema, UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
 import { notifyOfMembershipApplication } from "./mail-service/mail-service";
 import { auth } from "./auth";
+import { getOrganizationSettings } from "./organization-settings-actions";
 
 export const getUserById = async (
     userId: string,
@@ -57,6 +58,16 @@ export const createUser = async (
 export const submitMemberApplication = async (
     parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
 ) => {
+    const organizationSettings = await getOrganizationSettings();
+
+    // Don't allow submitting an application if a message is prompted but not provided
+    if (
+        organizationSettings?.member_application_prompt &&
+        !parsedFieldValues.member_application_prompt
+    ) {
+        throw new Error("Application message required but not provided.");
+    }
+
     const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
     await createUser(userFieldValues);
 
