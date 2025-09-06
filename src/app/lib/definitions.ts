@@ -69,7 +69,7 @@ export const applicationRoutes = {
     ],
     [UserRole.admin]: [
         GlobalConstants.LOCATIONS,
-        GlobalConstants.YEAR_WHEEL,
+        // GlobalConstants.YEAR_WHEEL,
         GlobalConstants.SKILL_BADGES,
         GlobalConstants.SENDOUT,
         GlobalConstants.MEMBERS,
