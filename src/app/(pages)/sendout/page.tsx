@@ -53,12 +53,9 @@ const SendoutPage: FC = () => {
         fetchRecipientCount();
     }, [sendTo, getRecipientCriteria]);
 
-    const sendMassEmailToRecipientsWithCriteria = async (
-        parsedFieldValues: z.infer<typeof EmailSendoutSchema>,
-    ) => {
+    const sendMassEmailToRecipientsWithCriteria = async (formData: FormData) => {
         try {
-            parsedFieldValues[GlobalConstants.RECIPIENT_CRITERIA] = getRecipientCriteria();
-            const result = await sendMassEmail(getRecipientCriteria(), parsedFieldValues);
+            const result = await sendMassEmail(getRecipientCriteria(), formData);
             return LanguageTranslations.successfulSendout[language](result);
         } catch {
             throw new Error(LanguageTranslations.failedSendMail[language]);

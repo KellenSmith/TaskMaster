@@ -174,7 +174,7 @@ export const getEmailRecipientCount = async (
  */
 export const sendMassEmail = async (
     recipientCriteria: Prisma.UserWhereInput,
-    parsedFieldValues: z.infer<typeof EmailSendoutSchema>,
+    formData: FormData,
 ): Promise<{
     accepted: number;
     rejected: number;
@@ -188,7 +188,7 @@ export const sendMassEmail = async (
         })
     ).map((user: Prisma.UserGetPayload<true>) => user.email);
 
-    const revalidatedContent = EmailSendoutSchema.parse(parsedFieldValues);
+    const revalidatedContent = EmailSendoutSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text content before sending email
     const sanitizedContent = sanitizeFormData(revalidatedContent);

@@ -301,7 +301,6 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     };
 
     const sendoutToEventUsers = async (formData: FormData) => {
-        const parsedFieldValues = EmailSendoutSchema.parse(Object.fromEntries(formData.entries()));
         const recipientIds: string[] = [];
         if (
             sendoutTo === sendoutToOptions.Participants[language] ||
@@ -326,7 +325,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         };
 
         try {
-            const result = await sendMassEmail(recipientCriteria, parsedFieldValues);
+            const result = await sendMassEmail(recipientCriteria, formData);
             setDialogOpen(null);
             return SendoutLanguageTranslations.successfulSendout[language](result);
         } catch {
