@@ -74,9 +74,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         return "default" as any;
     };
 
-    const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
+    const updateTaskAction = async (formData: FormData) => {
         try {
-            await updateTaskById(task.id, parsedFieldValues, task.event_id);
+            await updateTaskById(task.id, formData, task.event_id);
             setEditDialogOpen(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -84,9 +84,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         }
     };
 
-    const contactMemberAction = async (parsedFieldValues: z.infer<typeof ContactMemberSchema>) => {
+    const contactMemberAction = async (formData: FormData) => {
         try {
-            await contactTaskMember(messageRecipientId, parsedFieldValues, task.id);
+            await contactTaskMember(messageRecipientId, formData, task.id);
             setMessageRecipientId(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {

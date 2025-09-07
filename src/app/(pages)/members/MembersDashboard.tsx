@@ -64,9 +64,9 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         }
     };
 
-    const addMembershipAction = async (parsedFieldValues: z.infer<typeof AddMembershipSchema>) => {
+    const addMembershipAction = async (formData: FormData) => {
         try {
-            await addUserMembership(addMembershipDialogOpen!.id, parsedFieldValues);
+            await addUserMembership(addMembershipDialogOpen!.id, formData);
             return LanguageTranslations.addedMembership[language];
         } catch {
             throw new Error(LanguageTranslations.failedAddedMembership[language]);
@@ -233,7 +233,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         },
     ];
 
-    const hiddenColumns = [GlobalConstants.ID];
+    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.EMAIL_VERIFIED];
 
     return (
         <Stack sx={{ height: "100%" }}>

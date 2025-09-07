@@ -147,6 +147,12 @@ export function validateEnvironmentVariables(): EnvCheck[] {
             isPublic: false,
             recommendation: "Secret for authenticating cron job requests",
         },
+        {
+            name: "BLOB_HOSTNAME",
+            isPublic: false,
+            recommendation:
+                "Vercel Blob storage hostname for file uploads (e.g., abc123.public.blob.vercel-storage.com)",
+        },
     ];
 
     return requiredVars.map((varInfo) => ({

@@ -85,10 +85,19 @@ export async function POST(request: Request): Promise<NextResponse> {
                 const userSafeFilename = `${session.user.email?.split("@")[0]}-${Date.now()}-${sanitizedPathname}`;
 
                 // ✅ SECURITY: Validate file type and extension
-                const contentType =
-                    typeof clientPayload === "object" && clientPayload !== null
-                        ? (clientPayload as any)?.type || ""
-                        : "";
+                const contentType = (() => {
+                    try {
+                        if (typeof clientPayload === "string") {
+                            const parsed = JSON.parse(clientPayload);
+                            return parsed?.type || "";
+                        }
+                        return typeof clientPayload === "object" && clientPayload !== null
+                            ? (clientPayload as any)?.type || ""
+                            : "";
+                    } catch {
+                        return "";
+                    }
+                })();
                 const validation = validateFile(pathname, contentType);
 
                 if (!validation.valid) {

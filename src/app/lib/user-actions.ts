@@ -5,7 +5,6 @@ import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { revalidateTag } from "next/cache";
-import z from "zod";
 import {
     LoginSchema,
     MembershipApplicationSchema,
@@ -13,7 +12,10 @@ import {
     UserUpdateSchema,
     UuidSchema,
 } from "./zod-schemas";
-import { notifyOfMembershipApplication } from "./mail-service/mail-service";
+import {
+    notifyOfMembershipApplication,
+    notifyOfValidatedMembership,
+} from "./mail-service/mail-service";
 import { auth, signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getRelativeUrl } from "./utils";
@@ -232,8 +234,13 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
 
-    await prisma.user.update({
+    const validatedMember = await prisma.user.update({
         where: { id: validatedUserId },
         data: { status: UserStatus.validated },
     });
+
+    // Notify the new member of their validated status
+    await notifyOfValidatedMembership(validatedMember.email);
+
+    revalidateTag(GlobalConstants.USER);
 };

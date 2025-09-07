@@ -15,9 +15,9 @@ const LoginPage: FC = () => {
     const { language } = useUserContext();
     const router = useRouter();
 
-    const loginAction = async (parsedFieldValues: z.infer<typeof LoginSchema>) => {
+    const loginAction = async (formData: FormData) => {
         try {
-            await login(parsedFieldValues);
+            await login(formData);
             return LanguageTranslations.loggingIn[language];
         } catch {
             throw new Error(LanguageTranslations.failedLogin[language]);

@@ -312,3 +312,13 @@ export const memberContactMember = async (
         await getEmailPayload([recipientEmail], subject, mailContent, senderEmail),
     );
 };
+
+export const notifyOfValidatedMembership = async (userEmail: string) => {
+    const mailContent = createElement(MailTemplate, {
+        html: `Your membership has been validated. You can now log in and access member features.`,
+    });
+    const transport = await getMailTransport();
+    return transport.sendMail(
+        await getEmailPayload([userEmail], `Your membership has been validated`, mailContent),
+    );
+};

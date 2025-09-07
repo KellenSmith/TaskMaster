@@ -62,7 +62,9 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     const switchEventLocation = async () => {
         startTransition(async () => {
             try {
-                await updateEvent(event.id, { location_id: selectedLocationOption.id });
+                const formData = new FormData();
+                formData.append(GlobalConstants.LOCATION_ID, selectedLocationOption.id);
+                await updateEvent(event.id, formData);
                 addNotification(GlobalLanguageTranslations.successfulSave[language], "success");
             } catch {
                 addNotification(GlobalLanguageTranslations.failedSave[language], "error");

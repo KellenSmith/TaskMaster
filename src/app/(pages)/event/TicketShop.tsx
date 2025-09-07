@@ -62,9 +62,9 @@ const TicketShop = ({
         }
     };
 
-    const createTicketAction = async (parsedFieldValues: z.infer<typeof TicketCreateSchema>) => {
+    const createTicketAction = async (formData: FormData) => {
         try {
-            await createEventTicket(event.id, parsedFieldValues);
+            await createEventTicket(event.id, formData);
             setDialogOpen(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -72,9 +72,9 @@ const TicketShop = ({
         }
     };
 
-    const updateTicketAction = async (parsedFieldValues: z.infer<typeof TicketUpdateSchema>) => {
+    const updateTicketAction = async (formData: FormData) => {
         try {
-            await updateEventTicket(editingTicketId, parsedFieldValues);
+            await updateEventTicket(editingTicketId, formData);
             setDialogOpen(false);
             setEditingTicketId(null);
             return GlobalLanguageTranslations.successfulSave[language];

@@ -25,8 +25,8 @@ const AccountTab = () => {
 
     if (!user) return <LoadingFallback />;
 
-    const updateUserProfile = async (parsedFieldValues: z.infer<typeof UserUpdateSchema>) => {
-        await updateUser(user.id, parsedFieldValues);
+    const updateUserProfile = async (formData: FormData) => {
+        await updateUser(user.id, formData);
         return GlobalLanguageTranslations.successfulSave[language];
     };
 

@@ -43,6 +43,7 @@ const GlobalConstants = {
     NICKNAME: "nickname",
     PRONOUN: "pronoun",
     EMAIL: "email",
+    EMAIL_VERIFIED: "emailVerified",
     PHONE: "phone",
     ROLE: "role",
     PENDING: "pending",

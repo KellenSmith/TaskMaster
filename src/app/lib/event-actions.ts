@@ -335,7 +335,7 @@ export const cancelEvent = async (eventId: string): Promise<void> => {
     const validatedEventId = UuidSchema.parse(eventId);
 
     const cancelFormData = new FormData();
-    cancelFormData.append("status", EventStatus.cancelled);
+    cancelFormData.append(GlobalConstants.STATUS, EventStatus.cancelled);
     await updateEvent(validatedEventId, cancelFormData);
     revalidateTag(GlobalConstants.EVENT);
 

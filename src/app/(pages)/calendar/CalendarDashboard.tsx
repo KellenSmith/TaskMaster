@@ -41,9 +41,8 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
-    const createEventWithHostAndTicket = async (
-        parsedFieldValues: z.infer<typeof EventCreateSchema>,
-    ) => {
+    const createEventWithHostAndTicket = async (formData: FormData) => {
+        const parsedFieldValues = EventCreateSchema.parse(Object.fromEntries(formData.entries()));
         const selectedLocation = locations.find((loc) => loc.id === parsedFieldValues.location_id);
         if (selectedLocation.capacity < parsedFieldValues.max_participants)
             throw new Error(
@@ -51,7 +50,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             );
 
         try {
-            await createEvent(user.id, parsedFieldValues);
+            await createEvent(user.id, formData);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);

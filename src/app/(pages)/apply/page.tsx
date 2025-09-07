@@ -18,11 +18,9 @@ const ApplyPage = () => {
         [organizationSettings],
     );
 
-    const submitApplication = async (
-        parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
-    ) => {
+    const submitApplication = async (formData: FormData) => {
         try {
-            await submitMemberApplication(parsedFieldValues);
+            await submitMemberApplication(formData);
             return LanguageTranslations.applicationSubmitted[language];
         } catch {
             throw new Error(LanguageTranslations.failedApplicationSubmit[language]);

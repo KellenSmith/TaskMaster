@@ -53,17 +53,10 @@ interface DatagridProps {
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     updateAction?: (
         rowId: string, // eslint-disable-line no-unused-vars
-        fieldValues: // eslint-disable-line no-unused-vars
-        | z.infer<typeof UserUpdateSchema>
-            | z.infer<typeof ProductUpdateSchema>
-            | z.infer<typeof OrderUpdateSchema>,
+        fieldValues: FormData, // eslint-disable-line no-unused-vars
     ) => Promise<void>;
-    createAction?: (
-        fieldValues: // eslint-disable-line no-unused-vars
-        | z.infer<typeof UserCreateSchema>
-            | z.infer<typeof ProductCreateSchema>
-            | z.infer<typeof OrderUpdateSchema>,
-    ) => Promise<void>;
+    // eslint-disable-next-line no-unused-vars
+    createAction?: (fieldValues: FormData) => Promise<void>;
     validationSchema:
         | typeof UserUpdateSchema
         | typeof ProductUpdateSchema
@@ -136,7 +129,7 @@ const Datagrid: React.FC<DatagridProps> = ({
         });
     }, [apiRef, columns]);
 
-    const createRow = async (fieldValues: any) => {
+    const createRow = async (fieldValues: FormData) => {
         try {
             await createAction(fieldValues);
             setAddNew(false);
@@ -146,7 +139,7 @@ const Datagrid: React.FC<DatagridProps> = ({
         }
     };
 
-    const updateRow = async (fieldValues: any) => {
+    const updateRow = async (fieldValues: FormData) => {
         try {
             await updateAction(clickedRow.id, fieldValues);
             setClickedRow(null);

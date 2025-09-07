@@ -10,10 +10,8 @@ import { OrganizationSettingsUpdateSchema } from "../../lib/zod-schemas";
 const OrganizationSettingsPage = () => {
     const { organizationSettings } = useOrganizationSettingsContext();
 
-    const saveOrganizationSettings = async (
-        parsedFieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
-    ) => {
-        await updateOrganizationSettings(parsedFieldValues);
+    const saveOrganizationSettings = async (formData: FormData) => {
+        await updateOrganizationSettings(formData);
         return "Updated organization settings";
     };
 

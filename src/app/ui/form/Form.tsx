@@ -123,6 +123,11 @@ const Form: FC<FormProps> = ({
         const newBlob = await upload(`${name}/${sanitizedName}`, file, {
             access: "public",
             handleUploadUrl: "/api/file-upload",
+            clientPayload: JSON.stringify({
+                type: file.type,
+                name: file.name,
+                size: file.size,
+            }),
         });
         return newBlob.url;
     };

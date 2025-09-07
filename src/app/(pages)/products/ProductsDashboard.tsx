@@ -33,6 +33,7 @@ const ProductsDashboard = ({ productsPromise }) => {
         GlobalConstants.ID,
         GlobalConstants.DESCRIPTION,
         GlobalConstants.IMAGE_URL,
+        GlobalConstants.EMAIL_VERIFIED,
     ];
 
     return (

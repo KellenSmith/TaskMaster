@@ -1,5 +1,31 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    images: {
+        remotePatterns: [
+            // Allow images from Vercel Blob storage
+            ...(process.env.BLOB_HOSTNAME
+                ? [
+                      {
+                          protocol: "https",
+                          hostname: process.env.BLOB_HOSTNAME,
+                          port: "",
+                          pathname: "/**",
+                      },
+                  ]
+                : []),
+            // Fallback: allow all Vercel Blob storage subdomains if no specific hostname is set
+            ...(!process.env.BLOB_HOSTNAME
+                ? [
+                      {
+                          protocol: "https",
+                          hostname: "*.public.blob.vercel-storage.com",
+                          port: "",
+                          pathname: "/**",
+                      },
+                  ]
+                : []),
+        ],
+    },
     async headers() {
         return [
             {

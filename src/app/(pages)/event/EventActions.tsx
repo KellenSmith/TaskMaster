@@ -89,9 +89,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     const submitForApproval = () => {
         startTransition(async () => {
             try {
-                await updateEvent(event.id, {
-                    status: EventStatus.pending_approval,
-                });
+                const formData = new FormData();
+                formData.append(GlobalConstants.STATUS, EventStatus.pending_approval);
+                await updateEvent(event.id, formData);
                 addNotification(LanguageTranslations.submittedEvent[language], "success");
                 closeActionMenu();
             } catch {
@@ -103,9 +103,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     const publishEvent = () => {
         startTransition(async () => {
             try {
-                await updateEvent(event.id, {
-                    status: EventStatus.published,
-                });
+                const formData = new FormData();
+                formData.append(GlobalConstants.STATUS, EventStatus.published);
+                await updateEvent(event.id, formData);
                 addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
             } catch {
@@ -136,8 +136,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         });
     };
 
-    const cloneAction = async (parsedFieldValues: z.infer<typeof CloneEventSchema>) => {
-        await cloneEvent(event.id, parsedFieldValues);
+    const cloneAction = async (formData: FormData) => {
+        await cloneEvent(event.id, formData);
         return GlobalLanguageTranslations.successfulSave[language];
     };
 
@@ -290,9 +290,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         return ActionButtons;
     };
 
-    const updateEventById = async (parsedFieldValues: z.infer<typeof EventUpdateSchema>) => {
+    const updateEventById = async (formData: FormData) => {
         try {
-            await updateEvent(event.id, parsedFieldValues);
+            await updateEvent(event.id, formData);
             setDialogOpen(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -300,7 +300,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         }
     };
 
-    const sendoutToEventUsers = async (parsedFieldValues: z.infer<typeof EmailSendoutSchema>) => {
+    const sendoutToEventUsers = async (formData: FormData) => {
+        const parsedFieldValues = EmailSendoutSchema.parse(Object.fromEntries(formData.entries()));
         const recipientIds: string[] = [];
         if (
             sendoutTo === sendoutToOptions.Participants[language] ||
