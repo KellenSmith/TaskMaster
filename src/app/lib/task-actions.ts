@@ -13,6 +13,7 @@ import {
 } from "./event-participant-actions";
 import { addEventReserveWithTx } from "./event-reserve-actions";
 import { getLoggedInUser } from "./user-actions";
+import { sanitizeFormData } from "./html-sanitizer";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     // Validate task ID format
@@ -166,12 +167,15 @@ export const createTask = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = TaskCreateSchema.parse(parsedFieldValues);
 
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
     const {
         assignee_id: assigneeId,
         reviewer_id: reviewerId,
         skill_badges: skillBadges,
         ...taskWithoutUsers
-    } = validatedData;
+    } = sanitizedData;
 
     await prisma.task.create({
         data: {

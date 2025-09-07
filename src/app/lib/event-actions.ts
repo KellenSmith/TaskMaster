@@ -15,6 +15,7 @@ import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
 import { getLoggedInUser } from "./user-actions";
 import { getOrganizationSettings } from "./organization-settings-actions";
+import { sanitizeFormData } from "./html-sanitizer";
 
 export const createEvent = async (
     userId: string,
@@ -22,7 +23,11 @@ export const createEvent = async (
 ): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = EventCreateSchema.parse(parsedFieldValues);
-    const { location_id, ...eventData } = validatedData;
+
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
+    const { location_id, ...eventData } = sanitizedData;
 
     // Check that the location has capacity for the max_participants
     const location = await prisma.location.findUniqueOrThrow({
@@ -226,6 +231,9 @@ export const updateEvent = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = EventUpdateSchema.parse(parsedFieldValues);
 
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
     let notifyEventReservesPromise;
     const eventToUpdate = await prisma.event.findUniqueOrThrow({
         where: { id: eventId },
@@ -240,7 +248,7 @@ export const updateEvent = async (
         requireApprovalBeforePublish &&
         !isUserAdmin(loggedInUser) &&
         eventToUpdate.status !== EventStatus.published &&
-        validatedData.status === EventStatus.published
+        sanitizedData.status === EventStatus.published
     ) {
         throw new Error("You are not authorized to publish this event");
     }
@@ -249,7 +257,7 @@ export const updateEvent = async (
         const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
-        if (eventParticipantsCount > validatedData.max_participants) {
+        if (eventParticipantsCount > sanitizedData.max_participants) {
             throw new Error(
                 `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
             );
@@ -258,7 +266,7 @@ export const updateEvent = async (
         // Add or remove the new number of available tickets to product stock
         // deltaMaxParticipants might be negative
         const deltaMaxParticipants =
-            validatedData.max_participants - eventToUpdate.max_participants;
+            sanitizedData.max_participants - eventToUpdate.max_participants;
         if (Math.abs(deltaMaxParticipants)) {
             const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
             await tx.product.updateMany({
@@ -277,7 +285,7 @@ export const updateEvent = async (
         if (
             organizationSettings.event_manager_email &&
             eventToUpdate.status !== EventStatus.pending_approval &&
-            validatedData.status === EventStatus.pending_approval
+            sanitizedData.status === EventStatus.pending_approval
         )
             sendEmailNotification(
                 organizationSettings.event_manager_email,
@@ -296,7 +304,7 @@ export const updateEvent = async (
         // Notify event host if the event is published
         if (
             eventToUpdate.status !== EventStatus.published &&
-            validatedData.status === EventStatus.published
+            sanitizedData.status === EventStatus.published
         ) {
             sendEmailNotification(
                 eventToUpdate.host.email,
@@ -315,7 +323,7 @@ export const updateEvent = async (
 
         await prisma.event.update({
             where: { id: eventId },
-            data: validatedData,
+            data: sanitizedData,
         });
         revalidateTag(GlobalConstants.EVENT);
         revalidateTag(GlobalConstants.TICKET);

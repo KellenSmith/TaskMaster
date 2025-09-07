@@ -6,6 +6,7 @@ import { LocationCreateSchema, LocationUpdateSchema, UuidSchema } from "./zod-sc
 import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
+import { sanitizeFormData } from "./html-sanitizer";
 
 export const getAllLocations = async (): Promise<Location[]> => {
     return await prisma.location.findMany();
@@ -17,7 +18,10 @@ export const createLocation = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = LocationCreateSchema.parse(parsedFieldValues);
 
-    const location = await prisma.location.create({ data: validatedData });
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
+    const location = await prisma.location.create({ data: sanitizedData });
     revalidateTag(GlobalConstants.LOCATION);
     return location;
 };
@@ -28,7 +32,11 @@ export const updateLocation = async (
 ): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = LocationUpdateSchema.parse(parsedFieldValues);
-    await prisma.location.update({ where: { id: locationId }, data: validatedData });
+
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
+    await prisma.location.update({ where: { id: locationId }, data: sanitizedData });
     revalidateTag(GlobalConstants.LOCATION);
     revalidateTag(GlobalConstants.EVENT);
 };

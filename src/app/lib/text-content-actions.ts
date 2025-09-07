@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { Language, Prisma } from "@prisma/client";
+import { sanitizeRichText } from "./html-sanitizer";
 
 export const getTextContent = async (
     id: string,
@@ -49,6 +50,9 @@ export const updateTextContent = async (
     text: string,
     category?: string,
 ): Promise<void> => {
+    // Sanitize rich text content before saving
+    const sanitizedText = sanitizeRichText(text);
+
     await prisma.$transaction(async (tx) => {
         await tx.textContent.upsert({
             where: {
@@ -60,7 +64,7 @@ export const updateTextContent = async (
                 translations: {
                     create: {
                         language,
-                        text,
+                        text: sanitizedText,
                     },
                 },
             },
@@ -76,10 +80,10 @@ export const updateTextContent = async (
                         },
                         create: {
                             language,
-                            text,
+                            text: sanitizedText,
                         },
                         update: {
-                            text,
+                            text: sanitizedText,
                         },
                     },
                 },

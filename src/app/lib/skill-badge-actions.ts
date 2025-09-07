@@ -7,6 +7,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { deleteOldBlob } from "./organization-settings-actions";
+import { sanitizeFormData } from "./html-sanitizer";
 
 export const getAllSkillBadges = async (): Promise<Prisma.SkillBadgeGetPayload<true>[]> => {
     return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
@@ -18,7 +19,10 @@ export const createSkillBadge = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = SkillBadgeCreateSchema.parse(parsedFieldValues);
 
-    await prisma.skillBadge.create({ data: validatedData });
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
+    await prisma.skillBadge.create({ data: sanitizedData });
     revalidateTag(GlobalConstants.SKILL_BADGES);
 };
 
@@ -31,11 +35,14 @@ export const updateSkillBadge = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = SkillBadgeCreateSchema.parse(parsedFieldValues);
 
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
     const oldSkillBadge = await prisma.skillBadge.findUnique({
         where: { id: validatedSkillBadgeId },
     });
-    await deleteOldBlob(oldSkillBadge.image_url, validatedData.image_url);
-    await prisma.skillBadge.update({ where: { id: validatedSkillBadgeId }, data: validatedData });
+    await deleteOldBlob(oldSkillBadge.image_url, sanitizedData.image_url);
+    await prisma.skillBadge.update({ where: { id: validatedSkillBadgeId }, data: sanitizedData });
     revalidateTag(GlobalConstants.SKILL_BADGES);
 };
 

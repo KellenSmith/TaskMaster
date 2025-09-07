@@ -22,6 +22,7 @@ import EmailNotificationTemplate, {
 } from "./mail-templates/MailNotificationTemplate";
 import MemberContactMemberTemplate from "./mail-templates/MemberContactMemberTemplate";
 import SignInEmailTemplate from "./mail-templates/SignInEmailTemplate";
+import { sanitizeFormData } from "../html-sanitizer";
 
 interface EmailPayload {
     from: string;
@@ -188,10 +189,14 @@ export const sendMassEmail = async (
     ).map((user: Prisma.UserGetPayload<true>) => user.email);
 
     const revalidatedContent = EmailSendoutSchema.parse(parsedFieldValues);
+
+    // Sanitize rich text content before sending email
+    const sanitizedContent = sanitizeFormData(revalidatedContent);
+
     const mailContent = createElement(MailTemplate, {
-        html: revalidatedContent.content,
+        html: sanitizedContent.content,
     });
-    const mailPayload = await getEmailPayload(recipients, revalidatedContent.subject, mailContent);
+    const mailPayload = await getEmailPayload(recipients, sanitizedContent.subject, mailContent);
     const mailTransport = await getMailTransport();
     const mailResponse = await mailTransport.sendMail(mailPayload);
     if (mailResponse.error) throw new Error(mailResponse.error.message);
@@ -292,9 +297,13 @@ export const memberContactMember = async (
     reason: string,
     content: string,
 ) => {
+    // Import sanitizeRichText since we need to sanitize individual field
+    const { sanitizeRichText } = await import("../html-sanitizer");
+    const sanitizedContent = sanitizeRichText(content);
+
     const mailContent = createElement(MemberContactMemberTemplate, {
         reason,
-        content,
+        content: sanitizedContent,
     });
 
     const transport = await getMailTransport();

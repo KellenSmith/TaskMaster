@@ -1,7 +1,6 @@
-"use server";
-
 import DOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
+import { richTextFields } from "../ui/form/FieldCfg";
 
 // Rich text sanitization configuration
 const RICH_TEXT_CONFIG: DOMPurify.Config = {
@@ -116,17 +115,16 @@ export const stripAllHtml = (html: string): string => {
  * Sanitize rich text fields in form data
  * Use this in server actions before saving to database
  */
-export const sanitizeFormData = <T extends Record<string, any>>(
-    data: T,
-    richTextFields: (keyof T)[],
-): T => {
-    const sanitized = { ...data };
+export const sanitizeFormData = <T extends Record<string, any>>(data: T): T => {
+    return Object.keys(data).reduce((sanitized, key) => {
+        const value = data[key];
 
-    for (const field of richTextFields) {
-        if (sanitized[field] && typeof sanitized[field] === "string") {
-            sanitized[field] = sanitizeRichText(sanitized[field] as string) as T[keyof T];
+        if (richTextFields.includes(key) && typeof value === "string") {
+            (sanitized as any)[key] = sanitizeRichText(value);
+        } else {
+            (sanitized as any)[key] = value;
         }
-    }
 
-    return sanitized;
+        return sanitized;
+    }, {} as T);
 };

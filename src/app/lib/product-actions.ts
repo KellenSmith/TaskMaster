@@ -15,6 +15,7 @@ import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { addEventParticipantWithTx } from "./event-participant-actions";
 import { deleteOldBlob } from "./organization-settings-actions";
+import { sanitizeFormData } from "./html-sanitizer";
 
 export const getAllNonTicketProducts = async (): Promise<Product[]> => {
     return await prisma.product.findMany({
@@ -30,8 +31,11 @@ export const createProduct = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ProductCreateSchema.parse(parsedFieldValues);
 
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
     await prisma.product.create({
-        data: validatedData,
+        data: sanitizedData,
     });
     revalidateTag(GlobalConstants.PRODUCT);
 };
@@ -42,8 +46,11 @@ export const createMembershipProduct = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = MembershipCreateSchema.parse(parsedFieldValues);
 
-    const membershipValues = MembershipWithoutProductSchema.parse(validatedData);
-    const productValues = ProductCreateSchema.parse(validatedData);
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
+    const membershipValues = MembershipWithoutProductSchema.parse(sanitizedData);
+    const productValues = ProductCreateSchema.parse(sanitizedData);
     await prisma.membership.create({
         data: {
             ...membershipValues,
@@ -65,13 +72,16 @@ export const updateProduct = async (
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ProductUpdateSchema.parse(parsedFieldValues);
 
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
     const oldProduct = await prisma.product.findUnique({ where: { id: validatedProductId } });
 
     await prisma.product.update({
         where: { id: validatedProductId },
-        data: validatedData,
+        data: sanitizedData,
     });
-    await deleteOldBlob(oldProduct.image_url, validatedData.image_url);
+    await deleteOldBlob(oldProduct.image_url, sanitizedData.image_url);
     revalidateTag(GlobalConstants.PRODUCT);
 };
 
