@@ -35,8 +35,6 @@ export const addEventParticipantWithTx = async (tx, ticketId: string, userId: st
     await deleteEventReserveWithTx(tx, userId, ticket.event_id);
     revalidateTag(GlobalConstants.RESERVE_USERS);
 
-    // TODO: Delete the user from the  reserve list if they're on it
-
     // Decrement the product stock of all tickets with limited stock belonging to the same event
     // Ticket product stock reflects the total number of available tickets across all types
     await tx.product.updateMany({
@@ -118,7 +116,6 @@ export const deleteEventParticipantWithTx = async (tx, eventId: string, userId: 
         },
     });
 
-    // TODO: unassign from tasks happening during the event
     revalidateTag(GlobalConstants.PARTICIPANT_USERS);
     revalidateTag(GlobalConstants.EVENT);
     revalidateTag(GlobalConstants.TICKET);
@@ -128,6 +125,43 @@ export const deleteEventParticipantWithTx = async (tx, eventId: string, userId: 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
     await prisma.$transaction(async (tx) => {
         await deleteEventParticipantWithTx(tx, eventId, userId);
+        await unassignUserFromEventTasks(tx, eventId, userId);
+    });
+};
+
+export const unassignUserFromEventTasks = async (tx, eventId: string, userId: string) => {
+    // Unassign any tasks assigned to the user happening during the event
+    const event = await tx.event.findUniqueOrThrow({
+        where: { id: eventId },
+    });
+    await tx.task.updateMany({
+        where: {
+            AND: [
+                {
+                    OR: [
+                        {
+                            start_time: {
+                                gte: event.start_time,
+                                lte: event.end_time,
+                            },
+                        },
+                        {
+                            end_time: {
+                                gte: event.start_time,
+                                lte: event.end_time,
+                            },
+                        },
+                    ],
+                },
+            ],
+            event_id: eventId,
+            assigned_to: userId,
+        },
+        data: {
+            assignee: {
+                disconnect: { id: userId },
+            },
+        },
     });
 };
 

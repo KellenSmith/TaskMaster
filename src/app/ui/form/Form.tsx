@@ -136,7 +136,6 @@ const Form: FC<FormProps> = ({
         }
     };
 
-    // TODO: Implement translations for notification messages
     const submitForm = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);

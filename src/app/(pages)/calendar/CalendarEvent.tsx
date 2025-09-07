@@ -37,7 +37,7 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     };
 
     // TODO: mark green if participating
-    const uniqueTags = Array.from(new Set(event.tags || []));
+    const uniqueTags = [...new Set(event.tags || [])];
 
     // Detect small screen (used only for tag sizing and tooltip behavior)
     const isSmallScreen = /Mobi|Android|iPhone|iPad|iPod/.test(
