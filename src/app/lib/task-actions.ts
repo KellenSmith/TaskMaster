@@ -57,7 +57,7 @@ export const getTaskById = async (
 
 export const updateTaskById = async (
     taskId: string,
-    parsedFieldValues: z.infer<typeof TaskUpdateSchema>,
+    formData: FormData,
     eventId: string | null,
 ): Promise<void> => {
     // Validate task ID format
@@ -65,7 +65,7 @@ export const updateTaskById = async (
     // Validate event ID format if provided
     const validatedEventId = eventId ? UuidSchema.parse(eventId) : null;
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = TaskUpdateSchema.parse(parsedFieldValues);
+    const validatedData = TaskUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     const oldTask = await prisma.task.findUniqueOrThrow({
         where: {
@@ -158,14 +158,11 @@ export const updateTaskById = async (
     revalidateTag(GlobalConstants.TASK);
 };
 
-export const createTask = async (
-    parsedFieldValues: z.infer<typeof TaskCreateSchema>,
-    eventId: string | null,
-): Promise<void> => {
+export const createTask = async (formData: FormData, eventId: string | null): Promise<void> => {
     // Validate event ID format if provided
     const validatedEventId = eventId ? UuidSchema.parse(eventId) : null;
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = TaskCreateSchema.parse(parsedFieldValues);
+    const validatedData = TaskCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
@@ -180,7 +177,7 @@ export const createTask = async (
     await prisma.task.create({
         data: {
             ...taskWithoutUsers,
-            tags: parsedFieldValues.tags,
+            tags: validatedData.tags,
             ...(assigneeId && {
                 assignee: {
                     connect: {
@@ -380,14 +377,14 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
 
 export const contactTaskMember = async (
     recipientId: string,
-    parsedFieldValues: z.infer<typeof ContactMemberSchema>,
+    formData: FormData,
     taskId: string | null,
 ): Promise<void> => {
     // Validate recipient and task ID formats
     const validatedRecipientId = UuidSchema.parse(recipientId);
     const validatedTaskId = taskId ? UuidSchema.parse(taskId) : null;
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = ContactMemberSchema.parse(parsedFieldValues);
+    const validatedData = ContactMemberSchema.parse(Object.fromEntries(formData.entries()));
 
     const recipient = await prisma.user.findUniqueOrThrow({
         where: {

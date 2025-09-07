@@ -12,11 +12,9 @@ export const getAllLocations = async (): Promise<Location[]> => {
     return await prisma.location.findMany();
 };
 
-export const createLocation = async (
-    parsedFieldValues: z.infer<typeof LocationCreateSchema>,
-): Promise<Location> => {
+export const createLocation = async (formData: FormData): Promise<Location> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = LocationCreateSchema.parse(parsedFieldValues);
+    const validatedData = LocationCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
@@ -26,12 +24,9 @@ export const createLocation = async (
     return location;
 };
 
-export const updateLocation = async (
-    locationId: string,
-    parsedFieldValues: z.infer<typeof LocationUpdateSchema>,
-): Promise<void> => {
+export const updateLocation = async (locationId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = LocationUpdateSchema.parse(parsedFieldValues);
+    const validatedData = LocationUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);

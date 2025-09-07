@@ -33,8 +33,8 @@ export const organizationSettingsFieldLabels = {
         [Language.swedish]: "Rensa medlemmar efter tid utan validerat medlemskap [dagar]",
     },
     [GlobalConstants.MEMBER_APPLICATION_PROMPT]: {
-        [Language.english]: "Send us a message",
-        [Language.swedish]: "Skicka oss ett meddelande",
+        [Language.english]: "Motivation",
+        [Language.swedish]: "Motivering",
     },
     [GlobalConstants.EVENT_MANAGER_EMAIL]: {
         [Language.english]: "Event Manager Email",

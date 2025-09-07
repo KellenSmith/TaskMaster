@@ -25,11 +25,9 @@ export const getAllNonTicketProducts = async (): Promise<Product[]> => {
     });
 };
 
-export const createProduct = async (
-    parsedFieldValues: z.infer<typeof ProductCreateSchema>,
-): Promise<void> => {
+export const createProduct = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = ProductCreateSchema.parse(parsedFieldValues);
+    const validatedData = ProductCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
@@ -40,11 +38,9 @@ export const createProduct = async (
     revalidateTag(GlobalConstants.PRODUCT);
 };
 
-export const createMembershipProduct = async (
-    parsedFieldValues: z.infer<typeof MembershipCreateSchema>,
-): Promise<void> => {
+export const createMembershipProduct = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = MembershipCreateSchema.parse(parsedFieldValues);
+    const validatedData = MembershipCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
@@ -63,14 +59,11 @@ export const createMembershipProduct = async (
     revalidateTag(GlobalConstants.MEMBERSHIP);
 };
 
-export const updateProduct = async (
-    productId: string,
-    parsedFieldValues: z.infer<typeof ProductUpdateSchema>,
-): Promise<void> => {
+export const updateProduct = async (productId: string, formData: FormData): Promise<void> => {
     // Validate product ID format
     const validatedProductId = UuidSchema.parse(productId);
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = ProductUpdateSchema.parse(parsedFieldValues);
+    const validatedData = ProductUpdateSchema.parse(Object.fromEntries(formData.entries()));
     console.log(validatedData);
 
     // Sanitize rich text fields before saving to database

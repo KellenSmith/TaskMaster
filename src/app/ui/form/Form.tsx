@@ -292,6 +292,7 @@ const Form: FC<FormProps> = ({
         if (!infoText) return null;
         return (
             <Stack key={getFieldCompKey(fieldId) + "-infotext"}>
+                <Divider />
                 <Card sx={{ py: 1 }}>
                     {infoText.split("\n").map((line, index) => (
                         <Typography key={index} variant="subtitle2" color="primary">
@@ -299,7 +300,6 @@ const Form: FC<FormProps> = ({
                         </Typography>
                     ))}
                 </Card>
-                <Divider />
             </Stack>
         );
     };

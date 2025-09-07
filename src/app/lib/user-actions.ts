@@ -27,11 +27,9 @@ export const getUserById = async (
     });
 };
 
-export const createUser = async (
-    parsedFieldValues: z.infer<typeof UserCreateSchema>,
-): Promise<void> => {
+export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = UserCreateSchema.parse(parsedFieldValues);
+    const validatedData = UserCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // If this user is the first user, make them an admin and validate their membership
     const userCount = await prisma.user.count();
@@ -58,11 +56,9 @@ export const createUser = async (
     revalidateTag(GlobalConstants.USER);
 };
 
-export const submitMemberApplication = async (
-    parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
-) => {
+export const submitMemberApplication = async (formData: FormData) => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = MembershipApplicationSchema.parse(parsedFieldValues);
+    const validatedData = MembershipApplicationSchema.parse(Object.fromEntries(formData.entries()));
 
     const organizationSettings = await getOrganizationSettings();
 
@@ -83,7 +79,8 @@ export const submitMemberApplication = async (
     }
 
     const userFieldValues = UserCreateSchema.parse(validatedData);
-    await createUser(userFieldValues);
+
+    await createUser(formData);
     await signIn("email", {
         email: userFieldValues.email,
         redirect: false,
@@ -109,14 +106,11 @@ export const getAllUsers = async (): Promise<
     });
 };
 
-export const updateUser = async (
-    userId: string,
-    parsedFieldValues: z.infer<typeof UserUpdateSchema>,
-): Promise<void> => {
+export const updateUser = async (userId: string, formData: FormData): Promise<void> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = UserUpdateSchema.parse(parsedFieldValues);
+    const validatedData = UserUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
     await prisma.$transaction(async (tx) => {
@@ -215,9 +209,9 @@ export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
     return loggedInUser;
 };
 
-export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Promise<void> => {
+export const login = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = LoginSchema.parse(parsedFieldValues);
+    const validatedData = LoginSchema.parse(Object.fromEntries(formData.entries()));
 
     // Only let existing members log in from this route
     await prisma.user.findUniqueOrThrow({ where: { email: validatedData.email } });

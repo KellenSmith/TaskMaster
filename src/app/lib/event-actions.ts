@@ -17,12 +17,9 @@ import { getLoggedInUser } from "./user-actions";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
 
-export const createEvent = async (
-    userId: string,
-    parsedFieldValues: z.infer<typeof EventCreateSchema>,
-): Promise<void> => {
+export const createEvent = async (userId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = EventCreateSchema.parse(parsedFieldValues);
+    const validatedData = EventCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
@@ -224,12 +221,9 @@ export const getEventParticipants = async (
     return participants;
 };
 
-export const updateEvent = async (
-    eventId: string,
-    parsedFieldValues: z.infer<typeof EventUpdateSchema>,
-): Promise<void> => {
+export const updateEvent = async (eventId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = EventUpdateSchema.parse(parsedFieldValues);
+    const validatedData = EventUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
@@ -340,7 +334,9 @@ export const cancelEvent = async (eventId: string): Promise<void> => {
     // Validate event ID format
     const validatedEventId = UuidSchema.parse(eventId);
 
-    await updateEvent(validatedEventId, { status: EventStatus.cancelled });
+    const cancelFormData = new FormData();
+    cancelFormData.append("status", EventStatus.cancelled);
+    await updateEvent(validatedEventId, cancelFormData);
     revalidateTag(GlobalConstants.EVENT);
 
     try {
@@ -392,12 +388,9 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
     serverRedirect([GlobalConstants.CALENDAR]);
 };
 
-export const cloneEvent = async (
-    eventId: string,
-    parsedFieldValues: z.infer<typeof CloneEventSchema>,
-) => {
+export const cloneEvent = async (eventId: string, formData: FormData) => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = CloneEventSchema.parse(parsedFieldValues);
+    const validatedData = CloneEventSchema.parse(Object.fromEntries(formData.entries()));
 
     const {
         id: eventIdToOmit, // eslint-disable-line no-unused-vars

@@ -13,14 +13,11 @@ import {
 import { prisma } from "../../../prisma/prisma-client";
 import z from "zod";
 
-export const createEventTicket = async (
-    eventId: string,
-    parsedFieldValues: z.infer<typeof TicketCreateSchema>,
-) => {
+export const createEventTicket = async (eventId: string, formData: FormData) => {
     // Validate event ID format
     const validatedEventId = UuidSchema.parse(eventId);
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = TicketCreateSchema.parse(parsedFieldValues);
+    const validatedData = TicketCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     const ticketFieldValues = TicketWithoutRelationsSchema.parse(validatedData);
     const productFieldValues = ProductCreateSchema.parse(validatedData);
@@ -59,14 +56,11 @@ export const createEventTicket = async (
     revalidateTag(GlobalConstants.TICKET);
 };
 
-export const updateEventTicket = async (
-    ticketId: string,
-    parsedFieldValues: z.infer<typeof TicketUpdateSchema>,
-) => {
+export const updateEventTicket = async (ticketId: string, formData: FormData) => {
     // Validate ticket ID format
     const validatedTicketId = UuidSchema.parse(ticketId);
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = TicketUpdateSchema.parse(parsedFieldValues);
+    const validatedData = TicketUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     const ticketFieldValues = TicketWithoutRelationsSchema.parse(validatedData);
     const productFieldValues = ProductUpdateSchema.parse(validatedData);

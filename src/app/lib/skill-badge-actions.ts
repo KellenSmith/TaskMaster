@@ -13,11 +13,9 @@ export const getAllSkillBadges = async (): Promise<Prisma.SkillBadgeGetPayload<t
     return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 };
 
-export const createSkillBadge = async (
-    parsedFieldValues: z.infer<typeof SkillBadgeCreateSchema>,
-): Promise<void> => {
+export const createSkillBadge = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = SkillBadgeCreateSchema.parse(parsedFieldValues);
+    const validatedData = SkillBadgeCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
@@ -26,14 +24,11 @@ export const createSkillBadge = async (
     revalidateTag(GlobalConstants.SKILL_BADGES);
 };
 
-export const updateSkillBadge = async (
-    skillBadgeId: string,
-    parsedFieldValues: z.infer<typeof SkillBadgeCreateSchema>,
-): Promise<void> => {
+export const updateSkillBadge = async (skillBadgeId: string, formData: FormData): Promise<void> => {
     // Validate skill badge ID format
     const validatedSkillBadgeId = UuidSchema.parse(skillBadgeId);
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = SkillBadgeCreateSchema.parse(parsedFieldValues);
+    const validatedData = SkillBadgeCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);

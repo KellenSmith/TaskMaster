@@ -10,11 +10,8 @@ import { revalidateTag } from "next/cache";
 import z from "zod";
 import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
 
-export const addUserMembership = async (
-    userId: string,
-    parsedFieldValues: z.infer<typeof AddMembershipSchema>,
-) => {
-    const validatedData = AddMembershipSchema.parse(parsedFieldValues);
+export const addUserMembership = async (userId: string, formData: FormData) => {
+    const validatedData = AddMembershipSchema.parse(Object.fromEntries(formData.entries()));
     const membershipProduct = await getMembershipProduct();
     await prisma.userMembership.create({
         data: {

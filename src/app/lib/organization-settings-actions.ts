@@ -24,11 +24,11 @@ export const getOrganizationName = async (): Promise<string> => {
     return orgSettings?.organization_name || process.env.NEXT_PUBLIC_ORG_NAME || "Task Master";
 };
 
-export const updateOrganizationSettings = async (
-    parsedFieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
-): Promise<void> => {
+export const updateOrganizationSettings = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = OrganizationSettingsUpdateSchema.parse(parsedFieldValues);
+    const validatedData = OrganizationSettingsUpdateSchema.parse(
+        Object.fromEntries(formData.entries()),
+    );
 
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
