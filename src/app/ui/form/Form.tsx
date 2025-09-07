@@ -178,7 +178,7 @@ const Form: FC<FormProps> = ({
         if (!parsedFieldValues) return;
         startTransition(async () => {
             try {
-                const submitResult = await action(parsedFieldValues);
+                const submitResult = await action(formDataWithFileUrls);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
             } catch (error) {

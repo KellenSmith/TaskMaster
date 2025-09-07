@@ -71,6 +71,7 @@ export const updateProduct = async (
     const validatedProductId = UuidSchema.parse(productId);
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ProductUpdateSchema.parse(parsedFieldValues);
+    console.log(validatedData);
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);

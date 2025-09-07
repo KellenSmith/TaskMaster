@@ -59,6 +59,7 @@ CREATE TABLE "public"."users" (
     "status" "public"."UserStatus" NOT NULL DEFAULT 'pending',
     "role" "public"."UserRole" NOT NULL DEFAULT 'member',
     "email" TEXT NOT NULL,
+    "emailVerified" TIMESTAMP(3),
     "nickname" TEXT NOT NULL,
     "first_name" TEXT,
     "sur_name" TEXT,

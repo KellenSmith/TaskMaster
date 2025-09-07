@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import { checkboxFields, datePickerFields, FieldLabels, priceFields } from "./form/FieldCfg";
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
-import { formatDate } from "./utils";
+import { formatDate, formatPrice } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import {
     OrderUpdateSchema,
@@ -117,7 +117,9 @@ const Datagrid: React.FC<DatagridProps> = ({
                     if (datePickerFields.includes(key)) {
                         return formatDate(value);
                     }
-                    if (priceFields.includes(key)) return parseInt(value) / 100;
+                    if (priceFields.includes(key)) {
+                        return formatPrice(value);
+                    }
                     if (value in FieldLabels) return FieldLabels[value][language];
                     return value;
                 },

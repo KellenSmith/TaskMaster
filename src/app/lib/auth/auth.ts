@@ -28,6 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async jwt({ token, user }) {
             // If user object is available (first time after sign in), add the user id to the token
             if (user) {
+                token.id = user.id;
                 token.status = user.status;
                 token.role = user.role;
             }
@@ -35,6 +36,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
         async session({ session, token }) {
             // Add the user id from the token to the session
+            if (token.id) {
+                session.user.id = token.id as string;
+            }
             if (token.status) {
                 session.user.status = token.status;
             }

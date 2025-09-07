@@ -47,6 +47,7 @@ model User {
   status                 UserStatus         @default(pending)
   role                   UserRole           @default(member)
   email                  String             @unique
+  emailVerified          DateTime?
   user_membership        UserMembership?
   accounts               Account[]
   sessions               Session[]
