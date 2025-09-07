@@ -12,7 +12,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import LocationCard from "../locations/LocationCard";
 import { FieldLabels, RenderedFields } from "../../ui/form/FieldCfg";

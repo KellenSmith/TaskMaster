@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
-import { isMembershipExpired, clientRedirect } from "../../lib/definitions";
+import { isMembershipExpired, clientRedirect } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";

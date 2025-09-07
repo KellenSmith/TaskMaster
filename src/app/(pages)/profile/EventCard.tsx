@@ -1,7 +1,7 @@
 import { Button, Card, CardContent, Stack, Typography, Chip, Box } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
-import { isUserHost, clientRedirect } from "../../lib/definitions";
+import { isUserHost, clientRedirect } from "../../lib/utils";
 import { isEventPublished, isUserParticipant, isUserReserve } from "../event/event-utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";

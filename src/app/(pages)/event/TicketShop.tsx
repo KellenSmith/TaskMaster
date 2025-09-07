@@ -5,7 +5,7 @@ import { Prisma, TicketType } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import { createOrder } from "../../lib/order-actions";
 import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { isUserVolunteer } from "./event-utils";
 import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";

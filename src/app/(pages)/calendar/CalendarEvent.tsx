@@ -7,7 +7,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../../ui/utils";
 import { useRouter } from "next/navigation";
 import { EventStatus, Prisma } from "@prisma/client";
-import { clientRedirect } from "../../lib/definitions";
+import { clientRedirect } from "../../lib/utils";
 
 export interface CalendarEventProps {
     event: Prisma.EventGetPayload<true>;

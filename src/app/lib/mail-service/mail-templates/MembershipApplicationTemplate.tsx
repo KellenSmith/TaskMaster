@@ -5,7 +5,7 @@ import mailTheme from "../mail-theme";
 import GlobalConstants from "../../../GlobalConstants";
 import { MembershipApplicationSchema } from "../../zod-schemas";
 import z from "zod";
-import { getAbsoluteUrl } from "../../definitions";
+import { getAbsoluteUrl } from "../../utils";
 
 /**
  * Props for the MembershipApplicationTemplate component.

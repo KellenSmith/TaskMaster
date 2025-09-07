@@ -16,7 +16,7 @@ import YearWheelEvent from "./YearWheelEvent";
 import YearWheelMarker from "./YearWheelMarker";
 import { formatDate, openResourceInNewTab } from "../../ui/utils";
 import { ArrowLeft, ArrowRight, OpenInNew } from "@mui/icons-material";
-import { getRelativeUrl } from "../../lib/definitions";
+import { getRelativeUrl } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";

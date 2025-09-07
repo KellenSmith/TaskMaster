@@ -7,7 +7,7 @@ import { sendOrderConfirmation } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
-import { serverRedirect } from "./definitions";
+import { serverRedirect } from "./utils";
 
 export const getOrderById = async (
     userId: string,

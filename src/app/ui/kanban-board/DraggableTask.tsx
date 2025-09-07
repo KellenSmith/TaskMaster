@@ -8,7 +8,7 @@ import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
-import { getRelativeUrl } from "../../lib/definitions";
+import { getRelativeUrl } from "../../lib/utils";
 import { CheckCircle, Delete, Info, OpenInNew, Warning } from "@mui/icons-material";
 import {
     doDateRangesOverlap,

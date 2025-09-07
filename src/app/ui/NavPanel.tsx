@@ -17,7 +17,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/definitions";
+import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/utils";
 import { Cancel, ChevronLeft, Edit } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";

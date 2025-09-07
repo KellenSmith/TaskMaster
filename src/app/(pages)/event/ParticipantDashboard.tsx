@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { Prisma } from "@prisma/client";
 import { use, useState, useTransition } from "react";
-import { isUserHost } from "../../lib/definitions";
+import { isUserHost } from "../../lib/utils";
 import { Add, Delete, Person } from "@mui/icons-material";
 import { FieldLabels, getUserSelectOptions } from "../../ui/form/FieldCfg";
 import GlobalConstants from "../../GlobalConstants";

@@ -5,7 +5,7 @@ import { Button, Stack } from "@mui/material";
 import { FC } from "react";
 import { LoginSchema } from "../../lib/zod-schemas";
 import z from "zod";
-import { clientRedirect } from "../../lib/definitions";
+import { clientRedirect } from "../../lib/utils";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";

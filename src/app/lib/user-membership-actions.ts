@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
-import { isMembershipExpired } from "./definitions";
+import { isMembershipExpired } from "./utils";
 import { revalidateTag } from "next/cache";
 
 export const addUserMembership = async (userId: string, expiresAt: string): Promise<void> => {

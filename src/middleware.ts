@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { getAbsoluteUrl, pathToRoutes } from "./app/lib/definitions";
+import { getAbsoluteUrl, pathToRoutes } from "./app/lib/utils";
 import NextAuth from "next-auth";
 import { isUserAuthorized, routeTreeConfig } from "./app/lib/auth/auth-utils";
 import "./app/lib/auth/auth-types";

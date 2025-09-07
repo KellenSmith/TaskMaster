@@ -1,6 +1,6 @@
 "use client";
 import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
-import { isMembershipExpired } from "../../lib/definitions";
+import { isMembershipExpired } from "../../lib/utils";
 import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import { formatDate } from "../../ui/utils";

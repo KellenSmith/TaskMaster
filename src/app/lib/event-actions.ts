@@ -11,7 +11,7 @@ import {
 } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
-import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./definitions";
+import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
 import { getLoggedInUser } from "./user-actions";
 import { getOrganizationSettings } from "./organization-settings-actions";

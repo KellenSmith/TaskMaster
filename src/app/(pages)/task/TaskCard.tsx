@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
-import { clientRedirect } from "../../lib/definitions";
+import { clientRedirect } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC, use, useState } from "react";

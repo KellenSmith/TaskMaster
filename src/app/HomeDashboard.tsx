@@ -7,7 +7,7 @@ import { Prisma } from "@prisma/client";
 import LanguageTranslations from "./ui/LanguageTranslations";
 import { useUserContext } from "./context/UserContext";
 import { useRouter } from "next/navigation";
-import { clientRedirect } from "./lib/definitions";
+import { clientRedirect } from "./lib/utils";
 
 interface HomeDashboardProps {
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;

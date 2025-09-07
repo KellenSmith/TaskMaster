@@ -10,7 +10,7 @@ import { useUserContext } from "../../context/UserContext";
 import z from "zod";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
 import GlobalConstants from "../../GlobalConstants";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/utils";
 
 interface KanBanBoardProps {
     readOnly: boolean;

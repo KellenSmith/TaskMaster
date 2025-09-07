@@ -15,7 +15,7 @@ import {
 import { notifyOfMembershipApplication } from "./mail-service/mail-service";
 import { auth, signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
-import { getRelativeUrl } from "./definitions";
+import { getRelativeUrl } from "./utils";
 
 export const getUserById = async (
     userId: string,

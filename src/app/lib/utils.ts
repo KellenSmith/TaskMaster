@@ -50,33 +50,6 @@ export const clientRedirect = (
     router.push(getRelativeUrl(pathSegments, searchParams));
 };
 
-export const applicationRoutes = {
-    [GlobalConstants.PUBLIC]: [
-        GlobalConstants.HOME,
-        GlobalConstants.LOGIN,
-        GlobalConstants.APPLY,
-
-        GlobalConstants.CONTACT,
-        GlobalConstants.ORDER,
-    ],
-    [UserRole.member]: [
-        GlobalConstants.PROFILE,
-        GlobalConstants.CALENDAR,
-        GlobalConstants.TASK,
-        GlobalConstants.TASKS,
-    ],
-    [UserRole.admin]: [
-        GlobalConstants.LOCATIONS,
-        // GlobalConstants.YEAR_WHEEL,
-        GlobalConstants.SKILL_BADGES,
-        GlobalConstants.SENDOUT,
-        GlobalConstants.MEMBERS,
-        GlobalConstants.PRODUCTS,
-        GlobalConstants.ORDERS,
-        GlobalConstants.ORGANIZATION_SETTINGS,
-    ],
-};
-
 export const isMembershipExpired = (
     user: Prisma.UserGetPayload<{
         include: { user_membership: true };

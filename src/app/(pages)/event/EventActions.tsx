@@ -34,7 +34,7 @@ import z from "zod";
 import { CloneEventSchema, EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import SendoutLanguageTranslations from "../sendout/LanguageTranslations";

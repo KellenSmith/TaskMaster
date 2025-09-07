@@ -185,11 +185,13 @@ export const sendMassEmail = async (
                 email: true,
             },
         })
-    ).map((user) => user.email);
+    ).map((user: Prisma.UserGetPayload<true>) => user.email);
+
+    const revalidatedContent = EmailSendoutSchema.parse(parsedFieldValues);
     const mailContent = createElement(MailTemplate, {
-        html: parsedFieldValues.content,
+        html: revalidatedContent.content,
     });
-    const mailPayload = await getEmailPayload(recipients, parsedFieldValues.subject, mailContent);
+    const mailPayload = await getEmailPayload(recipients, revalidatedContent.subject, mailContent);
     const mailTransport = await getMailTransport();
     const mailResponse = await mailTransport.sendMail(mailPayload);
     if (mailResponse.error) throw new Error(mailResponse.error.message);
