@@ -5,11 +5,16 @@ import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
+import { UuidSchema } from "./zod-schemas";
 
 export const addEventParticipantWithTx = async (tx, ticketId: string, userId: string) => {
+    // Validate ID formats
+    const validatedTicketId = UuidSchema.parse(ticketId);
+    const validatedUserId = UuidSchema.parse(userId);
+
     const ticket = await prisma.ticket.findUniqueOrThrow({
         where: {
-            product_id: ticketId,
+            product_id: validatedTicketId,
         },
     });
 

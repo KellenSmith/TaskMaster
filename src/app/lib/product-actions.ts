@@ -7,6 +7,7 @@ import {
     MembershipWithoutProductSchema,
     ProductCreateSchema,
     ProductUpdateSchema,
+    UuidSchema,
 } from "./zod-schemas";
 import { renewUserMembership } from "./user-membership-actions";
 import z from "zod";
@@ -26,8 +27,11 @@ export const getAllNonTicketProducts = async (): Promise<Product[]> => {
 export const createProduct = async (
     parsedFieldValues: z.infer<typeof ProductCreateSchema>,
 ): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = ProductCreateSchema.parse(parsedFieldValues);
+
     await prisma.product.create({
-        data: parsedFieldValues,
+        data: validatedData,
     });
     revalidateTag(GlobalConstants.PRODUCT);
 };
@@ -35,8 +39,11 @@ export const createProduct = async (
 export const createMembershipProduct = async (
     parsedFieldValues: z.infer<typeof MembershipCreateSchema>,
 ): Promise<void> => {
-    const membershipValues = MembershipWithoutProductSchema.parse(parsedFieldValues);
-    const productValues = ProductCreateSchema.parse(parsedFieldValues);
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = MembershipCreateSchema.parse(parsedFieldValues);
+
+    const membershipValues = MembershipWithoutProductSchema.parse(validatedData);
+    const productValues = ProductCreateSchema.parse(validatedData);
     await prisma.membership.create({
         data: {
             ...membershipValues,
@@ -53,19 +60,27 @@ export const updateProduct = async (
     productId: string,
     parsedFieldValues: z.infer<typeof ProductUpdateSchema>,
 ): Promise<void> => {
-    const oldProduct = await prisma.product.findUnique({ where: { id: productId } });
+    // Validate product ID format
+    const validatedProductId = UuidSchema.parse(productId);
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = ProductUpdateSchema.parse(parsedFieldValues);
+
+    const oldProduct = await prisma.product.findUnique({ where: { id: validatedProductId } });
 
     await prisma.product.update({
-        where: { id: productId },
-        data: parsedFieldValues,
+        where: { id: validatedProductId },
+        data: validatedData,
     });
-    await deleteOldBlob(oldProduct.image_url, parsedFieldValues.image_url);
+    await deleteOldBlob(oldProduct.image_url, validatedData.image_url);
     revalidateTag(GlobalConstants.PRODUCT);
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
+    // Validate product ID format
+    const validatedProductId = UuidSchema.parse(productId);
+
     const deletedProduct = await prisma.product.delete({
-        where: { id: productId },
+        where: { id: validatedProductId },
         include: { membership: true, ticket: true },
     });
     await deleteOldBlob(deletedProduct.image_url);

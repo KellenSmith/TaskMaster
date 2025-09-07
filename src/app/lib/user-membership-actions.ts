@@ -7,14 +7,20 @@ import { Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
 import { isMembershipExpired } from "./utils";
 import { revalidateTag } from "next/cache";
+import z from "zod";
+import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
 
-export const addUserMembership = async (userId: string, expiresAt: string): Promise<void> => {
+export const addUserMembership = async (
+    userId: string,
+    parsedFieldValues: z.infer<typeof AddMembershipSchema>,
+) => {
+    const validatedData = AddMembershipSchema.parse(parsedFieldValues);
     const membershipProduct = await getMembershipProduct();
     await prisma.userMembership.create({
         data: {
             user: { connect: { id: userId } },
             membership: { connect: { product_id: membershipProduct.id } },
-            expires_at: expiresAt,
+            expires_at: validatedData.expires_at,
         },
     });
     revalidateTag(GlobalConstants.USER);
@@ -93,6 +99,8 @@ export const getMembershipProduct = async (): Promise<
 };
 
 export const createMembershipOrder = async (userId: string): Promise<void> => {
+    const validatedUserId = UuidSchema.parse(userId);
+
     let orderItems: Prisma.OrderItemCreateManyOrderInput[];
 
     // Get or create the membership product
@@ -102,5 +110,5 @@ export const createMembershipOrder = async (userId: string): Promise<void> => {
         { product_id: membershipProduct.id, price: membershipProduct.price, quantity: 1 },
     ];
 
-    await createOrder(userId, orderItems);
+    await createOrder(validatedUserId, orderItems);
 };

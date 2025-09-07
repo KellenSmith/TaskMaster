@@ -27,16 +27,19 @@ export const getOrganizationName = async (): Promise<string> => {
 export const updateOrganizationSettings = async (
     parsedFieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
 ): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = OrganizationSettingsUpdateSchema.parse(parsedFieldValues);
+
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
     // attempt to delete the old blob from Vercel Blob storage.
-    await deleteOldBlob(settings.logo_url, parsedFieldValues.logo_url);
+    await deleteOldBlob(settings.logo_url, validatedData.logo_url);
 
     await prisma.organizationSettings.update({
         where: {
             id: settings?.id,
         },
-        data: parsedFieldValues,
+        data: validatedData,
     });
     revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
 };

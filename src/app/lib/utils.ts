@@ -1,4 +1,3 @@
-import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { Prisma, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";

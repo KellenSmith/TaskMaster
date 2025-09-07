@@ -5,7 +5,7 @@ import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import z from "zod";
-import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema } from "./zod-schemas";
+import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema, UuidSchema } from "./zod-schemas";
 import { memberContactMember, notifyTaskReviewer } from "./mail-service/mail-service";
 import {
     addEventParticipantWithTx,
@@ -15,9 +15,12 @@ import { addEventReserveWithTx } from "./event-reserve-actions";
 import { getLoggedInUser } from "./user-actions";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
+    // Validate task ID format
+    const validatedTaskId = UuidSchema.parse(taskId);
+
     await prisma.task.delete({
         where: {
-            id: taskId,
+            id: validatedTaskId,
         },
     });
     revalidateTag(GlobalConstants.TASK);
@@ -35,9 +38,12 @@ export const getTaskById = async (
         };
     }>
 > => {
+    // Validate task ID format
+    const validatedTaskId = UuidSchema.parse(taskId);
+
     return await prisma.task.findUniqueOrThrow({
         where: {
-            id: taskId,
+            id: validatedTaskId,
         },
         include: {
             assignee: { select: { id: true, nickname: true } },
@@ -53,9 +59,16 @@ export const updateTaskById = async (
     parsedFieldValues: z.infer<typeof TaskUpdateSchema>,
     eventId: string | null,
 ): Promise<void> => {
+    // Validate task ID format
+    const validatedTaskId = UuidSchema.parse(taskId);
+    // Validate event ID format if provided
+    const validatedEventId = eventId ? UuidSchema.parse(eventId) : null;
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = TaskUpdateSchema.parse(parsedFieldValues);
+
     const oldTask = await prisma.task.findUniqueOrThrow({
         where: {
-            id: taskId,
+            id: validatedTaskId,
         },
     });
 
@@ -64,16 +77,16 @@ export const updateTaskById = async (
         assignee_id: assigneeId,
         skill_badges: newSkillBadges,
         ...taskWithoutUsers
-    } = parsedFieldValues;
+    } = validatedData;
 
     await prisma.$transaction(async (tx) => {
         const updatedTask = await tx.task.update({
             where: {
-                id: taskId,
+                id: validatedTaskId,
             },
             data: {
                 ...taskWithoutUsers,
-                tags: parsedFieldValues.tags,
+                tags: validatedData.tags,
                 ...(assigneeId && {
                     assignee: {
                         connect: {
@@ -148,12 +161,17 @@ export const createTask = async (
     parsedFieldValues: z.infer<typeof TaskCreateSchema>,
     eventId: string | null,
 ): Promise<void> => {
+    // Validate event ID format if provided
+    const validatedEventId = eventId ? UuidSchema.parse(eventId) : null;
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = TaskCreateSchema.parse(parsedFieldValues);
+
     const {
         assignee_id: assigneeId,
         reviewer_id: reviewerId,
         skill_badges: skillBadges,
         ...taskWithoutUsers
-    } = parsedFieldValues;
+    } = validatedData;
 
     await prisma.task.create({
         data: {
@@ -173,10 +191,10 @@ export const createTask = async (
                     },
                 },
             }),
-            ...(eventId && {
+            ...(validatedEventId && {
                 event: {
                     connect: {
-                        id: eventId,
+                        id: validatedEventId,
                     },
                 },
             }),
@@ -227,15 +245,19 @@ export const getFilteredTasks = async (
 };
 
 export const assignTaskToUser = async (userId: string, taskId: string) => {
+    // Validate ID formats
+    const validatedUserId = UuidSchema.parse(userId);
+    const validatedTaskId = UuidSchema.parse(taskId);
+
     await prisma.$transaction(async (tx) => {
         const updatedTask = await tx.task.update({
             where: {
-                id: taskId,
+                id: validatedTaskId,
             },
             data: {
                 assignee: {
                     connect: {
-                        id: userId,
+                        id: validatedUserId,
                     },
                 },
             },
@@ -248,7 +270,7 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
         // don't add/update a volunteer ticket.
         const existingNonVolunteer = await tx.eventParticipant.findFirst({
             where: {
-                user_id: userId,
+                user_id: validatedUserId,
                 ticket: {
                     event_id: updatedTask.event_id,
                     type: { not: TicketType.volunteer },
@@ -267,13 +289,13 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
             throw new Error("Volunteer ticket not found for event: " + updatedTask.event_id);
 
         try {
-            await addEventParticipantWithTx(tx, volunteerTicket.product_id, userId);
+            await addEventParticipantWithTx(tx, volunteerTicket.product_id, validatedUserId);
         } catch {
             // Allow assigning task even if adding event participant fails
             // The event might be sold out.
             // Add the participant to the reserve list instead
             try {
-                await addEventReserveWithTx(tx, userId, updatedTask.event_id);
+                await addEventReserveWithTx(tx, validatedUserId, updatedTask.event_id);
             } catch {
                 // Will fail if the user is already on the reserve list
             }
@@ -284,15 +306,19 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
 };
 
 export const unassignTaskFromUser = async (userId: string, taskId: string) => {
+    // Validate ID formats
+    const validatedUserId = UuidSchema.parse(userId);
+    const validatedTaskId = UuidSchema.parse(taskId);
+
     await prisma.$transaction(async (tx) => {
         const updatedTask = await tx.task.update({
             where: {
-                id: taskId,
+                id: validatedTaskId,
             },
             data: {
                 assignee: {
                     disconnect: {
-                        id: userId,
+                        id: validatedUserId,
                     },
                 },
             },
@@ -353,15 +379,21 @@ export const contactTaskMember = async (
     parsedFieldValues: z.infer<typeof ContactMemberSchema>,
     taskId: string | null,
 ): Promise<void> => {
+    // Validate recipient and task ID formats
+    const validatedRecipientId = UuidSchema.parse(recipientId);
+    const validatedTaskId = taskId ? UuidSchema.parse(taskId) : null;
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = ContactMemberSchema.parse(parsedFieldValues);
+
     const recipient = await prisma.user.findUniqueOrThrow({
         where: {
-            id: recipientId,
+            id: validatedRecipientId,
         },
     });
     const sender = await getLoggedInUser();
     const task = await prisma.task.findUniqueOrThrow({
         where: {
-            id: taskId,
+            id: validatedTaskId,
         },
     });
 
@@ -370,7 +402,7 @@ export const contactTaskMember = async (
         sender.email,
         `About ${task.name}`,
         `${sender.nickname} is contacting you regarding the task ${task.name}. Please observe that your email address will be revealed if you reply to this message.`,
-        parsedFieldValues.content,
+        validatedData.content,
     );
 
     // Implementation goes here

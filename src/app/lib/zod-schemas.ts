@@ -24,6 +24,9 @@ const selectMultipleSchema = z
 
 const switchButtonSchema = z.string().transform((val) => (val === "on" ? true : false));
 
+// UUID validation schema for ID parameters
+const uuidSchema = z.string().uuid();
+
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
 // =============================================================================
@@ -314,3 +317,6 @@ export const AddMembershipSchema = z.object({
 export const ContactMemberSchema = z.object({
     content: z.string().min(2).max(1000),
 });
+
+// Export UUID schema for ID validation
+export const UuidSchema = uuidSchema;

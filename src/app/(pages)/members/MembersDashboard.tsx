@@ -64,9 +64,9 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         }
     };
 
-    const addMembershipAction = async (fieldValues: z.infer<typeof AddMembershipSchema>) => {
+    const addMembershipAction = async (parsedFieldValues: z.infer<typeof AddMembershipSchema>) => {
         try {
-            await addUserMembership(addMembershipDialogOpen!.id, fieldValues.expires_at);
+            await addUserMembership(addMembershipDialogOpen!.id, parsedFieldValues);
             return LanguageTranslations.addedMembership[language];
         } catch {
             throw new Error(LanguageTranslations.failedAddedMembership[language]);

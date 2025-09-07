@@ -3,7 +3,7 @@
 import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../../prisma/prisma-client";
-import { CloneEventSchema, EventCreateSchema, EventUpdateSchema } from "./zod-schemas";
+import { CloneEventSchema, EventCreateSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
 import {
     informOfCancelledEvent,
     notifyEventReserves,
@@ -20,14 +20,16 @@ export const createEvent = async (
     userId: string,
     parsedFieldValues: z.infer<typeof EventCreateSchema>,
 ): Promise<void> => {
-    const { location_id, ...eventData } = parsedFieldValues;
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = EventCreateSchema.parse(parsedFieldValues);
+    const { location_id, ...eventData } = validatedData;
 
     // Check that the location has capacity for the max_participants
     const location = await prisma.location.findUniqueOrThrow({
         where: { id: location_id },
     });
 
-    if (location.capacity < parsedFieldValues.max_participants) {
+    if (location.capacity < validatedData.max_participants) {
         throw new Error("The location can't handle that many participants");
     }
 
@@ -46,11 +48,11 @@ export const createEvent = async (
                         type: TicketType.volunteer,
                         product: {
                             create: {
-                                name: `Volunteer ticket for ${parsedFieldValues.title}`,
+                                name: `Volunteer ticket for ${validatedData.title}`,
                                 description:
                                     "Admittance for one member signed up for at least one volunteer task",
                                 // The event host is a participant
-                                stock: parsedFieldValues.max_participants - 1,
+                                stock: validatedData.max_participants - 1,
                             },
                         },
                     },
@@ -221,6 +223,9 @@ export const updateEvent = async (
     eventId: string,
     parsedFieldValues: z.infer<typeof EventUpdateSchema>,
 ): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = EventUpdateSchema.parse(parsedFieldValues);
+
     let notifyEventReservesPromise;
     const eventToUpdate = await prisma.event.findUniqueOrThrow({
         where: { id: eventId },
@@ -235,7 +240,7 @@ export const updateEvent = async (
         requireApprovalBeforePublish &&
         !isUserAdmin(loggedInUser) &&
         eventToUpdate.status !== EventStatus.published &&
-        parsedFieldValues.status === EventStatus.published
+        validatedData.status === EventStatus.published
     ) {
         throw new Error("You are not authorized to publish this event");
     }
@@ -244,7 +249,7 @@ export const updateEvent = async (
         const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
-        if (eventParticipantsCount > parsedFieldValues.max_participants) {
+        if (eventParticipantsCount > validatedData.max_participants) {
             throw new Error(
                 `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
             );
@@ -253,7 +258,7 @@ export const updateEvent = async (
         // Add or remove the new number of available tickets to product stock
         // deltaMaxParticipants might be negative
         const deltaMaxParticipants =
-            parsedFieldValues.max_participants - eventToUpdate.max_participants;
+            validatedData.max_participants - eventToUpdate.max_participants;
         if (Math.abs(deltaMaxParticipants)) {
             const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
             await tx.product.updateMany({
@@ -272,7 +277,7 @@ export const updateEvent = async (
         if (
             organizationSettings.event_manager_email &&
             eventToUpdate.status !== EventStatus.pending_approval &&
-            parsedFieldValues.status === EventStatus.pending_approval
+            validatedData.status === EventStatus.pending_approval
         )
             sendEmailNotification(
                 organizationSettings.event_manager_email,
@@ -291,7 +296,7 @@ export const updateEvent = async (
         // Notify event host if the event is published
         if (
             eventToUpdate.status !== EventStatus.published &&
-            parsedFieldValues.status === EventStatus.published
+            validatedData.status === EventStatus.published
         ) {
             sendEmailNotification(
                 eventToUpdate.host.email,
@@ -310,7 +315,7 @@ export const updateEvent = async (
 
         await prisma.event.update({
             where: { id: eventId },
-            data: parsedFieldValues,
+            data: validatedData,
         });
         revalidateTag(GlobalConstants.EVENT);
         revalidateTag(GlobalConstants.TICKET);
@@ -324,11 +329,14 @@ export const updateEvent = async (
 };
 
 export const cancelEvent = async (eventId: string): Promise<void> => {
-    await updateEvent(eventId, { status: EventStatus.cancelled });
+    // Validate event ID format
+    const validatedEventId = UuidSchema.parse(eventId);
+
+    await updateEvent(validatedEventId, { status: EventStatus.cancelled });
     revalidateTag(GlobalConstants.EVENT);
 
     try {
-        await informOfCancelledEvent(eventId);
+        await informOfCancelledEvent(validatedEventId);
     } catch (error) {
         // Allow cancelling despite failed notification
         console.error("Failed to inform of cancelled event:", error);
@@ -336,8 +344,11 @@ export const cancelEvent = async (eventId: string): Promise<void> => {
 };
 
 export const deleteEvent = async (eventId: string): Promise<void> => {
+    // Validate event ID format
+    const validatedEventId = UuidSchema.parse(eventId);
+
     const event = await prisma.event.findUniqueOrThrow({
-        where: { id: eventId },
+        where: { id: validatedEventId },
         include: {
             tickets: {
                 include: {
@@ -347,7 +358,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         },
     });
 
-    const eventParticipants = await getEventParticipants(eventId);
+    const eventParticipants = await getEventParticipants(validatedEventId);
     const onlyHostIsParticipating =
         eventParticipants.length === 1 && eventParticipants[0].user_id === event.host_id;
     if (!onlyHostIsParticipating)
@@ -357,16 +368,16 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 
     await prisma.$transaction([
         prisma.eventReserve.deleteMany({
-            where: { event_id: eventId },
+            where: { event_id: validatedEventId },
         }),
         prisma.eventParticipant.deleteMany({
-            where: { ticket: { event_id: eventId } },
+            where: { ticket: { event_id: validatedEventId } },
         }),
         prisma.ticket.deleteMany({
-            where: { event_id: eventId },
+            where: { event_id: validatedEventId },
         }),
         prisma.event.delete({
-            where: { id: eventId },
+            where: { id: validatedEventId },
         }),
     ]);
     revalidateTag(GlobalConstants.EVENT);
@@ -377,6 +388,9 @@ export const cloneEvent = async (
     eventId: string,
     parsedFieldValues: z.infer<typeof CloneEventSchema>,
 ) => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = CloneEventSchema.parse(parsedFieldValues);
+
     const {
         id: eventIdToOmit, // eslint-disable-line no-unused-vars
         host_id: hostIdToOmit, // eslint-disable-line no-unused-vars
@@ -403,8 +417,8 @@ export const cloneEvent = async (
                     ...eventData,
                     status: EventStatus.draft,
                     title: `${eventData.title} (Clone)`,
-                    start_time: parsedFieldValues.start_time,
-                    end_time: dayjs(parsedFieldValues.start_time)
+                    start_time: validatedData.start_time,
+                    end_time: dayjs(validatedData.start_time)
                         .add(dayjs(eventData.end_time).diff(eventData.start_time))
                         .toISOString(),
                 },
@@ -462,7 +476,7 @@ export const cloneEvent = async (
         // Copy tasks
         const moveTaskTimeForward = (taskTime: Date) =>
             dayjs(taskTime)
-                .add(dayjs(parsedFieldValues.start_time).diff(dayjs(eventData.start_time)))
+                .add(dayjs(validatedData.start_time).diff(dayjs(eventData.start_time)))
                 .toISOString();
 
         await tx.task.createMany({

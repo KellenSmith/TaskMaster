@@ -8,6 +8,7 @@ import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
 import { serverRedirect } from "./utils";
+import { UuidSchema } from "./zod-schemas";
 
 export const getOrderById = async (
     userId: string,
@@ -191,7 +192,9 @@ export const progressOrder = async (
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
+    const validatedOrderId = UuidSchema.parse(orderId);
+
     await prisma.order.delete({
-        where: { id: orderId },
+        where: { id: validatedOrderId },
     });
 };
