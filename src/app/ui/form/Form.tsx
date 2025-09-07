@@ -87,7 +87,40 @@ const Form: FC<FormProps> = ({
     );
 
     const uploadFileAndGetUrl = async (file: File): Promise<string> => {
-        const newBlob = await upload(`${name}/${file.name}`, file, {
+        // ✅ SECURITY: Client-side file validation
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+        // Validate file size
+        if (file.size > maxSize) {
+            throw new Error(
+                `File size too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB`,
+            );
+        }
+
+        // Validate file type
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error(`File type not allowed. Allowed types: ${allowedTypes.join(", ")}`);
+        }
+
+        // Validate file extension
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+        const extension = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
+        if (!extension || !allowedExtensions.includes(extension)) {
+            throw new Error(
+                `File extension not allowed. Allowed extensions: ${allowedExtensions.join(", ")}`,
+            );
+        }
+
+        // Sanitize filename
+        const sanitizedName = file.name
+            .replace(/[/\\]/g, "")
+            // eslint-disable-next-line no-control-regex
+            .replace(/[\x00-\x1f\x80-\x9f]/g, "")
+            .replace(/[<>:"|?*]/g, "")
+            .substring(0, 100);
+
+        const newBlob = await upload(`${name}/${sanitizedName}`, file, {
             access: "public",
             handleUploadUrl: "/api/file-upload",
         });

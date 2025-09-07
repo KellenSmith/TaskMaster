@@ -31,11 +31,43 @@ const FileUploadField: FC<Props> = ({ fieldId, editMode, customReadOnlyFields })
                 <input
                     type="file"
                     name={fieldId}
+                    // ✅ SECURITY: Restrict file types at HTML level
+                    accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
                     style={{ display: "none" }}
                     onChange={(event) => {
                         const file = event.target.files && event.target.files[0];
-                        if (file) setFilename(file.name);
-                        else setFilename(null);
+                        if (file) {
+                            // ✅ SECURITY: Client-side validation
+                            const maxSize = 5 * 1024 * 1024; // 5MB
+                            const allowedTypes = [
+                                "image/jpeg",
+                                "image/jpg",
+                                "image/png",
+                                "image/webp",
+                            ];
+
+                            if (file.size > maxSize) {
+                                alert(
+                                    `File size too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB`,
+                                );
+                                event.target.value = ""; // Clear the input
+                                setFilename(null);
+                                return;
+                            }
+
+                            if (!allowedTypes.includes(file.type)) {
+                                alert(
+                                    `File type not allowed. Please select: ${allowedTypes.join(", ")}`,
+                                );
+                                event.target.value = ""; // Clear the input
+                                setFilename(null);
+                                return;
+                            }
+
+                            setFilename(file.name);
+                        } else {
+                            setFilename(null);
+                        }
                     }}
                 />
             </Button>

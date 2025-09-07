@@ -98,22 +98,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             return new NextResponse("Bad Request: Missing required fields", { status: 400 });
         }
 
-        try {
-            // Get the order directly to find the user_id needed for checkPaymentStatus
-            const order = await prisma.order.findUniqueOrThrow({
-                where: { id: orderId },
-                select: { user_id: true },
-            });
+        // ✅ SECURITY: Simple idempotency check to prevent duplicate processing
+        const order = await prisma.order.findUniqueOrThrow({
+            where: { id: orderId },
+            select: {
+                user_id: true,
+                status: true,
+                updated_at: true,
+            },
+        });
 
-            // Use the existing checkPaymentStatus function which implements proper GET verification
-            await checkPaymentStatus(order.user_id, orderId);
-            console.log(`Order ${orderId} status verified and updated via GET request`);
-        } catch (error) {
-            console.error(`Failed to verify/update order ${orderId}: ${error.message}`);
-            // Still return 200 to avoid Swedbank Pay retries for application errors
+        // Skip if order is already completed
+        if (order.status === "completed") {
+            console.log(`Order ${orderId} already completed, ignoring callback`);
+            return new NextResponse("OK", { status: 200 });
         }
 
-        // Return 200 OK as required by Swedbank Pay
+        // Simple rate limiting: skip if updated very recently (prevents spam)
+        const timeSinceLastUpdate = Date.now() - new Date(order.updated_at).getTime();
+        if (timeSinceLastUpdate < 10000) {
+            // 10 seconds cooldown
+            console.log(`Order ${orderId} updated recently, rate limiting callback`);
+            return new NextResponse("OK", { status: 200 });
+        }
+
+        // Process the payment check as normal
+        await checkPaymentStatus(order.user_id, orderId);
+        console.log(`Order ${orderId} status verified and updated via GET request`);
+
         return new NextResponse("OK", { status: 200 });
     } catch (error) {
         console.error(`Payment callback error from IP ${clientIp}:`, error);
