@@ -1,7 +1,6 @@
 "use server";
 
 import { getMailTransport } from "./mail-transport";
-import UserCredentialsTemplate from "./mail-templates/UserCredentialsTemplate";
 import { createElement, ReactElement } from "react";
 import MembershipExpiresReminderTemplate from "./mail-templates/MembershipExpiresReminderTemplate";
 import { render } from "@react-email/components";
@@ -22,6 +21,7 @@ import EmailNotificationTemplate, {
     MailButtonLink,
 } from "./mail-templates/MailNotificationTemplate";
 import MemberContactMemberTemplate from "./mail-templates/MemberContactMemberTemplate";
+import SignInEmailTemplate from "./mail-templates/SignInEmailTemplate";
 
 interface EmailPayload {
     from: string;
@@ -48,6 +48,25 @@ const getEmailPayload = async (
     return payload;
 };
 
+/**
+ * Sends a sign-in email with magic link for authentication
+ * @throws Error if email fails
+ */
+export const sendSignInEmail = async (email: string, url: string): Promise<string> => {
+    const organizationName = await getOrganizationName();
+    const mailContent = createElement(SignInEmailTemplate, {
+        email,
+        url,
+    });
+
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(
+        await getEmailPayload([email], `Sign in to ${organizationName}`, mailContent),
+    );
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    return mailResponse;
+};
+
 export const notifyOfMembershipApplication = async (
     parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
 ): Promise<void> => {
@@ -65,29 +84,6 @@ export const notifyOfMembershipApplication = async (
         ),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
-};
-
-/**
- * @throws Error if email fails
- */
-export const sendUserCredentials = async (
-    userEmail: string,
-    userPassword: string,
-): Promise<string> => {
-    const mailContent = createElement(UserCredentialsTemplate, {
-        userEmail: userEmail,
-        password: userPassword,
-    });
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(
-        await getEmailPayload(
-            [userEmail],
-            `${await getOrganizationName()} credentials`,
-            mailContent,
-        ),
-    );
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return mailResponse;
 };
 
 /**

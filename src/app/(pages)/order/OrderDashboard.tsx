@@ -18,7 +18,7 @@ interface OrderDashboardProps {
 }
 
 const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
-    const { user, refreshSession, language } = useUserContext();
+    const { user, language } = useUserContext();
     const order = use(orderPromise);
 
     const { addNotification } = useNotificationContext();
@@ -29,7 +29,6 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
         startTransition(async () => {
             try {
                 await checkPaymentStatus(user.id, order.id);
-                await refreshSession();
             } catch {
                 addNotification(LanguageTranslations.failedCheckOrderStatus[language], "error");
             }

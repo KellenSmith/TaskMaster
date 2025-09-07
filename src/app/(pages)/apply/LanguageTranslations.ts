@@ -7,8 +7,10 @@ const LanguageTranslations = {
         [Language.swedish]: "Skicka in ansökan",
     },
     applicationSubmitted: {
-        [Language.english]: "Application submitted",
-        [Language.swedish]: "Ansökan skickad",
+        [Language.english]:
+            "Application submitted. A login link will arrive in your email shortly.",
+        [Language.swedish]:
+            "Ansökan skickad. En inloggningslänk skickas till din e-postadress inom kort.",
     },
     failedApplicationSubmit: {
         [Language.english]: "Failed to submit application",

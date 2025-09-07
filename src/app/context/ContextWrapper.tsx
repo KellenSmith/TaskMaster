@@ -7,13 +7,21 @@ import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
 import ErrorBoundarySuspense from "../ui/ErrorBoundarySuspense";
 import { SessionProvider } from "next-auth/react";
+import { Prisma } from "@prisma/client";
 
 interface ContextWrapperProps {
     children: ReactNode;
-    organizationSettingsPromise: Promise<any>;
+    organizationSettingsPromise: Promise<Prisma.OrganizationSettingsGetPayload<true> | null>;
+    userPromise: Promise<Prisma.UserGetPayload<{
+        include: { user_membership: true; skill_badges: true };
+    }> | null>;
 }
 
-const ContextWrapper: FC<ContextWrapperProps> = ({ children, organizationSettingsPromise }) => {
+const ContextWrapper: FC<ContextWrapperProps> = ({
+    children,
+    organizationSettingsPromise,
+    userPromise,
+}) => {
     return (
         <ErrorBoundarySuspense>
             <LocalizationContextProvider>
@@ -23,7 +31,9 @@ const ContextWrapper: FC<ContextWrapperProps> = ({ children, organizationSetting
                             organizationSettingsPromise={organizationSettingsPromise}
                         >
                             <SessionProvider>
-                                <UserContextProvider>{children}</UserContextProvider>
+                                <UserContextProvider userPromise={userPromise}>
+                                    {children}
+                                </UserContextProvider>
                             </SessionProvider>
                         </OrganizationSettingsProvider>
                     </NotificationContextProvider>

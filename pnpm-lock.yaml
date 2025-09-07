@@ -14,6 +14,9 @@ importers:
       '@auth/core':
         specifier: ^0.40.0
         version: 0.40.0(nodemailer@6.10.1)
+      '@auth/prisma-adapter':
+        specifier: ^2.10.0
+        version: 2.10.0(@prisma/client@6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3))(nodemailer@6.10.1)
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.1.10)(react@19.1.1)
@@ -35,6 +38,9 @@ importers:
       '@prisma/client':
         specifier: ^6.14.0
         version: 6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3)
+      '@prisma/extension-accelerate':
+        specifier: ^2.0.2
+        version: 2.0.2(@prisma/client@6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3))
       '@react-email/components':
         specifier: ^0.0.36
         version: 0.0.36(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -222,6 +228,9 @@ importers:
       tsx:
         specifier: ^4.20.0
         version: 4.20.5
+      typescript:
+        specifier: ^5.4.4
+        version: 5.7.3
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.13.1)(@vitest/ui@3.2.4)(jiti@2.5.1)(jsdom@26.1.0)(tsx@4.20.5)
@@ -254,6 +263,11 @@ packages:
         optional: true
       nodemailer:
         optional: true
+
+  '@auth/prisma-adapter@2.10.0':
+    resolution: {integrity: sha512-EliOQoTjGK87jWWqnJvlQjbR4PjQZQqtwRwPAe108WwT9ubuuJJIrL68aNnQr4hFESz6P7SEX2bZy+y2yL37Gw==}
+    peerDependencies:
+      '@prisma/client': '>=2.26.0 || >=3 || >=4 || >=5 || >=6'
 
   '@aws-crypto/sha256-browser@5.2.0':
     resolution: {integrity: sha512-AXfN/lGotSQwu6HNcEsIASo7kWXZ5HYWvfOmSNKDsEqC4OashTp8alTmaz+F7TC2L083SFv5RdB+qU3Vs1kZqw==}
@@ -1195,6 +1209,12 @@ packages:
 
   '@prisma/engines@6.14.0':
     resolution: {integrity: sha512-LhJjqsALFEcoAtF07nSaOkVguaxw/ZsgfROIYZ8bAZDobe7y8Wy+PkYQaPOK1iLSsFgV2MhCO/eNrI1gdSOj6w==}
+
+  '@prisma/extension-accelerate@2.0.2':
+    resolution: {integrity: sha512-yZK6/k7uOEFpEsKoZezQS1CKDboPtBCQ0NyI70e1Un8tDiRgg80iWGyjsJmRpps2ZIut3MroHP+dyR3wVKh8lA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@prisma/client': '>=4.16.1'
 
   '@prisma/fetch-engine@6.14.0':
     resolution: {integrity: sha512-MPzYPOKMENYOaY3AcAbaKrfvXVlvTc6iHmTXsp9RiwCX+bPyfDMqMFVUSVXPYrXnrvEzhGHfyiFy0PRLHPysNg==}
@@ -4748,6 +4768,15 @@ snapshots:
     optionalDependencies:
       nodemailer: 6.10.1
 
+  '@auth/prisma-adapter@2.10.0(@prisma/client@6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3))(nodemailer@6.10.1)':
+    dependencies:
+      '@auth/core': 0.40.0(nodemailer@6.10.1)
+      '@prisma/client': 6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3)
+    transitivePeerDependencies:
+      - '@simplewebauthn/browser'
+      - '@simplewebauthn/server'
+      - nodemailer
+
   '@aws-crypto/sha256-browser@5.2.0':
     dependencies:
       '@aws-crypto/sha256-js': 5.2.0
@@ -5827,6 +5856,10 @@ snapshots:
       '@prisma/engines-version': 6.14.0-25.717184b7b35ea05dfa71a3236b7af656013e1e49
       '@prisma/fetch-engine': 6.14.0
       '@prisma/get-platform': 6.14.0
+
+  '@prisma/extension-accelerate@2.0.2(@prisma/client@6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3))':
+    dependencies:
+      '@prisma/client': 6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3)
 
   '@prisma/fetch-engine@6.14.0':
     dependencies:

@@ -25,10 +25,6 @@ const LanguageTranslations = {
         [Language.swedish]: "Att göra",
     },
     [implementedTabs.skill_badges]: UILanguageTranslations.routeLabel[GlobalConstants.SKILL_BADGES],
-    nonMatchingPasswords: {
-        [Language.english]: "New password and repeat password do not match",
-        [Language.swedish]: "Lösenord matchar inte",
-    },
     activateMembership: {
         [Language.english]: (
             user: Prisma.UserGetPayload<{
@@ -53,6 +49,10 @@ const LanguageTranslations = {
         [Language.english]: "Membership",
         [Language.swedish]: "Medlemskap",
     },
+    pending: {
+        [Language.english]: "Awaiting validation",
+        [Language.swedish]: "Väntar på godkännande",
+    },
     expired: {
         [Language.english]: "Expired membership",
         [Language.swedish]: "Medlemskap utgått",
@@ -60,6 +60,10 @@ const LanguageTranslations = {
     active: {
         [Language.english]: "Active membership",
         [Language.swedish]: "Aktivt medlemskap",
+    },
+    membershipPendingPrompt: {
+        [Language.english]: "Your membership is awaiting validation by an admin",
+        [Language.swedish]: "Ditt medlemskap väntar på godkännande av en administratör",
     },
     membershipExpiredPrompt: {
         [Language.english]: (

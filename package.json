@@ -8,7 +8,7 @@
         "build": "pnpm prisma-migrate && next build",
         "start": "next start",
         "lint": "next lint",
-        "prisma-generate": "pnpm prisma generate",
+        "prisma-generate": "npx prisma generate --no-engine",
         "prisma-migrate": "pnpm prisma migrate dev",
         "prisma-migrate-reset": "pnpm prisma migrate reset",
         "prisma-push": "pnpm prisma db push",
@@ -24,6 +24,7 @@
     },
     "dependencies": {
         "@auth/core": "^0.40.0",
+        "@auth/prisma-adapter": "^2.10.0",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@mui/icons-material": "^6.5.0",
@@ -31,6 +32,7 @@
         "@mui/x-data-grid": "^7.29.9",
         "@mui/x-date-pickers": "^7.29.4",
         "@prisma/client": "^6.14.0",
+        "@prisma/extension-accelerate": "^2.0.2",
         "@react-email/components": "^0.0.36",
         "@react-pdf/renderer": "^4.3.0",
         "@tiptap/core": "^2.26.1",
@@ -97,6 +99,8 @@
         "tsx": "^4.20.0",
         "vitest": "^3.2.4",
         "vitest-mock-extended": "^3.1.0"
+    ,
+    "typescript": "^5.4.4"
     },
     "pnpm": {
         "overrides": {

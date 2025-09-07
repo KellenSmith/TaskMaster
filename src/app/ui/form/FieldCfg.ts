@@ -12,7 +12,6 @@ import {
     taskFieldLabels,
     textContentFieldLabels,
     ticketFieldLabels,
-    userCredentialsFieldLabels,
     userFieldLabels,
 } from "./LanguageTranslations";
 import { CustomOptionProps } from "./AutocompleteWrapper";
@@ -25,7 +24,6 @@ export const FieldLabels = {
     ...organizationSettingsFieldLabels,
     ...textContentFieldLabels,
     ...userFieldLabels,
-    ...userCredentialsFieldLabels,
     ...eventFieldLabels,
     ...locationFieldLabels,
     ...taskFieldLabels,
@@ -103,15 +101,7 @@ export const RenderedFields = {
         GlobalConstants.CONSENT_TO_NEWSLETTERS,
     ],
     // Login
-    [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL, GlobalConstants.PASSWORD],
-    // Reset
-    [GlobalConstants.RESET]: [GlobalConstants.EMAIL],
-    // Credentials
-    [GlobalConstants.USER_CREDENTIALS]: [
-        GlobalConstants.CURRENT_PASSWORD,
-        GlobalConstants.NEW_PASSWORD,
-        GlobalConstants.REPEAT_PASSWORD,
-    ],
+    [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
     [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
@@ -204,15 +194,8 @@ export const RequiredFields = {
     ],
     [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
     // Login
-    [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL, GlobalConstants.PASSWORD],
-    // Reset
-    [GlobalConstants.RESET]: [GlobalConstants.RESET],
-    // Credentials
-    [GlobalConstants.USER_CREDENTIALS]: [
-        GlobalConstants.CURRENT_PASSWORD,
-        GlobalConstants.NEW_PASSWORD,
-        GlobalConstants.REPEAT_PASSWORD,
-    ],
+    [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
+    // Event
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
         GlobalConstants.LOCATION_ID,
@@ -250,13 +233,6 @@ RequiredFields[GlobalConstants.USER] = [
 RequiredFields[GlobalConstants.MEMBERSHIP] = [
     ...RequiredFields[GlobalConstants.PRODUCT],
     GlobalConstants.DURATION,
-];
-
-export const passwordFields = [
-    GlobalConstants.PASSWORD,
-    GlobalConstants.CURRENT_PASSWORD,
-    GlobalConstants.NEW_PASSWORD,
-    GlobalConstants.REPEAT_PASSWORD,
 ];
 
 export const selectFieldOptions = {

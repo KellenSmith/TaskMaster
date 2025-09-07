@@ -35,7 +35,6 @@ export interface RowActionProps {
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
           include: {
-              user_credentials: { select: { user_id: true } };
               user_membership: true;
               skill_badges: true;
           };

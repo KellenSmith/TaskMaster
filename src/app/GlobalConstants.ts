@@ -9,7 +9,6 @@ const GlobalConstants = {
     ADMIN: "admin",
     HOME: "",
     LOGIN: "login",
-    RESET: "reset",
     PROFILE: "profile",
     RECEIPT: "receipt",
     MEMBERS: "members",
@@ -59,15 +58,6 @@ const GlobalConstants = {
     USER_MEMBERSHIP: "user_membership",
     ADD_MEMBERSHIP: "add_membership",
     EXPIRES_AT: "expires_at",
-    // Login
-    PASSWORD: "password",
-    CURRENT_PASSWORD: "currentPassword",
-    NEW_PASSWORD: "newPassword",
-    REPEAT_PASSWORD: "repeatPassword",
-    // UserCredentials
-    USER_CREDENTIALS: "user_credentials",
-    SALT: "salt",
-    HASHED_PASSWORD: "hashed_password",
     // Event
     TAB: "tab",
     EVENT: "event",

@@ -21,14 +21,12 @@ import {
     datePickerFields,
     richTextFields,
     checkboxFields,
-    passwordFields,
     priceFields,
     multiLineTextFields,
     explanatoryTexts,
     fileUploadFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
@@ -252,9 +250,6 @@ const Form: FC<FormProps> = ({
                 name={fieldId}
                 defaultValue={getDefaultValue(fieldId)}
                 required={requiredFields.includes(fieldId)}
-                {...(passwordFields.includes(fieldId) && {
-                    type: GlobalConstants.PASSWORD,
-                })}
                 multiline={multiLineTextFields.includes(fieldId)}
             />
         );

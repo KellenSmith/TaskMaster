@@ -1,34 +1,45 @@
 "use server";
 
-import { Prisma, UserRole } from "@prisma/client";
+import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
 import z from "zod";
-import { MembershipApplicationSchema, UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
+import {
+    LoginSchema,
+    MembershipApplicationSchema,
+    UserCreateSchema,
+    UserUpdateSchema,
+} from "./zod-schemas";
 import { notifyOfMembershipApplication } from "./mail-service/mail-service";
-import { auth } from "./auth";
+import { auth, signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
+import { getRelativeUrl } from "./definitions";
 
 export const getUserById = async (
     userId: string,
-): Promise<Prisma.UserGetPayload<{ include: { user_membership: true } }>> => {
+): Promise<Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }>> => {
     return await prisma.user.findUniqueOrThrow({
         where: { id: userId },
-        include: { user_membership: true },
+        include: { user_membership: true, skill_badges: true },
     });
 };
 
 export const createUser = async (
     parsedFieldValues: z.infer<typeof UserCreateSchema>,
 ): Promise<void> => {
-    let createdUserId: string;
+    // If this user is the first user, make them an admin and validate their membership
+    const userCount = await prisma.user.count();
+
     const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
-    const createdUser = await prisma.user.create({
+    await prisma.user.create({
         data: {
             ...userData,
+            ...(userCount === 0 && {
+                status: UserStatus.validated,
+                role: UserRole.admin,
+            }),
             ...(skill_badge_ids && {
                 skill_badges: {
                     createMany: {
@@ -40,18 +51,6 @@ export const createUser = async (
             }),
         },
     });
-    createdUserId = createdUser.id;
-
-    // If this user is the first user, make them an admin and validate their membership
-    const userCount = await prisma.user.count();
-    if (userCount === 1 && createdUserId) {
-        await prisma.user.update({
-            where: { id: createdUserId },
-            data: { role: UserRole.admin },
-        });
-        await validateUserMembership(createdUserId);
-    }
-
     revalidateTag(GlobalConstants.USER);
 };
 
@@ -68,11 +67,6 @@ export const submitMemberApplication = async (
         throw new Error("Application message required but not provided.");
     }
 
-    const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
-    await createUser(userFieldValues);
-
-    revalidateTag(GlobalConstants.USER);
-
     // Send membership application to organization email
     try {
         await notifyOfMembershipApplication(parsedFieldValues);
@@ -80,12 +74,21 @@ export const submitMemberApplication = async (
         console.error(error);
         // Submit the membership application despite failed notification
     }
+
+    const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
+    await createUser(userFieldValues);
+    await signIn("email", {
+        email: userFieldValues.email,
+        redirect: false,
+        callback: getRelativeUrl([GlobalConstants.APPLY]),
+        redirectTo: getRelativeUrl([GlobalConstants.PROFILE]),
+    });
+    revalidateTag(GlobalConstants.USER);
 };
 
 export const getAllUsers = async (): Promise<
     Prisma.UserGetPayload<{
         include: {
-            user_credentials: { select: { user_id: true } };
             user_membership: true;
             skill_badges: true;
         };
@@ -93,7 +96,6 @@ export const getAllUsers = async (): Promise<
 > => {
     return await prisma.user.findMany({
         include: {
-            user_credentials: { select: { user_id: true } },
             user_membership: true,
             skill_badges: true,
         },
@@ -187,9 +189,36 @@ export const getActiveMembers = async (): Promise<
 };
 
 export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
-    include: { user_membership: true };
+    include: { user_membership: true; skill_badges: true };
 }> | null> => {
     const authResult = await auth();
     if (!authResult?.user) return null;
-    return authResult.user;
+    const loggedInUser = await prisma.user.findUnique({
+        where: { id: authResult.user.id },
+        include: { user_membership: true, skill_badges: true },
+    });
+    return loggedInUser;
+};
+
+export const login = async (parsedFieldValues: z.infer<typeof LoginSchema>): Promise<void> => {
+    // Only let existing members log in from this route
+    await prisma.user.findUniqueOrThrow({ where: { email: parsedFieldValues.email } });
+
+    await signIn("email", {
+        email: parsedFieldValues.email,
+        callback: getRelativeUrl([GlobalConstants.LOGIN]),
+        redirectTo: getRelativeUrl([GlobalConstants.HOME]),
+        redirect: false,
+    });
+};
+
+export const logOut = async (): Promise<void> => {
+    await signOut({ redirectTo: getRelativeUrl([GlobalConstants.HOME]), redirect: true });
+};
+
+export const validateUserMembership = async (userId: string): Promise<void> => {
+    await prisma.user.update({
+        where: { id: userId },
+        data: { status: UserStatus.validated },
+    });
 };

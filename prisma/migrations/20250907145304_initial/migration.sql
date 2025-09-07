@@ -5,6 +5,9 @@ CREATE TYPE "public"."Language" AS ENUM ('swedish', 'english');
 CREATE TYPE "public"."UserRole" AS ENUM ('member', 'admin');
 
 -- CreateEnum
+CREATE TYPE "public"."UserStatus" AS ENUM ('pending', 'validated');
+
+-- CreateEnum
 CREATE TYPE "public"."EventStatus" AS ENUM ('draft', 'pending_approval', 'published', 'cancelled');
 
 -- CreateEnum
@@ -53,26 +56,18 @@ CREATE TABLE "public"."text_translations" (
 -- CreateTable
 CREATE TABLE "public"."users" (
     "id" TEXT NOT NULL,
+    "status" "public"."UserStatus" NOT NULL DEFAULT 'pending',
+    "role" "public"."UserRole" NOT NULL DEFAULT 'member',
     "email" TEXT NOT NULL,
     "nickname" TEXT NOT NULL,
-    "role" "public"."UserRole" NOT NULL DEFAULT 'member',
-    "consent_to_newsletters" BOOLEAN NOT NULL DEFAULT false,
     "first_name" TEXT,
     "sur_name" TEXT,
     "pronoun" TEXT DEFAULT 'they/them',
     "phone" TEXT,
+    "consent_to_newsletters" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."user_credentials" (
-    "salt" TEXT NOT NULL,
-    "hashed_password" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
-
-    CONSTRAINT "user_credentials_pkey" PRIMARY KEY ("user_id")
 );
 
 -- CreateTable
@@ -227,6 +222,43 @@ CREATE TABLE "public"."order_items" (
     CONSTRAINT "order_items_pkey" PRIMARY KEY ("order_id","product_id")
 );
 
+-- CreateTable
+CREATE TABLE "public"."verification_token" (
+    "identifier" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+    "token" TEXT NOT NULL,
+
+    CONSTRAINT "verification_token_pkey" PRIMARY KEY ("identifier","token")
+);
+
+-- CreateTable
+CREATE TABLE "public"."accounts" (
+    "id" SERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" BIGINT,
+    "id_token" TEXT,
+    "scope" TEXT,
+    "session_state" TEXT,
+    "token_type" TEXT,
+
+    CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."sessions" (
+    "id" SERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+    "sessionToken" TEXT NOT NULL,
+
+    CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "text_translations_language_text_content_id_key" ON "public"."text_translations"("language", "text_content_id");
 
@@ -249,61 +281,58 @@ CREATE UNIQUE INDEX "orders_payee_ref_key" ON "public"."orders"("payee_ref");
 ALTER TABLE "public"."text_translations" ADD CONSTRAINT "text_translations_text_content_id_fkey" FOREIGN KEY ("text_content_id") REFERENCES "public"."text_contents"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_credentials" ADD CONSTRAINT "user_credentials_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."events" ADD CONSTRAINT "events_host_id_fkey" FOREIGN KEY ("host_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."events" ADD CONSTRAINT "events_location_id_fkey" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."events" ADD CONSTRAINT "events_host_id_fkey" FOREIGN KEY ("host_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_ticket_id_fkey" FOREIGN KEY ("ticket_id") REFERENCES "public"."tickets"("product_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."event_participants" ADD CONSTRAINT "event_participants_ticket_id_fkey" FOREIGN KEY ("ticket_id") REFERENCES "public"."tickets"("product_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."event_reserves" ADD CONSTRAINT "event_reserves_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_assignee_id_fkey" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_reviewer_id_fkey" FOREIGN KEY ("reviewer_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_skill_badges" ADD CONSTRAINT "user_skill_badges_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_reviewer_id_fkey" FOREIGN KEY ("reviewer_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."user_skill_badges" ADD CONSTRAINT "user_skill_badges_skill_badge_id_fkey" FOREIGN KEY ("skill_badge_id") REFERENCES "public"."skill_badges"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."task_skill_badges" ADD CONSTRAINT "task_skill_badges_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "public"."tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."user_skill_badges" ADD CONSTRAINT "user_skill_badges_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."task_skill_badges" ADD CONSTRAINT "task_skill_badges_skill_badge_id_fkey" FOREIGN KEY ("skill_badge_id") REFERENCES "public"."skill_badges"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."memberships" ADD CONSTRAINT "memberships_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."task_skill_badges" ADD CONSTRAINT "task_skill_badges_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "public"."tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."user_memberships" ADD CONSTRAINT "user_memberships_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."memberships" ADD CONSTRAINT "memberships_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."user_memberships" ADD CONSTRAINT "user_memberships_membership_id_fkey" FOREIGN KEY ("membership_id") REFERENCES "public"."memberships"("product_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."user_memberships" ADD CONSTRAINT "user_memberships_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."tickets" ADD CONSTRAINT "tickets_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -313,3 +342,9 @@ ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_order_id_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "public"."order_items" ADD CONSTRAINT "order_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."accounts" ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -13,7 +13,6 @@ const mockUserContextValue = {
     setLanguage: () => {},
     editMode: false,
     setEditMode: () => {},
-    refreshSession: () => Promise.resolve(),
 };
 
 // Mock OrganizationSettingsContext value
@@ -34,7 +33,7 @@ const mockOrganizationSettingsContextValue = {
 interface WrapperProps {
     children: ReactNode;
     user?: Prisma.UserGetPayload<{
-        include: { user_membership: true; user_credentials: true; skill_badges: true };
+        include: { user_membership: true; skill_badges: true };
     }>;
 }
 

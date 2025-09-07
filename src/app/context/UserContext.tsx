@@ -1,10 +1,7 @@
 "use client";
 
-import { createContext, FC, ReactNode, useContext, useState, useEffect } from "react";
+import { createContext, FC, ReactNode, useContext, useState, useEffect, use } from "react";
 import { Language, Prisma } from "@prisma/client";
-import { getSession, useSession } from "next-auth/react";
-import { CircularProgress, Stack } from "@mui/material";
-import { useRouter } from "next/navigation";
 
 interface UserContextValue {
     user: Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }> | null;
@@ -12,7 +9,6 @@ interface UserContextValue {
     setLanguage: (language: Language) => void; // eslint-disable-line no-unused-vars
     editMode: boolean;
     setEditMode: (editMode: boolean | ((prev: boolean) => boolean)) => void; // eslint-disable-line no-unused-vars
-    refreshSession: () => Promise<void>;
 }
 
 export const UserContext = createContext<UserContextValue | null>(null);
@@ -38,22 +34,18 @@ const readLanguageFromCookie = (): Language => {
 
 interface UserContextProviderProps {
     children: ReactNode;
+    userPromise: Promise<Prisma.UserGetPayload<{
+        include: { user_membership: true; skill_badges: true };
+    }> | null>;
 }
 
-const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
-    const session = useSession();
-    const router = useRouter();
-
+const UserContextProvider: FC<UserContextProviderProps> = ({ children, userPromise }) => {
+    const user = use(userPromise);
     const [language, setLanguage] = useState<Language>(() => readLanguageFromCookie());
 
     // Persist language to a cookie whenever it changes
     useEffect(() => {}, [language]);
     const [editMode, setEditMode] = useState(false);
-
-    const refreshSession = async () => {
-        await getSession();
-        router.refresh();
-    };
 
     const updateLanguage = (newLanguage: Language) => {
         try {
@@ -67,20 +59,12 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children }) => {
     };
 
     const contextValue: UserContextValue = {
-        user: session.data?.user || null,
+        user,
         language,
         setLanguage: updateLanguage,
         editMode,
         setEditMode,
-        refreshSession,
     };
-
-    if (session.status === "loading")
-        return (
-            <Stack height="100%" width="100%" justifyContent="center" alignItems="center">
-                <CircularProgress />
-            </Stack>
-        );
 
     return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };

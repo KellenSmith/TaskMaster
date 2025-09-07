@@ -164,20 +164,20 @@ export const progressOrder = async (
                     data: { status: OrderStatus.shipped },
                 });
                 revalidateTag(GlobalConstants.ORDER);
-                try {
-                    await sendOrderConfirmation(orderId);
-                } catch (error) {
-                    // Allow progressing order despite failed confirmation
-                    console.error("Failed to send order confirmation:", error);
-                }
             },
             {
                 // timeout in ms for this interactive transaction; set to 30s for safety
-                timeout: 30000,
+                timeout: 10000,
                 // max wait to acquire a connection for transaction
                 maxWait: 5000,
             },
         );
+        try {
+            await sendOrderConfirmation(orderId);
+        } catch (error) {
+            // Allow progressing order despite failed confirmation
+            console.error("Failed to send order confirmation:", error);
+        }
     }
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {
