@@ -44,4 +44,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return session;
         },
     },
+    // TODO: Configure branded page for invalid sign in link
 });

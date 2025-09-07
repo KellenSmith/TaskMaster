@@ -101,10 +101,10 @@ export const updateTaskById = async (
                         },
                     },
                 }),
-                ...(eventId && {
+                ...(validatedEventId && {
                     event: {
                         connect: {
-                            id: eventId,
+                            id: validatedEventId,
                         },
                     },
                 }),

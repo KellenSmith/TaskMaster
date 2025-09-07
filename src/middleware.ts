@@ -22,13 +22,40 @@ export default async function middleware(req: NextRequest) {
 
     if (!req?.nextUrl?.pathname) return NextResponse.next();
 
+    // Create response based on authorization
+    let response: NextResponse;
+
     if (isUserAuthorized(loggedInUser, pathToRoutes(req.nextUrl.pathname), routeTreeConfig)) {
-        return NextResponse.next();
+        response = NextResponse.next();
+    } else if (loggedInUser) {
+        // Redirect authenticated but unauthorized users to home
+        response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
+    } else {
+        // Redirect unauthorized unauthenticated users to login
+        response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
     }
 
-    // Redirect authenticated but unauthorized users to home
-    if (loggedInUser) return NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
+    // Add security headers
+    addSecurityHeaders(response);
 
-    // Redirect unauthorized unauthenticated users to login
-    return NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
+    return response;
+}
+
+function addSecurityHeaders(response: NextResponse) {
+    // Only add HSTS in production with HTTPS
+    if (process.env.NODE_ENV === "production") {
+        response.headers.set(
+            "Strict-Transport-Security",
+            "max-age=63072000; includeSubDomains; preload",
+        );
+    }
+
+    // Add additional security headers not covered by next.config.mjs
+    response.headers.set("X-DNS-Prefetch-Control", "off");
+    response.headers.set("X-Download-Options", "noopen");
+    response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
+
+    // Remove server information
+    response.headers.delete("Server");
+    response.headers.delete("X-Powered-By");
 }

@@ -32,12 +32,13 @@ export const addEventParticipantWithTx = async (tx, ticketId: string, userId: st
         },
     });
     const participantIds = event.tickets.flatMap((t) => t.event_participants.map((p) => p.user_id));
-    if (participantIds.includes(userId)) throw new Error("Member is already a participant");
+    if (participantIds.includes(validatedUserId))
+        throw new Error("Member is already a participant");
     if (participantIds.length >= event.max_participants) {
         throw new Error("Event is already sold out");
     }
 
-    await deleteEventReserveWithTx(tx, userId, ticket.event_id);
+    await deleteEventReserveWithTx(tx, validatedUserId, ticket.event_id);
     revalidateTag(GlobalConstants.RESERVE_USERS);
 
     // Decrement the product stock of all tickets with limited stock belonging to the same event

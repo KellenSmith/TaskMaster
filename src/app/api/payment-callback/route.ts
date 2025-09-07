@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { progressOrder } from "../../lib/order-actions";
-import { getNewOrderStatus, PaymentStateType } from "../../lib/payment-utils";
+import { checkPaymentStatus } from "../../lib/payment-actions";
+import { prisma } from "../../../../prisma/prisma-client";
+import { PaymentStateType } from "../../lib/payment-utils";
 
 interface PaymentCallbackRequestBody {
     paymentorder: string;
@@ -54,7 +55,12 @@ const isAllowedIp = (request: NextRequest): boolean => {
         return false;
     }
 
+    // Updated IP ranges per Swedbank Pay documentation (March 12th 2025)
     const allowedIps = [
+        // Legacy IPs (still valid)
+        "51.107.183.58",
+        "91.132.170.1",
+        // New IP range: 20.91.170.120–127 (20.91.170.120/29)
         "20.91.170.120",
         "20.91.170.121",
         "20.91.170.122",
@@ -83,13 +89,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // TODO: Verify webhook signature here
-    // const signature = request.headers.get('x-swedbank-signature') || request.headers.get('authorization');
-    // if (!signature || !verifyWebhookSignature(JSON.stringify(requestBody), signature, process.env.SWEDBANK_WEBHOOK_SECRET)) {
-    //     console.error(`Invalid webhook signature from IP: ${clientIp}`);
-    //     return new NextResponse("Invalid signature", { status: 401 });
-    // }        // Validate required fields in payload
-
     try {
         const requestBody: PaymentCallbackRequestBody = await request.json();
 
@@ -99,16 +98,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             return new NextResponse("Bad Request: Missing required fields", { status: 400 });
         }
 
-        // Update order by id
-        const transactionState = requestBody.authorization.transaction.state;
-        const newOrderStatus = getNewOrderStatus(transactionState);
-
         try {
-            await progressOrder(orderId, newOrderStatus);
+            // Get the order directly to find the user_id needed for checkPaymentStatus
+            const order = await prisma.order.findUniqueOrThrow({
+                where: { id: orderId },
+                select: { user_id: true },
+            });
+
+            // Use the existing checkPaymentStatus function which implements proper GET verification
+            await checkPaymentStatus(order.user_id, orderId);
+            console.log(`Order ${orderId} status verified and updated via GET request`);
         } catch (error) {
-            console.error(`Failed to update order ${orderId}: ${error.message}`);
+            console.error(`Failed to verify/update order ${orderId}: ${error.message}`);
+            // Still return 200 to avoid Swedbank Pay retries for application errors
         }
 
+        // Return 200 OK as required by Swedbank Pay
         return new NextResponse("OK", { status: 200 });
     } catch (error) {
         console.error(`Payment callback error from IP ${clientIp}:`, error);
