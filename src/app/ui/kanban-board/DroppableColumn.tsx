@@ -167,7 +167,6 @@ const DroppableColumn = ({
             // Best-effort restore of original URL on failure
             try {
                 // Only attempt if not already restored
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 typeof window !== "undefined" &&
                     window.history &&
                     (window.history.replaceState as any) &&
