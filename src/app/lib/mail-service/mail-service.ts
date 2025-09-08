@@ -23,6 +23,7 @@ import EmailNotificationTemplate, {
 import MemberContactMemberTemplate from "./mail-templates/MemberContactMemberTemplate";
 import SignInEmailTemplate from "./mail-templates/SignInEmailTemplate";
 import { sanitizeFormData } from "../html-sanitizer";
+import { createNewsletterJob } from "./newsletter-actions";
 
 interface EmailPayload {
     from: string;
@@ -196,13 +197,16 @@ export const getEmailRecipientCount = async (
 /**
  * @throws Error if email fails
  */
+type MassEmailResult = { accepted: number; rejected: number } & Partial<{
+    jobId: string;
+    total: number;
+    batchSize: number;
+}>;
+
 export const sendMassEmail = async (
     recipientCriteria: Prisma.UserWhereInput,
     formData: FormData,
-): Promise<{
-    accepted: number;
-    rejected: number;
-}> => {
+): Promise<MassEmailResult> => {
     const recipients = (
         await prisma.user.findMany({
             where: recipientCriteria,
@@ -217,16 +221,22 @@ export const sendMassEmail = async (
     // Sanitize rich text content before sending email
     const sanitizedContent = sanitizeFormData(revalidatedContent);
 
-    const mailContent = createElement(MailTemplate, {
+    // Queue a newsletter job instead of sending immediately
+    const job = await createNewsletterJob({
+        subject: sanitizedContent.subject,
         html: sanitizedContent.content,
+        recipients,
+        batchSize: 250,
+        perRecipient: false,
     });
-    const mailPayload = await getEmailPayload(recipients, sanitizedContent.subject, mailContent);
-    const mailTransport = await getMailTransport();
-    const mailResponse = await mailTransport.sendMail(mailPayload);
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    // Keep return shape compatible with existing UI (it shows counts)
+    // Actual sending will be processed by the scheduled batch processor
     return {
-        accepted: mailResponse?.accepted?.length || 0,
-        rejected: mailResponse?.rejected?.length || 0,
+        accepted: 0,
+        rejected: 0,
+        jobId: job.id,
+        total: recipients.length,
+        batchSize: job.batchSize,
     };
 };
 

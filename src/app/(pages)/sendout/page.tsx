@@ -1,96 +1,17 @@
-"use client";
-
-import {
-    Accordion,
-    AccordionSummary,
-    FormControl,
-    FormControlLabel,
-    Radio,
-    RadioGroup,
-    Stack,
-    Typography,
-} from "@mui/material";
-import { FC, useCallback, useEffect, useState } from "react";
+import { unstable_cache } from "next/cache";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import SendoutDashboard from "./SendoutDashboard";
+import { getAllNewsletterJobs } from "../../lib/mail-service/newsletter-actions";
 import GlobalConstants from "../../GlobalConstants";
-import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/mail-service";
-import Form from "../../ui/form/Form";
-import { Language, Prisma } from "@prisma/client";
-import { ExpandMore } from "@mui/icons-material";
-import { useUserContext } from "../../context/UserContext";
-import LanguageTranslations from "./LanguageTranslations";
 
-const sendToOptions = {
-    ALL: {
-        [Language.english]: "All",
-        [Language.swedish]: "Alla",
-    },
-    CONSENTING: {
-        [Language.english]: "Consenting to newsletters",
-        [Language.swedish]: "Samtycker till nyhetsbrev",
-    },
-};
-
-const SendoutPage: FC = () => {
-    const { language } = useUserContext();
-    const [sendTo, setSendTo] = useState(sendToOptions.ALL[language]);
-    const [recipientCount, setRecipientCount] = useState<number>(0);
-
-    const getRecipientCriteria = useCallback(() => {
-        const recipientCriteria: Prisma.UserWhereInput = {};
-        if (sendTo === sendToOptions.CONSENTING[language]) {
-            recipientCriteria[GlobalConstants.CONSENT_TO_NEWSLETTERS] = true;
-        }
-        return recipientCriteria;
-    }, [sendTo, language]);
-
-    useEffect(() => {
-        const fetchRecipientCount = async () => {
-            const count = await getEmailRecipientCount(getRecipientCriteria());
-            setRecipientCount(count);
-        };
-        fetchRecipientCount();
-    }, [sendTo, getRecipientCriteria]);
-
-    const sendMassEmailToRecipientsWithCriteria = async (formData: FormData) => {
-        try {
-            const result = await sendMassEmail(getRecipientCriteria(), formData);
-            return LanguageTranslations.successfulSendout[language](result);
-        } catch {
-            throw new Error(LanguageTranslations.failedSendMail[language]);
-        }
-    };
-
+const SendoutPage = () => {
+    const newsLetterJobsPromise = unstable_cache(getAllNewsletterJobs, [], {
+        tags: [GlobalConstants.SENDOUT],
+    })();
     return (
-        <Stack>
-            <Accordion sx={{ padding: 1 }} defaultExpanded={true}>
-                <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography>
-                        {LanguageTranslations.sendToRecipients[language](recipientCount)}
-                    </Typography>
-                </AccordionSummary>
-                <Stack spacing={2} padding={1}>
-                    <FormControl>
-                        <RadioGroup value={sendTo} onChange={(e) => setSendTo(e.target.value)}>
-                            {Object.values(sendToOptions).map((option) => (
-                                <FormControlLabel
-                                    key={option[language]}
-                                    value={option[language]}
-                                    control={<Radio />}
-                                    label={option[language]}
-                                />
-                            ))}
-                        </RadioGroup>
-                    </FormControl>
-                </Stack>
-            </Accordion>
-            <Form
-                name={GlobalConstants.SENDOUT}
-                action={sendMassEmailToRecipientsWithCriteria}
-                buttonLabel={LanguageTranslations.send[language]}
-                readOnly={false}
-                editable={true}
-            />
-        </Stack>
+        <ErrorBoundarySuspense>
+            <SendoutDashboard newsLetterJobsPromise={newsLetterJobsPromise} />
+        </ErrorBoundarySuspense>
     );
 };
 export default SendoutPage;

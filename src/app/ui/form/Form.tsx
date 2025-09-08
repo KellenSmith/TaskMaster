@@ -195,7 +195,6 @@ const Form: FC<FormProps> = ({
                 const submitResult = await action(formDataWithFileUrls);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
-                onSuccess?.(); // Call the success callback if provided
             } catch (error) {
                 allowRedirectException(error);
                 addNotification(error.message, "error");

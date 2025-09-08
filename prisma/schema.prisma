@@ -7,6 +7,35 @@ datasource db {
   url      = env("PRISMA_DATABASE_URL")
 }
 
+// Newsletter job queue for paced bulk sending
+enum NewsletterJobStatus {
+  pending
+  running
+  paused
+  completed
+  failed
+  cancelled
+}
+
+model NewsletterJob {
+  id           String              @id @default(uuid())
+  subject      String
+  html         String
+  text         String?
+  recipients   Json // array of recipient emails captured at enqueue time
+  cursor       Int                 @default(0) // next index to send from
+  batchSize    Int                 @default(250)
+  perRecipient Boolean             @default(false) // if true, send 1 email per recipient instead of BCC batches
+  status       NewsletterJobStatus @default(pending)
+  lastRunAt    DateTime?
+  completedAt  DateTime?
+  error        String?
+  created_at   DateTime            @default(now())
+  updated_at   DateTime            @updatedAt
+
+  @@map("newsletter_jobs")
+}
+
 model OrganizationSettings {
   id                                   String  @id @default(uuid())
   organization_name                    String  @default("Task Master")

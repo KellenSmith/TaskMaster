@@ -38,11 +38,11 @@ export type ImplementedDatagridEntities =
               user: { select: { nickname: true } };
               order_items: { include: { product: true } };
           };
-      }>;
+      }>
+    | Prisma.NewsletterJobGetPayload<true>;
 
 interface DatagridProps {
-    allowAddNew?: boolean;
-    name: string;
+    name?: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     updateAction?: (
         rowId: string, // eslint-disable-line no-unused-vars
@@ -50,11 +50,11 @@ interface DatagridProps {
     ) => Promise<void>;
     // eslint-disable-next-line no-unused-vars
     createAction?: (fieldValues: FormData) => Promise<void>;
-    validationSchema:
+    validationSchema?:
         | typeof UserUpdateSchema
         | typeof ProductUpdateSchema
         | typeof OrderUpdateSchema;
-    rowActions: RowActionProps[];
+    rowActions?: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
     // eslint-disable-next-line no-unused-vars
@@ -63,13 +63,12 @@ interface DatagridProps {
 }
 
 const Datagrid: React.FC<DatagridProps> = ({
-    allowAddNew = true,
     name,
     dataGridRowsPromise,
     updateAction,
     createAction,
     validationSchema,
-    rowActions,
+    rowActions = [],
     customColumns = [],
     hiddenColumns = [],
     getDefaultFormValues,
@@ -186,7 +185,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 }}
                 autoPageSize
             />
-            {allowAddNew && (
+            {createAction && (
                 <Button onClick={() => setAddNew(true)}>
                     {LanguageTranslations.addNew[language]}
                 </Button>
