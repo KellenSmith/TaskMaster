@@ -25,7 +25,7 @@ import z from "zod";
 import AutocompleteWrapper from "../form/AutocompleteWrapper";
 import GlobalConstants from "../../GlobalConstants";
 import { ChevronRight, Menu } from "@mui/icons-material";
-import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
+import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-utils";
 import DraggableTaskShifts from "./DraggableTaskShifts";
 import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";

@@ -14,7 +14,7 @@ import {
     doDateRangesOverlap,
     isEventSoldOut,
     isUserParticipant,
-} from "../../(pages)/event/event-utils";
+} from "../../(pages)/calendar-post/event-utils";
 import isBetween from "dayjs/plugin/isBetween";
 import dayjs from "dayjs";
 

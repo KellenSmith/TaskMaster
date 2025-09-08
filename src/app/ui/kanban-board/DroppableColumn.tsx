@@ -23,7 +23,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import DraggableTaskShifts from "./DraggableTaskShifts";
 import { CustomOptionProps } from "../form/AutocompleteWrapper";
-import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
+import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-utils";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
 import { getFilteredTasks } from "./KanBanBoardMenu";

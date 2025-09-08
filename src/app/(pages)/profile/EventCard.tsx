@@ -2,13 +2,13 @@ import { Button, Card, CardContent, Stack, Typography, Chip, Box } from "@mui/ma
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserHost, clientRedirect } from "../../lib/utils";
-import { isEventPublished, isUserParticipant, isUserReserve } from "../event/event-utils";
+import { isEventPublished, isUserParticipant, isUserReserve } from "../calendar-post/event-utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
 import { Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
-import EventLanguageTranslations from "../event/LanguageTranslations";
+import EventLanguageTranslations from "../calendar-post/LanguageTranslations";
 
 interface EventCardProps {
     event: Prisma.EventGetPayload<{

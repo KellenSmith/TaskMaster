@@ -1,7 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../utils";
-import { getGroupedAndSortedTasks } from "../../(pages)/event/event-utils";
+import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-utils";
 import dayjs from "dayjs";
 import { styles } from "../pdf-styles";
 

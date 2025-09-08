@@ -20,7 +20,7 @@ import { getRelativeUrl } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
-import { getSortedEvents } from "../event/event-utils";
+import { getSortedEvents } from "../calendar-post/event-utils";
 
 interface YearWheelDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<{ include: { tasks: true } }>[]>;

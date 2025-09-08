@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { formatDate } from "../utils";
 import { ExpandMore } from "@mui/icons-material";
-import { getEarliestStartTime, sortTasks } from "../../(pages)/event/event-utils";
+import { getEarliestStartTime, sortTasks } from "../../(pages)/calendar-post/event-utils";
 import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import DraggableTask from "./DraggableTask";
