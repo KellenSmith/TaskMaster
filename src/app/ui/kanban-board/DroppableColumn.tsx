@@ -214,17 +214,7 @@ const DroppableColumn = ({
             >
                 <Form
                     name={GlobalConstants.TASK}
-                    action={async (formData: FormData) => {
-                        console.log("Direct action called", { eventId: event?.id });
-                        try {
-                            await createTask(formData, event ? event.id : null);
-                            setTaskFormDefaultValues(null);
-                            return GlobalLanguageTranslations.successfulSave[language];
-                        } catch (error) {
-                            console.error("Task creation failed:", error);
-                            throw error;
-                        }
-                    }}
+                    action={createNewTask}
                     validationSchema={TaskCreateSchema}
                     defaultValues={
                         taskFormDefaultValues
