@@ -186,6 +186,12 @@ const Form: FC<FormProps> = ({
 
         console.log("Processing form submission...");
         const formData = new FormData(event.currentTarget);
+
+        // Add debug logging for production
+        console.log("Form data entries:", Object.fromEntries(formData.entries()));
+        console.log("Form action type:", typeof action);
+        console.log("Is server action:", action.toString().includes("use server"));
+
         const formDataWithFileUrls = await uploadFiles(formData);
         if (!formDataWithFileUrls) return;
         const parsedFieldValues = validateFormData(formDataWithFileUrls);
@@ -193,12 +199,17 @@ const Form: FC<FormProps> = ({
         startTransition(async () => {
             try {
                 console.log("Calling action function...");
+                console.log("Action name:", action.name);
+                console.log("Environment:", process.env.NODE_ENV);
+
                 const submitResult = await action(formDataWithFileUrls);
                 console.log("Action completed successfully", submitResult);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
             } catch (error) {
                 console.error("Action failed:", error);
+                console.error("Error type:", error.constructor.name);
+                console.error("Error stack:", error.stack);
                 allowRedirectException(error);
                 addNotification(error.message, "error");
             }

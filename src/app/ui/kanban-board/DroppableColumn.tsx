@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { updateTaskById } from "../../lib/task-actions";
-import { createTask } from "../../lib/task-actions";
+import { createTaskFromKanban } from "./kanban-board-actions";
 import Form from "../form/Form";
 import { use, useState } from "react";
 import { Add } from "@mui/icons-material";
@@ -126,20 +126,19 @@ const DroppableColumn = ({
     };
 
     const createEventTaskAndCloseDialog = async (formData: FormData): Promise<string> => {
-        console.log("createTaskAndCloseDialog called", {
+        console.log("createEventTaskAndCloseDialog called", {
             eventId: event?.id,
             formData: Object.fromEntries(formData.entries()),
         });
 
         try {
-            // Call createTask directly to avoid server action binding issues
-            const eventId = event ? event.id : null;
-            console.log("Calling createTask directly with eventId:", eventId);
+            // Use the dedicated server action instead of calling createTask directly
+            console.log("Calling createTaskFromKanban with eventId:", event.id);
 
-            await createTask(formData, event.id);
-            console.log("Task created successfully on client");
+            const result = await createTaskFromKanban(event.id, language, formData);
+            console.log("Task created successfully via server action");
             setTaskFormDefaultValues(null);
-            return GlobalLanguageTranslations.successfulSave[language];
+            return result;
         } catch (error) {
             console.error("Task creation failed:", error);
             console.error("Error details:", {
@@ -157,13 +156,13 @@ const DroppableColumn = ({
         });
 
         try {
-            // Call createTask directly to avoid server action binding issues
-            console.log("Calling createTask directly with eventId:", null);
+            // Use the dedicated server action instead of calling createTask directly
+            console.log("Calling createTaskFromKanban with eventId:", null);
 
-            await createTask(formData, null);
-            console.log("Task created successfully on client");
+            const result = await createTaskFromKanban(null, language, formData);
+            console.log("Task created successfully via server action");
             setTaskFormDefaultValues(null);
-            return GlobalLanguageTranslations.successfulSave[language];
+            return result;
         } catch (error) {
             console.error("Task creation failed:", error);
             console.error("Error details:", {

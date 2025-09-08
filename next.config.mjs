@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    experimental: {
+        serverActions: {
+            allowedOrigins: [process.env.VERCEL_PROJECT_PRODUCTION_URL, "localhost:3000"],
+        },
+    },
     images: {
         remotePatterns: [
             // Allow images from Vercel Blob storage
