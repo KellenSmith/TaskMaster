@@ -22,8 +22,6 @@ import { FieldLabels, getUserSelectOptions } from "../../ui/form/FieldCfg";
 import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
 import { addEventParticipant, deleteEventParticipant } from "../../lib/event-participant-actions";
-import z from "zod";
-import { AddEventParticipantSchema, AddEventReserveSchema } from "../../lib/zod-schemas";
 import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-actions";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
