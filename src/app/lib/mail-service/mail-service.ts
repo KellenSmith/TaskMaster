@@ -30,6 +30,8 @@ interface EmailPayload {
     replyTo?: string;
     subject: string;
     html: string;
+    headers?: Record<string, string>;
+    text?: string; // Plain text version for better deliverability
 }
 
 const getEmailPayload = async (
@@ -39,11 +41,25 @@ const getEmailPayload = async (
     replyTo?: string,
 ): Promise<EmailPayload> => {
     const organizationSettings = await getOrganizationSettings();
+    const organizationName = await getOrganizationName();
+    const htmlContent = await render(mailContent);
+
     const payload: EmailPayload = {
-        from: `${await getOrganizationName()} <${organizationSettings?.organization_email}>`,
+        from: `${organizationName} <${organizationSettings?.organization_email}>`,
         bcc: receivers.join(", "),
         subject: subject,
-        html: await render(mailContent),
+        html: htmlContent,
+        // Add plain text version by stripping HTML
+        text: htmlContent
+            .replace(/<[^>]*>/g, "")
+            .replace(/\s+/g, " ")
+            .trim(),
+        headers: {
+            "X-Mailer": `${organizationName} Task Master`,
+            "X-Priority": "3",
+            "List-Unsubscribe": `<mailto:${organizationSettings?.organization_email}?subject=Unsubscribe>`,
+            "Message-ID": `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@${organizationSettings?.organization_email?.split("@")[1] || "taskmaster.local"}>`,
+        },
     };
     if (replyTo) payload.replyTo = replyTo;
     return payload;
