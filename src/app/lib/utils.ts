@@ -58,8 +58,9 @@ export const isMembershipExpired = (
     return !membershipExpiresAt || dayjs().isAfter(dayjs(membershipExpiresAt));
 };
 
-export const isUserAdmin = (user: Prisma.UserGetPayload<true> | null): boolean =>
-    user?.role === UserRole.admin;
+export const isUserAdmin = (
+    user: Prisma.UserGetPayload<{ include: { user_membership: true } }> | null,
+): boolean => user?.role === UserRole.admin && !!user?.user_membership;
 
 export const isUserHost = (
     user: Prisma.UserGetPayload<{ select: { id: true } }> | null,

@@ -41,9 +41,13 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
     const createEventWithHostAndTicket = async (formData: FormData) => {
-        const parsedFieldValues = EventCreateSchema.parse(Object.fromEntries(formData.entries()));
-        const selectedLocation = locations.find((loc) => loc.id === parsedFieldValues.location_id);
-        if (selectedLocation.capacity < parsedFieldValues.max_participants)
+        const selectedLocation = locations.find(
+            (loc) => loc.id === formData.get(GlobalConstants.LOCATION_ID),
+        );
+        if (
+            selectedLocation.capacity <
+            parseInt(formData.get(GlobalConstants.MAX_PARTICIPANTS) as string)
+        )
             throw new Error(
                 LanguageTranslations.locationCapacityExceeded[language](selectedLocation.capacity),
             );

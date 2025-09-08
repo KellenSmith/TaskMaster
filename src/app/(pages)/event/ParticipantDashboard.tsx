@@ -73,16 +73,18 @@ const ParticipantDashboard = ({
     const [isPending, startTransition] = useTransition();
     const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
 
-    const addEventParticipantAction = async (
-        parsedFieldValues: z.infer<typeof AddEventParticipantSchema>,
-    ) => {
+    const addEventParticipantAction = async (formData: FormData) => {
         const participantIds = eventParticipants.map((p) => p.user.id);
-        if (participantIds.includes(parsedFieldValues.user_id))
+        const newParticipantId = formData.get(GlobalConstants.USER_ID) as string;
+        if (participantIds.includes(newParticipantId))
             throw new Error(LanguageTranslations.alreadyRegistered[language]);
         if (eventParticipants.length >= event.max_participants)
             throw new Error(LanguageTranslations.eventIsSoldOut[language]);
         try {
-            await addEventParticipant(parsedFieldValues.user_id, parsedFieldValues.ticket_id);
+            await addEventParticipant(
+                newParticipantId,
+                formData.get(GlobalConstants.TICKET_ID) as string,
+            );
             setAddDialogOpen(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -90,14 +92,12 @@ const ParticipantDashboard = ({
         }
     };
 
-    const addEventReserveAction = async (
-        parsedFieldValues: z.infer<typeof AddEventReserveSchema>,
-    ) => {
+    const addEventReserveAction = async (formData: FormData) => {
         const reserveIds = eventReserves.map((r) => r.user.id);
-        if (reserveIds.includes(parsedFieldValues.user_id))
+        if (reserveIds.includes(formData.get(GlobalConstants.USER_ID) as string))
             throw new Error(LanguageTranslations.alreadyRegistered[language]);
         try {
-            await addEventReserve(parsedFieldValues.user_id, event.id);
+            await addEventReserve(formData.get(GlobalConstants.USER_ID) as string, event.id);
             setAddDialogOpen(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {

@@ -22,10 +22,8 @@ const EditableTextContent = ({ id, textContentPromise }: EditableTextContentProp
         [language, textContent],
     );
 
-    const handleUpdateTextContent = async (
-        parsedFieldValues: z.output<typeof UpdateTextContentSchema>,
-    ) => {
-        await updateTextContent(id, language, parsedFieldValues.text);
+    const handleUpdateTextContent = async (formData: FormData) => {
+        await updateTextContent(id, language, formData.get(GlobalConstants.TEXT) as string);
         return "Updated successfully";
     };
 
