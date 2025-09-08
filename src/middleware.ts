@@ -15,15 +15,28 @@ export const config = {
 };
 
 export default async function middleware(req: NextRequest) {
-    // Skip middleware for Next.js Server Actions - both POST and action header checks
-    if (
-        req.method === "POST" &&
-        (req.headers.get("next-action") ||
-            req.headers.get("content-type")?.includes("multipart/form-data") ||
-            req.url.includes("_next/static") ||
-            req.nextUrl.pathname.startsWith("/api/"))
-    ) {
-        return NextResponse.next();
+    // Skip middleware for Next.js Server Actions and related special POSTs
+    // Next adds special headers like Next-Action/RSC and often uses text/plain bodies
+    // Be generous so we never block/redirect action requests by mistake.
+    if (req.method === "POST") {
+        const headers = req.headers;
+        const contentType = headers.get("content-type") || "";
+        const isServerAction =
+            headers.has("next-action") ||
+            headers.has("Next-Action") ||
+            headers.has("rsc") ||
+            headers.has("RSC") ||
+            // Server Actions frequently use text/plain payloads
+            contentType.includes("text/plain") ||
+            // Multipart forms should also bypass auth logic
+            contentType.includes("multipart/form-data");
+
+        const isInternalNext =
+            req.url.includes("_next/static") || req.nextUrl.pathname.startsWith("/api/");
+
+        if (isServerAction || isInternalNext) {
+            return NextResponse.next();
+        }
     }
 
     // Initialize NextAuth with empty providers to access the auth function
