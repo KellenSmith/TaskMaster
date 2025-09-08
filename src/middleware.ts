@@ -15,6 +15,11 @@ export const config = {
 };
 
 export default async function middleware(req: NextRequest) {
+    // Skip middleware for Next.js Server Actions
+    if (req.method === "POST" && req.headers.get("next-action")) {
+        return NextResponse.next();
+    }
+
     // Initialize NextAuth with empty providers to access the auth function
     // in edge runtime without node-specific nodemailer provider and prisma adapter
     const { auth } = NextAuth({ providers: [] });

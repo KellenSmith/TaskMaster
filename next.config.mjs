@@ -62,6 +62,7 @@ const nextConfig = {
                             "font-src 'self' fonts.gstatic.com", // Allow Google Fonts
                             "img-src 'self' data: blob: https:", // Allow images from self, data URLs, and HTTPS
                             "connect-src 'self' https:", // Allow connections to self and HTTPS
+                            "form-action 'self'", // Allow form submissions to same origin (required for Next.js Server Actions)
                             "object-src 'none'", // Disable plugins
                             "base-uri 'self'", // Restrict base tag
                             "frame-ancestors 'none'", // Prevent embedding (like X-Frame-Options)
