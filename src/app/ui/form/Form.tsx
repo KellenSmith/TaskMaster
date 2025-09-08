@@ -209,14 +209,12 @@ const Form: FC<FormProps> = ({
     const getDefaultValue = (fieldId: string) => {
         if (defaultValues && fieldId in defaultValues) {
             if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId]);
-            if (datePickerFields.includes(fieldId)) return dayjs(defaultValues[fieldId]);
+            if (datePickerFields.includes(fieldId)) return dayjs.utc(defaultValues[fieldId]);
             return defaultValues[fieldId];
         }
 
         if (datePickerFields.includes(fieldId))
-            return requiredFields.includes(fieldId)
-                ? dayjs(formatDate(dayjs().hour(18).minute(0).second(0)))
-                : null;
+            return requiredFields.includes(fieldId) ? dayjs().hour(18).minute(0).second(0) : null;
         if (checkboxFields.includes(fieldId)) return false;
         return null;
     };
