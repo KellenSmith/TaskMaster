@@ -1,13 +1,22 @@
 import { z } from "zod";
 import { UserRole, EventStatus, TaskStatus, TicketType, OrderStatus, Prisma } from "@prisma/client";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
 
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
-    .refine((val) => !val || dayjs(val, "DD/MM/YYYY HH:mm").isValid(), {
-        message: "Invalid date",
-    })
+    .refine(
+        (val) => {
+            console.log(val);
+            return !val || dayjs(val, "DD/MM/YYYY HH:mm").isValid();
+        },
+        {
+            message: "Invalid date",
+        },
+    )
     .transform((val) =>
         val ? dayjs(val, "DD/MM/YYYY HH:mm").toISOString() : "",
     ) as z.ZodType<string>;

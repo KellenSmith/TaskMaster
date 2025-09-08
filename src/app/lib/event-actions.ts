@@ -18,6 +18,7 @@ import { sanitizeFormData } from "./html-sanitizer";
 
 export const createEvent = async (userId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
+    console.log(Object.fromEntries(formData.entries()));
     const validatedData = EventCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
