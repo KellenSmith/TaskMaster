@@ -139,7 +139,10 @@ export async function processNextNewsletterBatch(jobId?: string) {
                 error: null,
             },
         });
-
+        console.log(
+            `NewsletterJob ${job.id}: Sent to ${acceptedTotal} recipients (cursor ${newCursor}/${total})`,
+        );
+        revalidateTag(GlobalConstants.SENDOUT);
         return {
             jobId: job.id,
             processed: job.perRecipient ? batch.length : acceptedTotal,
@@ -149,6 +152,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
             done,
         };
     } catch (err: any) {
+        console.error("Error sending newsletter batch", err);
         await prisma.newsletterJob.update({
             where: { id: job.id },
             data: { status: "failed", error: err?.message || String(err), lastRunAt: new Date() },

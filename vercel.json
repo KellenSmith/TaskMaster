@@ -6,7 +6,7 @@
         },
         {
             "path": "/api/newsletter/process",
-            "schedule": "*/5 * * * *"
+            "schedule": "0 4 * * *"
         }
     ]
 }
