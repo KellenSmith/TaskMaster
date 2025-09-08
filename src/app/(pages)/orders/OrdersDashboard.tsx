@@ -76,7 +76,6 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     return (
         <Stack sx={{ height: "100%" }}>
             <Datagrid
-                allowAddNew={false}
                 name={GlobalConstants.USER}
                 dataGridRowsPromise={ordersPromise}
                 validationSchema={OrderUpdateSchema}
