@@ -33,7 +33,7 @@ import RichTextField from "./RichTextField";
 import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
-import { allowRedirectException, formatPrice } from "../utils";
+import { allowRedirectException, formatDate, formatPrice } from "../utils";
 import dayjs from "dayjs";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
@@ -214,7 +214,9 @@ const Form: FC<FormProps> = ({
         }
 
         if (datePickerFields.includes(fieldId))
-            return requiredFields.includes(fieldId) ? dayjs().hour(18).minute(0).second(0) : null;
+            return requiredFields.includes(fieldId)
+                ? dayjs(formatDate(dayjs().hour(18).minute(0).second(0)))
+                : null;
         if (checkboxFields.includes(fieldId)) return false;
         return null;
     };
