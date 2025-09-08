@@ -138,11 +138,6 @@ export function validateEnvironmentVariables(): EnvCheck[] {
             recommendation: "Swedbank Pay payee identifier",
         },
         {
-            name: "SWEDBANK_WEBHOOK_SECRET",
-            isPublic: false,
-            recommendation: "Secret for verifying Swedbank Pay webhooks (CRITICAL)",
-        },
-        {
             name: "CRON_SECRET",
             isPublic: false,
             recommendation: "Secret for authenticating cron job requests",
