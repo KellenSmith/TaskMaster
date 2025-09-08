@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { updateTaskById } from "../../lib/task-actions";
-import { createTaskWrapper } from "./task-wrapper";
+import { createTask } from "../../lib/task-actions";
 import Form from "../form/Form";
 import { use, useState, useCallback } from "react";
 import { Add } from "@mui/icons-material";
@@ -132,23 +132,15 @@ const DroppableColumn = ({
                 formData: Object.fromEntries(formData.entries()),
             });
 
-            // Add additional debugging
-            console.log("About to call createTaskFromKanban with:", {
-                eventId: event ? event.id : null,
-                language,
-                hasFormData: !!formData,
-                formDataEntries: Array.from(formData.entries()),
-            });
-
             try {
-                // Ensure we're calling the server action correctly
+                // Call createTask directly to avoid server action binding issues
                 const eventId = event ? event.id : null;
-                console.log("Calling server action with eventId:", eventId);
+                console.log("Calling createTask directly with eventId:", eventId);
 
-                const result = await createTaskWrapper(eventId, language, formData);
+                await createTask(formData, eventId);
                 console.log("Task created successfully on client");
                 setTaskFormDefaultValues(null);
-                return result;
+                return GlobalLanguageTranslations.successfulSave[language];
             } catch (error) {
                 console.error("Task creation failed:", error);
                 console.error("Error details:", {
@@ -159,7 +151,7 @@ const DroppableColumn = ({
                 throw error;
             }
         },
-        [event, language],
+        [event?.id, language],
     );
 
     return (
