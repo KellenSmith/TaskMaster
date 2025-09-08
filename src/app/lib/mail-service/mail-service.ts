@@ -32,6 +32,10 @@ interface EmailPayload {
     html: string;
     headers?: Record<string, string>;
     text?: string; // Plain text version for better deliverability
+    envelope?: {
+        from?: string;
+        to?: string | string[];
+    };
 }
 
 const getEmailPayload = async (
@@ -57,7 +61,12 @@ const getEmailPayload = async (
             "X-Mailer": `${organizationName} Task Master`,
             "X-Priority": "3",
             "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
+            "Auto-Submitted": "auto-generated",
             "Message-ID": `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@${process.env.EMAIL?.split("@")[1] || "taskmaster.local"}>`,
+        },
+        // Set Return-Path alignment via envelope.from (provider may rewrite, DKIM still aligns)
+        envelope: {
+            from: `bounce@${process.env.EMAIL?.split("@")[1] || "taskmaster.local"}`,
         },
     };
     if (replyTo) payload.replyTo = replyTo;

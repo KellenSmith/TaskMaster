@@ -10,18 +10,29 @@ export async function getMailTransport() {
     const nodemailer = await import("nodemailer");
     const { createTransport } = nodemailer;
 
+    const port = parseInt(process.env.SMTP_PORT || "0");
+    const isSecure = port === 465; // port 465 = implicit TLS, 587 = STARTTLS
+
     const transport = createTransport({
         host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || "0"),
-        secure: parseInt(process.env.SMTP_PORT || "0") === 465,
+        port,
+        secure: isSecure,
+        // Force STARTTLS when using submission port 587
+        requireTLS: !isSecure,
         auth: {
             user: process.env.EMAIL,
             pass: process.env.EMAIL_PASSWORD,
         },
+        // Gentle connection pooling to smooth bursts and avoid throttling
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
+        rateDelta: 60_000, // window in ms
+        rateLimit: 100, // messages per window across the pool
         tls: {
+            // Keep strict cert validation in production
             rejectUnauthorized: process.env.NODE_ENV === "production",
         },
-        requireTLS: process.env.SMTP_PORT === "587",
     });
 
     globalMailService.mailTransport = transport;
