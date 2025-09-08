@@ -10,8 +10,6 @@ import { isUserVolunteer } from "./event-utils";
 import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
-import z from "zod";
-import { TicketCreateSchema, TicketUpdateSchema } from "../../lib/zod-schemas";
 import { allowRedirectException } from "../../ui/utils";
 import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";

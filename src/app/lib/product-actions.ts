@@ -10,7 +10,6 @@ import {
     UuidSchema,
 } from "./zod-schemas";
 import { renewUserMembership } from "./user-membership-actions";
-import z from "zod";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { addEventParticipantWithTx } from "./event-participant-actions";

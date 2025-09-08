@@ -4,7 +4,6 @@ import { useOrganizationSettingsContext } from "../../context/OrganizationSettin
 import GlobalConstants from "../../GlobalConstants";
 import { updateOrganizationSettings } from "../../lib/organization-settings-actions";
 import Form from "../../ui/form/Form";
-import z from "zod";
 import { OrganizationSettingsUpdateSchema } from "../../lib/zod-schemas";
 
 const OrganizationSettingsPage = () => {

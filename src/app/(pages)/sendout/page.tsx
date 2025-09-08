@@ -16,8 +16,6 @@ import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/ma
 import Form from "../../ui/form/Form";
 import { Language, Prisma } from "@prisma/client";
 import { ExpandMore } from "@mui/icons-material";
-import z from "zod";
-import { EmailSendoutSchema } from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 

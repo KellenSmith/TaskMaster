@@ -11,7 +11,6 @@ import {
     UuidSchema,
 } from "./zod-schemas";
 import { prisma } from "../../../prisma/prisma-client";
-import z from "zod";
 
 export const createEventTicket = async (eventId: string, formData: FormData) => {
     // Validate event ID format

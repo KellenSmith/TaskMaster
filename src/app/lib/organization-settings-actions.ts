@@ -3,7 +3,6 @@
 import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import z from "zod";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 import { Prisma } from "@prisma/client";
 import { del } from "@vercel/blob";

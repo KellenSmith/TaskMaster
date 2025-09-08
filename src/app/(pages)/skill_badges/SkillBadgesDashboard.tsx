@@ -12,7 +12,6 @@ import {
     deleteSkillBadge,
     updateSkillBadge,
 } from "../../lib/skill-badge-actions";
-import z from "zod";
 import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";

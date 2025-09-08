@@ -3,7 +3,6 @@ import GlobalConstants from "../../GlobalConstants";
 import { submitMemberApplication } from "../../lib/user-actions";
 import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
-import z from "zod";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { useMemo } from "react";
 import { Stack } from "@mui/material";

@@ -20,7 +20,6 @@ import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import { EventCreateSchema } from "../../lib/zod-schemas";
-import z from "zod";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";

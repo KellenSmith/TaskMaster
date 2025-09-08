@@ -1,5 +1,4 @@
 "use client";
-import z from "zod";
 import GlobalConstants from "../../../GlobalConstants";
 import { createProduct } from "../../../lib/product-actions";
 import Form from "../../../ui/form/Form";
