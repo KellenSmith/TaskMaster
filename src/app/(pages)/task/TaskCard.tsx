@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
-import { clientRedirect } from "../../lib/utils";
+import { clientRedirect, isUserAdmin } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC, use, useState } from "react";
@@ -30,6 +30,7 @@ import { LocalPolice, Warning } from "@mui/icons-material";
 import { implementedTabs } from "../profile/LanguageTranslations";
 import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
+import RichTextField from "../../ui/form/RichTextField";
 
 interface TaskCardProps {
     taskPromise: Promise<
@@ -75,7 +76,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
 
     const updateTaskAction = async (formData: FormData) => {
         try {
-            await updateTaskById(task.id, formData, task.event_id);
+            await updateTaskById(task.id, formData);
             setEditDialogOpen(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -254,9 +255,10 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     </Box>
                                 )}
                                 {task.description && (
-                                    <Typography color="text.secondary">
-                                        {task.description}
-                                    </Typography>
+                                    <RichTextField
+                                        fieldId={GlobalConstants.DESCRIPTION}
+                                        defaultValue={task.description}
+                                    />
                                 )}
                             </Stack>
                         </Stack>
@@ -264,8 +266,6 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                             {task.event_id && (
                                 <Button
                                     fullWidth
-                                    variant="contained"
-                                    size="small"
                                     onClick={() =>
                                         clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
                                             [GlobalConstants.EVENT_ID]: task.event_id,
@@ -273,22 +273,24 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     }
                                     sx={{ minWidth: 80 }}
                                 >
-                                    View event
+                                    {LanguageTranslations.viewEvent[language]}
                                 </Button>
                             )}
-                            <Button
-                                fullWidth
-                                onClick={() => setMessageRecipientId(task.assignee?.id)}
-                            >
-                                {LanguageTranslations.contactAssignee[language]}
-                            </Button>
+                            {task.assignee_id && (
+                                <Button
+                                    fullWidth
+                                    onClick={() => setMessageRecipientId(task.assignee?.id)}
+                                >
+                                    {LanguageTranslations.contactAssignee[language]}
+                                </Button>
+                            )}
                             <Button
                                 fullWidth
                                 onClick={() => setMessageRecipientId(task.reviewer?.id)}
                             >
                                 {LanguageTranslations.contactReviewer[language]}
                             </Button>
-                            {task.reviewer_id === user.id && (
+                            {(task.reviewer_id === user.id || isUserAdmin(user)) && (
                                 <>
                                     <Button fullWidth onClick={() => setEditDialogOpen(true)}>
                                         {GlobalLanguageTranslations.edit[language]}

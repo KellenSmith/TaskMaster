@@ -99,7 +99,7 @@ const DroppableColumn = ({
             try {
                 const statusFormData = new FormData();
                 statusFormData.append(GlobalConstants.STATUS, status);
-                await updateTaskById(draggedTask.id, statusFormData, draggedTask.event_id);
+                await updateTaskById(draggedTask.id, statusFormData);
                 addNotification(
                     `${LanguageTranslations.taskSetTo[language]} "${LanguageTranslations[status][language]}"`,
                     "success",

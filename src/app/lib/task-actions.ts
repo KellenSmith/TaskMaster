@@ -54,15 +54,9 @@ export const getTaskById = async (
     });
 };
 
-export const updateTaskById = async (
-    taskId: string,
-    formData: FormData,
-    eventId: string | null,
-): Promise<void> => {
+export const updateTaskById = async (taskId: string, formData: FormData): Promise<void> => {
     // Validate task ID format
     const validatedTaskId = UuidSchema.parse(taskId);
-    // Validate event ID format if provided
-    const validatedEventId = eventId ? UuidSchema.parse(eventId) : null;
     // Revalidate input with zod schema - don't trust the client
     const validatedData = TaskUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -98,13 +92,6 @@ export const updateTaskById = async (
                     reviewer: {
                         connect: {
                             id: reviewerId,
-                        },
-                    },
-                }),
-                ...(validatedEventId && {
-                    event: {
-                        connect: {
-                            id: validatedEventId,
                         },
                     },
                 }),

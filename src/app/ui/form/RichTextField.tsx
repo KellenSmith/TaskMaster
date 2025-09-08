@@ -21,8 +21,6 @@ const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode = false, defa
     const extensions = useExtensions();
     const rteRef = useRef<RichTextEditorRef>(null);
 
-    // TODO: sanitize HTML content
-
     const [content, setContent] = useState(
         defaultValue || (FieldLabels[fieldId][language] as string) || "",
     );

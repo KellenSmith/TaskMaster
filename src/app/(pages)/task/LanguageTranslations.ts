@@ -1,6 +1,10 @@
 import { Language } from "@prisma/client";
 
 const LanguageTranslations = {
+    viewEvent: {
+        [Language.english]: "To event",
+        [Language.swedish]: "Till evenemanget",
+    },
     contactAssignee: {
         [Language.english]: "Contact assignee",
         [Language.swedish]: "Kontakta tilldelad medlem",
