@@ -34,7 +34,6 @@ const YearWheelMarker = ({
             const dy = clientY - cy;
             const angleRad = Math.atan2(dy, dx);
             const angleDeg = (angleRad * (180 / Math.PI) + 360) % 360;
-            console.log(angleDeg);
 
             // Map so top of the circle corresponds to 0° (start of year).
             // atan2() produces 270° for the screen-top direction, so subtract 270°.

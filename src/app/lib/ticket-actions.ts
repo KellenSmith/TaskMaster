@@ -5,7 +5,6 @@ import GlobalConstants from "../GlobalConstants";
 import {
     ProductCreateSchema,
     ProductUpdateSchema,
-    TicketCreateSchema,
     TicketUpdateSchema,
     TicketWithoutRelationsSchema,
     UuidSchema,

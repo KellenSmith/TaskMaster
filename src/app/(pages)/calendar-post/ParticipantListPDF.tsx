@@ -66,22 +66,19 @@ const ParticipantListPDF = ({ event, eventParticipants, language }: ParticipantL
                 <View style={styles.table}>
                     {/* Table Header */}
                     <View style={[styles.tableRow, styles.headerCell]}>
-                        {headers.map((header) => {
-                            console.log(header);
-                            return (
-                                <Text
-                                    key={header}
-                                    wrap={true}
-                                    style={{
-                                        ...styles.tableCell,
-                                        ...styles.headerCell,
-                                        ...styles.columnStyle,
-                                    }}
-                                >
-                                    {(FieldLabels[header][language] as string) || header}
-                                </Text>
-                            );
-                        })}
+                        {headers.map((header) => (
+                            <Text
+                                key={header}
+                                wrap={true}
+                                style={{
+                                    ...styles.tableCell,
+                                    ...styles.headerCell,
+                                    ...styles.columnStyle,
+                                }}
+                            >
+                                {(FieldLabels[header][language] as string) || header}
+                            </Text>
+                        ))}
                     </View>
                     {/* Table Body */}
                     {getParticipantRows()}

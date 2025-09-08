@@ -176,23 +176,15 @@ const Form: FC<FormProps> = ({
     };
 
     const submitForm = async (event: FormEvent<HTMLFormElement>) => {
-        console.log("Form submit called", { action: typeof action, hasAction: !!action });
         event.preventDefault();
 
         // Ensure action is available before proceeding
         if (!action || typeof action !== "function") {
-            console.error("Form action is not available", { action, type: typeof action });
             addNotification("Form action is not available. Please try again.", "error");
             return;
         }
 
-        console.log("Processing form submission...");
         const formData = new FormData(event.currentTarget);
-
-        // Add debug logging for production
-        console.log("Form data entries:", Object.fromEntries(formData.entries()));
-        console.log("Form action type:", typeof action);
-        console.log("Is server action:", action.toString().includes("use server"));
 
         const formDataWithFileUrls = await uploadFiles(formData);
         if (!formDataWithFileUrls) return;
@@ -200,19 +192,11 @@ const Form: FC<FormProps> = ({
         if (!parsedFieldValues) return;
         startTransition(async () => {
             try {
-                console.log("Calling action function...");
-                console.log("Action name:", action.name);
-                console.log("Environment:", process.env.NODE_ENV);
-
                 const submitResult = await action(formDataWithFileUrls);
-                console.log("Action completed successfully", submitResult);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
                 onSuccess?.(); // Call the success callback if provided
             } catch (error) {
-                console.error("Action failed:", error);
-                console.error("Error type:", error.constructor.name);
-                console.error("Error stack:", error.stack);
                 allowRedirectException(error);
                 addNotification(error.message, "error");
             }

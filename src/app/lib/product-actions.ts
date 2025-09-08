@@ -63,7 +63,6 @@ export const updateProduct = async (productId: string, formData: FormData): Prom
     const validatedProductId = UuidSchema.parse(productId);
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ProductUpdateSchema.parse(Object.fromEntries(formData.entries()));
-    console.log(validatedData);
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);

@@ -125,18 +125,12 @@ const DroppableColumn = ({
     };
 
     const createTaskAndCloseDialog = async (formData: FormData): Promise<string> => {
-        console.log("createTaskAndCloseDialog called", {
-            eventId: event?.id,
-            formData: Object.fromEntries(formData.entries()),
-        });
         if (event) formData.append(GlobalConstants.EVENT_ID, event.id);
         try {
             await createTask(formData);
-            console.log("Task created successfully");
             setTaskFormDefaultValues(null);
             return GlobalLanguageTranslations.successfulSave[language];
-        } catch (error) {
-            console.error("Task creation failed:", error);
+        } catch {
             throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
     };

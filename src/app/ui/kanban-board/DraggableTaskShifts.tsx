@@ -79,7 +79,6 @@ const DraggableTaskShifts = ({
         newTaskShift.end_time = dayjs(newTaskShift.start_time)
             .add(organizationSettings.default_task_shift_length, "hour")
             .toDate();
-        console.log(newTaskShift);
         return newTaskShift;
     };
 
