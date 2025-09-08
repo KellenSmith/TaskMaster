@@ -46,14 +46,26 @@ export const filterOptions = {
     for_me_to_review: ({ tasks, userId }: FilterFunctionProps) =>
         tasks?.filter((task) => task.reviewer_id === userId),
     begins_after: ({ tasks, value }: FilterFunctionProps) =>
-        tasks?.filter((task) => dayjs(task.start_time).isAfter(dayjs(value as string), "minute")),
+        tasks?.filter(
+            (task) =>
+                dayjs(task.start_time).isAfter(dayjs(value as string), "minute") ||
+                dayjs(task.start_time).isSame(dayjs(value as string), "minute"),
+        ),
     ends_before: ({ tasks, value }: FilterFunctionProps) =>
-        tasks?.filter((task) => dayjs(task.end_time).isBefore(dayjs(value as string), "minute")),
+        tasks?.filter(
+            (task) =>
+                dayjs(task.end_time).isBefore(dayjs(value as string), "minute") ||
+                dayjs(task.end_time).isSame(dayjs(value as string), "minute"),
+        ),
     has_tag: ({ tasks, value }: FilterFunctionProps) =>
-        tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
+        (value as string[])?.length === 0
+            ? tasks
+            : tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
     [GlobalConstants.STATUS]: ({ tasks, value }) =>
         tasks?.filter((task: Prisma.TaskGetPayload<{}>) =>
-            (value as TaskStatus[]).includes(task.status),
+            (value as string[])?.length === 0
+                ? tasks
+                : (value as TaskStatus[]).includes(task.status),
         ),
 };
 
@@ -64,9 +76,11 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
 ): T[] => {
     if (!appliedFilter) return tasks;
     let filteredTasks = [...tasks];
+    console.log("Applying filter:", appliedFilter, "to tasks:", tasks);
     for (const [key, value] of Object.entries(appliedFilter)) {
         if (value)
             filteredTasks = filterOptions[key]({ tasks: filteredTasks, value, userId }) as T[];
+        console.log(key, "Filtered tasks:", filteredTasks);
     }
     return filteredTasks;
 };
@@ -132,7 +146,9 @@ const KanBanBoardMenu = ({
                     key={fieldId}
                     name={fieldId}
                     label={label}
-                    defaultValue={appliedFilter?.[fieldId] || null}
+                    defaultValue={
+                        appliedFilter?.[fieldId] ? dayjs(appliedFilter[fieldId] as string) : null
+                    }
                     slotProps={{
                         textField: {
                             name: fieldId,

@@ -12,7 +12,7 @@ import {
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
-import { use, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { Add } from "@mui/icons-material";
 import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
 import { Prisma, Task, TaskStatus } from "@prisma/client";
@@ -83,11 +83,16 @@ const DroppableColumn = ({
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
     const skillBadges = use(skillBadgesPromise);
     const tasks = use(tasksPromise);
-    const filteredTasks = getFilteredTasks(
-        appliedFilter,
-        tasks.filter((task) => task.status === status),
-        user.id,
+    const filteredTasks = useMemo(
+        () =>
+            getFilteredTasks(
+                appliedFilter,
+                tasks.filter((task) => task.status === status),
+                user.id,
+            ),
+        [appliedFilter, tasks, status, user.id],
     );
+    console.log(status, "column - filtered tasks:", filteredTasks);
 
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {

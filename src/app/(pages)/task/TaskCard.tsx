@@ -177,7 +177,8 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                         <Stack
                             direction={isSmallScreen ? "column" : "row"}
                             justifyContent="space-between"
-                            alignItems="flex-start"
+                            alignItems="center"
+                            width="100%"
                         >
                             <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
                                 {task.name}
@@ -215,39 +216,12 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     ))}
                                 </Stack>
                             )}
-                            <Stack
-                                direction="row"
-                                spacing={2}
-                                alignItems="center"
-                                justifyContent="space-between"
-                                sx={{ flexWrap: "wrap" }}
-                                width="100%"
-                            >
-                                <Chip
-                                    variant="outlined"
-                                    color={getStatusColor()}
-                                    label={task.status}
-                                    size="small"
-                                />
-                                {task.event_id && (
-                                    <Button
-                                        variant="contained"
-                                        size="small"
-                                        onClick={() =>
-                                            clientRedirect(
-                                                router,
-                                                [GlobalConstants.CALENDAR_POST],
-                                                {
-                                                    [GlobalConstants.EVENT_ID]: task.event_id,
-                                                },
-                                            )
-                                        }
-                                        sx={{ minWidth: 80 }}
-                                    >
-                                        View event
-                                    </Button>
-                                )}
-                            </Stack>
+                            <Chip
+                                variant="outlined"
+                                color={getStatusColor()}
+                                label={task.status}
+                                size="small"
+                            />
                         </Stack>
 
                         <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
@@ -286,23 +260,41 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                 )}
                             </Stack>
                         </Stack>
-                        <Stack
-                            direction={isSmallScreen ? "column" : "row"}
-                            width="100%"
-                            justifyContent="space-between"
-                        >
-                            <Button onClick={() => setMessageRecipientId(task.assignee?.id)}>
+                        <Stack width="100%" justifyContent="space-between">
+                            {task.event_id && (
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    size="small"
+                                    onClick={() =>
+                                        clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
+                                            [GlobalConstants.EVENT_ID]: task.event_id,
+                                        })
+                                    }
+                                    sx={{ minWidth: 80 }}
+                                >
+                                    View event
+                                </Button>
+                            )}
+                            <Button
+                                fullWidth
+                                onClick={() => setMessageRecipientId(task.assignee?.id)}
+                            >
                                 {LanguageTranslations.contactAssignee[language]}
                             </Button>
-                            <Button onClick={() => setMessageRecipientId(task.reviewer?.id)}>
+                            <Button
+                                fullWidth
+                                onClick={() => setMessageRecipientId(task.reviewer?.id)}
+                            >
                                 {LanguageTranslations.contactReviewer[language]}
                             </Button>
                             {task.reviewer_id === user.id && (
                                 <>
-                                    <Button onClick={() => setEditDialogOpen(true)}>
+                                    <Button fullWidth onClick={() => setEditDialogOpen(true)}>
                                         {GlobalLanguageTranslations.edit[language]}
                                     </Button>
                                     <ConfirmButton
+                                        fullWidth
                                         onClick={deleteTaskAction}
                                         color="error"
                                         variant="outlined"

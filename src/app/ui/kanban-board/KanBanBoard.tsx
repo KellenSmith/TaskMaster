@@ -65,12 +65,13 @@ const KanBanBoard = ({
             </Typography>
             <Stack direction="row">
                 <Grid2
+                    key={appliedFilter ? JSON.stringify(appliedFilter) : "all-tasks"}
                     container
                     spacing={2}
                     columns={isSmallScreen ? 1 : appliedFilter?.status?.length || 4}
                     width="100%"
                 >
-                    {(appliedFilter
+                    {(appliedFilter?.status?.length > 0
                         ? (appliedFilter.status as TaskStatus[])
                         : Object.values(TaskStatus)
                     ).map((status) => (

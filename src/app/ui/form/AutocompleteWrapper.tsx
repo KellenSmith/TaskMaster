@@ -104,6 +104,7 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
                 multiple={multiple}
                 selectOnFocus
                 clearOnBlur
+                disableCloseOnSelect={multiple}
                 disabled={!editMode || customReadOnlyFields?.includes(fieldId)}
             />
             {/* Hidden input for form submission */}
