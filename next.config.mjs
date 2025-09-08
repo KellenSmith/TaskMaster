@@ -1,36 +1,36 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-        serverActions: {
-            allowedOrigins: [process.env.VERCEL_PROJECT_PRODUCTION_URL, "localhost:3000"],
-        },
-    },
-    images: {
-        remotePatterns: [
-            // Allow images from Vercel Blob storage
-            ...(process.env.BLOB_HOSTNAME
-                ? [
-                      {
-                          protocol: "https",
-                          hostname: process.env.BLOB_HOSTNAME,
-                          port: "",
-                          pathname: "/**",
-                      },
-                  ]
-                : []),
-            // Fallback: allow all Vercel Blob storage subdomains if no specific hostname is set
-            ...(!process.env.BLOB_HOSTNAME
-                ? [
-                      {
-                          protocol: "https",
-                          hostname: "*.public.blob.vercel-storage.com",
-                          port: "",
-                          pathname: "/**",
-                      },
-                  ]
-                : []),
-        ],
-    },
+    // experimental: {
+    //     serverActions: {
+    //         allowedOrigins: [process.env.VERCEL_PROJECT_PRODUCTION_URL, "localhost:3000"],
+    //     },
+    // },
+    // images: {
+    //     remotePatterns: [
+    //         // Allow images from Vercel Blob storage
+    //         ...(process.env.BLOB_HOSTNAME
+    //             ? [
+    //                   {
+    //                       protocol: "https",
+    //                       hostname: process.env.BLOB_HOSTNAME,
+    //                       port: "",
+    //                       pathname: "/**",
+    //                   },
+    //               ]
+    //             : []),
+    //         // Fallback: allow all Vercel Blob storage subdomains if no specific hostname is set
+    //         ...(!process.env.BLOB_HOSTNAME
+    //             ? [
+    //                   {
+    //                       protocol: "https",
+    //                       hostname: "*.public.blob.vercel-storage.com",
+    //                       port: "",
+    //                       pathname: "/**",
+    //                   },
+    //               ]
+    //             : []),
+    //     ],
+    // },
     // async headers() {
     //     return [
     //         {
