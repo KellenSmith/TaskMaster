@@ -224,7 +224,13 @@ export const getEventParticipants = async (
 
 export const updateEvent = async (eventId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
+
     const validatedData = EventUpdateSchema.parse(Object.fromEntries(formData.entries()));
+    console.log(
+        "Updating event with form data:",
+        Object.fromEntries(formData.entries()),
+        validatedData,
+    );
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
