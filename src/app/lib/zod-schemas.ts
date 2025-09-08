@@ -11,9 +11,7 @@ const stringToISODate = z
     .refine((val) => !val || dayjs(val, "DD/MM/YYYY HH:mm").isValid(), {
         message: "Invalid date",
     })
-    .transform((val) =>
-        val ? dayjs(val, "DD/MM/YYYY HH:mm").toISOString() : "",
-    ) as z.ZodType<string>;
+    .transform((val) => (val ? dayjs(val, "DD/MM/YYYY HH:mm").format() : "")) as z.ZodType<string>;
 
 const priceSchema = z.coerce
     .number()
