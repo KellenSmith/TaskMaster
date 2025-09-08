@@ -5,6 +5,7 @@ export type RouteConfigType = {
     name: string;
     status: UserStatus | null;
     role: UserRole | null;
+    membershipRequired?: boolean;
     children: RouteConfigType[];
 };
 
@@ -41,6 +42,7 @@ export const routeTreeConfig: RouteConfigType = {
             name: GlobalConstants.ORDER,
             status: UserStatus.validated,
             role: UserRole.member,
+            membershipRequired: true,
             children: [],
         },
 
@@ -48,30 +50,35 @@ export const routeTreeConfig: RouteConfigType = {
             name: GlobalConstants.CALENDAR,
             status: UserStatus.validated,
             role: UserRole.member,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.TASKS,
             status: UserStatus.validated,
             role: UserRole.member,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.TASK,
             status: UserStatus.validated,
             role: UserRole.member,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.LOCATIONS,
             status: UserStatus.validated,
             role: UserRole.admin,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.SKILL_BADGES,
             status: UserStatus.validated,
             role: UserRole.admin,
+            membershipRequired: true,
             children: [],
         },
         // {
@@ -84,30 +91,35 @@ export const routeTreeConfig: RouteConfigType = {
             name: GlobalConstants.SENDOUT,
             status: UserStatus.validated,
             role: UserRole.admin,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.MEMBERS,
             status: UserStatus.validated,
             role: UserRole.admin,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.PRODUCTS,
             status: UserStatus.validated,
             role: UserRole.admin,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.ORDERS,
             status: UserStatus.validated,
             role: UserRole.admin,
+            membershipRequired: true,
             children: [],
         },
         {
             name: GlobalConstants.ORGANIZATION_SETTINGS,
             status: UserStatus.validated,
             role: UserRole.admin,
+            membershipRequired: true,
             children: [],
         },
     ],
@@ -157,7 +169,7 @@ export const isUserAuthorized = (
     )
         return false;
     // If route requires auth (role or status) but user has no membership, not authorized
-    if ((routeConfig.role || routeConfig.status) && !loggedInUser?.user_membership) return false;
+    if (routeConfig.membershipRequired && !loggedInUser?.user_membership) return false;
 
     const followingPath = pathSegments.slice(1);
     const followingRouteConfig = routeConfig.children.find(
