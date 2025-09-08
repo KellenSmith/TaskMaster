@@ -21,6 +21,7 @@ export async function getMailTransport() {
         tls: {
             rejectUnauthorized: process.env.NODE_ENV === "production",
         },
+        requireTLS: process.env.SMTP_PORT === "587",
     });
 
     globalMailService.mailTransport = transport;
