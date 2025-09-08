@@ -16,10 +16,10 @@ export const createEventTicket = async (eventId: string, formData: FormData) => 
     // Validate event ID format
     const validatedEventId = UuidSchema.parse(eventId);
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = TicketCreateSchema.parse(Object.fromEntries(formData.entries()));
+    const formDataObject = Object.fromEntries(formData.entries());
 
-    const ticketFieldValues = TicketWithoutRelationsSchema.parse(validatedData);
-    const productFieldValues = ProductCreateSchema.parse(validatedData);
+    const ticketFieldValues = TicketWithoutRelationsSchema.parse(formDataObject);
+    const productFieldValues = ProductCreateSchema.parse(formDataObject);
 
     // Find the number of participants in the event
     const eventParticipantsCount = await prisma.eventParticipant.count({
