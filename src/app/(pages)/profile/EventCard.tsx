@@ -98,7 +98,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                             variant="contained"
                             size="small"
                             onClick={() =>
-                                clientRedirect(router, [GlobalConstants.EVENT], {
+                                clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
                                     event_id: event.id,
                                 })
                             }

@@ -110,7 +110,7 @@ const EventDashboard = ({
     if (!user) return null;
 
     const setOpenTab = (tab: string) =>
-        clientRedirect(router, [GlobalConstants.EVENT], {
+        clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
             [GlobalConstants.EVENT_ID]: event.id,
             tab,
         });

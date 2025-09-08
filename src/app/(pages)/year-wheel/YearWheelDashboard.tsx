@@ -160,7 +160,7 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
                                     sx={{ cursor: "pointer", justifyContent: "flex-end" }}
                                     onClick={() =>
                                         openResourceInNewTab(
-                                            getRelativeUrl([GlobalConstants.EVENT], {
+                                            getRelativeUrl([GlobalConstants.CALENDAR_POST], {
                                                 [GlobalConstants.EVENT_ID]: ev.id,
                                             }),
                                         )

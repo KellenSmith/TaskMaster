@@ -23,7 +23,7 @@ const OpenEventSpotTemplate: FC<IOpenEventSpotTemplateProps> = ({ event }) => {
             <Text>A spot has opened up for the event: {event.title}</Text>
             <Button
                 style={mailTheme.components.button}
-                href={getAbsoluteUrl([GlobalConstants.EVENT], {
+                href={getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
                     [GlobalConstants.EVENT_ID]: event.id,
                     [GlobalConstants.TAB]: "Tickets",
                 })}

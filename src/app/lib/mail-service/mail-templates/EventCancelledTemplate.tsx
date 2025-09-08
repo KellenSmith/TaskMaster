@@ -16,7 +16,7 @@ const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({ event }) => {
         <MailTemplate>
             <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Go to the event for more details.`}</Text>
             <Button
-                href={getAbsoluteUrl([GlobalConstants.EVENT], {
+                href={getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
                     [GlobalConstants.EVENT_ID]: event.id,
                 })}
             >

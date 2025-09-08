@@ -79,7 +79,9 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
     });
 
     revalidateTag(GlobalConstants.EVENT);
-    serverRedirect([GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: createdEvent.id });
+    serverRedirect([GlobalConstants.CALENDAR_POST], {
+        [GlobalConstants.EVENT_ID]: createdEvent.id,
+    });
 };
 
 export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPayload<true>[]> => {
@@ -288,7 +290,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                 [
                     {
                         buttonName: "Go to event",
-                        url: getAbsoluteUrl([GlobalConstants.EVENT], {
+                        url: getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
                             [GlobalConstants.EVENT_ID]: eventId,
                         }),
                     },
@@ -307,7 +309,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                 [
                     {
                         buttonName: "Go to event",
-                        url: getAbsoluteUrl([GlobalConstants.EVENT], {
+                        url: getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
                             [GlobalConstants.EVENT_ID]: eventId,
                         }),
                     },
@@ -505,5 +507,5 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
     });
 
     revalidateTag(GlobalConstants.EVENT);
-    serverRedirect([GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: eventClone.id });
+    serverRedirect([GlobalConstants.CALENDAR_POST], { [GlobalConstants.EVENT_ID]: eventClone.id });
 };

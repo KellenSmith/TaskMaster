@@ -19,7 +19,9 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     const router = useRouter();
 
     const goToEventPage = () =>
-        clientRedirect(router, [GlobalConstants.EVENT], { [GlobalConstants.EVENT_ID]: event.id });
+        clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
+            [GlobalConstants.EVENT_ID]: event.id,
+        });
 
     const getEventColor = () => {
         switch (event.status) {
