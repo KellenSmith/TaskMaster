@@ -28,6 +28,7 @@ import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { LocalPolice, Warning } from "@mui/icons-material";
 import { implementedTabs } from "../profile/LanguageTranslations";
+import { implementedTabs as implementedEventTabs } from "../calendar-post/LanguageTranslations";
 import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
 import RichTextField from "../../ui/form/RichTextField";
@@ -98,9 +99,12 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         try {
             await deleteTask(task.id);
             addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
-            clientRedirect(router, [
-                task.event_id ? GlobalConstants.CALENDAR : GlobalConstants.TASKS,
-            ]);
+            if (task.event_id)
+                clientRedirect(router, [GlobalConstants.EVENT], {
+                    [GlobalConstants.EVENT_ID]: task.event_id,
+                    tab: implementedEventTabs.organize,
+                });
+            else clientRedirect(router, [GlobalConstants.TASKS]);
         } catch {
             addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }

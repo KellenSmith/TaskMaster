@@ -104,7 +104,7 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
         if (!requestBody) throw new Error("Failed to create payment request");
 
         const response = await makeSwedbankApiRequest(
-            `https://api.externalintegration.payex.com/psp/paymentorders`,
+            `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
             requestBody,
         );
         const responseData: PaymentOrderResponse = await response.json();
