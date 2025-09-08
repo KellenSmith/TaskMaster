@@ -10,7 +10,8 @@ import {
     useTheme,
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { createTask, updateTaskById } from "../../lib/task-actions";
+import { updateTaskById } from "../../lib/task-actions";
+import { createTaskFromKanban } from "./kanban-board-actions";
 import Form from "../form/Form";
 import { use, useState, useCallback } from "react";
 import { Add } from "@mui/icons-material";
@@ -124,23 +125,27 @@ const DroppableColumn = ({
         setTaskFormDefaultValues(defaultTask);
     };
 
-    const createNewTask = useCallback(
+    const createTaskAndCloseDialog = useCallback(
         async (formData: FormData): Promise<string> => {
-            console.log("createNewTask called", {
+            console.log("createTaskAndCloseDialog called", {
                 eventId: event?.id,
                 formData: Object.fromEntries(formData.entries()),
             });
             try {
-                await createTask(formData, event ? event.id : null);
+                const result = await createTaskFromKanban(
+                    event ? event.id : null,
+                    language,
+                    formData,
+                );
                 console.log("Task created successfully");
                 setTaskFormDefaultValues(null);
-                return GlobalLanguageTranslations.successfulSave[language];
+                return result;
             } catch (error) {
                 console.error("Task creation failed:", error);
                 throw error;
             }
         },
-        [event, language, setTaskFormDefaultValues],
+        [event?.id, language],
     );
 
     return (
@@ -214,7 +219,7 @@ const DroppableColumn = ({
             >
                 <Form
                     name={GlobalConstants.TASK}
-                    action={createNewTask}
+                    action={createTaskAndCloseDialog}
                     validationSchema={TaskCreateSchema}
                     defaultValues={
                         taskFormDefaultValues
