@@ -53,6 +53,7 @@ interface FormProps {
     customInfoTexts?: { [key: string]: string }; // Include extra information texts for specific fields
     readOnly?: boolean;
     editable?: boolean;
+    onSuccess?: () => void; // Callback to execute on successful form submission
 }
 
 const Form: FC<FormProps> = ({
@@ -68,6 +69,7 @@ const Form: FC<FormProps> = ({
     customInfoTexts = {},
     readOnly = true,
     editable = true,
+    onSuccess,
 }) => {
     const { language } = useUserContext();
     const [validationError, setValidationError] = useState<string | null>(null);
@@ -206,6 +208,7 @@ const Form: FC<FormProps> = ({
                 console.log("Action completed successfully", submitResult);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
+                onSuccess?.(); // Call the success callback if provided
             } catch (error) {
                 console.error("Action failed:", error);
                 console.error("Error type:", error.constructor.name);

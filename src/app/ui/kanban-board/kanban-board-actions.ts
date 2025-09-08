@@ -49,3 +49,29 @@ export async function createTaskFromKanban(
         throw error;
     }
 }
+
+// Create separate server actions to avoid parameter binding issues
+export async function createEventTask(
+    eventId: string,
+    language: string,
+    formData: FormData,
+): Promise<string> {
+    console.log("SERVER ACTION: createEventTask called", {
+        eventId,
+        language,
+        formData: Object.fromEntries(formData.entries()),
+        timestamp: new Date().toISOString(),
+    });
+
+    return createTaskFromKanban(eventId, language, formData);
+}
+
+export async function createStandaloneTask(language: string, formData: FormData): Promise<string> {
+    console.log("SERVER ACTION: createStandaloneTask called", {
+        language,
+        formData: Object.fromEntries(formData.entries()),
+        timestamp: new Date().toISOString(),
+    });
+
+    return createTaskFromKanban(null, language, formData);
+}

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { updateTaskById } from "../../lib/task-actions";
-import { createTaskFromKanban } from "./kanban-board-actions";
+import { createEventTask, createStandaloneTask } from "./kanban-board-actions";
 import Form from "../form/Form";
 import { use, useState } from "react";
 import { Add } from "@mui/icons-material";
@@ -125,54 +125,9 @@ const DroppableColumn = ({
         setTaskFormDefaultValues(defaultTask);
     };
 
-    const createEventTaskAndCloseDialog = async (formData: FormData): Promise<string> => {
-        console.log("createEventTaskAndCloseDialog called", {
-            eventId: event?.id,
-            formData: Object.fromEntries(formData.entries()),
-        });
-
-        try {
-            // Use the dedicated server action instead of calling createTask directly
-            console.log("Calling createTaskFromKanban with eventId:", event.id);
-
-            const result = await createTaskFromKanban(event.id, language, formData);
-            console.log("Task created successfully via server action");
-            setTaskFormDefaultValues(null);
-            return result;
-        } catch (error) {
-            console.error("Task creation failed:", error);
-            console.error("Error details:", {
-                message: error.message,
-                stack: error.stack,
-                name: error.name,
-            });
-            throw error;
-        }
-    };
-
-    const createTaskAndCloseDialog = async (formData: FormData): Promise<string> => {
-        console.log("createTaskAndCloseDialog called", {
-            formData: Object.fromEntries(formData.entries()),
-        });
-
-        try {
-            // Use the dedicated server action instead of calling createTask directly
-            console.log("Calling createTaskFromKanban with eventId:", null);
-
-            const result = await createTaskFromKanban(null, language, formData);
-            console.log("Task created successfully via server action");
-            setTaskFormDefaultValues(null);
-            return result;
-        } catch (error) {
-            console.error("Task creation failed:", error);
-            console.error("Error details:", {
-                message: error.message,
-                stack: error.stack,
-                name: error.name,
-            });
-            throw error;
-        }
-    };
+    // Create bound server actions for cleaner usage
+    const boundCreateEventTask = event ? createEventTask.bind(null, event.id, language) : null;
+    const boundCreateStandaloneTask = createStandaloneTask.bind(null, language);
 
     return (
         <>
@@ -245,8 +200,9 @@ const DroppableColumn = ({
             >
                 <Form
                     name={GlobalConstants.TASK}
-                    action={event ? createEventTaskAndCloseDialog : createTaskAndCloseDialog}
+                    action={event ? boundCreateEventTask : boundCreateStandaloneTask}
                     validationSchema={TaskCreateSchema}
+                    onSuccess={() => setTaskFormDefaultValues(null)}
                     defaultValues={
                         taskFormDefaultValues
                             ? {
