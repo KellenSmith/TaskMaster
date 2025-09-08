@@ -7,9 +7,9 @@ const LanguageTranslations = {
     },
     sendToRecipients: {
         [Language.english]: (recipientCount: number) =>
-            `Send to ${recipientCount} recipients. One batch of 250 emails is processed per day. Your sendout will be queued and processed in ${Math.ceil(recipientCount / 250) - 1} days`,
+            `Send to ${recipientCount} recipients. One batch of 250 emails is processed per day at about 04:00. Your sendout will be queued and processed in ${Math.ceil(recipientCount / 250) - 1} days`,
         [Language.swedish]: (recipientCount: number) =>
-            `Skicka till ${recipientCount} mottagare. En batch med 250 e-postmeddelanden behandlas per dag. Ditt utskick kommer att köas och behandlas på ${Math.ceil(recipientCount / 250) - 1} dagar`,
+            `Skicka till ${recipientCount} mottagare. En batch med 250 e-postmeddelanden behandlas per dag ungefär kl 04:00. Ditt utskick kommer att köas och behandlas på ${Math.ceil(recipientCount / 250) - 1} dagar`,
     },
     send: {
         [Language.english]: "Send",
