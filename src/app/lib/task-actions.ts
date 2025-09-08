@@ -157,9 +157,8 @@ export const updateTaskById = async (
     revalidateTag(GlobalConstants.TASK);
 };
 
-export const createTask = async (formData: FormData, eventId: string | null): Promise<void> => {
+export const createTask = async (formData: FormData): Promise<void> => {
     // Validate event ID format if provided
-    const validatedEventId = eventId ? UuidSchema.parse(eventId) : null;
     // Revalidate input with zod schema - don't trust the client
     const validatedData = TaskCreateSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -170,6 +169,7 @@ export const createTask = async (formData: FormData, eventId: string | null): Pr
         assignee_id: assigneeId,
         reviewer_id: reviewerId,
         skill_badges: skillBadges,
+        event_id: eventId,
         ...taskWithoutUsers
     } = sanitizedData;
 
@@ -191,10 +191,10 @@ export const createTask = async (formData: FormData, eventId: string | null): Pr
                     },
                 },
             }),
-            ...(validatedEventId && {
+            ...(eventId && {
                 event: {
                     connect: {
-                        id: validatedEventId,
+                        id: eventId,
                     },
                 },
             }),

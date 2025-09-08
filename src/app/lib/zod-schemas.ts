@@ -161,9 +161,9 @@ export const TaskCreateSchema = z
 
         skill_badges: selectMultipleSchema,
 
-        event_id: z.string().nullable().optional(),
+        event_id: z.uuid().nullable().optional(),
     })
-    .omit({ id: true, event_id: true });
+    .omit({ id: true });
 
 export const TaskUpdateSchema = TaskCreateSchema.partial();
 
