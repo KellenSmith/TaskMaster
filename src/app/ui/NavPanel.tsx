@@ -178,6 +178,10 @@ const NavPanel = () => {
                         const routesForRole = routeTreeConfig.children.filter(
                             (childRoute) => childRoute.role === role,
                         );
+                        const authorizedRoutes = routesForRole.filter((route) =>
+                            isUserAuthorized(user, [route.name], route),
+                        );
+                        if (authorizedRoutes.length === 0) return null;
                         return (
                             <Stack key={role} spacing={1} sx={{ mb: 2 }}>
                                 {role && (
