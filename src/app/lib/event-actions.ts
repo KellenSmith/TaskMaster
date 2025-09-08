@@ -483,8 +483,9 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
 
         // Copy tasks
         const moveTaskTimeForward = (taskTime: Date) =>
-            dayjs(taskTime)
-                .add(dayjs(validatedData.start_time).diff(dayjs(eventData.start_time)))
+            dayjs
+                .utc(taskTime)
+                .add(dayjs.utc(validatedData.start_time).diff(dayjs.utc(eventData.start_time)))
                 .toISOString();
 
         await tx.task.createMany({

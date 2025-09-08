@@ -64,7 +64,7 @@ const DraggableTaskShifts = ({
     const getLatestEndTime = () =>
         taskList
             .map((task) => task.end_time)
-            .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))
+            .sort((startTime1, startTime2) => dayjs.utc(startTime1).diff(dayjs.utc(startTime2)))
             .at(-1);
 
     const getDefaultValuesForTaskShift = (
@@ -76,7 +76,8 @@ const DraggableTaskShifts = ({
     }> => {
         const newTaskShift = { ...task };
         newTaskShift.start_time = getLatestEndTime();
-        newTaskShift.end_time = dayjs(newTaskShift.start_time)
+        newTaskShift.end_time = dayjs
+            .utc(newTaskShift.start_time)
             .add(organizationSettings.default_task_shift_length, "hour")
             .toDate();
         return newTaskShift;
