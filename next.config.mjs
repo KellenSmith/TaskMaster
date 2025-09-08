@@ -52,23 +52,23 @@ const nextConfig = {
                         key: "X-XSS-Protection",
                         value: "1; mode=block",
                     },
-                    // Content Security Policy
-                    {
-                        key: "Content-Security-Policy",
-                        value: [
-                            "default-src 'self'",
-                            "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Allow inline scripts for Next.js
-                            "style-src 'self' 'unsafe-inline' fonts.googleapis.com", // Allow inline styles and Google Fonts
-                            "font-src 'self' fonts.gstatic.com", // Allow Google Fonts
-                            "img-src 'self' data: blob: https:", // Allow images from self, data URLs, and HTTPS
-                            "connect-src 'self' https:", // Allow connections to self and HTTPS
-                            "form-action 'self'", // Allow form submissions to same origin (required for Next.js Server Actions)
-                            "object-src 'none'", // Disable plugins
-                            "base-uri 'self'", // Restrict base tag
-                            "frame-ancestors 'none'", // Prevent embedding (like X-Frame-Options)
-                            "upgrade-insecure-requests", // Upgrade HTTP to HTTPS
-                        ].join("; "),
-                    },
+                    // TODO: Content Security Policy
+                    // {
+                    //     key: "Content-Security-Policy",
+                    //     value: [
+                    //         "default-src 'self'",
+                    //         "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Allow inline scripts for Next.js
+                    //         "style-src 'self' 'unsafe-inline' fonts.googleapis.com", // Allow inline styles and Google Fonts
+                    //         "font-src 'self' fonts.gstatic.com", // Allow Google Fonts
+                    //         "img-src 'self' data: blob: https:", // Allow images from self, data URLs, and HTTPS
+                    //         "connect-src 'self' https:", // Allow connections to self and HTTPS
+                    //         "form-action 'self'", // Allow form submissions to same origin (required for Next.js Server Actions)
+                    //         "object-src 'none'", // Disable plugins
+                    //         "base-uri 'self'", // Restrict base tag
+                    //         "frame-ancestors 'none'", // Prevent embedding (like X-Frame-Options)
+                    //         "upgrade-insecure-requests", // Upgrade HTTP to HTTPS
+                    //     ].join("; "),
+                    // },
                     // Permissions Policy (formerly Feature Policy)
                     {
                         key: "Permissions-Policy",
