@@ -125,61 +125,55 @@ const DroppableColumn = ({
         setTaskFormDefaultValues(defaultTask);
     };
 
-    const createEventTaskAndCloseDialog = useCallback(
-        async (formData: FormData): Promise<string> => {
-            console.log("createTaskAndCloseDialog called", {
-                eventId: event?.id,
-                formData: Object.fromEntries(formData.entries()),
+    const createEventTaskAndCloseDialog = async (formData: FormData): Promise<string> => {
+        console.log("createTaskAndCloseDialog called", {
+            eventId: event?.id,
+            formData: Object.fromEntries(formData.entries()),
+        });
+
+        try {
+            // Call createTask directly to avoid server action binding issues
+            const eventId = event ? event.id : null;
+            console.log("Calling createTask directly with eventId:", eventId);
+
+            await createTask(formData, event.id);
+            console.log("Task created successfully on client");
+            setTaskFormDefaultValues(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch (error) {
+            console.error("Task creation failed:", error);
+            console.error("Error details:", {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
             });
+            throw error;
+        }
+    };
 
-            try {
-                // Call createTask directly to avoid server action binding issues
-                const eventId = event ? event.id : null;
-                console.log("Calling createTask directly with eventId:", eventId);
+    const createTaskAndCloseDialog = async (formData: FormData): Promise<string> => {
+        console.log("createTaskAndCloseDialog called", {
+            formData: Object.fromEntries(formData.entries()),
+        });
 
-                await createTask(formData, event.id);
-                console.log("Task created successfully on client");
-                setTaskFormDefaultValues(null);
-                return GlobalLanguageTranslations.successfulSave[language];
-            } catch (error) {
-                console.error("Task creation failed:", error);
-                console.error("Error details:", {
-                    message: error.message,
-                    stack: error.stack,
-                    name: error.name,
-                });
-                throw error;
-            }
-        },
-        [event?.id, language],
-    );
+        try {
+            // Call createTask directly to avoid server action binding issues
+            console.log("Calling createTask directly with eventId:", null);
 
-    const createTaskAndCloseDialog = useCallback(
-        async (formData: FormData): Promise<string> => {
-            console.log("createTaskAndCloseDialog called", {
-                formData: Object.fromEntries(formData.entries()),
+            await createTask(formData, null);
+            console.log("Task created successfully on client");
+            setTaskFormDefaultValues(null);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch (error) {
+            console.error("Task creation failed:", error);
+            console.error("Error details:", {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
             });
-
-            try {
-                // Call createTask directly to avoid server action binding issues
-                console.log("Calling createTask directly with eventId:", null);
-
-                await createTask(formData, null);
-                console.log("Task created successfully on client");
-                setTaskFormDefaultValues(null);
-                return GlobalLanguageTranslations.successfulSave[language];
-            } catch (error) {
-                console.error("Task creation failed:", error);
-                console.error("Error details:", {
-                    message: error.message,
-                    stack: error.stack,
-                    name: error.name,
-                });
-                throw error;
-            }
-        },
-        [event?.id, language],
-    );
+            throw error;
+        }
+    };
 
     return (
         <>
