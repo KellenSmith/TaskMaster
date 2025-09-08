@@ -226,7 +226,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
     // Revalidate input with zod schema - don't trust the client
 
     const validatedData = EventUpdateSchema.parse(Object.fromEntries(formData.entries()));
-    console.log(
+    console.warn(
         "Updating event with form data:",
         Object.fromEntries(formData.entries()),
         validatedData,
