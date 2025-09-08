@@ -16,6 +16,16 @@ const LanguageTranslations = {
             [Language.swedish]: "För administratörer",
         },
     },
+    roleLabels: {
+        [UserRole.member]: {
+            [Language.english]: "Members only",
+            [Language.swedish]: "För medlemmar",
+        },
+        [UserRole.admin]: {
+            [Language.english]: "Admins only",
+            [Language.swedish]: "För administratörer",
+        },
+    },
     routeLabel: {
         [GlobalConstants.APPLY]: {
             [Language.english]: "Apply for membership",

@@ -11,6 +11,8 @@ import {
     Divider,
     IconButton,
     SwipeableDrawer,
+    ListSubheader,
+    Stack,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -170,9 +172,25 @@ const NavPanel = () => {
                             {LoginLanguageTranslations.login[language]}
                         </Button>
                     )}
-                    {routeTreeConfig.children.map((route) =>
-                        getRouteNavButton(route, pathToRoutes(pathname)),
-                    )}
+                    {[
+                        ...new Set(routeTreeConfig.children.map((childRoute) => childRoute.role)),
+                    ].map((role) => {
+                        const routesForRole = routeTreeConfig.children.filter(
+                            (childRoute) => childRoute.role === role,
+                        );
+                        return (
+                            <Stack key={role} spacing={1} sx={{ mb: 2 }}>
+                                {role && (
+                                    <ListSubheader>
+                                        {LanguageTranslations.roleLabels[role][language]}
+                                    </ListSubheader>
+                                )}
+                                {routesForRole.map((route) =>
+                                    getRouteNavButton(route, pathToRoutes(pathname)),
+                                )}
+                            </Stack>
+                        );
+                    })}
                     {isUserAdmin(user) && (
                         <Button
                             fullWidth
