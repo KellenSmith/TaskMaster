@@ -9,14 +9,13 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import { createUser, deleteUser, updateUser } from "../../lib/user-actions";
+import { createUser, deleteUser, updateUser, validateUserMembership } from "../../lib/user-actions";
 import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
 import { FieldLabels } from "../../ui/form/FieldCfg";
-import { isMembershipExpired } from "../../lib/definitions";
-import { validateUserMembership } from "../../lib/user-credentials-actions";
-import { Prisma } from "@prisma/client";
+import { isMembershipExpired } from "../../lib/utils";
+import { Prisma, UserStatus } from "@prisma/client";
 import { AddMembershipSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import {
@@ -30,14 +29,12 @@ import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
-import z from "zod";
 import { addUserMembership } from "../../lib/user-membership-actions";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
         Prisma.UserGetPayload<{
             include: {
-                user_credentials: { select: { user_id: true } };
                 user_membership: true;
                 skill_badges: true;
             };
@@ -55,15 +52,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         useState<ImplementedDatagridEntities | null>(null);
 
     const isMembershipPending = (member: ImplementedDatagridEntities) =>
-        !(
-            member as Prisma.UserGetPayload<{
-                include: {
-                    user_credentials: true;
-                    user_membership: true;
-                    skill_badges: true;
-                };
-            }>
-        ).user_credentials;
+        (member as Prisma.UserGetPayload<true>).status === UserStatus.pending;
 
     const validateMembershipAction = async (member: ImplementedDatagridEntities) => {
         try {
@@ -74,9 +63,9 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         }
     };
 
-    const addMembershipAction = async (fieldValues: z.infer<typeof AddMembershipSchema>) => {
+    const addMembershipAction = async (formData: FormData) => {
         try {
-            await addUserMembership(addMembershipDialogOpen!.id, fieldValues.expires_at);
+            await addUserMembership(addMembershipDialogOpen!.id, formData);
             return LanguageTranslations.addedMembership[language];
         } catch {
             throw new Error(LanguageTranslations.failedAddedMembership[language]);
@@ -116,7 +105,6 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             available: (row: ImplementedDatagridEntities) => {
                 const member = row as Prisma.UserGetPayload<{
                     include: {
-                        user_credentials: { select: { user_id: true } };
                         user_membership: true;
                         skill_badges: true;
                     };
@@ -138,7 +126,6 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             isMembershipExpired(
                 member as Prisma.UserGetPayload<{
                     include: {
-                        user_credentials: true;
                         user_membership: true;
                         skill_badges: true;
                     };
@@ -245,7 +232,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         },
     ];
 
-    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.USER_CREDENTIALS];
+    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.EMAIL_VERIFIED];
 
     return (
         <Stack sx={{ height: "100%" }}>

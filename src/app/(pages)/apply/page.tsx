@@ -3,17 +3,13 @@ import GlobalConstants from "../../GlobalConstants";
 import { submitMemberApplication } from "../../lib/user-actions";
 import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
-import z from "zod";
-import { useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { useMemo } from "react";
 import { Stack } from "@mui/material";
-import { clientRedirect } from "../../lib/definitions";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 
 const ApplyPage = () => {
-    const router = useRouter();
     const { language } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const shouldIncludeApplicationPrompt = useMemo(
@@ -21,12 +17,9 @@ const ApplyPage = () => {
         [organizationSettings],
     );
 
-    const submitApplication = async (
-        parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
-    ) => {
+    const submitApplication = async (formData: FormData) => {
         try {
-            await submitMemberApplication(parsedFieldValues);
-            clientRedirect(router, [GlobalConstants.LOGIN]);
+            await submitMemberApplication(formData);
             return LanguageTranslations.applicationSubmitted[language];
         } catch {
             throw new Error(LanguageTranslations.failedApplicationSubmit[language]);

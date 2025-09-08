@@ -5,13 +5,11 @@ import { Prisma, TicketType } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import { createOrder } from "../../lib/order-actions";
 import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { isUserVolunteer } from "./event-utils";
 import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
-import z from "zod";
-import { TicketCreateSchema, TicketUpdateSchema } from "../../lib/zod-schemas";
 import { allowRedirectException } from "../../ui/utils";
 import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
@@ -62,9 +60,9 @@ const TicketShop = ({
         }
     };
 
-    const createTicketAction = async (parsedFieldValues: z.infer<typeof TicketCreateSchema>) => {
+    const createTicketAction = async (formData: FormData) => {
         try {
-            await createEventTicket(event.id, parsedFieldValues);
+            await createEventTicket(event.id, formData);
             setDialogOpen(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -72,9 +70,9 @@ const TicketShop = ({
         }
     };
 
-    const updateTicketAction = async (parsedFieldValues: z.infer<typeof TicketUpdateSchema>) => {
+    const updateTicketAction = async (formData: FormData) => {
         try {
-            await updateEventTicket(editingTicketId, parsedFieldValues);
+            await updateEventTicket(editingTicketId, formData);
             setDialogOpen(false);
             setEditingTicketId(null);
             return GlobalLanguageTranslations.successfulSave[language];

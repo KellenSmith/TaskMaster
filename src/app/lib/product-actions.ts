@@ -7,13 +7,14 @@ import {
     MembershipWithoutProductSchema,
     ProductCreateSchema,
     ProductUpdateSchema,
+    UuidSchema,
 } from "./zod-schemas";
 import { renewUserMembership } from "./user-membership-actions";
-import z from "zod";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { addEventParticipantWithTx } from "./event-participant-actions";
 import { deleteOldBlob } from "./organization-settings-actions";
+import { sanitizeFormData } from "./html-sanitizer";
 
 export const getAllNonTicketProducts = async (): Promise<Product[]> => {
     return await prisma.product.findMany({
@@ -23,20 +24,28 @@ export const getAllNonTicketProducts = async (): Promise<Product[]> => {
     });
 };
 
-export const createProduct = async (
-    parsedFieldValues: z.infer<typeof ProductCreateSchema>,
-): Promise<void> => {
+export const createProduct = async (formData: FormData): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = ProductCreateSchema.parse(Object.fromEntries(formData.entries()));
+
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
     await prisma.product.create({
-        data: parsedFieldValues,
+        data: sanitizedData,
     });
     revalidateTag(GlobalConstants.PRODUCT);
 };
 
-export const createMembershipProduct = async (
-    parsedFieldValues: z.infer<typeof MembershipCreateSchema>,
-): Promise<void> => {
-    const membershipValues = MembershipWithoutProductSchema.parse(parsedFieldValues);
-    const productValues = ProductCreateSchema.parse(parsedFieldValues);
+export const createMembershipProduct = async (formData: FormData): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = MembershipCreateSchema.parse(Object.fromEntries(formData.entries()));
+
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
+    const membershipValues = MembershipWithoutProductSchema.parse(sanitizedData);
+    const productValues = ProductCreateSchema.parse(sanitizedData);
     await prisma.membership.create({
         data: {
             ...membershipValues,
@@ -49,23 +58,32 @@ export const createMembershipProduct = async (
     revalidateTag(GlobalConstants.MEMBERSHIP);
 };
 
-export const updateProduct = async (
-    productId: string,
-    parsedFieldValues: z.infer<typeof ProductUpdateSchema>,
-): Promise<void> => {
-    const oldProduct = await prisma.product.findUnique({ where: { id: productId } });
+export const updateProduct = async (productId: string, formData: FormData): Promise<void> => {
+    // Validate product ID format
+    const validatedProductId = UuidSchema.parse(productId);
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = ProductUpdateSchema.parse(Object.fromEntries(formData.entries()));
+    console.log(validatedData);
+
+    // Sanitize rich text fields before saving to database
+    const sanitizedData = sanitizeFormData(validatedData);
+
+    const oldProduct = await prisma.product.findUnique({ where: { id: validatedProductId } });
 
     await prisma.product.update({
-        where: { id: productId },
-        data: parsedFieldValues,
+        where: { id: validatedProductId },
+        data: sanitizedData,
     });
-    await deleteOldBlob(oldProduct.image_url, parsedFieldValues.image_url);
+    await deleteOldBlob(oldProduct.image_url, sanitizedData.image_url);
     revalidateTag(GlobalConstants.PRODUCT);
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
+    // Validate product ID format
+    const validatedProductId = UuidSchema.parse(productId);
+
     const deletedProduct = await prisma.product.delete({
-        where: { id: productId },
+        where: { id: validatedProductId },
         include: { membership: true, ticket: true },
     });
     await deleteOldBlob(deletedProduct.image_url);

@@ -1,338 +1,337 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider  = "postgresql"
-    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
 }
 
 model OrganizationSettings {
-    id                 String  @id @default(uuid())
-    organization_name  String  @default("Task Master")
-    organization_email String  @default("kellensmith407@gmail.com")
-    logo_url           String?
+  id                                   String  @id @default(uuid())
+  organization_name                    String  @default("Task Master")
+  organization_email                   String  @default("kellensmith407@gmail.com")
+  logo_url                             String?
+  remind_membership_expires_in_days    Int     @default(7)
+  purge_members_after_days_unvalidated Int     @default(180)
+  default_task_shift_length            Int     @default(2)
+  member_application_prompt            String?
+  ticket_instructions                  String?
+  event_manager_email                  String?
 
-    remind_membership_expires_in_days    Int @default(7)
-    purge_members_after_days_unvalidated Int @default(180)
-
-    default_task_shift_length Int @default(2)
-
-    member_application_prompt String?
-    //TODO: configure fields for ticket instructions
-    ticket_instructions       String?
-
-    event_manager_email String? // If given, events must be approved by a manager before publishing
-
-    @@map("organization_settings")
+  @@map("organization_settings")
 }
 
 model TextContent {
-    id           String            @id @default(uuid())
-    category     String?           @default("organization") // ui, email, help, etc.
-    translations TextTranslation[]
+  id           String            @id @default(uuid())
+  category     String?           @default("organization")
+  translations TextTranslation[]
 
-    @@map("text_contents")
-}
-
-enum Language {
-    swedish
-    english
+  @@map("text_contents")
 }
 
 model TextTranslation {
-    id              String      @id @default(uuid())
-    text            String
-    language        Language
-    text_content_id String
-    text_content    TextContent @relation(fields: [text_content_id], references: [id], onDelete: Cascade)
+  id              String      @id @default(uuid())
+  text            String
+  language        Language
+  text_content_id String
+  text_content    TextContent @relation(fields: [text_content_id], references: [id], onDelete: Cascade)
 
-    @@unique([language, text_content_id])
-    @@map("text_translations")
-}
-
-enum UserRole {
-    member
-    admin
+  @@unique([language, text_content_id])
+  @@map("text_translations")
 }
 
 model User {
-    id                     String   @id @default(uuid())
-    email                  String   @unique
-    nickname               String   @unique @default(uuid())
-    role                   UserRole @default(member)
-    consent_to_newsletters Boolean  @default(false)
+  id                     String             @id @default(uuid())
+  // Auth
+  status                 UserStatus         @default(pending)
+  role                   UserRole           @default(member)
+  email                  String             @unique
+  emailVerified          DateTime?
+  user_membership        UserMembership?
+  accounts               Account[]
+  sessions               Session[]
+  // Profile
+  nickname               String             @unique @default(uuid())
+  first_name             String?
+  sur_name               String?
+  pronoun                String?            @default("they/them")
+  phone                  String?
+  consent_to_newsletters Boolean            @default(false)
+  created_at             DateTime           @default(now())
+  // Events
+  participant_events     EventParticipant[]
+  reserve_events         EventReserve[]
+  hosting_events         Event[]
+  assigned_tasks         Task[]             @relation("assignee")
+  reviewer_tasks         Task[]             @relation("reviewer")
+  skill_badges           UserSkillBadge[]
 
-    first_name String?
-    sur_name   String?
-    pronoun    String?  @default("they/them")
-    phone      String?
-    created_at DateTime @default(now())
+  orders Order[]
 
-    user_credentials UserCredentials?
-    user_membership  UserMembership?
-
-    hosting_events     Event[]
-    participant_events EventParticipant[]
-    reserve_events     EventReserve[]
-
-    assigned_tasks Task[]           @relation("assignee")
-    reviewer_tasks Task[]           @relation("reviewer")
-    skill_badges   UserSkillBadge[]
-
-    orders Order[]
-
-    @@map("users") // Map to table named "users"
-}
-
-// No users can log in without credentials.
-// Admins can validate membership to create credentials for user.
-model UserCredentials {
-    salt            String
-    hashed_password String
-
-    user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    user_id String @id
-
-    @@map("user_credentials")
+  @@map("users")
 }
 
 model Location {
-    id                 String  @id @default(uuid())
-    name               String
-    contact_person     String?
-    rental_cost        Float   @default(0)
-    address            String
-    capacity           Int
-    accessibility_info String?
-    description        String?
-    events             Event[]
+  id                 String  @id @default(uuid())
+  name               String
+  contact_person     String?
+  rental_cost        Float   @default(0)
+  address            String
+  capacity           Int
+  accessibility_info String?
+  description        String?
+  events             Event[]
 
-    @@map("locations")
-}
-
-enum EventStatus {
-    draft
-    pending_approval
-    published
-    cancelled
+  @@map("locations")
 }
 
 model Event {
-    id               String      @id @default(uuid())
-    title            String      @default("")
-    location_id      String?
-    location         Location?   @relation(fields: [location_id], references: [id])
-    start_time       DateTime
-    end_time         DateTime
-    description      String?
-    max_participants Int
-    status           EventStatus @default(draft)
-    tags             String[]    @default([])
+  id               String         @id @default(uuid())
+  title            String         @default("")
+  location_id      String?
+  start_time       DateTime
+  end_time         DateTime
+  description      String?
+  max_participants Int
+  status           EventStatus    @default(draft)
+  tags             String[]       @default([])
+  host_id          String?
+  event_reserves   EventReserve[]
+  host             User?          @relation(fields: [host_id], references: [id])
+  location         Location?      @relation(fields: [location_id], references: [id])
+  tasks            Task[]
+  tickets          Ticket[]
 
-    // Must be optional to enable deleting users
-    host    User?   @relation(fields: [host_id], references: [id])
-    host_id String?
-
-    event_reserves EventReserve[]
-    tasks          Task[]
-    tickets        Ticket[]
-
-    @@map("events")
+  @@map("events")
 }
 
-// Many-to-many relation btw users and events
-// Each user can participate in multiple events
-// Each event can have multiple participants
 model EventParticipant {
-    user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    user_id   String
-    ticket    Ticket @relation(fields: [ticket_id], references: [product_id])
-    ticket_id String // All participants must have a ticket
+  user_id   String
+  ticket_id String
+  ticket    Ticket @relation(fields: [ticket_id], references: [product_id])
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-    // This combination is unique. A user can only have one ticket per event
-    @@id([user_id, ticket_id])
-    @@map("event_participants")
+  @@id([user_id, ticket_id])
+  @@map("event_participants")
 }
 
-// Many-to-many relation btw users and events
-// Each user can be on reserveList in multiple events
-// Each event can have multiple reserve users
 model EventReserve {
-    user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    user_id        String
-    event          Event    @relation(fields: [event_id], references: [id], onDelete: Cascade)
-    event_id       String
-    queueing_since DateTime @default(now())
+  user_id        String
+  event_id       String
+  queueing_since DateTime @default(now())
+  event          Event    @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-    @@id([user_id, event_id])
-    @@map("event_reserves")
-}
-
-/**
- * TODO: Implement handling:
- * Make a task card to show essentials when readonly
- * Handle task assignment separately from the task edit form
- * A rando can assign themself, eventhost or admin can assign others
- * When a task is assigned, move to inprogress.
- */
-enum TaskStatus {
-    toDo
-    inProgress
-    inReview
-    done
+  @@id([user_id, event_id])
+  @@map("event_reserves")
 }
 
 model Task {
-    id          String     @id @default(uuid())
-    name        String
-    status      TaskStatus @default(toDo)
-    start_time  DateTime?
-    end_time    DateTime
-    description String?
-    tags        String[]   @default([])
+  id           String           @id @default(uuid())
+  name         String
+  status       TaskStatus       @default(toDo)
+  start_time   DateTime?
+  end_time     DateTime
+  description  String?
+  tags         String[]         @default([])
+  assignee_id  String?
+  reviewer_id  String?
+  event_id     String?
+  skill_badges TaskSkillBadge[]
+  assignee     User?            @relation("assignee", fields: [assignee_id], references: [id])
+  event        Event?           @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  reviewer     User?            @relation("reviewer", fields: [reviewer_id], references: [id])
 
-    assignee    User?   @relation("assignee", fields: [assignee_id], references: [id])
-    assignee_id String?
-    reviewer    User?   @relation("reviewer", fields: [reviewer_id], references: [id])
-    reviewer_id String?
-
-    event    Event?  @relation(fields: [event_id], references: [id], onDelete: Cascade)
-    event_id String?
-
-    skill_badges TaskSkillBadge[]
-
-    @@map("tasks")
+  @@map("tasks")
 }
 
 model SkillBadge {
-    id                String           @id @default(uuid())
-    name              String
-    description       String?
-    image_url         String?
-    user_skill_badges UserSkillBadge[]
-    task_skill_badges TaskSkillBadge[]
+  id                String           @id @default(uuid())
+  name              String
+  description       String?
+  image_url         String?
+  task_skill_badges TaskSkillBadge[]
+  user_skill_badges UserSkillBadge[]
 
-    @@map("skill_badges")
+  @@map("skill_badges")
 }
 
 model UserSkillBadge {
-    user           User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    user_id        String
-    skill_badge    SkillBadge @relation(fields: [skill_badge_id], references: [id], onDelete: Cascade)
-    skill_badge_id String
+  user_id        String
+  skill_badge_id String
+  skill_badge    SkillBadge @relation(fields: [skill_badge_id], references: [id], onDelete: Cascade)
+  user           User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-    @@id([user_id, skill_badge_id])
-    @@map("user_skill_badges")
+  @@id([user_id, skill_badge_id])
+  @@map("user_skill_badges")
 }
 
 model TaskSkillBadge {
-    task           Task       @relation(fields: [task_id], references: [id], onDelete: Cascade)
-    task_id        String
-    skill_badge    SkillBadge @relation(fields: [skill_badge_id], references: [id], onDelete: Cascade)
-    skill_badge_id String
+  task_id        String
+  skill_badge_id String
+  skill_badge    SkillBadge @relation(fields: [skill_badge_id], references: [id], onDelete: Cascade)
+  task           Task       @relation(fields: [task_id], references: [id], onDelete: Cascade)
 
-    @@id([task_id, skill_badge_id])
-    @@map("task_skill_badges")
+  @@id([task_id, skill_badge_id])
+  @@map("task_skill_badges")
 }
 
 model Product {
-    id              String  @id @default(uuid())
-    name            String
-    description     String?
-    price           Float   @default(0)
-    stock           Int?
-    unlimited_stock Boolean @default(false)
-    image_url       String?
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  price           Float       @default(0)
+  stock           Int?
+  unlimited_stock Boolean     @default(false)
+  image_url       String?
+  membership      Membership?
+  order_items     OrderItem[]
+  ticket          Ticket?
 
-    membership Membership?
-    ticket     Ticket?
-
-    order_items OrderItem[]
-
-    @@map("products")
+  @@map("products")
 }
 
 model Membership {
-    product_id String  @id
-    product    Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
-    duration   Int     @default(365) // in days
+  product_id String           @id
+  duration   Int              @default(365)
+  product    Product          @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  users      UserMembership[]
 
-    users UserMembership[]
-
-    @@map("memberships")
+  @@map("memberships")
 }
 
 model UserMembership {
-    user          User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    user_id       String     @unique // One membership per user
-    membership    Membership @relation(fields: [membership_id], references: [product_id], onDelete: Cascade)
-    membership_id String
+  user_id       String     @unique
+  membership_id String
+  expires_at    DateTime
+  membership    Membership @relation(fields: [membership_id], references: [product_id], onDelete: Cascade)
+  user          User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-    expires_at DateTime
-
-    @@id([user_id, membership_id])
-    @@map("user_memberships")
-}
-
-// Order of ticket types determines order of appearance in the ticket shop
-enum TicketType {
-    volunteer
-    standard
+  @@id([user_id, membership_id])
+  @@map("user_memberships")
 }
 
 model Ticket {
-    product_id String     @id
-    product    Product    @relation(fields: [product_id], references: [id], onDelete: Cascade)
-    type       TicketType @default(standard)
+  product_id         String             @id
+  type               TicketType         @default(standard)
+  event_id           String
+  event_participants EventParticipant[]
+  event              Event              @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  product            Product            @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
-    event              Event              @relation(fields: [event_id], references: [id], onDelete: Cascade)
-    event_id           String
-    event_participants EventParticipant[]
-
-    @@map("tickets")
-}
-
-// Defined in order of progression. Transitions backwards are never allowed
-enum OrderStatus {
-    pending
-    paid
-    shipped
-    completed
-    cancelled
-    error
+  @@map("tickets")
 }
 
 model Order {
-    id                 String      @id @default(uuid())
-    status             OrderStatus @default(pending)
-    total_amount       Float       @default(0.0) // Total amount in the smallest currency unit (e.g., öre)
-    payment_request_id String?     @unique
-    payee_ref          String?     @unique // Reference to the payment provider's transaction
+  id                 String      @id @default(uuid())
+  status             OrderStatus @default(pending)
+  total_amount       Float       @default(0.0)
+  payment_request_id String?     @unique
+  payee_ref          String?     @unique
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @updatedAt
+  user_id            String?
+  order_items        OrderItem[]
+  user               User?       @relation(fields: [user_id], references: [id])
 
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
-
-    // Must be optional to enable deleting users
-    user    User?   @relation(fields: [user_id], references: [id])
-    user_id String?
-
-    order_items OrderItem[]
-
-    @@map("orders")
+  @@map("orders")
 }
 
 model OrderItem {
-    quantity Int   @default(1)
-    price    Float @default(0)
+  quantity   Int     @default(1)
+  price      Float   @default(0)
+  order_id   String
+  product_id String
+  order      Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [product_id], references: [id])
 
-    order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
-    order_id String
+  @@id([order_id, product_id])
+  @@map("order_items")
+}
 
-    product    Product @relation(fields: [product_id], references: [id])
-    product_id String
+model VerificationToken {
+  identifier String
+  expires    DateTime
+  token      String
 
-    @@id([order_id, product_id])
-    @@map("order_items")
+  @@id([identifier, token])
+  @@map("verification_token")
+}
+
+model Account {
+  id                Int     @id @default(autoincrement())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        BigInt?
+  id_token          String?
+  scope             String?
+  session_state     String?
+  token_type        String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  userId       String
+  expires      DateTime
+  sessionToken String   @map("sessionToken")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum Language {
+  swedish
+  english
+}
+
+enum UserRole {
+  member
+  admin
+}
+
+enum UserStatus {
+  pending
+  validated
+}
+
+enum EventStatus {
+  draft
+  pending_approval
+  published
+  cancelled
+}
+
+/// *
+///  * TODO: Implement handling:
+///  * Make a task card to show essentials when readonly
+///  * Handle task assignment separately from the task edit form
+///  * A rando can assign themself, eventhost or admin can assign others
+///  * When a task is assigned, move to inprogress.
+enum TaskStatus {
+  toDo
+  inProgress
+  inReview
+  done
+}
+
+enum TicketType {
+  volunteer
+  standard
+}
+
+enum OrderStatus {
+  pending
+  paid
+  shipped
+  completed
+  cancelled
+  error
 }

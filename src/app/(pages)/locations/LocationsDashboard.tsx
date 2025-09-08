@@ -8,7 +8,6 @@ import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { LocationCreateSchema } from "../../lib/zod-schemas";
 import { createLocation, deleteLocation, updateLocation } from "../../lib/location-actions";
-import z from "zod";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { RenderedFields } from "../../ui/form/FieldCfg";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
@@ -29,11 +28,9 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
     const [createNew, setCreateNew] = useState(false);
     const [isPending, startTransition] = useTransition();
 
-    const createLocationAction = async (
-        parsedFieldValues: z.infer<typeof LocationCreateSchema>,
-    ) => {
+    const createLocationAction = async (formData: FormData) => {
         try {
-            await createLocation(parsedFieldValues);
+            await createLocation(formData);
             setCreateNew(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -41,11 +38,9 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
         }
     };
 
-    const updateLocationAction = async (
-        parsedFieldValues: z.infer<typeof LocationCreateSchema>,
-    ) => {
+    const updateLocationAction = async (formData: FormData) => {
         try {
-            await updateLocation(editLocationId, parsedFieldValues);
+            await updateLocation(editLocationId, formData);
             setEditLocationId(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {

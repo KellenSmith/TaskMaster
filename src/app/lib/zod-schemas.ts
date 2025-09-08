@@ -12,8 +12,6 @@ const stringToISODate = z
         val ? dayjs(val, "DD/MM/YYYY HH:mm").toISOString() : "",
     ) as z.ZodType<string>;
 
-const passwordSchema = z.string().min(6).max(100);
-
 const priceSchema = z.coerce
     .number()
     .nonnegative()
@@ -25,6 +23,9 @@ const selectMultipleSchema = z
     .optional();
 
 const switchButtonSchema = z.string().transform((val) => (val === "on" ? true : false));
+
+// UUID validation schema for ID parameters
+const uuidSchema = z.string().uuid();
 
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums
@@ -62,7 +63,7 @@ export const OrganizationSettingsUpdateSchema = z
 
 export const UserCreateSchema = z.object({
     id: z.string().optional(),
-    email: z.email(),
+    email: z.email().toLowerCase(),
     nickname: z.string().optional(),
     role: UserRoleSchema.optional(),
     consent_to_newsletters: z.coerce.boolean().optional(),
@@ -76,12 +77,6 @@ export const UserCreateSchema = z.object({
 });
 
 export const UserUpdateSchema = UserCreateSchema.partial();
-
-// =============================================================================
-// USER CREDENTIALS SCHEMAS
-// =============================================================================
-
-// UserCredentials are never created from forms and thus don't need validation
 
 // =============================================================================
 // LOCATION SCHEMAS
@@ -280,21 +275,10 @@ export const MembershipApplicationSchema = UserCreateSchema.extend({
 });
 
 export const LoginSchema = z.object({
-    email: z.email(),
-    password: z.string(),
-});
-
-export const ResetCredentialsSchema = z.object({
-    email: z.email(),
+    email: z.email().toLowerCase(),
 });
 
 export const UpdateTextContentSchema = z.object({ text: z.string() });
-
-export const UpdateCredentialsSchema = z.object({
-    currentPassword: passwordSchema,
-    newPassword: passwordSchema,
-    repeatPassword: passwordSchema,
-});
 
 export const EmailSendoutSchema = z.object({
     subject: z.string(),
@@ -333,3 +317,6 @@ export const AddMembershipSchema = z.object({
 export const ContactMemberSchema = z.object({
     content: z.string().min(2).max(1000),
 });
+
+// Export UUID schema for ID validation
+export const UuidSchema = uuidSchema;

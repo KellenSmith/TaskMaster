@@ -7,7 +7,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../../ui/utils";
 import { useRouter } from "next/navigation";
 import { EventStatus, Prisma } from "@prisma/client";
-import { clientRedirect } from "../../lib/definitions";
+import { clientRedirect } from "../../lib/utils";
 
 export interface CalendarEventProps {
     event: Prisma.EventGetPayload<true>;
@@ -37,7 +37,7 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     };
 
     // TODO: mark green if participating
-    const uniqueTags = Array.from(new Set(event.tags || []));
+    const uniqueTags = [...new Set(event.tags || [])];
 
     // Detect small screen (used only for tag sizing and tooltip behavior)
     const isSmallScreen = /Mobi|Android|iPhone|iPad|iPod/.test(

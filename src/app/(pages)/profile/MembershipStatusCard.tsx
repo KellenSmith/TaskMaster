@@ -1,11 +1,12 @@
 "use client";
 import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
-import { isMembershipExpired } from "../../lib/definitions";
+import { isMembershipExpired } from "../../lib/utils";
 import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import { formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
+import { UserStatus } from "@prisma/client";
 
 const MembershipStatusCard = () => {
     const theme = useTheme();
@@ -24,7 +25,14 @@ const MembershipStatusCard = () => {
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {LanguageTranslations.membership[language]}
                         </Typography>
-                        {isMembershipExpired(user) ? (
+                        {user.status === UserStatus.pending ? (
+                            <Chip
+                                icon={<Warning />}
+                                label={LanguageTranslations.pending[language]}
+                                color="error"
+                                size="small"
+                            />
+                        ) : isMembershipExpired(user) ? (
                             <Chip
                                 icon={<Warning />}
                                 label={LanguageTranslations.expired[language]}
@@ -44,7 +52,27 @@ const MembershipStatusCard = () => {
                     <Divider />
 
                     {/* Membership Info */}
-                    {isMembershipExpired(user) ? (
+                    {user.status === UserStatus.pending ? (
+                        <Stack
+                            sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: theme.palette.error.light + "20",
+                                border: `1px solid ${theme.palette.error.light}`,
+                            }}
+                        >
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    color: theme.palette.error.main,
+                                    fontWeight: 500,
+                                    textAlign: "center",
+                                }}
+                            >
+                                {LanguageTranslations.membershipPendingPrompt[language]}
+                            </Typography>
+                        </Stack>
+                    ) : isMembershipExpired(user) ? (
                         <Stack
                             sx={{
                                 p: 2,

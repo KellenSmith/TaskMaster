@@ -10,18 +10,12 @@ const LanguageTranslations = {
         [Language.english]: "Logout",
     },
     loggingIn: {
-        [Language.swedish]: "Loggade in. Omdirigerar...",
-        [Language.english]: "Logged in. Redirecting...",
+        [Language.swedish]: "En inloggningslänk skickas till din e-post inom kort",
+        [Language.english]: "A sign-in link will be sent to your email shortly",
     },
     failedLogin: {
-        [Language.swedish]:
-            "Inloggning misslyckades. Om du har ansökt om medlemskap behöver du vänta på godkännande.",
-        [Language.english]:
-            "Login failed. If you have applied for membership, you need to wait for approval.",
-    },
-    resetPassword: {
-        [Language.swedish]: "Återställ lösenord",
-        [Language.english]: "Reset Password",
+        [Language.swedish]: "Ansök om medlemskap",
+        [Language.english]: "Apply for membership",
     },
     applyForMembership: {
         [Language.swedish]: "Ansök om medlemskap",

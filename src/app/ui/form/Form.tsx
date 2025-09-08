@@ -21,14 +21,12 @@ import {
     datePickerFields,
     richTextFields,
     checkboxFields,
-    passwordFields,
     priceFields,
     multiLineTextFields,
     explanatoryTexts,
     fileUploadFields,
 } from "./FieldCfg";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import GlobalConstants from "../../GlobalConstants";
 import { Cancel, Edit } from "@mui/icons-material";
 import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
@@ -89,9 +87,47 @@ const Form: FC<FormProps> = ({
     );
 
     const uploadFileAndGetUrl = async (file: File): Promise<string> => {
-        const newBlob = await upload(`${name}/${file.name}`, file, {
+        // ✅ SECURITY: Client-side file validation
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+        // Validate file size
+        if (file.size > maxSize) {
+            throw new Error(
+                `File size too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB`,
+            );
+        }
+
+        // Validate file type
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error(`File type not allowed. Allowed types: ${allowedTypes.join(", ")}`);
+        }
+
+        // Validate file extension
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+        const extension = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
+        if (!extension || !allowedExtensions.includes(extension)) {
+            throw new Error(
+                `File extension not allowed. Allowed extensions: ${allowedExtensions.join(", ")}`,
+            );
+        }
+
+        // Sanitize filename
+        const sanitizedName = file.name
+            .replace(/[/\\]/g, "")
+            // eslint-disable-next-line no-control-regex
+            .replace(/[\x00-\x1f\x80-\x9f]/g, "")
+            .replace(/[<>:"|?*]/g, "")
+            .substring(0, 100);
+
+        const newBlob = await upload(`${name}/${sanitizedName}`, file, {
             access: "public",
             handleUploadUrl: "/api/file-upload",
+            clientPayload: JSON.stringify({
+                type: file.type,
+                name: file.name,
+                size: file.size,
+            }),
         });
         return newBlob.url;
     };
@@ -138,7 +174,6 @@ const Form: FC<FormProps> = ({
         }
     };
 
-    // TODO: Implement translations for notification messages
     const submitForm = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
@@ -148,7 +183,7 @@ const Form: FC<FormProps> = ({
         if (!parsedFieldValues) return;
         startTransition(async () => {
             try {
-                const submitResult = await action(parsedFieldValues);
+                const submitResult = await action(formDataWithFileUrls);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
             } catch (error) {
@@ -252,9 +287,6 @@ const Form: FC<FormProps> = ({
                 name={fieldId}
                 defaultValue={getDefaultValue(fieldId)}
                 required={requiredFields.includes(fieldId)}
-                {...(passwordFields.includes(fieldId) && {
-                    type: GlobalConstants.PASSWORD,
-                })}
                 multiline={multiLineTextFields.includes(fieldId)}
             />
         );
@@ -265,6 +297,7 @@ const Form: FC<FormProps> = ({
         if (!infoText) return null;
         return (
             <Stack key={getFieldCompKey(fieldId) + "-infotext"}>
+                <Divider />
                 <Card sx={{ py: 1 }}>
                     {infoText.split("\n").map((line, index) => (
                         <Typography key={index} variant="subtitle2" color="primary">
@@ -272,7 +305,6 @@ const Form: FC<FormProps> = ({
                         </Typography>
                     ))}
                 </Card>
-                <Divider />
             </Stack>
         );
     };
@@ -293,8 +325,8 @@ const Form: FC<FormProps> = ({
                 <Stack spacing={2}>
                     {renderedFields.map((fieldId) => (
                         <Stack key={fieldId}>
-                            {getFieldComp(fieldId)}
                             {getInfoTextComp(fieldId)}
+                            {getFieldComp(fieldId)}
                         </Stack>
                     ))}
                     {validationError && <Typography color="error">{validationError}</Typography>}

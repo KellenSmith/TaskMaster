@@ -20,15 +20,9 @@ const testdata = {
             user_id: "test-user-id",
             expires_at: dayjs().add(1, "year").toDate(),
         },
-        user_credentials: {
-            id: "test-user-credentials-id",
-            user_id: "test-user-id",
-            salt: "test-password-salt",
-            hashed_password: "test-hashed-password",
-        },
         skill_badges: [],
-    } as Prisma.UserGetPayload<{
-        include: { user_membership: true; user_credentials: true; skill_badges: true };
+    } as unknown as Prisma.UserGetPayload<{
+        include: { user_membership: true; skill_badges: true };
     }>,
 
     createUser: {
@@ -39,13 +33,6 @@ const testdata = {
         email: "john.doe@example.com",
         phone: "+1-555-123-4567",
         consentToNewsletters: true,
-    },
-
-    userCredentials: {
-        id: "cred-1234-5678",
-        email: "john.doe@example.com",
-        salt: "randomsalt123",
-        hashedPassword: "hashedpassword456",
     },
 
     event: {

@@ -46,7 +46,7 @@ const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
                 </div>
             ))}
             <Text style={{ fontWeight: "bold", marginTop: "20px" }}>
-                Total: ${formatPrice(totalAmount)} SEK
+                Total: {formatPrice(totalAmount)} SEK
             </Text>
             <Text style={{ marginTop: "20px" }}>Thank you for your purchase!</Text>
         </MailTemplate>

@@ -33,8 +33,8 @@ export const organizationSettingsFieldLabels = {
         [Language.swedish]: "Rensa medlemmar efter tid utan validerat medlemskap [dagar]",
     },
     [GlobalConstants.MEMBER_APPLICATION_PROMPT]: {
-        [Language.english]: "Send us a message",
-        [Language.swedish]: "Skicka oss ett meddelande",
+        [Language.english]: "Motivation",
+        [Language.swedish]: "Motivering",
     },
     [GlobalConstants.EVENT_MANAGER_EMAIL]: {
         [Language.english]: "Event Manager Email",
@@ -79,10 +79,6 @@ export const userFieldLabels = {
         [Language.english]: "Email",
         [Language.swedish]: "E-post",
     },
-    [GlobalConstants.PASSWORD]: {
-        [Language.english]: "Password",
-        [Language.swedish]: "Lösenord",
-    },
     [GlobalConstants.PHONE]: {
         [Language.english]: "Phone",
         [Language.swedish]: "Telefon",
@@ -122,22 +118,6 @@ export const userFieldLabels = {
     [GlobalConstants.EXPIRES_AT]: {
         [Language.english]: "Expires At",
         [Language.swedish]: "Utgår Datum",
-    },
-};
-
-export const userCredentialsFieldLabels = {
-    // Credentials
-    [GlobalConstants.CURRENT_PASSWORD]: {
-        [Language.english]: "Current Password",
-        [Language.swedish]: "Nuvarande Lösenord",
-    },
-    [GlobalConstants.NEW_PASSWORD]: {
-        [Language.english]: "New Password",
-        [Language.swedish]: "Nytt Lösenord",
-    },
-    [GlobalConstants.REPEAT_PASSWORD]: {
-        [Language.english]: "Repeat Password",
-        [Language.swedish]: "Upprepa Lösenord",
     },
 };
 

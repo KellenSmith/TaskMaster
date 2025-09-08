@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { progressOrder } from "../../lib/order-actions";
-import { getNewOrderStatus, PaymentStateType } from "../../lib/payment-utils";
+import { checkPaymentStatus } from "../../lib/payment-actions";
+import { prisma } from "../../../../prisma/prisma-client";
+import { PaymentStateType } from "../../lib/payment-utils";
 
 interface PaymentCallbackRequestBody {
     paymentorder: string;
@@ -54,7 +55,12 @@ const isAllowedIp = (request: NextRequest): boolean => {
         return false;
     }
 
+    // Updated IP ranges per Swedbank Pay documentation (March 12th 2025)
     const allowedIps = [
+        // Legacy IPs (still valid)
+        "51.107.183.58",
+        "91.132.170.1",
+        // New IP range: 20.91.170.120–127 (20.91.170.120/29)
         "20.91.170.120",
         "20.91.170.121",
         "20.91.170.122",
@@ -83,13 +89,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // TODO: Verify webhook signature here
-    // const signature = request.headers.get('x-swedbank-signature') || request.headers.get('authorization');
-    // if (!signature || !verifyWebhookSignature(JSON.stringify(requestBody), signature, process.env.SWEDBANK_WEBHOOK_SECRET)) {
-    //     console.error(`Invalid webhook signature from IP: ${clientIp}`);
-    //     return new NextResponse("Invalid signature", { status: 401 });
-    // }        // Validate required fields in payload
-
     try {
         const requestBody: PaymentCallbackRequestBody = await request.json();
 
@@ -99,15 +98,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             return new NextResponse("Bad Request: Missing required fields", { status: 400 });
         }
 
-        // Update order by id
-        const transactionState = requestBody.authorization.transaction.state;
-        const newOrderStatus = getNewOrderStatus(transactionState);
+        // ✅ SECURITY: Simple idempotency check to prevent duplicate processing
+        const order = await prisma.order.findUniqueOrThrow({
+            where: { id: orderId },
+            select: {
+                user_id: true,
+                status: true,
+                updated_at: true,
+            },
+        });
 
-        try {
-            await progressOrder(orderId, newOrderStatus);
-        } catch (error) {
-            console.error(`Failed to update order ${orderId}: ${error.message}`);
+        // Skip if order is already completed
+        if (order.status === "completed") {
+            console.log(`Order ${orderId} already completed, ignoring callback`);
+            return new NextResponse("OK", { status: 200 });
         }
+
+        // Simple rate limiting: skip if updated very recently (prevents spam)
+        const timeSinceLastUpdate = Date.now() - new Date(order.updated_at).getTime();
+        if (timeSinceLastUpdate < 10000) {
+            // 10 seconds cooldown
+            console.log(`Order ${orderId} updated recently, rate limiting callback`);
+            return new NextResponse("OK", { status: 200 });
+        }
+
+        // Process the payment check as normal
+        await checkPaymentStatus(order.user_id, orderId);
+        console.log(`Order ${orderId} status verified and updated via GET request`);
 
         return new NextResponse("OK", { status: 200 });
     } catch (error) {

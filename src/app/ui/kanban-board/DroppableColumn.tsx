@@ -92,13 +92,9 @@ const DroppableColumn = ({
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {
             try {
-                await updateTaskById(
-                    draggedTask.id,
-                    {
-                        status,
-                    },
-                    draggedTask.event_id,
-                );
+                const statusFormData = new FormData();
+                statusFormData.append(GlobalConstants.STATUS, status);
+                await updateTaskById(draggedTask.id, statusFormData, draggedTask.event_id);
                 addNotification(
                     `${LanguageTranslations.taskSetTo[language]} "${LanguageTranslations[status][language]}"`,
                     "success",
@@ -128,10 +124,8 @@ const DroppableColumn = ({
         setTaskFormDefaultValues(defaultTask);
     };
 
-    const createNewTask = async (
-        parsedFieldValues: z.infer<typeof TaskCreateSchema>,
-    ): Promise<string> => {
-        await createTask({ ...parsedFieldValues }, event ? event.id : null);
+    const createNewTask = async (formData: FormData): Promise<string> => {
+        await createTask(formData, event ? event.id : null);
         setTaskFormDefaultValues(null);
         return GlobalLanguageTranslations.successfulSave[language];
     };

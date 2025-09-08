@@ -1,7 +1,6 @@
 "use server";
 
 import { getMailTransport } from "./mail-transport";
-import UserCredentialsTemplate from "./mail-templates/UserCredentialsTemplate";
 import { createElement, ReactElement } from "react";
 import MembershipExpiresReminderTemplate from "./mail-templates/MembershipExpiresReminderTemplate";
 import { render } from "@react-email/components";
@@ -22,6 +21,8 @@ import EmailNotificationTemplate, {
     MailButtonLink,
 } from "./mail-templates/MailNotificationTemplate";
 import MemberContactMemberTemplate from "./mail-templates/MemberContactMemberTemplate";
+import SignInEmailTemplate from "./mail-templates/SignInEmailTemplate";
+import { sanitizeFormData } from "../html-sanitizer";
 
 interface EmailPayload {
     from: string;
@@ -29,6 +30,8 @@ interface EmailPayload {
     replyTo?: string;
     subject: string;
     html: string;
+    headers?: Record<string, string>;
+    text?: string; // Plain text version for better deliverability
 }
 
 const getEmailPayload = async (
@@ -38,14 +41,47 @@ const getEmailPayload = async (
     replyTo?: string,
 ): Promise<EmailPayload> => {
     const organizationSettings = await getOrganizationSettings();
+    const organizationName = await getOrganizationName();
+    const htmlContent = await render(mailContent);
+
     const payload: EmailPayload = {
-        from: `${await getOrganizationName()} <${organizationSettings?.organization_email}>`,
+        from: `${organizationName} <${organizationSettings?.organization_email}>`,
         bcc: receivers.join(", "),
         subject: subject,
-        html: await render(mailContent),
+        html: htmlContent,
+        // Add plain text version by stripping HTML
+        text: htmlContent
+            .replace(/<[^>]*>/g, "")
+            .replace(/\s+/g, " ")
+            .trim(),
+        headers: {
+            "X-Mailer": `${organizationName} Task Master`,
+            "X-Priority": "3",
+            "List-Unsubscribe": `<mailto:${organizationSettings?.organization_email}?subject=Unsubscribe>`,
+            "Message-ID": `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@${organizationSettings?.organization_email?.split("@")[1] || "taskmaster.local"}>`,
+        },
     };
     if (replyTo) payload.replyTo = replyTo;
     return payload;
+};
+
+/**
+ * Sends a sign-in email with magic link for authentication
+ * @throws Error if email fails
+ */
+export const sendSignInEmail = async (email: string, url: string): Promise<string> => {
+    const organizationName = await getOrganizationName();
+    const mailContent = createElement(SignInEmailTemplate, {
+        email,
+        url,
+    });
+
+    const transport = await getMailTransport();
+    const mailResponse = await transport.sendMail(
+        await getEmailPayload([email], `Sign in to ${organizationName}`, mailContent),
+    );
+    if (mailResponse.error) throw new Error(mailResponse.error.message);
+    return mailResponse;
 };
 
 export const notifyOfMembershipApplication = async (
@@ -65,29 +101,6 @@ export const notifyOfMembershipApplication = async (
         ),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
-};
-
-/**
- * @throws Error if email fails
- */
-export const sendUserCredentials = async (
-    userEmail: string,
-    userPassword: string,
-): Promise<string> => {
-    const mailContent = createElement(UserCredentialsTemplate, {
-        userEmail: userEmail,
-        password: userPassword,
-    });
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(
-        await getEmailPayload(
-            [userEmail],
-            `${await getOrganizationName()} credentials`,
-            mailContent,
-        ),
-    );
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return mailResponse;
 };
 
 /**
@@ -177,7 +190,7 @@ export const getEmailRecipientCount = async (
  */
 export const sendMassEmail = async (
     recipientCriteria: Prisma.UserWhereInput,
-    parsedFieldValues: z.infer<typeof EmailSendoutSchema>,
+    formData: FormData,
 ): Promise<{
     accepted: number;
     rejected: number;
@@ -189,11 +202,17 @@ export const sendMassEmail = async (
                 email: true,
             },
         })
-    ).map((user) => user.email);
+    ).map((user: Prisma.UserGetPayload<true>) => user.email);
+
+    const revalidatedContent = EmailSendoutSchema.parse(Object.fromEntries(formData.entries()));
+
+    // Sanitize rich text content before sending email
+    const sanitizedContent = sanitizeFormData(revalidatedContent);
+
     const mailContent = createElement(MailTemplate, {
-        html: parsedFieldValues.content,
+        html: sanitizedContent.content,
     });
-    const mailPayload = await getEmailPayload(recipients, parsedFieldValues.subject, mailContent);
+    const mailPayload = await getEmailPayload(recipients, sanitizedContent.subject, mailContent);
     const mailTransport = await getMailTransport();
     const mailResponse = await mailTransport.sendMail(mailPayload);
     if (mailResponse.error) throw new Error(mailResponse.error.message);
@@ -294,14 +313,28 @@ export const memberContactMember = async (
     reason: string,
     content: string,
 ) => {
+    // Import sanitizeRichText since we need to sanitize individual field
+    const { sanitizeRichText } = await import("../html-sanitizer");
+    const sanitizedContent = sanitizeRichText(content);
+
     const mailContent = createElement(MemberContactMemberTemplate, {
         reason,
-        content,
+        content: sanitizedContent,
     });
 
     const transport = await getMailTransport();
     // Set replyTo to the sender so the recipient can reply directly to the member
     return transport.sendMail(
         await getEmailPayload([recipientEmail], subject, mailContent, senderEmail),
+    );
+};
+
+export const notifyOfValidatedMembership = async (userEmail: string) => {
+    const mailContent = createElement(MailTemplate, {
+        html: `Your membership has been validated. You can now log in and access member features.`,
+    });
+    const transport = await getMailTransport();
+    return transport.sendMail(
+        await getEmailPayload([userEmail], `Your membership has been validated`, mailContent),
     );
 };

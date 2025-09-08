@@ -8,28 +8,30 @@ import {
     TicketCreateSchema,
     TicketUpdateSchema,
     TicketWithoutRelationsSchema,
+    UuidSchema,
 } from "./zod-schemas";
 import { prisma } from "../../../prisma/prisma-client";
-import z from "zod";
 
-export const createEventTicket = async (
-    eventId: string,
-    parsedFieldValues: z.infer<typeof TicketCreateSchema>,
-) => {
-    const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
-    const productFieldValues = ProductCreateSchema.parse(parsedFieldValues);
+export const createEventTicket = async (eventId: string, formData: FormData) => {
+    // Validate event ID format
+    const validatedEventId = UuidSchema.parse(eventId);
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = TicketCreateSchema.parse(Object.fromEntries(formData.entries()));
+
+    const ticketFieldValues = TicketWithoutRelationsSchema.parse(validatedData);
+    const productFieldValues = ProductCreateSchema.parse(validatedData);
 
     // Find the number of participants in the event
     const eventParticipantsCount = await prisma.eventParticipant.count({
         where: {
             ticket: {
-                event_id: eventId,
+                event_id: validatedEventId,
             },
         },
     });
     const event = await prisma.event.findFirstOrThrow({
         where: {
-            id: eventId,
+            id: validatedEventId,
         },
         select: { max_participants: true },
     });
@@ -45,7 +47,7 @@ export const createEventTicket = async (
             },
             event: {
                 connect: {
-                    id: eventId,
+                    id: validatedEventId,
                 },
             },
         },
@@ -53,15 +55,17 @@ export const createEventTicket = async (
     revalidateTag(GlobalConstants.TICKET);
 };
 
-export const updateEventTicket = async (
-    ticketId: string,
-    parsedFieldValues: z.infer<typeof TicketUpdateSchema>,
-) => {
-    const ticketFieldValues = TicketWithoutRelationsSchema.parse(parsedFieldValues);
-    const productFieldValues = ProductUpdateSchema.parse(parsedFieldValues);
+export const updateEventTicket = async (ticketId: string, formData: FormData) => {
+    // Validate ticket ID format
+    const validatedTicketId = UuidSchema.parse(ticketId);
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = TicketUpdateSchema.parse(Object.fromEntries(formData.entries()));
+
+    const ticketFieldValues = TicketWithoutRelationsSchema.parse(validatedData);
+    const productFieldValues = ProductUpdateSchema.parse(validatedData);
     await prisma.ticket.update({
         where: {
-            product_id: ticketId,
+            product_id: validatedTicketId,
         },
         data: {
             ...ticketFieldValues,
@@ -76,10 +80,13 @@ export const updateEventTicket = async (
 };
 
 export const deleteEventTicket = async (ticketId: string) => {
+    // Validate ticket ID format
+    const validatedTicketId = UuidSchema.parse(ticketId);
+
     await prisma.$transaction(async (tx) => {
         const deletedTicket = await tx.ticket.delete({
             where: {
-                product_id: ticketId,
+                product_id: validatedTicketId,
             },
         });
         await tx.product.delete({
@@ -92,9 +99,12 @@ export const deleteEventTicket = async (ticketId: string) => {
 };
 
 export const getEventTickets = async (eventId: string) => {
+    // Validate event ID format
+    const validatedEventId = UuidSchema.parse(eventId);
+
     return await prisma.ticket.findMany({
         where: {
-            event_id: eventId,
+            event_id: validatedEventId,
         },
         include: {
             product: true,

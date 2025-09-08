@@ -1,33 +1,49 @@
 "use server";
 
-import { Prisma, UserRole } from "@prisma/client";
+import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { validateUserMembership } from "./user-credentials-actions";
 import { revalidateTag } from "next/cache";
-import z from "zod";
-import { MembershipApplicationSchema, UserCreateSchema, UserUpdateSchema } from "./zod-schemas";
-import { notifyOfMembershipApplication } from "./mail-service/mail-service";
-import { auth } from "./auth";
+import {
+    LoginSchema,
+    MembershipApplicationSchema,
+    UserCreateSchema,
+    UserUpdateSchema,
+    UuidSchema,
+} from "./zod-schemas";
+import {
+    notifyOfMembershipApplication,
+    notifyOfValidatedMembership,
+} from "./mail-service/mail-service";
+import { auth, signIn, signOut } from "./auth/auth";
+import { getOrganizationSettings } from "./organization-settings-actions";
+import { getRelativeUrl } from "./utils";
 
 export const getUserById = async (
     userId: string,
-): Promise<Prisma.UserGetPayload<{ include: { user_membership: true } }>> => {
+): Promise<Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }>> => {
     return await prisma.user.findUniqueOrThrow({
         where: { id: userId },
-        include: { user_membership: true },
+        include: { user_membership: true, skill_badges: true },
     });
 };
 
-export const createUser = async (
-    parsedFieldValues: z.infer<typeof UserCreateSchema>,
-): Promise<void> => {
-    let createdUserId: string;
-    const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
-    const createdUser = await prisma.user.create({
+export const createUser = async (formData: FormData): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = UserCreateSchema.parse(Object.fromEntries(formData.entries()));
+
+    // If this user is the first user, make them an admin and validate their membership
+    const userCount = await prisma.user.count();
+
+    const { skill_badges: skill_badge_ids, ...userData } = validatedData;
+    await prisma.user.create({
         data: {
             ...userData,
+            ...(userCount === 0 && {
+                status: UserStatus.validated,
+                role: UserRole.admin,
+            }),
             ...(skill_badge_ids && {
                 skill_badges: {
                     createMany: {
@@ -39,42 +55,46 @@ export const createUser = async (
             }),
         },
     });
-    createdUserId = createdUser.id;
-
-    // If this user is the first user, make them an admin and validate their membership
-    const userCount = await prisma.user.count();
-    if (userCount === 1 && createdUserId) {
-        await prisma.user.update({
-            where: { id: createdUserId },
-            data: { role: UserRole.admin },
-        });
-        await validateUserMembership(createdUserId);
-    }
-
     revalidateTag(GlobalConstants.USER);
 };
 
-export const submitMemberApplication = async (
-    parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
-) => {
-    const userFieldValues = UserCreateSchema.parse(parsedFieldValues);
-    await createUser(userFieldValues);
+export const submitMemberApplication = async (formData: FormData) => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = MembershipApplicationSchema.parse(Object.fromEntries(formData.entries()));
 
-    revalidateTag(GlobalConstants.USER);
+    const organizationSettings = await getOrganizationSettings();
+
+    // Don't allow submitting an application if a message is prompted but not provided
+    if (
+        organizationSettings?.member_application_prompt &&
+        !validatedData.member_application_prompt
+    ) {
+        throw new Error("Application message required but not provided.");
+    }
 
     // Send membership application to organization email
     try {
-        await notifyOfMembershipApplication(parsedFieldValues);
+        await notifyOfMembershipApplication(validatedData);
     } catch (error) {
         console.error(error);
         // Submit the membership application despite failed notification
     }
+
+    const userFieldValues = UserCreateSchema.parse(validatedData);
+
+    await createUser(formData);
+    await signIn("email", {
+        email: userFieldValues.email,
+        redirect: false,
+        callback: getRelativeUrl([GlobalConstants.APPLY]),
+        redirectTo: getRelativeUrl([GlobalConstants.PROFILE]),
+    });
+    revalidateTag(GlobalConstants.USER);
 };
 
 export const getAllUsers = async (): Promise<
     Prisma.UserGetPayload<{
         include: {
-            user_credentials: { select: { user_id: true } };
             user_membership: true;
             skill_badges: true;
         };
@@ -82,22 +102,23 @@ export const getAllUsers = async (): Promise<
 > => {
     return await prisma.user.findMany({
         include: {
-            user_credentials: { select: { user_id: true } },
             user_membership: true,
             skill_badges: true,
         },
     });
 };
 
-export const updateUser = async (
-    userId: string,
-    parsedFieldValues: z.infer<typeof UserUpdateSchema>,
-): Promise<void> => {
-    const { skill_badges: skill_badge_ids, ...userData } = parsedFieldValues;
+export const updateUser = async (userId: string, formData: FormData): Promise<void> => {
+    // Validate user ID format
+    const validatedUserId = UuidSchema.parse(userId);
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = UserUpdateSchema.parse(Object.fromEntries(formData.entries()));
+
+    const { skill_badges: skill_badge_ids, ...userData } = validatedData;
     await prisma.$transaction(async (tx) => {
         await tx.user.update({
             where: {
-                id: userId,
+                id: validatedUserId,
             },
             data: userData,
         });
@@ -105,12 +126,12 @@ export const updateUser = async (
         if (skill_badge_ids && skill_badge_ids.length > 0) {
             await tx.userSkillBadge.deleteMany({
                 where: {
-                    user_id: userId,
+                    user_id: validatedUserId,
                 },
             });
             await tx.userSkillBadge.createMany({
                 data: skill_badge_ids.map((badgeId) => ({
-                    user_id: userId,
+                    user_id: validatedUserId,
                     skill_badge_id: badgeId,
                 })),
             });
@@ -121,6 +142,9 @@ export const updateUser = async (
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
+    // Validate user ID format
+    const validatedUserId = UuidSchema.parse(userId);
+
     let admins: Prisma.UserGetPayload<true>[];
 
     admins = await prisma.user.findMany({
@@ -130,14 +154,14 @@ export const deleteUser = async (userId: string): Promise<void> => {
     });
 
     if (admins.length <= 1) {
-        if (admins[0].id === userId) {
+        if (admins[0].id === validatedUserId) {
             throw new Error("You are the last admin standing. Find an heir before leaving.");
         }
     }
 
     const deleteUser = prisma.user.delete({
         where: {
-            id: userId,
+            id: validatedUserId,
         } as unknown as Prisma.UserWhereUniqueInput,
     });
 
@@ -176,9 +200,47 @@ export const getActiveMembers = async (): Promise<
 };
 
 export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
-    include: { user_membership: true };
+    include: { user_membership: true; skill_badges: true };
 }> | null> => {
     const authResult = await auth();
     if (!authResult?.user) return null;
-    return authResult.user;
+    const loggedInUser = await prisma.user.findUnique({
+        where: { id: authResult.user.id },
+        include: { user_membership: true, skill_badges: true },
+    });
+    return loggedInUser;
+};
+
+export const login = async (formData: FormData): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = LoginSchema.parse(Object.fromEntries(formData.entries()));
+
+    // Only let existing members log in from this route
+    await prisma.user.findUniqueOrThrow({ where: { email: validatedData.email } });
+
+    await signIn("email", {
+        email: validatedData.email,
+        callback: getRelativeUrl([GlobalConstants.LOGIN]),
+        redirectTo: getRelativeUrl([GlobalConstants.HOME]),
+        redirect: false,
+    });
+};
+
+export const logOut = async (): Promise<void> => {
+    await signOut({ redirectTo: getRelativeUrl([GlobalConstants.HOME]), redirect: true });
+};
+
+export const validateUserMembership = async (userId: string): Promise<void> => {
+    // Validate user ID format
+    const validatedUserId = UuidSchema.parse(userId);
+
+    const validatedMember = await prisma.user.update({
+        where: { id: validatedUserId },
+        data: { status: UserStatus.validated },
+    });
+
+    // Notify the new member of their validated status
+    await notifyOfValidatedMembership(validatedMember.email);
+
+    revalidateTag(GlobalConstants.USER);
 };

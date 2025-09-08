@@ -3,7 +3,6 @@
 import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import z from "zod";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 import { Prisma } from "@prisma/client";
 import { del } from "@vercel/blob";
@@ -24,19 +23,22 @@ export const getOrganizationName = async (): Promise<string> => {
     return orgSettings?.organization_name || process.env.NEXT_PUBLIC_ORG_NAME || "Task Master";
 };
 
-export const updateOrganizationSettings = async (
-    parsedFieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
-): Promise<void> => {
+export const updateOrganizationSettings = async (formData: FormData): Promise<void> => {
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = OrganizationSettingsUpdateSchema.parse(
+        Object.fromEntries(formData.entries()),
+    );
+
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
     // attempt to delete the old blob from Vercel Blob storage.
-    await deleteOldBlob(settings.logo_url, parsedFieldValues.logo_url);
+    await deleteOldBlob(settings.logo_url, validatedData.logo_url);
 
     await prisma.organizationSettings.update({
         where: {
             id: settings?.id,
         },
-        data: parsedFieldValues,
+        data: validatedData,
     });
     revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
 };

@@ -4,16 +4,13 @@ import { useOrganizationSettingsContext } from "../../context/OrganizationSettin
 import GlobalConstants from "../../GlobalConstants";
 import { updateOrganizationSettings } from "../../lib/organization-settings-actions";
 import Form from "../../ui/form/Form";
-import z from "zod";
 import { OrganizationSettingsUpdateSchema } from "../../lib/zod-schemas";
 
 const OrganizationSettingsPage = () => {
     const { organizationSettings } = useOrganizationSettingsContext();
 
-    const saveOrganizationSettings = async (
-        parsedFieldValues: z.infer<typeof OrganizationSettingsUpdateSchema>,
-    ) => {
-        await updateOrganizationSettings(parsedFieldValues);
+    const saveOrganizationSettings = async (formData: FormData) => {
+        await updateOrganizationSettings(formData);
         return "Updated organization settings";
     };
 

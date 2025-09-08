@@ -57,10 +57,6 @@ const LanguageTranslations = {
         [Language.english]: "Error",
         [Language.swedish]: "Error",
     },
-    logInToSeeMembership: {
-        [Language.english]: "Log in again to use your new membership",
-        [Language.swedish]: "Logga in igen för att använda ditt nya medlemskap",
-    },
     total: {
         [Language.english]: "Total",
         [Language.swedish]: "Summa",

@@ -16,8 +16,6 @@ import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/ma
 import Form from "../../ui/form/Form";
 import { Language, Prisma } from "@prisma/client";
 import { ExpandMore } from "@mui/icons-material";
-import z from "zod";
-import { EmailSendoutSchema } from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 
@@ -53,12 +51,9 @@ const SendoutPage: FC = () => {
         fetchRecipientCount();
     }, [sendTo, getRecipientCriteria]);
 
-    const sendMassEmailToRecipientsWithCriteria = async (
-        parsedFieldValues: z.infer<typeof EmailSendoutSchema>,
-    ) => {
+    const sendMassEmailToRecipientsWithCriteria = async (formData: FormData) => {
         try {
-            parsedFieldValues[GlobalConstants.RECIPIENT_CRITERIA] = getRecipientCriteria();
-            const result = await sendMassEmail(getRecipientCriteria(), parsedFieldValues);
+            const result = await sendMassEmail(getRecipientCriteria(), formData);
             return LanguageTranslations.successfulSendout[language](result);
         } catch {
             throw new Error(LanguageTranslations.failedSendMail[language]);

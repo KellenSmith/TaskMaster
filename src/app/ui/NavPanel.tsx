@@ -8,8 +8,6 @@ import {
     List,
     ListItem,
     Button,
-    ListSubheader,
-    Stack,
     Divider,
     IconButton,
     SwipeableDrawer,
@@ -19,23 +17,17 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import {
-    isUserAdmin,
-    isUserAuthorized,
-    applicationRoutes,
-    routeToPath,
-    clientRedirect,
-} from "../lib/definitions";
+import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/utils";
 import { Cancel, ChevronLeft, Edit } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
-import { logOut } from "../lib/user-credentials-actions";
 import LanguageMenu from "./LanguageMenu";
 import LanguageTranslations from "./LanguageTranslations";
-import { UserRole } from "@prisma/client";
 import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
 import Image from "next/image";
+import { isUserAuthorized, RouteConfigType, routeTreeConfig } from "../lib/auth/auth-utils";
+import { logOut } from "../lib/user-actions";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -43,10 +35,11 @@ const NavPanel = () => {
         () => typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent),
         [],
     );
-    const { user, editMode, setEditMode, refreshSession, language } = useUserContext();
+    const { user, editMode, setEditMode, language } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
+    const pathname = usePathname();
 
     const toggleDrawerOpen = () => {
         setDrawerOpen((prev) => !prev);
@@ -62,7 +55,6 @@ const NavPanel = () => {
         } catch (error) {
             // Catch redirect exception and refresh session before moving on.
             if (error?.digest?.startsWith("NEXT_REDIRECT")) {
-                refreshSession();
                 setDrawerOpen(false);
                 throw error;
             }
@@ -72,39 +64,34 @@ const NavPanel = () => {
     const hiddenRoutes = [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
-        GlobalConstants.RESET,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
-        ...(user ? [GlobalConstants.APPLY] : []),
+        GlobalConstants.APPLY,
     ];
 
-    const getLinkGroup = (privacyStatus: UserRole | string) => {
-        const authorizedRoutes = applicationRoutes[privacyStatus]
-            .filter((route) => !hiddenRoutes.includes(route))
-            .filter((route) => isUserAuthorized(routeToPath(route), user));
-        if (authorizedRoutes.length === 0) return null;
+    const getRouteNavButton = (routeConfig: RouteConfigType, currentPathSegments: string[]) => {
+        if (hiddenRoutes.includes(routeConfig.name)) return null;
+        if (!isUserAuthorized(user, [routeConfig.name], routeConfig)) return null;
         return (
-            <Stack key={privacyStatus}>
-                {privacyStatus !== GlobalConstants.PUBLIC && (
-                    <ListSubheader sx={{ textTransform: "capitalize" }}>
-                        {LanguageTranslations.restrictedRoute[privacyStatus as UserRole][language]}
-                    </ListSubheader>
+            <ListItem key={routeConfig.name} dense>
+                <Button
+                    fullWidth
+                    sx={{ justifyContent: "flex-start" }}
+                    onClick={() => {
+                        setDrawerOpen(false);
+                        clientRedirect(router, [routeConfig.name]);
+                    }}
+                >
+                    {LanguageTranslations.routeLabel[routeConfig.name][language]}
+                </Button>
+                {routeConfig.children.length > 0 && (
+                    <List>
+                        {routeConfig.children.map((child) =>
+                            getRouteNavButton(child, currentPathSegments.slice(1)),
+                        )}
+                    </List>
                 )}
-                {authorizedRoutes.map((route) => (
-                    <ListItem key={route} dense>
-                        <Button
-                            fullWidth
-                            sx={{ justifyContent: "flex-start" }}
-                            onClick={() => {
-                                setDrawerOpen(false);
-                                clientRedirect(router, [route]);
-                            }}
-                        >
-                            {LanguageTranslations.routeLabel[route][language]}
-                        </Button>
-                    </ListItem>
-                ))}
-            </Stack>
+            </ListItem>
         );
     };
 
@@ -129,6 +116,7 @@ const NavPanel = () => {
                         }}
                     >
                         <Image
+                            priority={true}
                             src={organizationSettings?.logo_url || "/images/taskmaster-logo.svg"}
                             alt={organizationSettings?.organization_name || "TaskMaster"}
                             title={organizationSettings?.organization_name || "TaskMaster"}
@@ -181,8 +169,8 @@ const NavPanel = () => {
                             {LoginLanguageTranslations.login[language]}
                         </Button>
                     )}
-                    {Object.keys(applicationRoutes).map((privacyStatus) =>
-                        getLinkGroup(privacyStatus),
+                    {routeTreeConfig.children.map((route) =>
+                        getRouteNavButton(route, pathToRoutes(pathname)),
                     )}
                     {isUserAdmin(user) && (
                         <Button

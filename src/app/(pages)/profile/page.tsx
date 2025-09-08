@@ -4,7 +4,7 @@ import ProfileDashboard from "./ProfileDashboard";
 import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { getFilteredEvents } from "../../lib/event-actions";
-import { serverRedirect } from "../../lib/definitions";
+import { serverRedirect } from "../../lib/utils";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 

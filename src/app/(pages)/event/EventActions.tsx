@@ -30,11 +30,10 @@ import { pdf } from "@react-pdf/renderer";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { MoreHoriz } from "@mui/icons-material";
 import { useNotificationContext } from "../../context/NotificationContext";
-import z from "zod";
 import { CloneEventSchema, EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
-import { isUserAdmin, isUserHost } from "../../lib/definitions";
+import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import SendoutLanguageTranslations from "../sendout/LanguageTranslations";
@@ -89,9 +88,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     const submitForApproval = () => {
         startTransition(async () => {
             try {
-                await updateEvent(event.id, {
-                    status: EventStatus.pending_approval,
-                });
+                const formData = new FormData();
+                formData.append(GlobalConstants.STATUS, EventStatus.pending_approval);
+                await updateEvent(event.id, formData);
                 addNotification(LanguageTranslations.submittedEvent[language], "success");
                 closeActionMenu();
             } catch {
@@ -103,9 +102,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     const publishEvent = () => {
         startTransition(async () => {
             try {
-                await updateEvent(event.id, {
-                    status: EventStatus.published,
-                });
+                const formData = new FormData();
+                formData.append(GlobalConstants.STATUS, EventStatus.published);
+                await updateEvent(event.id, formData);
                 addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
             } catch {
@@ -136,8 +135,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         });
     };
 
-    const cloneAction = async (parsedFieldValues: z.infer<typeof CloneEventSchema>) => {
-        await cloneEvent(event.id, parsedFieldValues);
+    const cloneAction = async (formData: FormData) => {
+        await cloneEvent(event.id, formData);
         return GlobalLanguageTranslations.successfulSave[language];
     };
 
@@ -290,9 +289,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         return ActionButtons;
     };
 
-    const updateEventById = async (parsedFieldValues: z.infer<typeof EventUpdateSchema>) => {
+    const updateEventById = async (formData: FormData) => {
         try {
-            await updateEvent(event.id, parsedFieldValues);
+            await updateEvent(event.id, formData);
             setDialogOpen(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -300,7 +299,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         }
     };
 
-    const sendoutToEventUsers = async (parsedFieldValues: z.infer<typeof EmailSendoutSchema>) => {
+    const sendoutToEventUsers = async (formData: FormData) => {
         const recipientIds: string[] = [];
         if (
             sendoutTo === sendoutToOptions.Participants[language] ||
@@ -325,7 +324,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         };
 
         try {
-            const result = await sendMassEmail(recipientCriteria, parsedFieldValues);
+            const result = await sendMassEmail(recipientCriteria, formData);
             setDialogOpen(null);
             return SendoutLanguageTranslations.successfulSendout[language](result);
         } catch {

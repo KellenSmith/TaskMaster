@@ -6,17 +6,10 @@ import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import { checkboxFields, datePickerFields, FieldLabels, priceFields } from "./form/FieldCfg";
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
-import { formatDate } from "./utils";
+import { formatDate, formatPrice } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
-import {
-    OrderUpdateSchema,
-    ProductCreateSchema,
-    ProductUpdateSchema,
-    UserCreateSchema,
-    UserUpdateSchema,
-} from "../lib/zod-schemas";
+import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
-import z from "zod";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
@@ -35,7 +28,6 @@ export interface RowActionProps {
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
           include: {
-              user_credentials: { select: { user_id: true } };
               user_membership: true;
               skill_badges: true;
           };
@@ -54,17 +46,10 @@ interface DatagridProps {
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     updateAction?: (
         rowId: string, // eslint-disable-line no-unused-vars
-        fieldValues: // eslint-disable-line no-unused-vars
-        | z.infer<typeof UserUpdateSchema>
-            | z.infer<typeof ProductUpdateSchema>
-            | z.infer<typeof OrderUpdateSchema>,
+        fieldValues: FormData, // eslint-disable-line no-unused-vars
     ) => Promise<void>;
-    createAction?: (
-        fieldValues: // eslint-disable-line no-unused-vars
-        | z.infer<typeof UserCreateSchema>
-            | z.infer<typeof ProductCreateSchema>
-            | z.infer<typeof OrderUpdateSchema>,
-    ) => Promise<void>;
+    // eslint-disable-next-line no-unused-vars
+    createAction?: (fieldValues: FormData) => Promise<void>;
     validationSchema:
         | typeof UserUpdateSchema
         | typeof ProductUpdateSchema
@@ -118,7 +103,9 @@ const Datagrid: React.FC<DatagridProps> = ({
                     if (datePickerFields.includes(key)) {
                         return formatDate(value);
                     }
-                    if (priceFields.includes(key)) return parseInt(value) / 100;
+                    if (priceFields.includes(key)) {
+                        return formatPrice(value);
+                    }
                     if (value in FieldLabels) return FieldLabels[value][language];
                     return value;
                 },
@@ -135,7 +122,7 @@ const Datagrid: React.FC<DatagridProps> = ({
         });
     }, [apiRef, columns]);
 
-    const createRow = async (fieldValues: any) => {
+    const createRow = async (fieldValues: FormData) => {
         try {
             await createAction(fieldValues);
             setAddNew(false);
@@ -145,7 +132,7 @@ const Datagrid: React.FC<DatagridProps> = ({
         }
     };
 
-    const updateRow = async (fieldValues: any) => {
+    const updateRow = async (fieldValues: FormData) => {
         try {
             await updateAction(clickedRow.id, fieldValues);
             setClickedRow(null);

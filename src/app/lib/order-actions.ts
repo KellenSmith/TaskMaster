@@ -7,7 +7,8 @@ import { sendOrderConfirmation } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
-import { serverRedirect } from "./definitions";
+import { serverRedirect } from "./utils";
+import { UuidSchema } from "./zod-schemas";
 
 export const getOrderById = async (
     userId: string,
@@ -164,20 +165,20 @@ export const progressOrder = async (
                     data: { status: OrderStatus.shipped },
                 });
                 revalidateTag(GlobalConstants.ORDER);
-                try {
-                    await sendOrderConfirmation(orderId);
-                } catch (error) {
-                    // Allow progressing order despite failed confirmation
-                    console.error("Failed to send order confirmation:", error);
-                }
             },
             {
                 // timeout in ms for this interactive transaction; set to 30s for safety
-                timeout: 30000,
+                timeout: 10000,
                 // max wait to acquire a connection for transaction
                 maxWait: 5000,
             },
         );
+        try {
+            await sendOrderConfirmation(orderId);
+        } catch (error) {
+            // Allow progressing order despite failed confirmation
+            console.error("Failed to send order confirmation:", error);
+        }
     }
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {
@@ -191,7 +192,9 @@ export const progressOrder = async (
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
+    const validatedOrderId = UuidSchema.parse(orderId);
+
     await prisma.order.delete({
-        where: { id: orderId },
+        where: { id: validatedOrderId },
     });
 };

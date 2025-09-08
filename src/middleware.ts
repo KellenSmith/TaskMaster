@@ -2,26 +2,60 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { getAbsoluteUrl, isUserAuthorized } from "./app/lib/definitions";
-import { getLoggedInUser } from "./app/lib/user-actions";
+import { getAbsoluteUrl, pathToRoutes } from "./app/lib/utils";
+import NextAuth from "next-auth";
+import { isUserAuthorized, routeTreeConfig } from "./app/lib/auth/auth-utils";
+import "./app/lib/auth/auth-types";
 
 export const config = {
     // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
-    matcher: ["/((?!api|_next/static|_next/image|README.pdf|.*\\.png$|.*\\.ico$|.*\\.svg$).*)"],
+    matcher: [
+        "/((?!api|_next/static|_next/image|.well-known,appspecific,com.chrome.devtools.json|appspecific,com.chrome.devtools.json|README.pdf|.*\\.png$|.*\\.ico$|.*\\.svg$).*)",
+    ],
 };
 
 export default async function middleware(req: NextRequest) {
-    const loggedInUser = await getLoggedInUser();
+    // Initialize NextAuth with empty providers to access the auth function
+    // in edge runtime without node-specific nodemailer provider and prisma adapter
+    const { auth } = NextAuth({ providers: [] });
+    const loggedInUser = (await auth())?.user;
 
     if (!req?.nextUrl?.pathname) return NextResponse.next();
 
-    if (isUserAuthorized(req.nextUrl.pathname, loggedInUser)) {
-        return NextResponse.next();
+    // Create response based on authorization
+    let response: NextResponse;
+
+    if (isUserAuthorized(loggedInUser, pathToRoutes(req.nextUrl.pathname), routeTreeConfig)) {
+        response = NextResponse.next();
+    } else if (loggedInUser) {
+        // Redirect authenticated but unauthorized users to home
+        response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
+    } else {
+        // Redirect unauthorized unauthenticated users to login
+        response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
     }
 
-    // Redirect authenticated but unauthorized users to home
-    if (loggedInUser) return NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
+    // Add security headers
+    addSecurityHeaders(response);
 
-    // Redirect unauthorized unauthenticated users to login
-    return NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
+    return response;
+}
+
+function addSecurityHeaders(response: NextResponse) {
+    // Only add HSTS in production with HTTPS
+    if (process.env.NODE_ENV === "production") {
+        response.headers.set(
+            "Strict-Transport-Security",
+            "max-age=63072000; includeSubDomains; preload",
+        );
+    }
+
+    // Add additional security headers not covered by next.config.mjs
+    response.headers.set("X-DNS-Prefetch-Control", "off");
+    response.headers.set("X-Download-Options", "noopen");
+    response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
+
+    // Remove server information
+    response.headers.delete("Server");
+    response.headers.delete("X-Powered-By");
 }

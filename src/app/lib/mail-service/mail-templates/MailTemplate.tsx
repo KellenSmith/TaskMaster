@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
 import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
 import mailTheme from "../mail-theme";
-import { getAbsoluteUrl } from "../../definitions";
+import { getAbsoluteUrl } from "../../utils";
 import { getOrganizationName } from "../../organization-settings-actions";
 
 interface MailTemplateProps {

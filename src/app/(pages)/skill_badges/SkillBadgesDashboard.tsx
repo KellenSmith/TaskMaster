@@ -12,7 +12,6 @@ import {
     deleteSkillBadge,
     updateSkillBadge,
 } from "../../lib/skill-badge-actions";
-import z from "zod";
 import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
@@ -33,9 +32,9 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
     const [createNew, setCreateNew] = useState(false);
     const [isPending, startTransition] = useTransition();
 
-    const createBadgeAction = async (parsedFieldValues: z.infer<typeof SkillBadgeCreateSchema>) => {
+    const createBadgeAction = async (formData: FormData) => {
         try {
-            await createSkillBadge(parsedFieldValues);
+            await createSkillBadge(formData);
             setCreateNew(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -43,9 +42,9 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
         }
     };
 
-    const updateBadgeAction = async (parsedFieldValues: z.infer<typeof SkillBadgeCreateSchema>) => {
+    const updateBadgeAction = async (formData: FormData) => {
         try {
-            await updateSkillBadge(editBadgeId, parsedFieldValues);
+            await updateSkillBadge(editBadgeId, formData);
             setEditBadgeId(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {

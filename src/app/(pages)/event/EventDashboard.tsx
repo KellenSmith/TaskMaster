@@ -3,7 +3,7 @@
 import { Stack, Tab, Tabs, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { use, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { isUserHost, clientRedirect, isUserAdmin } from "../../lib/definitions";
+import { isUserHost, clientRedirect, isUserAdmin } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { isEventCancelled, isEventSoldOut, isUserParticipant } from "./event-utils";
 import EventDetails from "./EventDetails";

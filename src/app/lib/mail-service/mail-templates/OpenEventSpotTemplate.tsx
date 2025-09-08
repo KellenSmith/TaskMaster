@@ -4,7 +4,7 @@ import mailTheme from "../mail-theme";
 import { FC } from "react";
 import { Prisma } from "@prisma/client";
 import GlobalConstants from "../../../GlobalConstants";
-import { getAbsoluteUrl } from "../../definitions";
+import { getAbsoluteUrl } from "../../utils";
 
 /**
  * Props for the MembershipExpiresReminderTemplate component.

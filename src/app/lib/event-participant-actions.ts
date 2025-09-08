@@ -5,11 +5,16 @@ import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
+import { UuidSchema } from "./zod-schemas";
 
 export const addEventParticipantWithTx = async (tx, ticketId: string, userId: string) => {
+    // Validate ID formats
+    const validatedTicketId = UuidSchema.parse(ticketId);
+    const validatedUserId = UuidSchema.parse(userId);
+
     const ticket = await prisma.ticket.findUniqueOrThrow({
         where: {
-            product_id: ticketId,
+            product_id: validatedTicketId,
         },
     });
 
@@ -27,15 +32,14 @@ export const addEventParticipantWithTx = async (tx, ticketId: string, userId: st
         },
     });
     const participantIds = event.tickets.flatMap((t) => t.event_participants.map((p) => p.user_id));
-    if (participantIds.includes(userId)) throw new Error("Member is already a participant");
+    if (participantIds.includes(validatedUserId))
+        throw new Error("Member is already a participant");
     if (participantIds.length >= event.max_participants) {
         throw new Error("Event is already sold out");
     }
 
-    await deleteEventReserveWithTx(tx, userId, ticket.event_id);
+    await deleteEventReserveWithTx(tx, validatedUserId, ticket.event_id);
     revalidateTag(GlobalConstants.RESERVE_USERS);
-
-    // TODO: Delete the user from the  reserve list if they're on it
 
     // Decrement the product stock of all tickets with limited stock belonging to the same event
     // Ticket product stock reflects the total number of available tickets across all types
@@ -118,7 +122,6 @@ export const deleteEventParticipantWithTx = async (tx, eventId: string, userId: 
         },
     });
 
-    // TODO: unassign from tasks happening during the event
     revalidateTag(GlobalConstants.PARTICIPANT_USERS);
     revalidateTag(GlobalConstants.EVENT);
     revalidateTag(GlobalConstants.TICKET);
@@ -128,6 +131,43 @@ export const deleteEventParticipantWithTx = async (tx, eventId: string, userId: 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
     await prisma.$transaction(async (tx) => {
         await deleteEventParticipantWithTx(tx, eventId, userId);
+        await unassignUserFromEventTasks(tx, eventId, userId);
+    });
+};
+
+export const unassignUserFromEventTasks = async (tx, eventId: string, userId: string) => {
+    // Unassign any tasks assigned to the user happening during the event
+    const event = await tx.event.findUniqueOrThrow({
+        where: { id: eventId },
+    });
+    await tx.task.updateMany({
+        where: {
+            AND: [
+                {
+                    OR: [
+                        {
+                            start_time: {
+                                gte: event.start_time,
+                                lte: event.end_time,
+                            },
+                        },
+                        {
+                            end_time: {
+                                gte: event.start_time,
+                                lte: event.end_time,
+                            },
+                        },
+                    ],
+                },
+            ],
+            event_id: eventId,
+            assigned_to: userId,
+        },
+        data: {
+            assignee: {
+                disconnect: { id: userId },
+            },
+        },
     });
 };
 

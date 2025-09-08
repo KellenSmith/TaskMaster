@@ -7,8 +7,9 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
 import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
-import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./definitions";
+import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
 import { getLoggedInUser } from "./user-actions";
+import { UuidSchema } from "./zod-schemas";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -90,14 +91,16 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
 };
 
 export const redirectToSwedbankPayment = async (orderId: string): Promise<void> => {
-    const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+    const validatedOrderId = UuidSchema.parse(orderId);
+
+    const order = await prisma.order.findUniqueOrThrow({ where: { id: validatedOrderId } });
     if (order?.status !== OrderStatus.pending) {
         throw new Error("Order is not in a pending state");
     }
     if (order.total_amount < 1) {
         await progressOrder(order.id, OrderStatus.paid);
     } else {
-        const requestBody = await getSwedbankPaymentRequestPayload(orderId);
+        const requestBody = await getSwedbankPaymentRequestPayload(validatedOrderId);
         if (!requestBody) throw new Error("Failed to create payment request");
 
         const response = await makeSwedbankApiRequest(
@@ -129,8 +132,10 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
 };
 
 export const capturePaymentFunds = async (orderId: string) => {
+    const validatedOrderId = UuidSchema.parse(orderId);
+
     const order = await prisma.order.findUniqueOrThrow({
-        where: { id: orderId },
+        where: { id: validatedOrderId },
     });
     // Use the same payeeReference that was used for the original authorization
     // This maintains the connection between authorization and capture operations
@@ -173,11 +178,14 @@ export const capturePaymentFunds = async (orderId: string) => {
 };
 
 export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {
-    const order = await getOrderById(userId, orderId);
+    const validatedUserId = UuidSchema.parse(userId);
+    const validatedOrderId = UuidSchema.parse(orderId);
+
+    const order = await getOrderById(validatedUserId, validatedOrderId);
 
     // Only allow admins to check other users' orders
     const loggedInUser = await getLoggedInUser();
-    if (!isUserAdmin(loggedInUser) && order.user_id !== userId) {
+    if (!isUserAdmin(loggedInUser) && order.user_id !== validatedUserId) {
         serverRedirect([GlobalConstants.HOME]);
     }
 

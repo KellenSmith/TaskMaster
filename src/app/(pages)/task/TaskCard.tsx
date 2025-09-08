@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
-import { clientRedirect } from "../../lib/definitions";
+import { clientRedirect } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC, use, useState } from "react";
@@ -22,7 +22,6 @@ import { Prisma } from "@prisma/client";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { ContactMemberSchema, TaskUpdateSchema } from "../../lib/zod-schemas";
-import z from "zod";
 import { contactTaskMember, deleteTask, updateTaskById } from "../../lib/task-actions";
 import { getUserSelectOptions } from "../../ui/form/FieldCfg";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
@@ -74,9 +73,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         return "default" as any;
     };
 
-    const updateTaskAction = async (parsedFieldValues: z.infer<typeof TaskUpdateSchema>) => {
+    const updateTaskAction = async (formData: FormData) => {
         try {
-            await updateTaskById(task.id, parsedFieldValues, task.event_id);
+            await updateTaskById(task.id, formData, task.event_id);
             setEditDialogOpen(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
@@ -84,9 +83,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         }
     };
 
-    const contactMemberAction = async (parsedFieldValues: z.infer<typeof ContactMemberSchema>) => {
+    const contactMemberAction = async (formData: FormData) => {
         try {
-            await contactTaskMember(messageRecipientId, parsedFieldValues, task.id);
+            await contactTaskMember(messageRecipientId, formData, task.id);
             setMessageRecipientId(null);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch {
