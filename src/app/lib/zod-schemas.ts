@@ -8,15 +8,9 @@ dayjs.extend(customParseFormat);
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
-    .refine(
-        (val) => {
-            console.log(val);
-            return !val || dayjs(val, "DD/MM/YYYY HH:mm").isValid();
-        },
-        {
-            message: "Invalid date",
-        },
-    )
+    .refine((val) => !val || dayjs(val, "DD/MM/YYYY HH:mm").isValid(), {
+        message: "Invalid date",
+    })
     .transform((val) =>
         val ? dayjs(val, "DD/MM/YYYY HH:mm").toISOString() : "",
     ) as z.ZodType<string>;
@@ -34,7 +28,7 @@ const selectMultipleSchema = z
 const switchButtonSchema = z.string().transform((val) => (val === "on" ? true : false));
 
 // UUID validation schema for ID parameters
-const uuidSchema = z.string().uuid();
+const uuidSchema = z.uuid();
 
 // =============================================================================
 // ENUM SCHEMAS - Derived from Prisma enums

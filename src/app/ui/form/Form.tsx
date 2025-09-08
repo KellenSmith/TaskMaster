@@ -160,7 +160,6 @@ const Form: FC<FormProps> = ({
             return parsedFieldValues;
         } catch (error) {
             if (error instanceof ZodError) {
-                console.log(formDataObject);
                 const zodIssues = error.issues;
                 if (zodIssues.length > 0) {
                     const errorField = zodIssues[0]?.path[0];
