@@ -214,6 +214,7 @@ const DroppableColumn = ({
                     name={GlobalConstants.TASK}
                     action={createTaskAndCloseDialog}
                     validationSchema={TaskCreateSchema}
+                    onSuccess={() => setTaskFormDefaultValues(null)}
                     defaultValues={
                         taskFormDefaultValues
                             ? {

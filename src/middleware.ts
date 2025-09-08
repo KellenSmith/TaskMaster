@@ -15,8 +15,14 @@ export const config = {
 };
 
 export default async function middleware(req: NextRequest) {
-    // Skip middleware for Next.js Server Actions
-    if (req.method === "POST" && req.headers.get("next-action")) {
+    // Skip middleware for Next.js Server Actions - both POST and action header checks
+    if (
+        req.method === "POST" &&
+        (req.headers.get("next-action") ||
+            req.headers.get("content-type")?.includes("multipart/form-data") ||
+            req.url.includes("_next/static") ||
+            req.nextUrl.pathname.startsWith("/api/"))
+    ) {
         return NextResponse.next();
     }
 

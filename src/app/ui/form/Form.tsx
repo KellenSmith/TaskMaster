@@ -53,6 +53,7 @@ interface FormProps {
     customInfoTexts?: { [key: string]: string }; // Include extra information texts for specific fields
     readOnly?: boolean;
     editable?: boolean;
+    onSuccess?: () => void; // Callback to execute on successful form submission
 }
 
 const Form: FC<FormProps> = ({
@@ -68,6 +69,7 @@ const Form: FC<FormProps> = ({
     customInfoTexts = {},
     readOnly = true,
     editable = true,
+    onSuccess,
 }) => {
     const { language } = useUserContext();
     const [validationError, setValidationError] = useState<string | null>(null);
@@ -186,6 +188,12 @@ const Form: FC<FormProps> = ({
 
         console.log("Processing form submission...");
         const formData = new FormData(event.currentTarget);
+
+        // Add debug logging for production
+        console.log("Form data entries:", Object.fromEntries(formData.entries()));
+        console.log("Form action type:", typeof action);
+        console.log("Is server action:", action.toString().includes("use server"));
+
         const formDataWithFileUrls = await uploadFiles(formData);
         if (!formDataWithFileUrls) return;
         const parsedFieldValues = validateFormData(formDataWithFileUrls);
@@ -193,12 +201,18 @@ const Form: FC<FormProps> = ({
         startTransition(async () => {
             try {
                 console.log("Calling action function...");
+                console.log("Action name:", action.name);
+                console.log("Environment:", process.env.NODE_ENV);
+
                 const submitResult = await action(formDataWithFileUrls);
                 console.log("Action completed successfully", submitResult);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
+                onSuccess?.(); // Call the success callback if provided
             } catch (error) {
                 console.error("Action failed:", error);
+                console.error("Error type:", error.constructor.name);
+                console.error("Error stack:", error.stack);
                 allowRedirectException(error);
                 addNotification(error.message, "error");
             }
