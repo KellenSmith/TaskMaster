@@ -10,9 +10,10 @@ import {
     useTheme,
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
-import { createTask, updateTaskById } from "../../lib/task-actions";
+import { updateTaskById } from "../../lib/task-actions";
+import { createTaskFromKanban } from "./kanban-board-actions";
 import Form from "../form/Form";
-import { use, useState } from "react";
+import { use, useState, useCallback } from "react";
 import { Add } from "@mui/icons-material";
 import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
 import { Prisma, Task, TaskStatus } from "@prisma/client";
@@ -124,11 +125,28 @@ const DroppableColumn = ({
         setTaskFormDefaultValues(defaultTask);
     };
 
-    const createNewTask = async (formData: FormData): Promise<string> => {
-        await createTask(formData, event ? event.id : null);
-        setTaskFormDefaultValues(null);
-        return GlobalLanguageTranslations.successfulSave[language];
-    };
+    const createTaskAndCloseDialog = useCallback(
+        async (formData: FormData): Promise<string> => {
+            console.log("createTaskAndCloseDialog called", {
+                eventId: event?.id,
+                formData: Object.fromEntries(formData.entries()),
+            });
+            try {
+                const result = await createTaskFromKanban(
+                    event ? event.id : null,
+                    language,
+                    formData,
+                );
+                console.log("Task created successfully");
+                setTaskFormDefaultValues(null);
+                return result;
+            } catch (error) {
+                console.error("Task creation failed:", error);
+                throw error;
+            }
+        },
+        [event?.id, language],
+    );
 
     return (
         <>
@@ -201,7 +219,7 @@ const DroppableColumn = ({
             >
                 <Form
                     name={GlobalConstants.TASK}
-                    action={createNewTask}
+                    action={createTaskAndCloseDialog}
                     validationSchema={TaskCreateSchema}
                     defaultValues={
                         taskFormDefaultValues
