@@ -3,7 +3,6 @@
 import {
     Accordion,
     AccordionSummary,
-    Dialog,
     FormControl,
     FormControlLabel,
     Radio,
@@ -21,7 +20,9 @@ import { Language, Prisma } from "@prisma/client";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
-import Datagrid from "../../ui/Datagrid";
+import Datagrid, { RowActionProps } from "../../ui/Datagrid";
+import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { deleteNewsletterJob } from "../../lib/mail-service/newsletter-actions";
 
 const sendToOptions = {
     ALL: {
@@ -70,6 +71,19 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
         }
     };
 
+    const rowActions: RowActionProps[] = [
+        {
+            name: GlobalLanguageTranslations.delete[language],
+            serverAction: async (row) => {
+                await deleteNewsletterJob(row.id);
+                return GlobalLanguageTranslations.successfulDelete[language];
+            },
+            available: (row) => !!row && !!row.id,
+            buttonLabel: GlobalLanguageTranslations.delete[language],
+            buttonColor: "error",
+        },
+    ];
+
     return (
         <Stack
             height="100%"
@@ -109,7 +123,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
             </Stack>
 
             <Stack height={"100%"} maxWidth={isSmall ? "100%" : "50%"} flex={1}>
-                <Datagrid dataGridRowsPromise={newsLetterJobsPromise} />
+                <Datagrid dataGridRowsPromise={newsLetterJobsPromise} rowActions={rowActions} />
             </Stack>
         </Stack>
     );

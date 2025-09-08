@@ -8,6 +8,7 @@ import { getMailTransport } from "./mail-transport";
 import { getOrganizationName } from "../organization-settings-actions";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
+import { UuidSchema } from "../zod-schemas";
 
 type CreateJobInput = {
     subject: string;
@@ -165,3 +166,9 @@ export const getAllNewsletterJobs = async () =>
     await prisma.newsletterJob.findMany({
         orderBy: { created_at: "desc" },
     });
+
+export const deleteNewsletterJob = async (jobId: string) => {
+    const validatedJobId = UuidSchema.parse(jobId);
+    await prisma.newsletterJob.delete({ where: { id: validatedJobId } });
+    revalidateTag(GlobalConstants.SENDOUT);
+};
