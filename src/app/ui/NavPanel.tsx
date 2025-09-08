@@ -67,6 +67,7 @@ const NavPanel = () => {
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
         GlobalConstants.APPLY,
+        GlobalConstants.EVENT,
     ];
 
     const getRouteNavButton = (routeConfig: RouteConfigType, currentPathSegments: string[]) => {

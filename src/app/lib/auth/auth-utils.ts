@@ -15,15 +15,16 @@ export const routeTreeConfig: RouteConfigType = {
     role: null,
     children: [
         {
-            name: GlobalConstants.LOGIN,
+            name: GlobalConstants.APPLY,
             status: null,
             role: null,
             children: [],
         },
         {
-            name: GlobalConstants.APPLY,
-            status: null,
-            role: null,
+            name: GlobalConstants.CALENDAR,
+            status: UserStatus.validated,
+            role: UserRole.member,
+            membershipRequired: true,
             children: [],
         },
         {
@@ -33,35 +34,7 @@ export const routeTreeConfig: RouteConfigType = {
             children: [],
         },
         {
-            name: GlobalConstants.PROFILE,
-            status: UserStatus.pending,
-            role: UserRole.member,
-            children: [],
-        },
-        {
-            name: GlobalConstants.ORDER,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-
-        {
-            name: GlobalConstants.CALENDAR,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.TASKS,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.TASK,
+            name: GlobalConstants.EVENT,
             status: UserStatus.validated,
             role: UserRole.member,
             membershipRequired: true,
@@ -75,27 +48,27 @@ export const routeTreeConfig: RouteConfigType = {
             children: [],
         },
         {
-            name: GlobalConstants.SKILL_BADGES,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
-        // {
-        //     name: GlobalConstants.YEAR_WHEEL,
-        //     status: UserStatus.validated,
-        //     role: UserRole.admin,
-        //     children: [],
-        // },
-        {
-            name: GlobalConstants.SENDOUT,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
+            name: GlobalConstants.LOGIN,
+            status: null,
+            role: null,
             children: [],
         },
         {
             name: GlobalConstants.MEMBERS,
+            status: UserStatus.validated,
+            role: UserRole.admin,
+            membershipRequired: true,
+            children: [],
+        },
+        {
+            name: GlobalConstants.ORDER,
+            status: UserStatus.validated,
+            role: UserRole.member,
+            membershipRequired: true,
+            children: [],
+        },
+        {
+            name: GlobalConstants.ORDERS,
             status: UserStatus.validated,
             role: UserRole.admin,
             membershipRequired: true,
@@ -109,12 +82,19 @@ export const routeTreeConfig: RouteConfigType = {
             children: [],
         },
         {
-            name: GlobalConstants.ORDERS,
+            name: GlobalConstants.PROFILE,
+            status: UserStatus.pending,
+            role: UserRole.member,
+            children: [],
+        },
+        {
+            name: GlobalConstants.SENDOUT,
             status: UserStatus.validated,
             role: UserRole.admin,
             membershipRequired: true,
             children: [],
         },
+
         {
             name: GlobalConstants.ORGANIZATION_SETTINGS,
             status: UserStatus.validated,
@@ -122,6 +102,33 @@ export const routeTreeConfig: RouteConfigType = {
             membershipRequired: true,
             children: [],
         },
+        {
+            name: GlobalConstants.SKILL_BADGES,
+            status: UserStatus.validated,
+            role: UserRole.admin,
+            membershipRequired: true,
+            children: [],
+        },
+        {
+            name: GlobalConstants.TASK,
+            status: UserStatus.validated,
+            role: UserRole.member,
+            membershipRequired: true,
+            children: [],
+        },
+        {
+            name: GlobalConstants.TASKS,
+            status: UserStatus.validated,
+            role: UserRole.member,
+            membershipRequired: true,
+            children: [],
+        },
+        // {
+        //     name: GlobalConstants.YEAR_WHEEL,
+        //     status: UserStatus.validated,
+        //     role: UserRole.admin,
+        //     children: [],
+        // },
     ],
 };
 
