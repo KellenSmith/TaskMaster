@@ -140,7 +140,9 @@ const userHasStatusPrivileges = (
 };
 
 export const isUserAuthorized = (
-    loggedInUser: Prisma.UserGetPayload<{ select: { role: true; status: true } }>,
+    loggedInUser: Prisma.UserGetPayload<{
+        select: { role: true; status: true; user_membership: true };
+    }>,
     pathSegments: string[],
     routeConfig: RouteConfigType,
 ) => {
@@ -154,6 +156,8 @@ export const isUserAuthorized = (
         !userHasStatusPrivileges(loggedInUser, routeConfig.status)
     )
         return false;
+    // If route requires auth (role or status) but user has no membership, not authorized
+    if ((routeConfig.role || routeConfig.status) && !loggedInUser?.user_membership) return false;
 
     const followingPath = pathSegments.slice(1);
     const followingRouteConfig = routeConfig.children.find(
