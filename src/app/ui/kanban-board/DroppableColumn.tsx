@@ -130,13 +130,52 @@ const DroppableColumn = ({
             formData: Object.fromEntries(formData.entries()),
         });
         if (event) formData.append(GlobalConstants.EVENT_ID, event.id);
+        // Prepare URL tweak state outside try/catch so both branches can access
+        const originalHref = typeof window !== "undefined" ? window.location.href : null;
+        let urlRestored = false;
         try {
+            // Workaround: Some environments block Server Action POSTs to /event when a specific tab is in the URL.
+            // Temporarily remove the 'tab' query param from the address bar so the POST target is cleaner,
+            // then restore the original URL afterwards.
+            try {
+                if (originalHref) {
+                    const url = new URL(originalHref);
+                    if (url.searchParams.has(GlobalConstants.TAB)) {
+                        url.searchParams.delete(GlobalConstants.TAB);
+                        window.history.replaceState(null, "", url.toString());
+                    }
+                }
+            } catch {
+                // No-op if URL manipulation fails
+            }
+
             await createTask(formData);
             console.log("Task created successfully");
             setTaskFormDefaultValues(null);
+            // Restore original URL after successful call
+            try {
+                if (originalHref) {
+                    window.history.replaceState(null, "", originalHref);
+                    urlRestored = true;
+                }
+            } catch {
+                // Ignore restore failures
+            }
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             console.error("Task creation failed:", error);
+            // Best-effort restore of original URL on failure
+            try {
+                // Only attempt if not already restored
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                typeof window !== "undefined" &&
+                    window.history &&
+                    (window.history.replaceState as any) &&
+                    !urlRestored &&
+                    window.history.replaceState(null, "", window.location.href);
+            } catch {
+                // Ignore
+            }
             throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
     };
