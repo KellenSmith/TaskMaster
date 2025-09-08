@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import GlobalConstants from "../../GlobalConstants";
 import { updateTaskById } from "../../lib/task-actions";
-import { createTaskFromKanban } from "./kanban-board-actions";
 import { createTaskWrapper } from "./task-wrapper";
 import Form from "../form/Form";
 import { use, useState, useCallback } from "react";
@@ -160,7 +159,7 @@ const DroppableColumn = ({
                 throw error;
             }
         },
-        [event?.id, language],
+        [event, language],
     );
 
     return (
