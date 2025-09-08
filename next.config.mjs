@@ -64,8 +64,6 @@ const nextConfig = {
                             "connect-src 'self' https:", // Allow connections to self and HTTPS
                             "object-src 'none'", // Disable plugins
                             "base-uri 'self'", // Restrict base tag
-                            "form-action 'self' https://" +
-                                process.env.VERCEL_PROJECT_PRODUCTION_URL, // Allow form submissions to self and production
                             "frame-ancestors 'none'", // Prevent embedding (like X-Frame-Options)
                             "upgrade-insecure-requests", // Upgrade HTTP to HTTPS
                         ].join("; "),
