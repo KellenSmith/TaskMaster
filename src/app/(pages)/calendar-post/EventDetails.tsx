@@ -16,6 +16,8 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
     const { language } = useUserContext();
     const event = use(eventPromise);
 
+    console.log(event);
+
     return (
         <Stack spacing={3} sx={{ p: { xs: 2, sm: 3 } }}>
             <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 } }}>
