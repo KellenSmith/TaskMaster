@@ -174,7 +174,17 @@ const Form: FC<FormProps> = ({
     };
 
     const submitForm = async (event: FormEvent<HTMLFormElement>) => {
+        console.log("Form submit called", { action: typeof action, hasAction: !!action });
         event.preventDefault();
+
+        // Ensure action is available before proceeding
+        if (!action || typeof action !== "function") {
+            console.error("Form action is not available", { action, type: typeof action });
+            addNotification("Form action is not available. Please try again.", "error");
+            return;
+        }
+
+        console.log("Processing form submission...");
         const formData = new FormData(event.currentTarget);
         const formDataWithFileUrls = await uploadFiles(formData);
         if (!formDataWithFileUrls) return;
@@ -182,10 +192,13 @@ const Form: FC<FormProps> = ({
         if (!parsedFieldValues) return;
         startTransition(async () => {
             try {
+                console.log("Calling action function...");
                 const submitResult = await action(formDataWithFileUrls);
+                console.log("Action completed successfully", submitResult);
                 addNotification(submitResult, "success");
                 !(editable && !readOnly) && setEditMode(false);
             } catch (error) {
+                console.error("Action failed:", error);
                 allowRedirectException(error);
                 addNotification(error.message, "error");
             }
