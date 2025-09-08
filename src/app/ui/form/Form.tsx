@@ -33,7 +33,7 @@ import RichTextField from "./RichTextField";
 import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
-import { allowRedirectException, formatDate, formatPrice } from "../utils";
+import { allowRedirectException, formatPrice } from "../utils";
 import dayjs from "dayjs";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
