@@ -234,13 +234,15 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
 
-    const validatedMember = await prisma.user.update({
-        where: { id: validatedUserId },
-        data: { status: UserStatus.validated },
-    });
+    await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+            where: { id: validatedUserId },
+            data: { status: UserStatus.validated },
+        });
 
-    // Notify the new member of their validated status
-    await notifyOfValidatedMembership(validatedMember.email);
+        // Notify the new member of their validated status
+        await notifyOfValidatedMembership(validatedUserId);
+    });
 
     revalidateTag(GlobalConstants.USER);
 };

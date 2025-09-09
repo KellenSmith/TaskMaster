@@ -1,7 +1,9 @@
+"use client";
 import { Error } from "@mui/icons-material";
 import { CircularProgress, Stack } from "@mui/material";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { allowRedirectException } from "./utils";
 
 const Container = ({ children }) => (
     <Stack height="100%" width="100%" justifyContent="center" alignItems="center">
@@ -27,7 +29,12 @@ export const LoadingFallback = () => {
 
 const ErrorBoundarySuspense = ({ children }) => {
     return (
-        <ErrorBoundary fallback={<ErrorFallback />}>
+        <ErrorBoundary
+            fallbackRender={({ error }) => {
+                allowRedirectException(error);
+                return <ErrorFallback />;
+            }}
+        >
             <Suspense fallback={<LoadingFallback />}>{children}</Suspense>
         </ErrorBoundary>
     );
