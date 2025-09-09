@@ -46,8 +46,7 @@ const DraggableTask = ({
     tasksPromise,
     setDraggedTask,
 }: DraggableTaskProps) => {
-    const { user, language } = useUserContext();
-    const { addNotification } = useNotificationContext();
+    const { language } = useUserContext();
     const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
     const task = tasks.find((task) => task.id === taskId);
