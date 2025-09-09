@@ -118,7 +118,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
                     .replace(/<[^>]*>/g, " ")
                     .replace(/\s+/g, " ")
                     .trim(),
-                envelope: { from: `bounce@${domain}` },
+                envelope: { from: `bounce@${domain}`, to: batch },
                 headers: {
                     "X-Mailer": `${organizationName} Task Master`,
                     "Auto-Submitted": "auto-generated",

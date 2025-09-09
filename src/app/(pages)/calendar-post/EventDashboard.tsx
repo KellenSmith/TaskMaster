@@ -269,13 +269,11 @@ const EventDashboard = ({
                 </Tabs>
 
                 <Stack sx={{ flexShrink: 0 }}>
-                    <ErrorBoundarySuspense>
-                        <EventActions
-                            eventPromise={eventPromise}
-                            locationsPromise={locationsPromise}
-                            eventTagsPromise={eventTagsPromise}
-                        />
-                    </ErrorBoundarySuspense>
+                    <EventActions
+                        eventPromise={eventPromise}
+                        locationsPromise={locationsPromise}
+                        eventTagsPromise={eventTagsPromise}
+                    />
                 </Stack>
             </Stack>
             <ErrorBoundarySuspense>{getOpenTabComp()}</ErrorBoundarySuspense>

@@ -27,7 +27,9 @@ import { createNewsletterJob } from "./newsletter-actions";
 
 interface EmailPayload {
     from: string;
-    bcc: string;
+    to?: string | string[];
+    cc?: string | string[];
+    bcc?: string | string[];
     replyTo?: string;
     subject: string;
     html: string;
@@ -48,10 +50,19 @@ const getEmailPayload = async (
     const organizationName = await getOrganizationName();
     const htmlContent = await render(mailContent);
 
+    // Normalize and validate recipients
+    const recipients = (receivers || []).map((s) => (s || "").trim()).filter(Boolean);
+    if (recipients.length === 0) {
+        throw new Error("No recipients provided");
+    }
+
+    const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
+    const returnPath = process.env.EMAIL_RETURN_PATH || `bounce@${domain}`;
+
+    // Base payload
     const payload: EmailPayload = {
         from: `${organizationName} <${process.env.EMAIL}>`,
-        bcc: receivers.join(", "),
-        subject: subject,
+        subject,
         html: htmlContent,
         // Add plain text version by stripping HTML
         text: htmlContent
@@ -63,13 +74,23 @@ const getEmailPayload = async (
             "X-Priority": "3",
             "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
             "Auto-Submitted": "auto-generated",
-            "Message-ID": `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@${process.env.EMAIL?.split("@")[1] || "taskmaster.local"}>`,
+            "Message-ID": `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@${domain}>`,
         },
-        // Set Return-Path alignment via envelope.from (provider may rewrite, DKIM still aligns)
+        // Ensure SMTP envelope has actual recipients
         envelope: {
-            from: `bounce@${process.env.EMAIL?.split("@")[1] || "taskmaster.local"}`,
+            from: returnPath,
+            to: recipients,
         },
     };
+
+    // Set header recipients: single uses To, multi uses BCC and an undisclosed To
+    if (recipients.length === 1) {
+        payload.to = recipients[0];
+    } else {
+        payload.to = "undisclosed-recipients:;";
+        payload.bcc = recipients.join(", ");
+    }
+
     if (replyTo) payload.replyTo = replyTo;
     return payload;
 };
