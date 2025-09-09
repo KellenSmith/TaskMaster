@@ -57,7 +57,7 @@ const getEmailPayload = async (
     }
 
     const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
-    const returnPath = process.env.EMAIL_RETURN_PATH || `bounce@${domain}`;
+    const returnPath = process.env.EMAIL;
 
     // Base payload
     const payload: EmailPayload = {
