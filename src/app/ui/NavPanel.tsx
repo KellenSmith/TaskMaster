@@ -117,7 +117,7 @@ const NavPanel = () => {
 
     const createInfoPageAction = async (formData: FormData) => {
         try {
-            await createInfoPage(formData, language);
+            await createInfoPage(formData);
             setAddInfoPageDialogOpen(false);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
