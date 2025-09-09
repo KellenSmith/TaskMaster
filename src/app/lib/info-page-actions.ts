@@ -81,7 +81,7 @@ export const updateInfoPage = async (
         const updatedInfoPage = await tx.infoPage.update({
             where: { id: validatedInfoPageId },
             data: {
-                lowest_allowed_user_role: validatedData.lowest_allowed_user_role,
+                lowest_allowed_user_role: validatedData.lowest_allowed_user_role || null,
             },
             include: { titleText: true },
         });
