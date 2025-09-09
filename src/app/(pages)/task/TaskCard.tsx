@@ -32,6 +32,7 @@ import { implementedTabs as implementedEventTabs } from "../calendar-post/Langua
 import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
 import RichTextField from "../../ui/form/RichTextField";
+import BookTaskButton from "../../ui/kanban-board/BookTaskButton";
 
 interface TaskCardProps {
     taskPromise: Promise<
@@ -267,6 +268,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                             </Stack>
                         </Stack>
                         <Stack width="100%" justifyContent="space-between">
+                            <BookTaskButton task={task} />
                             {task.event_id && (
                                 <Button
                                     fullWidth

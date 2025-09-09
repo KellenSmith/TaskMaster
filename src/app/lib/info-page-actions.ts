@@ -110,7 +110,7 @@ export const getInfoPages = async (
 ): Promise<
     Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>[]
 > => {
-    const loggedInUser = await prisma.user.findUnique({ where: { id: userId } });
+    const loggedInUser = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
 
     if (!loggedInUser)
         return await prisma.infoPage.findMany({

@@ -3,20 +3,15 @@ import { formatDate, isUserQualifiedForTask, openResourceInNewTab } from "../uti
 import GlobalConstants from "../../GlobalConstants";
 import { assignTaskToUser, unassignTaskFromUser } from "../../lib/task-actions";
 import { use } from "react";
-import ConfirmButton from "../ConfirmButton";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { getRelativeUrl } from "../../lib/utils";
-import { CheckCircle, Delete, Info, OpenInNew, Warning } from "@mui/icons-material";
-import {
-    doDateRangesOverlap,
-    isEventSoldOut,
-    isUserParticipant,
-} from "../../(pages)/calendar-post/event-utils";
+import { Info, OpenInNew } from "@mui/icons-material";
 import isBetween from "dayjs/plugin/isBetween";
 import dayjs from "dayjs";
+import BookTaskButton from "./BookTaskButton";
 
 dayjs.extend(isBetween);
 
@@ -56,79 +51,6 @@ const DraggableTask = ({
     const event = eventPromise ? use(eventPromise) : null;
     const tasks = use(tasksPromise);
     const task = tasks.find((task) => task.id === taskId);
-
-    const assignTaskToMe = async () => {
-        try {
-            await assignTaskToUser(user.id, task.id);
-            addNotification(LanguageTranslations.bookedTask[language], "success");
-        } catch {
-            addNotification(LanguageTranslations.failedBookTask[language], "error");
-        }
-    };
-
-    const unassignFromTask = async () => {
-        try {
-            await unassignTaskFromUser(user.id, task.id);
-            addNotification(LanguageTranslations.unassignedTask[language], "success");
-        } catch {
-            addNotification(LanguageTranslations.failedUnassignTask[language], "error");
-        }
-    };
-
-    const getTaskActionButton = () => {
-        if (task.assignee_id === user.id)
-            return (
-                <ConfirmButton
-                    onClick={unassignFromTask}
-                    fullWidth
-                    color="error"
-                    variant="outlined"
-                    startIcon={<Delete />}
-                    confirmText={LanguageTranslations.areYouSureCancelShiftBooking[language]}
-                >
-                    {LanguageTranslations.cancelShiftBooking[language]}
-                </ConfirmButton>
-            );
-        if (!isUserQualifiedForTask(user, task.skill_badges))
-            return (
-                <Stack direction="row" alignItems="center" gap={1}>
-                    <Warning color="warning" />{" "}
-                    <Typography variant="caption" color="warning.main">
-                        {LanguageTranslations.unqualifiedForShiftTooltip[language]}
-                    </Typography>
-                </Stack>
-            );
-
-        if (
-            event &&
-            isEventSoldOut(event) &&
-            !isUserParticipant(user, event) &&
-            doDateRangesOverlap(event.start_time, event.end_time, task.start_time, task.end_time)
-        )
-            return (
-                <Tooltip title={LanguageTranslations.eventSoldOutTooltip[language]}>
-                    <Warning color="warning" />
-                </Tooltip>
-            );
-        let confirmText = LanguageTranslations.areYouSureBookThisShift[language];
-        if (event) {
-            if (isEventSoldOut(event) && !isUserParticipant(user, event)) {
-                confirmText = LanguageTranslations.areYouSureBookThisSoldOutEventShift[language];
-            } else confirmText = LanguageTranslations.areYouSureBookThisEventShift[language];
-        }
-        return (
-            <ConfirmButton
-                onClick={assignTaskToMe}
-                fullWidth
-                color="success"
-                variant="outlined"
-                startIcon={<CheckCircle />}
-                confirmText={confirmText}
-            >
-                {LanguageTranslations.bookThisShift[language]}
-            </ConfirmButton>
-        );
-    };
 
     return (
         <>
@@ -189,7 +111,7 @@ const DraggableTask = ({
                         >
                             {LanguageTranslations.moreInfo[language]}
                         </Button>
-                        {getTaskActionButton()}
+                        <BookTaskButton task={task} event={event} />
                     </Stack>
                 </Stack>
             </Card>

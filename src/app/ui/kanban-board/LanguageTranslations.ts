@@ -114,10 +114,10 @@ const LanguageTranslations = {
         [Language.swedish]: "Kunde inte boka volontärskift",
     },
     areYouSureCancelShiftBooking: {
-        [Language.english]:
-            "Are you sure you want to cancel this shift booking? If you are not booked for any other shifts, you will lose your volunteer ticket.",
-        [Language.swedish]:
-            "Är du säker på att du vill avboka detta skift? Om du inte är bokad för några andra skift kommer du att förlora din volontärbiljett.",
+        [Language.english]: (event = null) =>
+            `Are you sure you want to cancel this shift booking?${event ? " If you are not booked for any other shifts, you will lose your volunteer ticket." : ""}`,
+        [Language.swedish]: (event = null) =>
+            `Är du säker på att du vill avboka detta skift?${event ? " Om du inte är bokad för några andra skift kommer du att förlora din volontärbiljett." : ""}`,
     },
     cancelShiftBooking: {
         [Language.english]: "Cancel shift booking",

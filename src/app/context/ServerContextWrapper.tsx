@@ -24,9 +24,9 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
           })(loggedInUser.id)
         : Promise.resolve(null);
 
-    const infoPagesPromise = unstable_cache(getInfoPages, [loggedInUser.id], {
+    const infoPagesPromise = unstable_cache(getInfoPages, [loggedInUser?.id], {
         tags: [GlobalConstants.INFO_PAGE],
-    })(loggedInUser.id);
+    })(loggedInUser?.id);
 
     return (
         <ContextWrapper
