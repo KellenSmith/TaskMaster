@@ -6,7 +6,7 @@ import { userHasRolePrivileges } from "./auth/auth-utils";
 import { Language, Prisma, UserRole } from "@prisma/client";
 import { serverRedirect } from "./utils";
 import GlobalConstants from "../GlobalConstants";
-import { createTextContent, getTextContent } from "./text-content-actions";
+import { createTextContent } from "./text-content-actions";
 import { revalidateTag } from "next/cache";
 
 export const getInfoPageById = async (
@@ -36,7 +36,7 @@ export const getInfoPageById = async (
     return infoPage;
 };
 
-export const createInfoPage = async (formData: FormData, language: Language): Promise<void> => {
+export const createInfoPage = async (formData: FormData): Promise<void> => {
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     let createdInfoPageId: string;

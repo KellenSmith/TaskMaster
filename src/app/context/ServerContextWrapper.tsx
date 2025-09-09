@@ -4,7 +4,6 @@ import { unstable_cache } from "next/cache";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
 import GlobalConstants from "../GlobalConstants";
 import { getLoggedInUser, getUserById } from "../lib/user-actions";
-import { auth } from "../lib/auth/auth";
 import { getInfoPages } from "../lib/info-page-actions";
 
 interface ServerContextWrapperProps {

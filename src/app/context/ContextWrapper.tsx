@@ -15,7 +15,11 @@ interface ContextWrapperProps {
     userPromise: Promise<Prisma.UserGetPayload<{
         include: { user_membership: true; skill_badges: true };
     }> | null>;
-    infoPagesPromise?: Promise<Prisma.InfoPageGetPayload<true>[]>;
+    infoPagesPromise?: Promise<
+        Prisma.InfoPageGetPayload<{
+            include: { titleText: { include: { translations: true } } };
+        }>[]
+    >;
 }
 
 const ContextWrapper: FC<ContextWrapperProps> = ({

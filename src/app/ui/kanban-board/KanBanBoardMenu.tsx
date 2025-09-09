@@ -129,7 +129,7 @@ const KanBanBoardMenu = ({
         try {
             const parsedFilterValues = TaskFilterSchema.parse(Object.fromEntries(formData));
             setAppliedFilter(parsedFilterValues);
-        } catch (error) {
+        } catch {
             addNotification(LanguageTranslations.filtrationError[language], "error");
         }
     };
