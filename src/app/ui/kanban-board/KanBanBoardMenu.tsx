@@ -76,11 +76,9 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
 ): T[] => {
     if (!appliedFilter) return tasks;
     let filteredTasks = [...tasks];
-    console.log("Applying filter:", appliedFilter, "to tasks:", tasks);
     for (const [key, value] of Object.entries(appliedFilter)) {
         if (value)
             filteredTasks = filterOptions[key]({ tasks: filteredTasks, value, userId }) as T[];
-        console.log(key, "Filtered tasks:", filteredTasks);
     }
     return filteredTasks;
 };
@@ -132,7 +130,6 @@ const KanBanBoardMenu = ({
             const parsedFilterValues = TaskFilterSchema.parse(Object.fromEntries(formData));
             setAppliedFilter(parsedFilterValues);
         } catch (error) {
-            console.log("Error applying filter:", error);
             addNotification(LanguageTranslations.filtrationError[language], "error");
         }
     };

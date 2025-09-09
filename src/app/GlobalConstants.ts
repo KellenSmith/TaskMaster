@@ -35,6 +35,10 @@ const GlobalConstants = {
     MEMBER_APPLICATION_PROMPT: "member_application_prompt",
     LOGO_URL: "logo_url",
     EVENT_MANAGER_EMAIL: "event_manager_email",
+    // Info page
+    INFO_PAGE: "info_page",
+    INFO_PAGE_ID: "info_page_id",
+    LOWEST_ALLOWED_USER_ROLE: "lowest_allowed_user_role",
     // User
     USER: "user",
     USER_ID: "user_id",

@@ -49,10 +49,25 @@ model OrganizationSettings {
   @@map("organization_settings")
 }
 
+model InfoPage {
+  id                       String    @id @default(uuid())
+  lowest_allowed_user_role UserRole? @default(admin)
+
+  titleText TextContent? @relation("InfoPageTitle")
+  content   TextContent? @relation("InfoPageContent")
+
+  @@map("info_pages")
+}
+
 model TextContent {
   id           String            @id @default(uuid())
   category     String?           @default("organization")
   translations TextTranslation[]
+
+  title_info_page_id   String?   @unique
+  content_info_page_id String?   @unique
+  titleInfoPage        InfoPage? @relation("InfoPageTitle", fields: [title_info_page_id], references: [id], onDelete: Cascade)
+  contentInfoPage      InfoPage? @relation("InfoPageContent", fields: [content_info_page_id], references: [id], onDelete: Cascade)
 
   @@map("text_contents")
 }

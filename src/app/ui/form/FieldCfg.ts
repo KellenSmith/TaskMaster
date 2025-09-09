@@ -3,6 +3,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import {
     eventFieldLabels,
+    infoPageFieldLabels,
     locationFieldLabels,
     orderFieldLabels,
     organizationSettingsFieldLabels,
@@ -22,6 +23,7 @@ export const FieldLabels = {
         [Language.swedish]: "Id",
     },
     ...organizationSettingsFieldLabels,
+    ...infoPageFieldLabels,
     ...textContentFieldLabels,
     ...userFieldLabels,
     ...eventFieldLabels,
@@ -77,6 +79,7 @@ export const RenderedFields = {
         GlobalConstants.MEMBER_APPLICATION_PROMPT,
         GlobalConstants.LOGO_URL,
     ],
+    [GlobalConstants.INFO_PAGE]: [GlobalConstants.TITLE, GlobalConstants.LOWEST_ALLOWED_USER_ROLE],
     // Profile
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,
@@ -169,6 +172,7 @@ export const RequiredFields = {
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
     ],
+    [GlobalConstants.INFO_PAGE]: [GlobalConstants.TITLE],
     [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.TEXT],
     // Profile
     [GlobalConstants.PROFILE]: [
@@ -225,6 +229,7 @@ export const selectFieldOptions = {
     [GlobalConstants.ROLE]: Object.values(UserRole),
     [GlobalConstants.STATUS]: Object.values(TaskStatus),
     [GlobalConstants.TICKET_TYPE]: Object.values(TicketType),
+    [GlobalConstants.LOWEST_ALLOWED_USER_ROLE]: Object.values(UserRole),
 };
 
 export const allowSelectMultiple = [GlobalConstants.TAGS, GlobalConstants.SKILL_BADGES];

@@ -132,7 +132,7 @@ export const routeTreeConfig: RouteConfigType = {
     ],
 };
 
-const userHasRolePrivileges = (
+export const userHasRolePrivileges = (
     user: Prisma.UserGetPayload<{ select: { role: true } }>,
     authRole: UserRole,
 ) => {

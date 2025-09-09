@@ -3,8 +3,9 @@ import ContextWrapper from "./ContextWrapper";
 import { unstable_cache } from "next/cache";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
 import GlobalConstants from "../GlobalConstants";
-import { getUserById } from "../lib/user-actions";
+import { getLoggedInUser, getUserById } from "../lib/user-actions";
 import { auth } from "../lib/auth/auth";
+import { getInfoPages } from "../lib/info-page-actions";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
@@ -15,21 +16,24 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
         tags: [GlobalConstants.ORGANIZATION_SETTINGS],
     })();
 
-    // Get the auth session first (outside of any caching)
-    const session = await auth();
-    const userId = session?.user?.id;
+    const loggedInUser = await getLoggedInUser();
 
     // Only cache the user data fetching if we have a user ID
-    const userPromise = userId
-        ? unstable_cache(getUserById, [userId], {
+    const userPromise = loggedInUser?.id
+        ? unstable_cache(getUserById, [loggedInUser.id], {
               tags: [GlobalConstants.USER],
-          })(userId)
+          })(loggedInUser.id)
         : Promise.resolve(null);
+
+    const infoPagesPromise = unstable_cache(getInfoPages, [loggedInUser.id], {
+        tags: [GlobalConstants.INFO_PAGE],
+    })(loggedInUser.id);
 
     return (
         <ContextWrapper
             organizationSettingsPromise={organizationSettingsPromise}
             userPromise={userPromise}
+            infoPagesPromise={infoPagesPromise}
         >
             {children}
         </ContextWrapper>

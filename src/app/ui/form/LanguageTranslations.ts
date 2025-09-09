@@ -1,6 +1,7 @@
-import { Language, OrderStatus, TaskStatus, TicketType } from "@prisma/client";
+import { Language, OrderStatus, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
+import LanguageTranslations from "../../(pages)/profile/LanguageTranslations";
 
 export const organizationSettingsFieldLabels = {
     // Organization settings
@@ -39,6 +40,17 @@ export const textContentFieldLabels = {
     [GlobalConstants.TEXT_CONTENT]: {
         [Language.english]: "Text content",
         [Language.swedish]: "Textinnehåll",
+    },
+};
+
+export const infoPageFieldLabels = {
+    [GlobalConstants.INFO_PAGE]: {
+        [Language.english]: "Info Page",
+        [Language.swedish]: "Informationssida",
+    },
+    [GlobalConstants.LOWEST_ALLOWED_USER_ROLE]: {
+        [Language.english]: "Lowest allowed user role",
+        [Language.swedish]: "Lägsta tillåtna användarroll",
     },
 };
 
@@ -111,6 +123,8 @@ export const userFieldLabels = {
         [Language.english]: "Expires At",
         [Language.swedish]: "Utgår Datum",
     },
+    [UserRole.admin]: LanguageTranslations.admin,
+    [UserRole.member]: LanguageTranslations.member,
 };
 
 export const eventFieldLabels = {

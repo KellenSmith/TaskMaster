@@ -90,6 +90,10 @@ const LanguageTranslations = {
         [Language.english]: (loggedIn: boolean) => (loggedIn ? "Log out" : "Log in"),
         [Language.swedish]: (loggedIn: boolean) => (loggedIn ? "Logga ut" : "Logga in"),
     },
+    addInfoPage: {
+        [Language.english]: "Add Info Page",
+        [Language.swedish]: "Lägg till informationssida",
+    },
     errorInField: {
         [Language.english]: "Error in field",
         [Language.swedish]: "Fel i fältet",

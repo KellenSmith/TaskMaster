@@ -15,11 +15,13 @@ interface ContextWrapperProps {
     userPromise: Promise<Prisma.UserGetPayload<{
         include: { user_membership: true; skill_badges: true };
     }> | null>;
+    infoPagesPromise?: Promise<Prisma.InfoPageGetPayload<true>[]>;
 }
 
 const ContextWrapper: FC<ContextWrapperProps> = ({
     children,
     organizationSettingsPromise,
+    infoPagesPromise,
     userPromise,
 }) => {
     return (
@@ -29,6 +31,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                     <NotificationContextProvider>
                         <OrganizationSettingsProvider
                             organizationSettingsPromise={organizationSettingsPromise}
+                            infopagesPromise={infoPagesPromise}
                         >
                             <SessionProvider>
                                 <UserContextProvider userPromise={userPromise}>

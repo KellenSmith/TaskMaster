@@ -5,43 +5,50 @@ import GlobalConstants from "../GlobalConstants";
 import { Language, Prisma } from "@prisma/client";
 import { sanitizeRichText } from "./html-sanitizer";
 
-export const getTextContent = async (
-    id: string,
-): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
-    let textContent = await prisma.textContent.findUnique({
-        where: {
-            id,
+export const createTextContent = async (
+    tx,
+): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> =>
+    await tx.textContent.create({
+        data: {
+            translations: {
+                createMany: {
+                    data: [
+                        {
+                            language: Language.english,
+                            text: '<p><span style="color: rgb(255, 255, 255);">placeholder</span></p>',
+                        },
+                        {
+                            language: Language.swedish,
+                            text: '<p><span style="color: rgb(255, 255, 255);">platshållare</span></p>',
+                        },
+                    ],
+                },
+            },
         },
         include: {
             translations: true,
         },
     });
 
-    // If the text content doesn't exist, create a default
-    if (!textContent)
-        textContent = await prisma.textContent.create({
-            data: {
-                id,
-                translations: {
-                    createMany: {
-                        data: [
-                            {
-                                language: Language.english,
-                                text: '<p><span style="color: rgb(255, 255, 255);">placeholder</span></p>',
-                            },
-                            {
-                                language: Language.swedish,
-                                text: '<p><span style="color: rgb(255, 255, 255);">platshållare</span></p>',
-                            },
-                        ],
-                    },
-                },
+export const getTextContent = async (
+    id: string | null = null,
+): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
+    return await prisma.$transaction(async (tx) => {
+        if (!id) return await createTextContent(tx);
+
+        let textContent = await tx.textContent.findUnique({
+            where: {
+                id: id,
             },
             include: {
                 translations: true,
             },
         });
-    return textContent;
+
+        // If the text content doesn't exist, create a default
+        if (!textContent) textContent = await createTextContent(tx);
+        return textContent;
+    });
 };
 
 export const updateTextContent = async (

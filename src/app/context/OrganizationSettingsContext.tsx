@@ -6,6 +6,9 @@ import { CircularProgress } from "@mui/material";
 
 interface OrganizationSettingsContextValue {
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>;
+    infopagesPromise?: Promise<
+        Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>[]
+    >;
 }
 
 export const OrganizationSettingsContext = createContext<OrganizationSettingsContextValue | null>(
@@ -23,17 +26,23 @@ export const useOrganizationSettingsContext = () => {
 
 interface OrganizationSettingsProviderProps {
     organizationSettingsPromise: Promise<Prisma.OrganizationSettingsGetPayload<true>>;
+    infopagesPromise: Promise<
+        Prisma.InfoPageGetPayload<{
+            include: { titleText: { include: { translations: true } } };
+        }>[]
+    >;
     children: ReactNode;
 }
 
 const OrganizationSettingsProvider: FC<OrganizationSettingsProviderProps> = ({
     organizationSettingsPromise,
+    infopagesPromise,
     children,
 }) => {
     const organizationSettings = use(organizationSettingsPromise);
 
     return (
-        <OrganizationSettingsContext.Provider value={{ organizationSettings }}>
+        <OrganizationSettingsContext.Provider value={{ organizationSettings, infopagesPromise }}>
             {organizationSettings ? children : <CircularProgress />}
         </OrganizationSettingsContext.Provider>
     );

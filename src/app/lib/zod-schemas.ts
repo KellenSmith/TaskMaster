@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { object, z } from "zod";
 import { UserRole, EventStatus, TaskStatus, TicketType, OrderStatus, Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -55,6 +55,17 @@ export const OrganizationSettingsUpdateSchema = z
         logo_url: z.string().nullable().optional(),
     })
     .omit({ id: true });
+
+// =============================================================================
+// INFO PAGE SCHEMAS
+// =============================================================================
+
+export const InfoPageCreateSchema = z.object({
+    title: z.string().min(2).max(100),
+    lowest_allowed_user_role: z.union([UserRoleSchema, z.literal("")]),
+});
+
+export const InfoPageUpdateSchema = InfoPageCreateSchema.partial();
 
 // =============================================================================
 // USER SCHEMAS

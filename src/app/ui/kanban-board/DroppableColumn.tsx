@@ -92,7 +92,6 @@ const DroppableColumn = ({
             ),
         [appliedFilter, tasks, status, user.id],
     );
-    console.log(status, "column - filtered tasks:", filteredTasks);
 
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask?.status !== status) {
