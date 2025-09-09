@@ -135,7 +135,7 @@ const KanBanBoardMenu = ({
     };
 
     const getFilterOptionComp = (fieldId: FilterNameType) => {
-        const label = LanguageTranslations[fieldId][language];
+        const label = LanguageTranslations[fieldId][language] as string;
 
         if (["begins_after", "ends_before"].includes(fieldId))
             return (
