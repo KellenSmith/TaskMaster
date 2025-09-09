@@ -46,7 +46,7 @@ const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) 
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button variant="outlined" disabled={isPending} onClick={wrappedOnClick}>
+                    <Button variant="contained" disabled={isPending} onClick={wrappedOnClick}>
                         {LanguageTranslations.proceed[language]}
                     </Button>
                     <Button disabled={isPending} onClick={() => setOpen(false)}>
