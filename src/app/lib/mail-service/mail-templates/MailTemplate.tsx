@@ -3,7 +3,6 @@ import { Html, Head, Body, Container, Heading, Button } from "@react-email/compo
 import mailTheme from "../mail-theme";
 import { getAbsoluteUrl } from "../../utils";
 import GlobalConstants from "../../../GlobalConstants";
-import { getOrganizationName } from "../../organization-settings-actions";
 
 interface MailTemplateProps {
     children?: ReactNode;
@@ -15,8 +14,6 @@ const MailTemplate: FC<MailTemplateProps> = async ({ children, html }) => {
         if (!html) return null;
         return <div dangerouslySetInnerHTML={{ __html: html }} />;
     };
-
-    const organizationName = await getOrganizationName();
 
     return (
         <Html>
@@ -37,7 +34,7 @@ const MailTemplate: FC<MailTemplateProps> = async ({ children, html }) => {
                             ...mailTheme.typography.h3,
                         }}
                     >
-                        {organizationName}
+                        {process.env.NEXT_PUBLIC_ORG_NAME}
                     </Heading>
                     <Container style={{ color: mailTheme.palette.text.primary, padding: "16px" }}>
                         {children}

@@ -18,11 +18,6 @@ export const getOrganizationSettings = async (): Promise<
     return orgSettings;
 };
 
-export const getOrganizationName = async (): Promise<string> => {
-    const orgSettings = await getOrganizationSettings();
-    return orgSettings?.organization_name || process.env.NEXT_PUBLIC_ORG_NAME || "Task Master";
-};
-
 export const updateOrganizationSettings = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = OrganizationSettingsUpdateSchema.parse(

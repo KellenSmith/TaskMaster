@@ -5,7 +5,6 @@ import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { createElement } from "react";
 import { getMailTransport } from "./mail-transport";
-import { getOrganizationName } from "../organization-settings-actions";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
 import { UuidSchema } from "../zod-schemas";
@@ -76,7 +75,6 @@ export async function processNextNewsletterBatch(jobId?: string) {
     const batch = recipients.slice(start, end);
 
     // Prepare mail
-    const organizationName = await getOrganizationName();
     const mailContent = createElement(MailTemplate, { html: job.html });
     const htmlContent = await render(mailContent);
 
@@ -90,7 +88,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
             // send one-by-one within the same request; keep under provider rate by batching outside
             for (const rcpt of batch) {
                 const res = await transport.sendMail({
-                    from: `${organizationName} <${process.env.EMAIL}>`,
+                    from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
                     to: rcpt,
                     subject: job.subject,
                     html: htmlContent,
@@ -100,7 +98,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
                         .trim(),
                     envelope: { from: `bounce@${domain}`, to: rcpt },
                     headers: {
-                        "X-Mailer": `${organizationName} Task Master`,
+                        "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
                         "Auto-Submitted": "auto-generated",
                         "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
                     },
@@ -110,7 +108,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
         } else {
             // BCC batch send (counts as 1 email to up to 250 recipients per provider docs)
             const res = await transport.sendMail({
-                from: `${organizationName} <${process.env.EMAIL}>`,
+                from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
                 bcc: batch.join(", "),
                 subject: job.subject,
                 html: htmlContent,
@@ -120,7 +118,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
                     .trim(),
                 envelope: { from: `bounce@${domain}`, to: batch },
                 headers: {
-                    "X-Mailer": `${organizationName} Task Master`,
+                    "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
                     "Auto-Submitted": "auto-generated",
                     "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
                 },

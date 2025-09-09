@@ -9,7 +9,6 @@ import { prisma } from "../../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
-import { getOrganizationName, getOrganizationSettings } from "../organization-settings-actions";
 import { EmailSendoutSchema, MembershipApplicationSchema } from "../zod-schemas";
 import z from "zod";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
@@ -47,7 +46,6 @@ const getEmailPayload = async (
     mailContent: ReactElement,
     replyTo?: string,
 ): Promise<EmailPayload> => {
-    const organizationName = await getOrganizationName();
     const htmlContent = await render(mailContent);
 
     // Normalize and validate recipients
@@ -61,7 +59,7 @@ const getEmailPayload = async (
 
     // Base payload
     const payload: EmailPayload = {
-        from: `${organizationName} <${process.env.EMAIL}>`,
+        from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
         subject,
         html: htmlContent,
         // Add plain text version by stripping HTML
@@ -70,7 +68,7 @@ const getEmailPayload = async (
             .replace(/\s+/g, " ")
             .trim(),
         headers: {
-            "X-Mailer": `${organizationName} Task Master`,
+            "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
             "X-Priority": "3",
             "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
             "Auto-Submitted": "auto-generated",
@@ -100,7 +98,6 @@ const getEmailPayload = async (
  * @throws Error if email fails
  */
 export const sendSignInEmail = async (email: string, url: string): Promise<string> => {
-    const organizationName = await getOrganizationName();
     const mailContent = createElement(SignInEmailTemplate, {
         email,
         url,
@@ -108,7 +105,11 @@ export const sendSignInEmail = async (email: string, url: string): Promise<strin
 
     const transport = await getMailTransport();
     const mailResponse = await transport.sendMail(
-        await getEmailPayload([email], `Sign in to ${organizationName}`, mailContent),
+        await getEmailPayload(
+            [email],
+            `Sign in to ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+            mailContent,
+        ),
     );
     if (mailResponse.error) throw new Error(mailResponse.error.message);
     return mailResponse;
@@ -117,7 +118,6 @@ export const sendSignInEmail = async (email: string, url: string): Promise<strin
 export const notifyOfMembershipApplication = async (
     parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
 ): Promise<void> => {
-    const organizationSettings = await getOrganizationSettings();
     const mailContent = createElement(MembershipApplicationTemplate, {
         parsedFieldValues,
     });
@@ -125,7 +125,7 @@ export const notifyOfMembershipApplication = async (
     const transport = await getMailTransport();
     const mailResponse = await transport.sendMail(
         await getEmailPayload(
-            [organizationSettings.organization_email],
+            [process.env.EMAIL],
             `New membership application received`,
             mailContent,
         ),
@@ -137,13 +137,12 @@ export const notifyOfMembershipApplication = async (
  * @throws Error if email fails
  */
 export const remindExpiringMembers = async (userEmails: string[]): Promise<string> => {
-    const orgSettings = await getOrganizationSettings();
     const mailContent = createElement(MembershipExpiresReminderTemplate);
     const transport = await getMailTransport();
     const mailResponse = await transport.sendMail(
         await getEmailPayload(
             userEmails,
-            `Your ${orgSettings?.organization_name || "Task Master"} membership is about to expire`,
+            `Your ${process.env.NEXT_PUBLIC_ORG_NAME || "Task Master"} membership is about to expire`,
             mailContent,
         ),
     );
@@ -322,7 +321,7 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
     const mailResponse = await transport.sendMail(
         await getEmailPayload(
             [orderDetails.user.email],
-            `Order Confirmation - ${await getOrganizationName()}`,
+            `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
             mailContent,
         ),
     );

@@ -5,7 +5,6 @@ import { getOrderById, progressOrder } from "./order-actions";
 import { OrderStatus } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
-import { getOrganizationName } from "./organization-settings-actions";
 import { redirect } from "next/navigation";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
 import { getLoggedInUser } from "./user-actions";
@@ -83,7 +82,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
                 payeeReference: payeeRef, // Compliant: alphanumeric, max 30 chars, unique
-                payeeName: await getOrganizationName(),
+                payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
                 orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
         },

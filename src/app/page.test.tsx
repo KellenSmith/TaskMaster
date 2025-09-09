@@ -16,14 +16,9 @@ vi.mock("./ui/TextContent", () => ({
 const mockTextContent = vi.fn();
 
 import HomePage from "./page";
-import { MockPrisma } from "../test/types/test-types";
 
 describe("Home", () => {
     it("renders welcome message and delegates to TextContent with proper id prop", async () => {
-        (mockContext.prisma as MockPrisma).organizationSettings.findFirst.mockResolvedValue({
-            organization_name: "Task Master",
-        });
-
         const jsx = await HomePage({});
         render(jsx as ReactElement);
 

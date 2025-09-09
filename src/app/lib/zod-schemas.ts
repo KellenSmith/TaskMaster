@@ -47,8 +47,6 @@ export const OrderStatusSchema = z.enum(OrderStatus);
 export const OrganizationSettingsUpdateSchema = z
     .object({
         id: z.string().optional(),
-        organization_name: z.string().nullable().optional(),
-        organization_email: z.email().nullable().optional(),
         event_manager_email: z.union([z.email().nullable().optional(), z.literal("")]),
         remind_membership_expires_in_days: z.coerce.number().int().positive().optional(),
         purge_members_after_days_unvalidated: z.coerce.number().int().positive().optional(),

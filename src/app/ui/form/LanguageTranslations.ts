@@ -8,14 +8,6 @@ export const organizationSettingsFieldLabels = {
         [Language.english]: "Settings",
         [Language.swedish]: "Inställningar",
     },
-    [GlobalConstants.ORGANIZATION_NAME]: {
-        [Language.english]: "Organization Name",
-        [Language.swedish]: "Organisationsnamn",
-    },
-    [GlobalConstants.ORGANIZATION_EMAIL]: {
-        [Language.english]: "Organization Email",
-        [Language.swedish]: "Organisationens e-post",
-    },
     [GlobalConstants.LOGO_URL]: {
         [Language.english]: "Upload logo",
         [Language.swedish]: "Ladda upp logga",

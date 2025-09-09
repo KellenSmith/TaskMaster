@@ -35,17 +35,6 @@ export const FieldLabels = {
 };
 
 export const explanatoryTexts = {
-    [GlobalConstants.ORGANIZATION_NAME]: {
-        [Language.english]:
-            "The name of the organization which will be displayed all over the application",
-        [Language.swedish]: "Namnet på organisationen som kommer att visas över hela applikationen",
-    },
-    [GlobalConstants.ORGANIZATION_EMAIL]: {
-        [Language.english]:
-            "The email address which automated emails are sent from and should be monitored for replies",
-        [Language.swedish]:
-            "E-postadressen som automatiserade e-postmeddelanden skickas från och som bör övervakas för svar",
-    },
     [GlobalConstants.EVENT_MANAGER_EMAIL]: {
         [Language.english]:
             "If given, events must be submitted for approval before publishing to the calendar. This email will receive a notification.",
@@ -81,8 +70,6 @@ export const explanatoryTexts = {
 export const RenderedFields = {
     // Org settings
     [GlobalConstants.ORGANIZATION_SETTINGS]: [
-        GlobalConstants.ORGANIZATION_NAME,
-        GlobalConstants.ORGANIZATION_EMAIL,
         GlobalConstants.EVENT_MANAGER_EMAIL,
         GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
@@ -179,10 +166,8 @@ RenderedFields[GlobalConstants.USER] = [
 export const RequiredFields = {
     // Org settings
     [GlobalConstants.ORGANIZATION_SETTINGS]: [
-        GlobalConstants.ORGANIZATION_NAME,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
-        GlobalConstants.ORGANIZATION_EMAIL,
     ],
     [GlobalConstants.TEXT_CONTENT]: [GlobalConstants.TEXT],
     // Profile

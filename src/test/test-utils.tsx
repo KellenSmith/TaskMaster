@@ -19,8 +19,6 @@ const mockUserContextValue = {
 const mockOrganizationSettingsContextValue = {
     organizationSettings: {
         id: "orgsettingsid",
-        organization_email: "test@example.com",
-        organization_name: "Task Master",
         remind_membership_expires_in_days: 7,
         purge_members_after_days_unvalidated: 180,
         default_task_shift_length: 2,

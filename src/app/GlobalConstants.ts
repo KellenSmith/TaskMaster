@@ -29,8 +29,6 @@ const GlobalConstants = {
     VALIDATE_MEMBERSHIP: "validateMembership",
     APPLY: "apply",
     // Org settings
-    ORGANIZATION_NAME: "organization_name",
-    ORGANIZATION_EMAIL: "organization_email",
     DEFAULT_TASK_SHIFT_LENGTH: "default_task_shift_length",
     REMIND_MEMBERSHIP_EXPIRES_IN_DAYS: "remind_membership_expires_in_days",
     PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED: "purge_members_after_days_unvalidated",
