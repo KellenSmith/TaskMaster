@@ -5,20 +5,9 @@
 Help me test the TaskMaster!
 Play around as much as you like. Try to break it and tell me what else you want in there.
 
-There are a few test accounts you can use. All accounts have password 123456
+To get access you need to apply with a valid email. Login is done with magic links sent to your email.
 
-- admin@email.com
-- eventHost@email.com
-- eventParticipant@email.com
-- eventVolunteer@email.com
-- eventReserve@email.com
-- pendingMembership@email.com
-- expiredMembership@email.com
-
-At the time of writing i've prepped the database with accounts, events a.s.o to show off what the TaskMaster can do. Feel free to change things around. I can easily reset the database.
-The test accounts have been set up with various roles and permissions to help you explore the application. The event-related roles refer to the event "Test Event" happening on 2025-08-30 in the calendar.
-
-The TaskMaster helps out by sending automatic emails related to events, orders, and user actions. The email will be sent to the address of the relevant user. If you want to test it, feel free to enter an email you have access to.
+The TaskMaster helps out by sending automatic emails related to events, orders, and user actions. The email will be sent to the address of the relevant user.
 
 For payments, use the following test data:
 
@@ -30,7 +19,7 @@ For payments, use the following test data:
 
 ## Known bugs
 
-- When you clone an event and is redirected to the new event clone, the event menu button (...) in the upper right corner does not work until the page is refreshed.
+- All known fixed!
 
 ## Further plans in order of priority
 
@@ -67,7 +56,7 @@ Create an empty folder on your machine and open the folder in Visual Studio Code
 
 ```
 git init
-git add origin https://github.com/KellenSmith/TaskMaster.git
+git remote add origin https://github.com/KellenSmith/TaskMaster.git
 git fetch origin
 ```
 
@@ -89,3 +78,12 @@ pnpm dev
 You should then be able to access the application at [https://localhost:3000](https://localhost:3000)
 
 Create a new file in the root folder called ".env" and ask Kellen for the contents. To begin working, go to GitHub and grab one of the "issues" tagged with the topic you prefer.
+
+## Documentation
+
+- Start here: `docs/README.md`
+- Purpose and audience: `docs/00-purpose.md`
+- Local setup: `docs/01-getting-started.md`
+- Environment variables: `docs/02-environment.md` (+ see `.env.example`)
+- Architecture overview: `docs/03-architecture.md`
+- Testing: `docs/04-testing.md`
