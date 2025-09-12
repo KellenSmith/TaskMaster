@@ -4,6 +4,8 @@ import { LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
+import GlobalConstants from "../../GlobalConstants";
+import RichTextField from "../../ui/form/RichTextField";
 
 interface LocationDashboardProps {
     location: Location;
@@ -30,7 +32,14 @@ const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
                             <Typography color="text.secondary">
                                 {FieldLabels[fieldId][language] as string}
                             </Typography>
-                            <Typography>{location[fieldId]}</Typography>
+                            {fieldId === GlobalConstants.DESCRIPTION ? (
+                                <RichTextField
+                                    editMode={false}
+                                    defaultValue={location.description}
+                                />
+                            ) : (
+                                <Typography>{location[fieldId]}</Typography>
+                            )}
                         </Stack>
                     ))}
                 </Stack>
