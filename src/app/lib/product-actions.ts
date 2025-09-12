@@ -93,7 +93,7 @@ export const deleteProduct = async (productId: string): Promise<void> => {
 };
 
 export const processOrderedProduct = async (
-    tx,
+    tx: Prisma.TransactionClient,
     userId: string,
     orderItem: Prisma.OrderItemGetPayload<{
         include: { product: { include: { membership: true; ticket: true } } };

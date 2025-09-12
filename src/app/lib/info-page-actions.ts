@@ -40,7 +40,7 @@ export const createInfoPage = async (formData: FormData): Promise<void> => {
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     let createdInfoPageId: string;
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const title = await createTextContent(tx);
         await tx.textTranslation.updateMany({
             where: { text_content_id: title.id },
@@ -77,7 +77,7 @@ export const updateInfoPage = async (
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));
     const validatedInfoPageId = UuidSchema.parse(infoPageId);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // First, update the InfoPage basic fields
         const updatedInfoPage = await tx.infoPage.update({
             where: { id: validatedInfoPageId },

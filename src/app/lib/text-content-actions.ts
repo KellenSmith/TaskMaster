@@ -6,7 +6,7 @@ import { Language, Prisma } from "@prisma/client";
 import { sanitizeRichText } from "./html-sanitizer";
 
 export const createTextContent = async (
-    tx,
+    tx: Prisma.TransactionClient,
     id: string | null = null,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> =>
     await tx.textContent.create({
@@ -35,7 +35,7 @@ export const createTextContent = async (
 export const getTextContent = async (
     id: string | null = null,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         if (!id) return await createTextContent(tx, id);
 
         let textContent = await tx.textContent.findUnique({
@@ -62,7 +62,7 @@ export const updateTextContent = async (
     // Sanitize rich text content before saving
     const sanitizedText = sanitizeRichText(text);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         await tx.textContent.upsert({
             where: {
                 id,

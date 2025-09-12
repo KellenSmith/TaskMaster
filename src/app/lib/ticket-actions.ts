@@ -10,6 +10,7 @@ import {
     UuidSchema,
 } from "./zod-schemas";
 import { prisma } from "../../../prisma/prisma-client";
+import { Prisma } from "@prisma/client";
 
 export const createEventTicket = async (eventId: string, formData: FormData) => {
     // Validate event ID format
@@ -82,7 +83,7 @@ export const deleteEventTicket = async (ticketId: string) => {
     // Validate ticket ID format
     const validatedTicketId = UuidSchema.parse(ticketId);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const deletedTicket = await tx.ticket.delete({
             where: {
                 product_id: validatedTicketId,

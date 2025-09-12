@@ -79,7 +79,7 @@ export const createOrder = async (
     }
 
     // Create the order with items in a transaction
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         return await tx.order.create({
             data: {
                 total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
@@ -99,7 +99,7 @@ export const createOrder = async (
     serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
 };
 
-const processOrderItems = async (tx, orderId: string): Promise<void> => {
+const processOrderItems = async (tx: Prisma.TransactionClient, orderId: string): Promise<void> => {
     const order = await tx.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
@@ -158,7 +158,7 @@ export const progressOrder = async (
     if (order.status === OrderStatus.paid) {
         // This transaction may perform multiple updates and external work; increase timeout locally.
         await prisma.$transaction(
-            async (tx) => {
+            async (tx: Prisma.TransactionClient) => {
                 await processOrderItems(tx, orderId);
                 order = await prisma.order.update({
                     where: { id: orderId },

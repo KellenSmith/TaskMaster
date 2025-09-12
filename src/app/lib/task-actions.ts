@@ -73,7 +73,7 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         ...taskWithoutUsers
     } = validatedData;
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -82,18 +82,10 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
                 ...taskWithoutUsers,
                 tags: validatedData.tags,
                 ...(assigneeId && {
-                    assignee: {
-                        connect: {
-                            id: assigneeId,
-                        },
-                    },
+                    assignee_id: assigneeId,
                 }),
                 ...(reviewerId && {
-                    reviewer: {
-                        connect: {
-                            id: reviewerId,
-                        },
-                    },
+                    reviewer_id: reviewerId,
                 }),
             },
             include: { reviewer: true },
@@ -236,7 +228,7 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedTaskId = UuidSchema.parse(taskId);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -297,7 +289,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedTaskId = UuidSchema.parse(taskId);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,

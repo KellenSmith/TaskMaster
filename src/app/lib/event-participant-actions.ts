@@ -7,7 +7,11 @@ import { Prisma } from "@prisma/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
 
-export const addEventParticipantWithTx = async (tx, ticketId: string, userId: string) => {
+export const addEventParticipantWithTx = async (
+    tx: Prisma.TransactionClient,
+    ticketId: string,
+    userId: string,
+) => {
     // Validate ID formats
     const validatedTicketId = UuidSchema.parse(ticketId);
     const validatedUserId = UuidSchema.parse(userId);
@@ -79,12 +83,16 @@ export const addEventParticipantWithTx = async (tx, ticketId: string, userId: st
 };
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         await addEventParticipantWithTx(tx, ticketId, userId);
     });
 };
 
-export const deleteEventParticipantWithTx = async (tx, eventId: string, userId: string) => {
+export const deleteEventParticipantWithTx = async (
+    tx: Prisma.TransactionClient,
+    eventId: string,
+    userId: string,
+) => {
     // Find the ticket the user holds to the event
     const ticket = await tx.ticket.findFirstOrThrow({
         where: {
@@ -129,13 +137,17 @@ export const deleteEventParticipantWithTx = async (tx, eventId: string, userId: 
 };
 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         await deleteEventParticipantWithTx(tx, eventId, userId);
         await unassignUserFromEventTasks(tx, eventId, userId);
     });
 };
 
-export const unassignUserFromEventTasks = async (tx, eventId: string, userId: string) => {
+export const unassignUserFromEventTasks = async (
+    tx: Prisma.TransactionClient,
+    eventId: string,
+    userId: string,
+) => {
     // Unassign any tasks assigned to the user happening during the event
     const event = await tx.event.findUniqueOrThrow({
         where: { id: eventId },
@@ -161,12 +173,10 @@ export const unassignUserFromEventTasks = async (tx, eventId: string, userId: st
                 },
             ],
             event_id: eventId,
-            assigned_to: userId,
+            assignee_id: userId,
         },
         data: {
-            assignee: {
-                disconnect: { id: userId },
-            },
+            assignee_id: null,
         },
     });
 };
