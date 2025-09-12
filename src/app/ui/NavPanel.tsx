@@ -113,8 +113,6 @@ const NavPanel = () => {
         );
     };
 
-    console.log(infoPages);
-
     const createInfoPageAction = async (formData: FormData) => {
         try {
             await createInfoPage(formData);

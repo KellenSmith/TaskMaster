@@ -11,7 +11,7 @@ interface ContactDashboardProps {
 
 const ContactDashboard: React.FC<ContactDashboardProps> = ({ textContentPromise }) => {
     return (
-        <Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center" }}>
+        <Stack sx={{ height: "100%", alignItems: "center" }}>
             <TextContent id={GlobalConstants.CONTACT} textContentPromise={textContentPromise} />
         </Stack>
     );

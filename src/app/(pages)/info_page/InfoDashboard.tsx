@@ -11,7 +11,7 @@ interface InfoDashboardProps {
 
 const InfoDashboard: React.FC<InfoDashboardProps> = ({ textContentPromise, id }) => {
     return (
-        <Stack sx={{ height: "100%", justifyContent: "center", alignItems: "center" }}>
+        <Stack sx={{ height: "100%", alignItems: "center" }}>
             <TextContent id={id} textContentPromise={textContentPromise} />
         </Stack>
     );
