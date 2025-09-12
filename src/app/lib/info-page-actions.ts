@@ -47,6 +47,7 @@ export const createInfoPage = async (formData: FormData): Promise<void> => {
             data: { text: validatedData.title },
         });
 
+        // TODO: maybe i don't need to create it here. let textcontent create func handle it
         const content = await createTextContent(tx);
 
         const newInfoPage = await tx.infoPage.create({

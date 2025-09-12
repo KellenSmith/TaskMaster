@@ -7,9 +7,11 @@ import { sanitizeRichText } from "./html-sanitizer";
 
 export const createTextContent = async (
     tx,
+    id: string | null = null,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> =>
     await tx.textContent.create({
         data: {
+            id: id || undefined,
             translations: {
                 createMany: {
                     data: [
@@ -34,7 +36,7 @@ export const getTextContent = async (
     id: string | null = null,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
     return await prisma.$transaction(async (tx) => {
-        if (!id) return await createTextContent(tx);
+        if (!id) return await createTextContent(tx, id);
 
         let textContent = await tx.textContent.findUnique({
             where: {
@@ -46,7 +48,7 @@ export const getTextContent = async (
         });
 
         // If the text content doesn't exist, create a default
-        if (!textContent) textContent = await createTextContent(tx);
+        if (!textContent) textContent = await createTextContent(tx, id);
         return textContent;
     });
 };

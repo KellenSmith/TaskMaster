@@ -6,9 +6,9 @@ import { unstable_cache } from "next/cache";
 import { getTextContent } from "./lib/text-content-actions";
 
 const HomePage: React.FC = async () => {
-    const textContentPromise = unstable_cache(getTextContent, [GlobalConstants.HOME], {
+    const textContentPromise = unstable_cache(getTextContent, ["home"], {
         tags: [GlobalConstants.TEXT_CONTENT],
-    })(GlobalConstants.HOME);
+    })("home");
 
     return (
         <ErrorBoundarySuspense>
