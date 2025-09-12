@@ -31,6 +31,7 @@ const ErrorBoundarySuspense = ({ children }) => {
     return (
         <ErrorBoundary
             fallbackRender={({ error }) => {
+                console.error(error);
                 allowRedirectException(error);
                 return <ErrorFallback />;
             }}
