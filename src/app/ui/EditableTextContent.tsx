@@ -16,8 +16,9 @@ interface EditableTextContentProps {
 const EditableTextContent = ({ id, textContentPromise }: EditableTextContentProps) => {
     const { language, editMode: editWebsiteMode } = useUserContext();
     const textContent = use(textContentPromise);
+    console.log(textContent);
     const textTranslation = useMemo(
-        () => textContent.translations.find((t) => t.language === language),
+        () => textContent.translations.find((t) => t?.language === language),
         [language, textContent],
     );
 
