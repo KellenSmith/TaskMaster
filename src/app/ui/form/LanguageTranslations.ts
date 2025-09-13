@@ -33,6 +33,30 @@ export const organizationSettingsFieldLabels = {
         [Language.english]: "Event Manager Email",
         [Language.swedish]: "Eventkoordinatorns e-post",
     },
+    [GlobalConstants.PRIVACY_POLICY_SWEDISH_URL]: {
+        [Language.english]: "Privacy Policy (Swedish)",
+        [Language.swedish]: "Integritetspolicy (Svenska)",
+    },
+    [GlobalConstants.PRIVACY_POLICY_ENGLISH_URL]: {
+        [Language.english]: "Privacy Policy (English)",
+        [Language.swedish]: "Integritetspolicy (Engelska)",
+    },
+    [GlobalConstants.TERMS_OF_PURCHASE_SWEDISH_URL]: {
+        [Language.english]: "Terms of Purchase (Swedish)",
+        [Language.swedish]: "Köpvillkor (Svenska)",
+    },
+    [GlobalConstants.TERMS_OF_PURCHASE_ENGLISH_URL]: {
+        [Language.english]: "Terms of Purchase (English)",
+        [Language.swedish]: "Köpvillkor (Engelska)",
+    },
+    [GlobalConstants.TERMS_OF_MEMBERSHIP_SWEDISH_URL]: {
+        [Language.english]: "Terms of Membership (Swedish)",
+        [Language.swedish]: "Medlemsvillkor (Svenska)",
+    },
+    [GlobalConstants.TERMS_OF_MEMBERSHIP_ENGLISH_URL]: {
+        [Language.english]: "Terms of Membership (English)",
+        [Language.swedish]: "Medlemsvillkor (Engelska)",
+    },
 };
 
 export const textContentFieldLabels = {

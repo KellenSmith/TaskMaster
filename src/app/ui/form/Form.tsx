@@ -89,7 +89,13 @@ const Form: FC<FormProps> = ({
     const uploadFileAndGetUrl = async (file: File): Promise<string> => {
         // ✅ SECURITY: Client-side file validation
         const maxSize = 5 * 1024 * 1024; // 5MB
-        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+        const allowedTypes = [
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+            "application/pdf",
+        ];
 
         // Validate file size
         if (file.size > maxSize) {
@@ -104,7 +110,7 @@ const Form: FC<FormProps> = ({
         }
 
         // Validate file extension
-        const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp", ".pdf"];
         const extension = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
         if (!extension || !allowedExtensions.includes(extension)) {
             throw new Error(
@@ -134,10 +140,12 @@ const Form: FC<FormProps> = ({
 
     const uploadFiles = async (formData: FormData): Promise<FormData | null> => {
         try {
-            for (let fieldId of formData.keys()) {
+            // Use a copy of the keys to avoid iterator issues when modifying FormData
+            for (let fieldId of [...formData.keys()]) {
                 if (!fileUploadFields.includes(fieldId)) continue;
                 const file = formData.get(fieldId) as File;
                 if (!file?.name || file.size === 0) {
+                    // Remove empty file entries to avoid overwriting existing data with empty values
                     formData.delete(fieldId);
                     continue;
                 }
@@ -146,8 +154,7 @@ const Form: FC<FormProps> = ({
             }
             return formData;
         } catch (error) {
-            console.error("File upload error:", error);
-            addNotification("File upload failed", "error");
+            addNotification("File upload failed: " + error.message, "error");
         }
     };
 
@@ -183,12 +190,11 @@ const Form: FC<FormProps> = ({
         }
 
         const formData = new FormData(event.currentTarget);
-
-        const formDataWithFileUrls = await uploadFiles(formData);
-        if (!formDataWithFileUrls) return;
-        const parsedFieldValues = validateFormData(formDataWithFileUrls);
-        if (!parsedFieldValues) return;
         startTransition(async () => {
+            const formDataWithFileUrls = await uploadFiles(formData);
+            if (!formDataWithFileUrls) return;
+            const parsedFieldValues = validateFormData(formDataWithFileUrls);
+            if (!parsedFieldValues) return;
             try {
                 const submitResult = await action(formDataWithFileUrls);
                 addNotification(submitResult, "success");

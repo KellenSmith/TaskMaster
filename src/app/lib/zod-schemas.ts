@@ -52,7 +52,13 @@ export const OrganizationSettingsUpdateSchema = z
         purge_members_after_days_unvalidated: z.coerce.number().int().positive().optional(),
         default_task_shift_length: z.coerce.number().int().positive().optional(),
         member_application_prompt: z.string().nullable().optional(),
-        logo_url: z.string().nullable().optional(),
+        logo_url: z.url().nullable().optional(),
+        privacy_policy_swedish_url: z.url().nullable().optional(),
+        privacy_policy_english_url: z.url().nullable().optional(),
+        terms_of_purchase_swedish_url: z.url().nullable().optional(),
+        terms_of_purchase_english_url: z.url().nullable().optional(),
+        terms_of_membership_swedish_url: z.url().nullable().optional(),
+        terms_of_membership_english_url: z.url().nullable().optional(),
     })
     .omit({ id: true });
 

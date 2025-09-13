@@ -8,10 +8,10 @@ const UPLOAD_CONFIG = {
     MAX_FILE_SIZE: 5 * 1024 * 1024,
 
     // Allowed MIME types (NO SVG for security)
-    ALLOWED_TYPES: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+    ALLOWED_TYPES: ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"],
 
     // File extension whitelist
-    ALLOWED_EXTENSIONS: [".jpg", ".jpeg", ".png", ".webp"],
+    ALLOWED_EXTENSIONS: [".jpg", ".jpeg", ".png", ".webp", ".pdf"],
 
     // Maximum filename length
     MAX_FILENAME_LENGTH: 100,
@@ -105,7 +105,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                 }
 
                 return {
-                    // ✅ SECURITY: Only allow safe image types (NO SVG)
+                    // ✅ SECURITY: Only allow safe file types (images and PDFs, NO SVG)
                     allowedContentTypes: UPLOAD_CONFIG.ALLOWED_TYPES,
 
                     // ✅ SECURITY: Set maximum file size limit

@@ -32,7 +32,7 @@ const FileUploadField: FC<Props> = ({ fieldId, editMode, customReadOnlyFields })
                     type="file"
                     name={fieldId}
                     // ✅ SECURITY: Restrict file types at HTML level
-                    accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf"
                     style={{ display: "none" }}
                     onChange={(event) => {
                         const file = event.target.files && event.target.files[0];
@@ -44,6 +44,7 @@ const FileUploadField: FC<Props> = ({ fieldId, editMode, customReadOnlyFields })
                                 "image/jpg",
                                 "image/png",
                                 "image/webp",
+                                "application/pdf",
                             ];
 
                             if (file.size > maxSize) {

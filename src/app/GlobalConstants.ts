@@ -35,6 +35,12 @@ const GlobalConstants = {
     MEMBER_APPLICATION_PROMPT: "member_application_prompt",
     LOGO_URL: "logo_url",
     EVENT_MANAGER_EMAIL: "event_manager_email",
+    PRIVACY_POLICY_SWEDISH_URL: "privacy_policy_swedish_url",
+    PRIVACY_POLICY_ENGLISH_URL: "privacy_policy_english_url",
+    TERMS_OF_PURCHASE_SWEDISH_URL: "terms_of_purchase_swedish_url",
+    TERMS_OF_PURCHASE_ENGLISH_URL: "terms_of_purchase_english_url",
+    TERMS_OF_MEMBERSHIP_SWEDISH_URL: "terms_of_membership_swedish_url",
+    TERMS_OF_MEMBERSHIP_ENGLISH_URL: "terms_of_membership_english_url",
     // Info page
     INFO_PAGE: "info_page",
     INFO_PAGE_ID: "info_page_id",

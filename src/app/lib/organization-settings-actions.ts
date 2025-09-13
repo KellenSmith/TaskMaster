@@ -6,6 +6,7 @@ import GlobalConstants from "../GlobalConstants";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 import { Prisma } from "@prisma/client";
 import { del } from "@vercel/blob";
+import { fileUploadFields } from "../ui/form/FieldCfg";
 
 export const getOrganizationSettings = async (): Promise<
     Prisma.OrganizationSettingsGetPayload<true>
@@ -27,7 +28,11 @@ export const updateOrganizationSettings = async (formData: FormData): Promise<vo
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
     // attempt to delete the old blob from Vercel Blob storage.
-    await deleteOldBlob(settings.logo_url, validatedData.logo_url);
+    for (let fieldId of fileUploadFields) {
+        if (validatedData[fieldId]) {
+            await deleteOldBlob(settings[fieldId], validatedData[fieldId]);
+        }
+    }
 
     await prisma.organizationSettings.update({
         where: {

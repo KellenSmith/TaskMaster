@@ -4,13 +4,20 @@ import { submitMemberApplication } from "../../lib/user-actions";
 import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
-import { useMemo } from "react";
-import { Stack } from "@mui/material";
+import { useMemo, useState } from "react";
+import { Checkbox, FormControlLabel, Link, Stack, Typography } from "@mui/material";
 import LanguageTranslations from "./LanguageTranslations";
+import OrderLanguageTranslations from "../order/LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
+import { getPrivacyPolicyUrl, getTermsOfMembershipUrl } from "../../ui/utils";
+import { Language } from "@prisma/client";
 
 const ApplyPage = () => {
     const { language } = useUserContext();
+    const [termsAccepted, setTermsAccepted] = useState({
+        termsOfMembership: false,
+        privacyPolicy: false,
+    });
     const { organizationSettings } = useOrganizationSettingsContext();
     const shouldIncludeApplicationPrompt = useMemo(
         (): boolean => !!organizationSettings.member_application_prompt,
@@ -28,7 +35,86 @@ const ApplyPage = () => {
 
     return (
         <Stack spacing={1}>
+            <Typography variant="h6">{LanguageTranslations.makeSureYouRead[language]}</Typography>
+            <FormControlLabel
+                sx={{
+                    width: "100%",
+                    margin: 0,
+                    "& .MuiFormControlLabel-label": {
+                        lineHeight: 1.4,
+                        paddingLeft: 1,
+                    },
+                }}
+                control={
+                    <Checkbox
+                        checked={termsAccepted.termsOfMembership}
+                        onChange={(e) =>
+                            setTermsAccepted({
+                                ...termsAccepted,
+                                termsOfMembership: e.target.checked,
+                            })
+                        }
+                        required
+                    />
+                }
+                label={
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            display: "inline",
+                            wordBreak: "keep-all",
+                            hyphens: "none",
+                        }}
+                    >
+                        {OrderLanguageTranslations.iHaveRead[language]}{" "}
+                        <Link
+                            href={getTermsOfMembershipUrl(organizationSettings, language)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {LanguageTranslations.termsOfMembership[language]}
+                        </Link>
+                    </Typography>
+                }
+            />
+            <FormControlLabel
+                sx={{
+                    width: "100%",
+                }}
+                control={
+                    <Checkbox
+                        checked={termsAccepted.privacyPolicy}
+                        onChange={(e) =>
+                            setTermsAccepted({
+                                ...termsAccepted,
+                                privacyPolicy: e.target.checked,
+                            })
+                        }
+                        required
+                    />
+                }
+                label={
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            display: "inline",
+                            wordBreak: "keep-all",
+                            hyphens: "none",
+                        }}
+                    >
+                        {OrderLanguageTranslations.iHaveRead[language]}{" "}
+                        <Link
+                            href={getPrivacyPolicyUrl(organizationSettings, language)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {OrderLanguageTranslations.privacyPolicy[language]}
+                        </Link>
+                    </Typography>
+                }
+            />
             <Form
+                key={JSON.stringify(termsAccepted)}
                 name={GlobalConstants.APPLY}
                 buttonLabel={LanguageTranslations[GlobalConstants.APPLY][language]}
                 action={submitApplication}
@@ -51,7 +137,7 @@ const ApplyPage = () => {
                           }
                         : {}
                 }
-                readOnly={false}
+                readOnly={!(termsAccepted.termsOfMembership && termsAccepted.privacyPolicy)}
                 editable={false}
             />
         </Stack>

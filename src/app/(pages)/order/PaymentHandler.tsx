@@ -1,15 +1,16 @@
 "use client";
-import { Button, Stack } from "@mui/material";
-import React, { use } from "react";
+import { Button, Stack, FormControlLabel, Checkbox, Box, Typography, Link } from "@mui/material";
+import React, { use, useState } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { Language, OrderStatus, Prisma } from "@prisma/client";
 import { useNotificationContext } from "../../context/NotificationContext";
-import { allowRedirectException } from "../../ui/utils";
+import { allowRedirectException, getPrivacyPolicyUrl, getTermsOfPurchaseUrl } from "../../ui/utils";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { progressOrder } from "../../lib/order-actions";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
+import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 
 interface PaymentHandlerProps {
     orderPromise: Promise<
@@ -19,8 +20,22 @@ interface PaymentHandlerProps {
 
 const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
     const { language } = useUserContext();
+    const { organizationSettings } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const order = use(orderPromise);
+    const [termsAccepted, setTermsAccepted] = useState({
+        termsOfPurchase: false,
+        privacyPolicy: false,
+    });
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!termsAccepted.termsOfPurchase || !termsAccepted.privacyPolicy) {
+            addNotification(LanguageTranslations.termsRequired[language], "error");
+            return;
+        }
+        await redirectToPayment();
+    };
 
     const redirectToPayment = async () => {
         try {
@@ -43,13 +58,99 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
 
     return (
         order.status === OrderStatus.pending && (
-            <Stack alignItems="center">
-                <Button color="success" fullWidth onClick={redirectToPayment}>
-                    {LanguageTranslations.pay[language](order.total_amount)}
-                </Button>
-                <ConfirmButton fullWidth color="error" onClick={cancelOrder}>
-                    {GlobalLanguageTranslations.cancel[language]}
-                </ConfirmButton>
+            <Stack component="form" onSubmit={handleSubmit}>
+                <Stack alignItems="center" width="100%">
+                    <FormControlLabel
+                        sx={{
+                            justifyContent: "center",
+                            width: "100%",
+                            margin: 0,
+                            "& .MuiFormControlLabel-label": {
+                                lineHeight: 1.4,
+                                paddingLeft: 1,
+                            },
+                        }}
+                        control={
+                            <Checkbox
+                                checked={termsAccepted.termsOfPurchase}
+                                onChange={(e) =>
+                                    setTermsAccepted({
+                                        ...termsAccepted,
+                                        termsOfPurchase: e.target.checked,
+                                    })
+                                }
+                                required
+                            />
+                        }
+                        label={
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    display: "inline",
+                                    wordBreak: "keep-all",
+                                    hyphens: "none",
+                                }}
+                            >
+                                {LanguageTranslations.iHaveRead[language]}{" "}
+                                <Link
+                                    href={getTermsOfPurchaseUrl(organizationSettings, language)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {LanguageTranslations.termsOfPurchase[language]}
+                                </Link>
+                            </Typography>
+                        }
+                    />
+                    <FormControlLabel
+                        sx={{
+                            justifyContent: "center",
+                            width: "100%",
+                        }}
+                        control={
+                            <Checkbox
+                                checked={termsAccepted.privacyPolicy}
+                                onChange={(e) =>
+                                    setTermsAccepted({
+                                        ...termsAccepted,
+                                        privacyPolicy: e.target.checked,
+                                    })
+                                }
+                                required
+                            />
+                        }
+                        label={
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    display: "inline",
+                                    wordBreak: "keep-all",
+                                    hyphens: "none",
+                                }}
+                            >
+                                {LanguageTranslations.iHaveRead[language]}{" "}
+                                <Link
+                                    href={getPrivacyPolicyUrl(organizationSettings, language)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {LanguageTranslations.privacyPolicy[language]}
+                                </Link>
+                            </Typography>
+                        }
+                    />
+                    <Button
+                        type="submit"
+                        color="success"
+                        fullWidth
+                        disabled={!(termsAccepted.termsOfPurchase && termsAccepted.privacyPolicy)}
+                    >
+                        {LanguageTranslations.pay[language](order.total_amount)}
+                    </Button>
+                    <ConfirmButton fullWidth color="error" onClick={cancelOrder}>
+                        {GlobalLanguageTranslations.cancel[language]}
+                    </ConfirmButton>
+                </Stack>
             </Stack>
         )
     );

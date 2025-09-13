@@ -16,6 +16,7 @@ import {
     Dialog,
     useTheme,
     useMediaQuery,
+    Link,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -30,6 +31,8 @@ import { useNotificationContext } from "../context/NotificationContext";
 import LanguageMenu from "./LanguageMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
+import OrderLanguageTranslations from "../(pages)/order/LanguageTranslations";
+import ApplyLanguageTranslations from "../(pages)/apply/LanguageTranslations";
 import Image from "next/image";
 import { isUserAuthorized, RouteConfigType, routeTreeConfig } from "../lib/auth/auth-utils";
 import { logOut } from "../lib/user-actions";
@@ -37,7 +40,12 @@ import Form from "./form/Form";
 import { InfoPageCreateSchema } from "../lib/zod-schemas";
 import { createInfoPage, deleteInfoPage, updateInfoPage } from "../lib/info-page-actions";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
-import { allowRedirectException } from "./utils";
+import {
+    allowRedirectException,
+    getPrivacyPolicyUrl,
+    getTermsOfMembershipUrl,
+    getTermsOfPurchaseUrl,
+} from "./utils";
 import { Prisma } from "@prisma/client";
 import ConfirmButton from "./ConfirmButton";
 
@@ -248,7 +256,16 @@ const NavPanel = () => {
                 onOpen={() => setDrawerOpen(true)}
                 disableBackdropTransition={isIOSDevice}
                 disableDiscovery={isIOSDevice}
-                slotProps={{ paper: { sx: { width: { xs: "85vw", sm: 320 } } } }}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            width: { xs: "85vw", sm: 320 },
+                            height: "100vh",
+                            display: "flex",
+                            flexDirection: "column",
+                        },
+                    },
+                }}
             >
                 <IconButton
                     sx={{ alignSelf: "flex-end", m: 1 }}
@@ -258,7 +275,7 @@ const NavPanel = () => {
                     <ChevronLeft />
                 </IconButton>
                 <Divider />
-                <List>
+                <List sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
                     {user ? (
                         <Button
                             variant="outlined"
@@ -281,56 +298,94 @@ const NavPanel = () => {
                             {LoginLanguageTranslations.login[language]}
                         </Button>
                     )}
-                    {[
-                        ...new Set(routeTreeConfig.children.map((childRoute) => childRoute.role)),
-                    ].map((role) => {
-                        const routesForRole = routeTreeConfig.children.filter(
-                            (childRoute) => childRoute.role === role,
-                        );
-                        const authorizedRoutes = routesForRole.filter((route) =>
-                            isUserAuthorized(user, [route.name], route),
-                        );
-                        if (authorizedRoutes.length === 0) return null;
-                        return (
-                            <Stack key={role} spacing={1} sx={{ mb: 2 }}>
-                                {role && (
-                                    <ListSubheader>
-                                        {LanguageTranslations.roleLabels[role][language]}
-                                    </ListSubheader>
-                                )}
-                                {routesForRole.map((route) =>
-                                    getRouteNavButton(route, pathToRoutes(pathname)),
-                                )}
-                                {infoPages
-                                    .filter(
-                                        (infoPage) => infoPage.lowest_allowed_user_role === role,
-                                    )
-                                    .map((infoPage) => getInfoPageNavButton(infoPage))}
-                            </Stack>
-                        );
-                    })}
-                    <Stack spacing={1}>
-                        {editMode && (
-                            <Button
-                                fullWidth
-                                aria-label="add info page"
-                                variant="outlined"
-                                onClick={() => setAddInfoPageDialogOpen(true)}
+                    <Stack sx={{ flex: 1, overflow: "auto" }}>
+                        {[
+                            ...new Set(
+                                routeTreeConfig.children.map((childRoute) => childRoute.role),
+                            ),
+                        ].map((role) => {
+                            const routesForRole = routeTreeConfig.children.filter(
+                                (childRoute) => childRoute.role === role,
+                            );
+                            const authorizedRoutes = routesForRole.filter((route) =>
+                                isUserAuthorized(user, [route.name], route),
+                            );
+                            if (authorizedRoutes.length === 0) return null;
+                            return (
+                                <Stack key={role} spacing={1} sx={{ mb: 2, height: "100%" }}>
+                                    {role && (
+                                        <ListSubheader>
+                                            {LanguageTranslations.roleLabels[role][language]}
+                                        </ListSubheader>
+                                    )}
+                                    {routesForRole.map((route) =>
+                                        getRouteNavButton(route, pathToRoutes(pathname)),
+                                    )}
+                                    {infoPages
+                                        .filter(
+                                            (infoPage) =>
+                                                infoPage.lowest_allowed_user_role === role,
+                                        )
+                                        .map((infoPage) => getInfoPageNavButton(infoPage))}
+                                </Stack>
+                            );
+                        })}
+                        <Stack spacing={1}>
+                            {editMode && (
+                                <Button
+                                    fullWidth
+                                    aria-label="add info page"
+                                    variant="outlined"
+                                    onClick={() => setAddInfoPageDialogOpen(true)}
+                                >
+                                    {LanguageTranslations.addInfoPage[language]}
+                                </Button>
+                            )}
+                            {isUserAdmin(user) && (
+                                <Button
+                                    fullWidth
+                                    aria-label={editMode ? "exit edit mode" : "enter edit mode"}
+                                    variant="outlined"
+                                    endIcon={editMode ? <Cancel /> : <Edit />}
+                                    onClick={() => setEditMode((prev: boolean) => !prev)}
+                                >
+                                    {LanguageTranslations.toggleAdminEditMode[language](editMode)}
+                                </Button>
+                            )}
+                        </Stack>
+                    </Stack>
+                    <Stack sx={{ mt: "auto", pb: 2 }}>
+                        <ListItem>
+                            {" "}
+                            <Link
+                                textTransform="capitalize"
+                                href={getTermsOfMembershipUrl(organizationSettings, language)}
+                                target="_blank"
+                                rel="noopener noreferrer"
                             >
-                                {LanguageTranslations.addInfoPage[language]}
-                            </Button>
-                        )}
-                        {isUserAdmin(user) && (
-                            <Button
-                                fullWidth
-                                aria-label={editMode ? "exit edit mode" : "enter edit mode"}
-                                variant="outlined"
-                                endIcon={editMode ? <Cancel /> : <Edit />}
-                                onClick={() => setEditMode((prev: boolean) => !prev)}
+                                {ApplyLanguageTranslations.termsOfMembership[language]}
+                            </Link>
+                        </ListItem>
+                        <ListItem>
+                            <Link
+                                textTransform="capitalize"
+                                href={getPrivacyPolicyUrl(organizationSettings, language)}
+                                target="_blank"
+                                rel="noopener noreferrer"
                             >
-                                {LanguageTranslations.toggleAdminEditMode[language](editMode)}
-                            </Button>
-                        )}
+                                {OrderLanguageTranslations.privacyPolicy[language]}
+                            </Link>
+                        </ListItem>
+                        <ListItem>
+                            <Link
+                                textTransform="capitalize"
+                                href={getTermsOfPurchaseUrl(organizationSettings, language)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {OrderLanguageTranslations.termsOfPurchase[language]}
+                            </Link>
+                        </ListItem>
                     </Stack>
                 </List>
             </SwipeableDrawer>

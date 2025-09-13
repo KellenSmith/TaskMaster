@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Language, Prisma } from "@prisma/client";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import Error from "next/error";
@@ -20,6 +20,30 @@ export const allowRedirectException = (error: Error & { digest?: string }) => {
     if (error?.digest?.startsWith("NEXT_REDIRECT")) {
         throw error;
     }
+};
+
+export const getPrivacyPolicyUrl = (
+    organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
+    language: Language,
+) => {
+    if (language === Language.english) return organizationSettings.privacy_policy_english_url;
+    if (language === Language.swedish) return organizationSettings.privacy_policy_swedish_url;
+};
+
+export const getTermsOfMembershipUrl = (
+    organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
+    language: Language,
+) => {
+    if (language === Language.english) return organizationSettings.terms_of_membership_english_url;
+    if (language === Language.swedish) return organizationSettings.terms_of_membership_swedish_url;
+};
+
+export const getTermsOfPurchaseUrl = (
+    organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
+    language: Language,
+) => {
+    if (language === Language.english) return organizationSettings.terms_of_purchase_english_url;
+    if (language === Language.swedish) return organizationSettings.terms_of_purchase_swedish_url;
 };
 
 export const userHasSkillBadge = (

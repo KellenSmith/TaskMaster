@@ -78,6 +78,12 @@ export const RenderedFields = {
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
         GlobalConstants.MEMBER_APPLICATION_PROMPT,
         GlobalConstants.LOGO_URL,
+        GlobalConstants.PRIVACY_POLICY_SWEDISH_URL,
+        GlobalConstants.PRIVACY_POLICY_ENGLISH_URL,
+        GlobalConstants.TERMS_OF_PURCHASE_SWEDISH_URL,
+        GlobalConstants.TERMS_OF_PURCHASE_ENGLISH_URL,
+        GlobalConstants.TERMS_OF_MEMBERSHIP_SWEDISH_URL,
+        GlobalConstants.TERMS_OF_MEMBERSHIP_ENGLISH_URL,
     ],
     [GlobalConstants.INFO_PAGE]: [GlobalConstants.TITLE, GlobalConstants.LOWEST_ALLOWED_USER_ROLE],
     // Profile
@@ -289,4 +295,13 @@ export const multiLineTextFields = [
     GlobalConstants.ACCESSIBILITY_INFO,
 ];
 
-export const fileUploadFields = [GlobalConstants.LOGO_URL, GlobalConstants.IMAGE_URL];
+export const fileUploadFields = [
+    GlobalConstants.LOGO_URL,
+    GlobalConstants.IMAGE_URL,
+    GlobalConstants.PRIVACY_POLICY_ENGLISH_URL,
+    GlobalConstants.PRIVACY_POLICY_SWEDISH_URL,
+    GlobalConstants.TERMS_OF_PURCHASE_ENGLISH_URL,
+    GlobalConstants.TERMS_OF_PURCHASE_SWEDISH_URL,
+    GlobalConstants.TERMS_OF_MEMBERSHIP_ENGLISH_URL,
+    GlobalConstants.TERMS_OF_MEMBERSHIP_SWEDISH_URL,
+];

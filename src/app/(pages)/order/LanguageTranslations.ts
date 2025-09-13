@@ -77,6 +77,22 @@ const LanguageTranslations = {
         [Language.english]: (orderTotal: number) => (orderTotal === 0 ? "confirm" : "pay"),
         [Language.swedish]: (orderTotal: number) => (orderTotal === 0 ? "bekräfta" : "betala"),
     },
+    termsRequired: {
+        [Language.english]: "You must accept the terms of purchase to continue",
+        [Language.swedish]: "Du måste acceptera köpvillkoren för att fortsätta",
+    },
+    iHaveRead: {
+        [Language.english]: "I have read and agree to the",
+        [Language.swedish]: "Jag har läst och godkänner",
+    },
+    termsOfPurchase: {
+        [Language.english]: "terms of purchase",
+        [Language.swedish]: "köpvillkoren",
+    },
+    privacyPolicy: {
+        [Language.english]: "privacy policy",
+        [Language.swedish]: "integritetspolicyn",
+    },
 };
 
 export default LanguageTranslations;

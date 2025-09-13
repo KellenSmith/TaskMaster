@@ -1,6 +1,6 @@
 "use server";
 import React from "react";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import ErrorBoundarySuspense, { ErrorFallback } from "../../ui/ErrorBoundarySuspense";
 import { unstable_cache } from "next/cache";
 import { getOrderById } from "../../lib/order-actions";
 import GlobalConstants from "../../GlobalConstants";
@@ -15,9 +15,14 @@ const OrderPage = async ({ searchParams }: OrderPageProps) => {
     const orderId = (await searchParams)[GlobalConstants.ORDER_ID] as string;
     const loggedInUser = await getLoggedInUser();
 
-    const orderPromise = unstable_cache(getOrderById, [loggedInUser.id, orderId], {
+    if (!loggedInUser || !orderId) {
+        // Redirect to home page if not logged in or no order ID provided
+        return <ErrorFallback />;
+    }
+
+    const orderPromise = unstable_cache(getOrderById, [loggedInUser?.id, orderId], {
         tags: [GlobalConstants.ORDER],
-    })(loggedInUser.id, orderId);
+    })(loggedInUser?.id, orderId);
 
     return (
         <ErrorBoundarySuspense>
