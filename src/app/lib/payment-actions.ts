@@ -55,6 +55,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
         where: { id: orderId },
         data: { payee_ref: payeeRef },
     });
+    const organizationSettings = await getOrganizationSettings();
 
     return {
         paymentorder: {
@@ -78,7 +79,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 }),
                 // TODO:
                 // logoUrl: organizationSettings?.logo_url || undefined,
-                // termsOfServiceUrl: organizationSettings?.terms_of_purchase_english_url || undefined,
+                termsOfServiceUrl: organizationSettings?.terms_of_purchase_english_url || undefined,
             },
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
