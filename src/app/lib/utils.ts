@@ -52,20 +52,18 @@ export const clientRedirect = (
 export const isMembershipExpired = (
     user: Prisma.UserGetPayload<{
         include: { user_membership: true };
-    }> | null,
+    }>,
 ): boolean => {
-    const membershipExpiresAt = user?.user_membership?.expires_at;
+    if (!user) return true;
+    const membershipExpiresAt = user.user_membership?.expires_at;
     return !membershipExpiresAt || dayjs.utc().isAfter(dayjs.utc(membershipExpiresAt));
 };
 
 export const isUserAdmin = (
-    user: Prisma.UserGetPayload<{ include: { user_membership: true } }> | null,
-): boolean => user?.role === UserRole.admin && !!user?.user_membership;
+    user: Prisma.UserGetPayload<{ include: { user_membership: true } }>,
+): boolean => user && user.role === UserRole.admin && !!user.user_membership;
 
 export const isUserHost = (
-    user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
+    user: Prisma.UserGetPayload<{ select: { id: true } }>,
     event: Prisma.EventGetPayload<true> | null,
-): boolean => user && event && user?.id === event?.host_id;
-
-export const snakeCaseToLabel = (snakeCase: string): string =>
-    snakeCase ? snakeCase[0].toUpperCase() + snakeCase.slice(1).replace(/(_)|(-)/g, " ") : "";
+): boolean => user && event && user.id === event.host_id;
