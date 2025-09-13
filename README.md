@@ -35,9 +35,12 @@ For payments, use the following test data:
 - ~~Move task shift start and end time when cloning an event~~
 - ~~Event tags (munch/playparty/section etc...)~~
 - ~~Buttons to message the assignee and reviewer of a task~~
+- Enable different membership types.
+- Enable different event types (open to all members, open to specific membership types, open to public)
 - Enable task assignees to submit receipts
 - Solidarity and community funded event tickets - one bought solidarity ticket funds a ticket for someone else
 - Merch store
+- Connect databases for different organizations within the taskmaster family to share events, tasks, member lists and locations.
 
 ## Contributions
 
