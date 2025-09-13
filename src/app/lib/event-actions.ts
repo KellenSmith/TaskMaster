@@ -86,6 +86,7 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
 export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPayload<true>[]> => {
     const loggedInUser = await prisma.user.findUniqueOrThrow({
         where: { id: userId },
+        include: { user_membership: true },
     });
 
     const filterParams = {} as Prisma.EventWhereInput;
