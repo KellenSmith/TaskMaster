@@ -190,7 +190,7 @@ export const getEventById = async (
         !isUserAdmin(loggedInUser) &&
         event.host_id !== userId
     ) {
-        console.log(isUserAdmin(loggedInUser), event.host_id, userId);
+        console.log(userId, loggedInUser, isUserAdmin(loggedInUser), event.host_id, userId);
         throw new Error("You are not authorized to view this event");
     }
     return event;
