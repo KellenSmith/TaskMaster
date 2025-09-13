@@ -2,13 +2,7 @@
 
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import {
-    ProductCreateSchema,
-    ProductUpdateSchema,
-    TicketUpdateSchema,
-    TicketWithoutRelationsSchema,
-    UuidSchema,
-} from "./zod-schemas";
+import { ProductCreateSchema, TicketWithoutRelationsSchema, UuidSchema } from "./zod-schemas";
 import { prisma } from "../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 
