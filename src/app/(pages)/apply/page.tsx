@@ -10,7 +10,6 @@ import LanguageTranslations from "./LanguageTranslations";
 import OrderLanguageTranslations from "../order/LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import { getPrivacyPolicyUrl, getTermsOfMembershipUrl } from "../../ui/utils";
-import { Language } from "@prisma/client";
 
 const ApplyPage = () => {
     const { language } = useUserContext();
