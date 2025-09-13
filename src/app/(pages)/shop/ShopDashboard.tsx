@@ -14,9 +14,7 @@ import { Prisma } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import { createOrder } from "../../lib/order-actions";
 import {
-    createProduct as createProductAction,
     createMembershipProduct,
-    updateProduct as updateProductAction,
     deleteProduct,
     updateMembershipProduct,
     updateProduct,

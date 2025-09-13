@@ -1,9 +1,8 @@
 "use server";
 
-import { Prisma, Product } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import {
-    MembershipCreateSchema,
     MembershipWithoutProductSchema,
     ProductCreateSchema,
     ProductUpdateSchema,
