@@ -90,12 +90,14 @@ export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPaylo
 
     const filterParams = {} as Prisma.EventWhereInput;
 
-    // Non-admins can only see their own event drafts
+    // Non-admins can only see their own event drafts and pending approval events
     if (!isUserAdmin(loggedInUser)) {
         filterParams.OR = [
             {
                 status: {
-                    not: EventStatus.draft,
+                    not: {
+                        in: [EventStatus.draft, EventStatus.pending_approval],
+                    },
                 },
             },
             { host_id: userId },
@@ -183,12 +185,12 @@ export const getEventById = async (
         },
     });
 
-    // Only event hosts and admins can see event drafts
+    // Only event hosts and admins can see event drafts and pending approval events
     const loggedInUser = await prisma.user.findUnique({
         where: { id: userId },
     });
     if (
-        event.status === EventStatus.draft &&
+        (event.status === EventStatus.draft || event.status === EventStatus.pending_approval) &&
         !isUserAdmin(loggedInUser) &&
         event.host_id !== userId
     ) {
