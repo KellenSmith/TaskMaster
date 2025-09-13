@@ -184,13 +184,14 @@ export const getEventById = async (
     // Only event hosts and admins can see event drafts and pending approval events
     const loggedInUser = await prisma.user.findUnique({
         where: { id: userId },
+        include: { user_membership: true },
     });
+    console.log(userId, loggedInUser, isUserAdmin(loggedInUser), event.host_id, userId);
     if (
         event.status !== EventStatus.published &&
         !isUserAdmin(loggedInUser) &&
         event.host_id !== userId
     ) {
-        console.log(userId, loggedInUser, isUserAdmin(loggedInUser), event.host_id, userId);
         throw new Error("You are not authorized to view this event");
     }
     return event;
