@@ -76,18 +76,10 @@ export const updateEventTicket = async (ticketId: string, formData: FormData) =>
 export const deleteEventTicket = async (ticketId: string) => {
     // Validate ticket ID format
     const validatedTicketId = UuidSchema.parse(ticketId);
-
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        const deletedTicket = await tx.ticket.delete({
-            where: {
-                product_id: validatedTicketId,
-            },
-        });
-        await tx.product.delete({
-            where: {
-                id: deletedTicket.product_id,
-            },
-        });
+    await prisma.product.delete({
+        where: {
+            id: validatedTicketId,
+        },
     });
     revalidateTag(GlobalConstants.TICKET);
 };
