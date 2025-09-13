@@ -3,10 +3,12 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
-import { getActiveMembers } from "../../lib/user-actions";
+import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";
+import { isUserAdmin } from "../../lib/utils";
 
-const TasksPage = () => {
+const TasksPage = async () => {
+    const loggedInUser = await getLoggedInUser();
     const tasksPromise = unstable_cache(getFilteredTasks, [], { tags: [GlobalConstants.TASK] })({
         event_id: null,
     });
@@ -20,7 +22,7 @@ const TasksPage = () => {
     return (
         <ErrorBoundarySuspense>
             <KanBanBoard
-                readOnly={false}
+                readOnly={!isUserAdmin(loggedInUser)}
                 tasksPromise={tasksPromise}
                 activeMembersPromise={activeMembersPromise}
                 skillBadgesPromise={skillBadgesPromise}

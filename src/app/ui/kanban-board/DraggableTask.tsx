@@ -1,7 +1,7 @@
 import { Button, Card, Stack, Typography } from "@mui/material";
 import { formatDate, openResourceInNewTab } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
-import { use } from "react";
+import { use, useMemo } from "react";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
@@ -35,19 +35,28 @@ interface DraggableTaskProps {
 }
 
 const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: DraggableTaskProps) => {
-    const { language } = useUserContext();
+    const { language, user } = useUserContext();
     const event = eventPromise ? use(eventPromise) : null;
+
+    const isReadOnly = useMemo(
+        () => () => {
+            if (user && task.assignee_id === user.id) return false;
+            if (user && task.reviewer_id === user.id) return false;
+            return readOnly;
+        },
+        [readOnly, task, user],
+    );
 
     // TODO: Make randos unable to drag and drop unless assigned or reviewer
 
     return (
         <>
             <Card
-                draggable={!readOnly}
+                draggable={!isReadOnly}
                 onDragStart={() => setDraggedTask(task)}
                 sx={{
                     padding: { xs: 1, sm: 2 },
-                    ...(readOnly ? {} : { cursor: "grab" }),
+                    ...(isReadOnly ? {} : { cursor: "grab" }),
                     transition: "transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease",
                     "&:hover": {
                         transform: "translateY(-4px)",
