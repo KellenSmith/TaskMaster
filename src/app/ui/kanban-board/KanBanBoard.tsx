@@ -47,6 +47,7 @@ const KanBanBoard = ({
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggedOverColumn, setDraggedOverColumn] = useState(null);
     const event = eventPromise ? use(eventPromise) : null;
+    // Default to "booked for me" and not "unbooked" if kanbanboard seen from profile page
     const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
         !(isUserHost(user, event) || isUserAdmin(user))
             ? {

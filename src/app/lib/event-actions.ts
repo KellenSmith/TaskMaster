@@ -426,8 +426,9 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                     status: EventStatus.draft,
                     title: `${eventData.title} (Clone)`,
                     start_time: validatedData.start_time,
-                    end_time: dayjs(validatedData.start_time)
-                        .add(dayjs(eventData.end_time).diff(eventData.start_time))
+                    end_time: dayjs
+                        .utc(validatedData.start_time)
+                        .add(dayjs.utc(eventData.end_time).diff(eventData.start_time))
                         .toISOString(),
                 },
                 host: {

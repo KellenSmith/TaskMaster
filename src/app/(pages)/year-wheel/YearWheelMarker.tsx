@@ -39,8 +39,8 @@ const YearWheelMarker = ({
             // atan2() produces 270° for the screen-top direction, so subtract 270°.
             const angleDegShifted = (angleDeg - 270 + 360) % 360;
 
-            const startOfYear = dayjs(displayStartTime).startOf("year");
-            const msInYear = dayjs(startOfYear).add(1, "year").diff(startOfYear, "millisecond");
+            const startOfYear = dayjs.utc(displayStartTime).startOf("year");
+            const msInYear = dayjs.utc(startOfYear).add(1, "year").diff(startOfYear, "millisecond");
             const newMs = (angleDegShifted / 360) * msInYear;
             setMarkerDate(startOfYear.add(newMs, "millisecond"));
         },
@@ -99,9 +99,9 @@ const YearWheelMarker = ({
     const cy = rect.height / 2;
 
     // Compute angle from markerDate relative to displayStartTime
-    const startOfYear = dayjs(displayStartTime).startOf("year");
-    const msIntoYear = dayjs(markerDate).diff(startOfYear, "millisecond");
-    const msInYear = dayjs(startOfYear).add(1, "year").diff(startOfYear, "millisecond");
+    const startOfYear = dayjs.utc(displayStartTime).startOf("year");
+    const msIntoYear = dayjs.utc(markerDate).diff(startOfYear, "millisecond");
+    const msInYear = dayjs.utc(startOfYear).add(1, "year").diff(startOfYear, "millisecond");
     // Compute angle (degrees) for the marker. Add 270° so start-of-year is at the top.
     const angleDeg = ((msIntoYear / msInYear) * 360 + 270) % 360;
 

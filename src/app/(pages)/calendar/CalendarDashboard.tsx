@@ -33,7 +33,7 @@ interface CalendarDashboardProps {
 
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
     const { user, language } = useUserContext();
-    const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
+    const [selectedDate, setSelectedDate] = useState(dayjs.utc().date(1));
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
     const events = use(eventsPromise);

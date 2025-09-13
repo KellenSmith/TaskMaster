@@ -22,10 +22,9 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
 
     const getTotalDuration = (ev: typeof event) => {
         return (
-            (dayjs(getLatestTaskEndTime(ev)).diff(
-                dayjs(getEarliestTaskStartTime(ev)),
-                "milliseconds",
-            ) /
+            (dayjs
+                .utc(getLatestTaskEndTime(ev))
+                .diff(dayjs.utc(getEarliestTaskStartTime(ev)), "milliseconds") /
                 (365 * 24 * 60 * 60 * 1000)) *
             100
         );
@@ -33,16 +32,18 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
 
     const totalDuration = getTotalDuration(event);
     const eventDuration =
-        (dayjs(event.end_time).diff(dayjs(event.start_time), "milliseconds") /
+        (dayjs.utc(event.end_time).diff(dayjs.utc(event.start_time), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
 
     const taskStartOffset =
-        (dayjs(getEarliestTaskStartTime(event)).diff(dayjs().startOf("year"), "milliseconds") /
+        (dayjs
+            .utc(getEarliestTaskStartTime(event))
+            .diff(dayjs.utc().startOf("year"), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
     const eventStartOffset =
-        (dayjs(event.start_time).diff(dayjs().startOf("year"), "milliseconds") /
+        (dayjs.utc(event.start_time).diff(dayjs.utc().startOf("year"), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
 
@@ -56,13 +57,13 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
             const currentLatestTaskEndTime = getLatestTaskEndTime(event);
 
             if (
-                dayjs(earliestTaskStartTime).isAfter(dayjs(currentEarliestTaskStartTime)) &&
-                dayjs(latestTaskEndTime).isBefore(dayjs(currentLatestTaskEndTime))
+                dayjs.utc(earliestTaskStartTime).isAfter(dayjs.utc(currentEarliestTaskStartTime)) &&
+                dayjs.utc(latestTaskEndTime).isBefore(dayjs.utc(currentLatestTaskEndTime))
             )
                 return true;
             if (
-                dayjs(latestTaskEndTime).isAfter(dayjs(currentEarliestTaskStartTime)) &&
-                dayjs(latestTaskEndTime).isBefore(dayjs(currentLatestTaskEndTime))
+                dayjs.utc(latestTaskEndTime).isAfter(dayjs.utc(currentEarliestTaskStartTime)) &&
+                dayjs.utc(latestTaskEndTime).isBefore(dayjs.utc(currentLatestTaskEndTime))
             )
                 return true;
             return false;

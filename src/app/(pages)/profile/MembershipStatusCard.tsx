@@ -115,7 +115,7 @@ const MembershipStatusCard = () => {
                                         {LanguageTranslations.membershipExpires[language]}
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                        {formatDate(dayjs(user.user_membership.expires_at))}
+                                        {formatDate(dayjs.utc(user.user_membership.expires_at))}
                                     </Typography>
                                 </Stack>
                             </Stack>

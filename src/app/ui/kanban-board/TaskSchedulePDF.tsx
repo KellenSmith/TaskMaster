@@ -59,7 +59,7 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
                 <Text style={styles.eventHeader}>Task Schedule</Text>
                 <View style={styles.eventDetailRow}>
                     <Text style={styles.eventDetailLabel}>Printed:</Text>
-                    <Text>{formatDate(dayjs())}</Text>
+                    <Text>{formatDate(dayjs.utc())}</Text>
                 </View>
                 {event && getEventDetails()}
                 <View style={styles.table}>

@@ -24,8 +24,8 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
 
     const shouldShowEvent = useCallback(
         (event: Prisma.EventGetPayload<true>) => {
-            let startTime = dayjs(event.start_time);
-            let endTime = dayjs(event.end_time);
+            let startTime = dayjs.utc(event.start_time);
+            let endTime = dayjs.utc(event.end_time);
 
             // Count events ending before 04:00 as belonging to the day before
             if (0 <= endTime.hour() && endTime.hour() <= 4) {
@@ -54,7 +54,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
         return (
             <Stack spacing={0.5}>
                 {eventsForDay
-                    .sort((a, b) => dayjs(a.start_time).unix() - dayjs(b.start_time).unix())
+                    .sort((a, b) => dayjs.utc(a.start_time).unix() - dayjs.utc(b.start_time).unix())
                     .map((event) => (
                         <CalendarEvent key={event.id} event={event} />
                     ))}

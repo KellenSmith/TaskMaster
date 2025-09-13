@@ -40,32 +40,29 @@ type FilterFunctionProps = {
     userId?: string;
 };
 export const filterOptions = {
-    unassigned: ({ tasks }: FilterFunctionProps) => tasks?.filter((task) => !task.assignee_id),
-    assigned_to_me: ({ tasks, userId }: FilterFunctionProps) =>
+    unassigned: ({ tasks, value }: FilterFunctionProps) =>
+        tasks?.filter((task) => !task.assignee_id),
+    assigned_to_me: ({ tasks, value, userId }: FilterFunctionProps) =>
         tasks?.filter((task) => task.assignee_id === userId),
-    for_me_to_review: ({ tasks, userId }: FilterFunctionProps) =>
+    for_me_to_review: ({ tasks, value, userId }: FilterFunctionProps) =>
         tasks?.filter((task) => task.reviewer_id === userId),
     begins_after: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter(
             (task) =>
-                dayjs(task.start_time).isAfter(dayjs(value as string), "minute") ||
-                dayjs(task.start_time).isSame(dayjs(value as string), "minute"),
+                dayjs.utc(task.start_time).isAfter(dayjs.utc(value as string), "minute") ||
+                dayjs.utc(task.start_time).isSame(dayjs.utc(value as string), "minute"),
         ),
     ends_before: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter(
             (task) =>
-                dayjs(task.end_time).isBefore(dayjs(value as string), "minute") ||
-                dayjs(task.end_time).isSame(dayjs(value as string), "minute"),
+                dayjs.utc(task.end_time).isBefore(dayjs.utc(value as string), "minute") ||
+                dayjs.utc(task.end_time).isSame(dayjs.utc(value as string), "minute"),
         ),
     has_tag: ({ tasks, value }: FilterFunctionProps) =>
-        (value as string[])?.length === 0
-            ? tasks
-            : tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
+        tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
     [GlobalConstants.STATUS]: ({ tasks, value }) =>
         tasks?.filter((task: Prisma.TaskGetPayload<{}>) =>
-            (value as string[])?.length === 0
-                ? tasks
-                : (value as TaskStatus[]).includes(task.status),
+            (value as TaskStatus[]).includes(task.status),
         ),
 };
 
@@ -75,10 +72,10 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
     userId: string,
 ): T[] => {
     if (!appliedFilter) return tasks;
-    let filteredTasks = [...tasks];
+    const filteredTasks: T[] = [];
     for (const [key, value] of Object.entries(appliedFilter)) {
-        if (value)
-            filteredTasks = filterOptions[key]({ tasks: filteredTasks, value, userId }) as T[];
+        const tasksFitInFilter = filterOptions[key as FilterNameType]({ tasks, value, userId });
+        filteredTasks.push(...(tasksFitInFilter as T[]));
     }
     return filteredTasks;
 };
@@ -144,7 +141,9 @@ const KanBanBoardMenu = ({
                     name={fieldId}
                     label={label}
                     defaultValue={
-                        appliedFilter?.[fieldId] ? dayjs(appliedFilter[fieldId] as string) : null
+                        appliedFilter?.[fieldId]
+                            ? dayjs.utc(appliedFilter[fieldId] as string)
+                            : null
                     }
                     slotProps={{
                         textField: {
@@ -334,8 +333,7 @@ const KanBanBoardMenu = ({
                                             <DraggableTaskShifts
                                                 key={taskList.map((task) => task.id).join("-")}
                                                 readOnly={true}
-                                                taskName={taskList[0].name}
-                                                tasksPromise={tasksPromise}
+                                                taskList={taskList}
                                             />
                                         ),
                                     )

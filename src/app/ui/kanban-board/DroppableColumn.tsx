@@ -112,10 +112,10 @@ const DroppableColumn = ({
     };
 
     const getTaskDefaultStartTime = (): Date =>
-        (event ? dayjs(event.start_time) : dayjs().minute(0)).toDate();
+        (event ? dayjs.utc(event.start_time) : dayjs.utc().minute(0)).toDate();
 
     const getTaskDefaultEndTime = (): Date =>
-        (event ? dayjs(event.end_time) : dayjs().minute(0)).toDate();
+        (event ? dayjs.utc(event.end_time) : dayjs.utc().minute(0)).toDate();
 
     const openCreateTaskDialog = (shiftProps: Task | null) => {
         const defaultTask = {
@@ -188,12 +188,11 @@ const DroppableColumn = ({
                                 skill_badges: true;
                             };
                         }>
-                    >(filteredTasks.filter((task) => task.status === status)).map((taskList) => (
+                    >(filteredTasks).map((taskList) => (
                         <DraggableTaskShifts
                             key={taskList.map((task) => task.id).join("-")}
                             readOnly={readOnly}
-                            taskName={taskList[0].name}
-                            tasksPromise={tasksPromise}
+                            taskList={taskList}
                             eventPromise={eventPromise}
                             setDraggedTask={setDraggedTask}
                             openCreateTaskDialog={openCreateTaskDialog}

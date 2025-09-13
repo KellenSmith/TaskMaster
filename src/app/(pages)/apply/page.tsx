@@ -32,6 +32,7 @@ const ApplyPage = () => {
         }
     };
 
+    // TODO: Fix production links
     return (
         <Stack spacing={1}>
             <Typography variant="h6">{LanguageTranslations.makeSureYouRead[language]}</Typography>

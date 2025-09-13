@@ -23,12 +23,9 @@ import { use } from "react";
 
 interface DraggableTaskShiftsProps {
     readOnly: boolean;
-    taskName: string;
-    tasksPromise: Promise<
-        Prisma.TaskGetPayload<{
-            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-        }>[]
-    >;
+    taskList: Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+    }>[];
     eventPromise?: Promise<
         Prisma.EventGetPayload<{
             include: { tickets: { include: { event_participants: true } } };
@@ -50,16 +47,13 @@ interface DraggableTaskShiftsProps {
 
 const DraggableTaskShifts = ({
     readOnly,
-    taskName,
-    tasksPromise,
+    taskList,
     eventPromise,
     setDraggedTask,
     openCreateTaskDialog,
 }: DraggableTaskShiftsProps) => {
     const { organizationSettings } = useOrganizationSettingsContext();
     const { language } = useUserContext();
-    const tasks = use(tasksPromise);
-    const taskList = tasks.filter((task) => task.name === taskName);
 
     const getLatestEndTime = () =>
         taskList
@@ -102,8 +96,7 @@ const DraggableTaskShifts = ({
                 <DraggableTask
                     key={taskList[0].id}
                     readOnly={readOnly}
-                    taskId={taskList[0].id}
-                    tasksPromise={tasksPromise}
+                    task={taskList[0]}
                     eventPromise={eventPromise}
                     setDraggedTask={setDraggedTask}
                 />
@@ -142,9 +135,8 @@ const DraggableTaskShifts = ({
                                 <Divider />
                                 <DraggableTask
                                     readOnly={readOnly}
-                                    taskId={task.id}
+                                    task={task}
                                     eventPromise={eventPromise}
-                                    tasksPromise={tasksPromise}
                                     setDraggedTask={setDraggedTask}
                                 />
                             </Stack>

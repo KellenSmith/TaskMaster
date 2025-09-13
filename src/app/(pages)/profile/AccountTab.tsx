@@ -34,7 +34,8 @@ const AccountTab = () => {
             try {
                 await deleteUser(user.id);
                 await logOut();
-            } catch {
+            } catch (error) {
+                allowRedirectException(error);
                 addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });

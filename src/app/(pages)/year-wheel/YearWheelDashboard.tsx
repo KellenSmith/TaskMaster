@@ -29,18 +29,18 @@ interface YearWheelDashboardProps {
 const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
     const { language } = useUserContext();
     const events = use(eventsPromise);
-    const [displayStartTime, setDisplayStartTime] = useState(dayjs().startOf("year"));
-    const [markerDate, setMarkerDate] = useState(dayjs());
+    const [displayStartTime, setDisplayStartTime] = useState(dayjs.utc().startOf("year"));
+    const [markerDate, setMarkerDate] = useState(dayjs.utc());
 
     const getSortedAndFilteredEvents = () => {
         return getSortedEvents(events).filter((event) => {
-            if (dayjs(event.start_time).isSame(displayStartTime, "year")) return true;
-            if (dayjs(event.end_time).isSame(displayStartTime, "year")) return true;
+            if (dayjs.utc(event.start_time).isSame(displayStartTime, "year")) return true;
+            if (dayjs.utc(event.end_time).isSame(displayStartTime, "year")) return true;
             if (
                 event.tasks.some(
                     (task) =>
-                        dayjs(task.start_time).isSame(displayStartTime, "year") ||
-                        dayjs(task.end_time).isSame(displayStartTime, "year"),
+                        dayjs.utc(task.start_time).isSame(displayStartTime, "year") ||
+                        dayjs.utc(task.end_time).isSame(displayStartTime, "year"),
                 )
             )
                 return true;
@@ -61,8 +61,8 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
         const angleRad = Math.atan2(dy, dx);
         const angleDeg = (angleRad * (180 / Math.PI) - 270 + 360) % 360;
 
-        const startOfYear = dayjs(displayStartTime).startOf("year");
-        const msInYear = dayjs(startOfYear).add(1, "year").diff(startOfYear, "millisecond");
+        const startOfYear = dayjs.utc(displayStartTime).startOf("year");
+        const msInYear = dayjs.utc(startOfYear).add(1, "year").diff(startOfYear, "millisecond");
         const newMs = (angleDeg / 360) * msInYear;
         setMarkerDate(startOfYear.add(newMs, "millisecond"));
     };
@@ -70,8 +70,8 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
     const getEventsAtMarker = () => {
         const md = markerDate;
         return getSortedEvents(events).filter((event) => {
-            const evStart = dayjs(event.start_time);
-            const evEnd = dayjs(event.end_time);
+            const evStart = dayjs.utc(event.start_time);
+            const evEnd = dayjs.utc(event.end_time);
 
             // inclusive range check for the event itself
             if (
@@ -84,8 +84,8 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
             // or any of the event's tasks overlap the marker
             if (
                 event.tasks.some((task) => {
-                    const tStart = dayjs(task.start_time);
-                    const tEnd = dayjs(task.end_time);
+                    const tStart = dayjs.utc(task.start_time);
+                    const tEnd = dayjs.utc(task.end_time);
                     return (
                         md.isSame(tStart) ||
                         md.isSame(tEnd) ||

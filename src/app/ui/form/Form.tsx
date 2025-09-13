@@ -217,7 +217,9 @@ const Form: FC<FormProps> = ({
         }
 
         if (datePickerFields.includes(fieldId))
-            return requiredFields.includes(fieldId) ? dayjs().hour(18).minute(0).second(0) : null;
+            return requiredFields.includes(fieldId)
+                ? dayjs.utc().hour(18).minute(0).second(0)
+                : null;
         if (checkboxFields.includes(fieldId)) return false;
         return null;
     };

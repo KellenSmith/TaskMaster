@@ -60,7 +60,7 @@ const ParticipantListPDF = ({ event, eventParticipants, language }: ParticipantL
                 <Text style={styles.eventHeader}>Participant list</Text>
                 <View style={styles.eventDetailRow}>
                     <Text style={styles.eventDetailLabel}>Printed:</Text>
-                    <Text>{formatDate(dayjs())}</Text>
+                    <Text>{formatDate(dayjs.utc())}</Text>
                 </View>
                 {event && getEventDetails()}
                 <View style={styles.table}>

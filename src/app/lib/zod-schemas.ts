@@ -8,10 +8,12 @@ dayjs.extend(customParseFormat);
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
-    .refine((val) => !val || dayjs(val, "DD/MM/YYYY HH:mm").isValid(), {
+    .refine((val) => !val || dayjs.utc(val, "DD/MM/YYYY HH:mm").isValid(), {
         message: "Invalid date",
     })
-    .transform((val) => (val ? dayjs(val, "DD/MM/YYYY HH:mm").format() : "")) as z.ZodType<string>;
+    .transform((val) =>
+        val ? dayjs.utc(val, "DD/MM/YYYY HH:mm").format() : "",
+    ) as z.ZodType<string>;
 
 const priceSchema = z.coerce
     .number()

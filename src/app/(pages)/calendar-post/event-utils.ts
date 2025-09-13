@@ -40,21 +40,21 @@ export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>
 export const getEarliestStartTime = (tasks: Task[]) =>
     tasks
         .map((task) => task.start_time)
-        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
+        .sort((startTime1, startTime2) => dayjs.utc(startTime1).diff(dayjs.utc(startTime2)))[0];
 
 export const getEarliestEndTime = (tasks: Task[]) =>
     tasks
         .map((task) => task.end_time)
-        .sort((startTime1, startTime2) => dayjs(startTime1).diff(dayjs(startTime2)))[0];
+        .sort((startTime1, startTime2) => dayjs.utc(startTime1).diff(dayjs.utc(startTime2)))[0];
 
 export const sortTasks = (task1: Task, task2: Task) => {
-    const startTime1 = dayjs(task1.start_time);
-    const startTime2 = dayjs(task2.start_time);
+    const startTime1 = dayjs.utc(task1.start_time);
+    const startTime2 = dayjs.utc(task2.start_time);
     if (Math.abs(startTime2.diff(startTime1, "minute")) > 1)
         return startTime1.diff(startTime2, "minute");
 
-    const endTime1 = dayjs(task1.end_time);
-    const endTime2 = dayjs(task2.end_time);
+    const endTime1 = dayjs.utc(task1.end_time);
+    const endTime2 = dayjs.utc(task2.end_time);
     if (Math.abs(endTime2.diff(endTime1, "minute")) > 1) return endTime1.diff(endTime2, "minute");
 
     return task1.name.localeCompare(task2.name);
@@ -62,13 +62,13 @@ export const sortTasks = (task1: Task, task2: Task) => {
 
 export const getTasksSortedByTime = <T extends Prisma.TaskGetPayload<true>>(taskList: T[]): T[] =>
     taskList.sort((task1, task2) => {
-        const startTime1 = dayjs(task1.start_time);
-        const startTime2 = dayjs(task2.start_time);
+        const startTime1 = dayjs.utc(task1.start_time);
+        const startTime2 = dayjs.utc(task2.start_time);
         if (startTime1.isBefore(startTime2, "minute")) return -1;
         if (startTime1.isAfter(startTime2, "minute")) return 1;
 
-        const endTime1 = dayjs(task1.end_time);
-        const endTime2 = dayjs(task2.end_time);
+        const endTime1 = dayjs.utc(task1.end_time);
+        const endTime2 = dayjs.utc(task2.end_time);
         if (endTime1.isBefore(endTime2, "minute")) return -1;
         if (endTime1.isAfter(endTime2, "minute")) return 1;
 
@@ -94,8 +94,8 @@ export const getGroupedAndSortedTasks = <T extends Prisma.TaskGetPayload<true>>(
 
 export const getSortedEvents = <T extends Prisma.EventGetPayload<true>>(events: T[]): T[] => {
     return events.toSorted((a, b) => {
-        const aStart = dayjs(a.start_time);
-        const bStart = dayjs(b.start_time);
+        const aStart = dayjs.utc(a.start_time);
+        const bStart = dayjs.utc(b.start_time);
         if (aStart.isSame(bStart)) return a.title.localeCompare(b.title);
         return aStart.isBefore(bStart) ? -1 : 1;
     });
@@ -117,5 +117,5 @@ export const isEventCancelled = (event: Prisma.EventGetPayload<true>) =>
     event && event.status === EventStatus.cancelled;
 
 export const doDateRangesOverlap = (start1: Date, end1: Date, start2: Date, end2: Date) => {
-    return dayjs(start1).isBefore(end2) && dayjs(end1).isAfter(start2);
+    return dayjs.utc(start1).isBefore(end2) && dayjs.utc(end1).isAfter(start2);
 };

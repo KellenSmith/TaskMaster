@@ -20,15 +20,12 @@ interface DraggableTaskProps {
             include: { tickets: { include: { event_participants: true } } };
         }>
     >;
-    taskId: string;
-    tasksPromise: Promise<
-        Prisma.TaskGetPayload<{
-            include: {
-                assignee: { select: { id: true; nickname: true } };
-                skill_badges: true;
-            };
-        }>[]
-    >;
+    task: Prisma.TaskGetPayload<{
+        include: {
+            assignee: { select: { id: true; nickname: true } };
+            skill_badges: true;
+        };
+    }>;
     setDraggedTask?: (
         // eslint-disable-next-line no-unused-vars
         task: Prisma.TaskGetPayload<{
@@ -37,17 +34,11 @@ interface DraggableTaskProps {
     ) => void;
 }
 
-const DraggableTask = ({
-    readOnly,
-    eventPromise,
-    taskId,
-    tasksPromise,
-    setDraggedTask,
-}: DraggableTaskProps) => {
+const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: DraggableTaskProps) => {
     const { language } = useUserContext();
     const event = eventPromise ? use(eventPromise) : null;
-    const tasks = use(tasksPromise);
-    const task = tasks.find((task) => task.id === taskId);
+
+    // TODO: Make randos unable to drag and drop unless assigned or reviewer
 
     return (
         <>
