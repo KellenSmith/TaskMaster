@@ -36,83 +36,68 @@ const ApplyPage = () => {
     return (
         <Stack spacing={1}>
             <Typography variant="h6">{LanguageTranslations.makeSureYouRead[language]}</Typography>
-            <FormControlLabel
-                sx={{
-                    width: "100%",
-                    margin: 0,
-                    "& .MuiFormControlLabel-label": {
-                        lineHeight: 1.4,
-                        paddingLeft: 1,
-                    },
-                }}
-                control={
-                    <Checkbox
-                        checked={termsAccepted.termsOfMembership}
-                        onChange={(e) =>
-                            setTermsAccepted({
-                                ...termsAccepted,
-                                termsOfMembership: e.target.checked,
-                            })
-                        }
-                        required
-                    />
-                }
-                label={
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            display: "inline",
-                            wordBreak: "keep-all",
-                            hyphens: "none",
-                        }}
-                    >
-                        {OrderLanguageTranslations.iHaveRead[language]}{" "}
-                        <Link
-                            href={getTermsOfMembershipUrl(organizationSettings, language)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {LanguageTranslations.termsOfMembership[language]}
-                        </Link>
-                    </Typography>
-                }
-            />
-            <FormControlLabel
-                sx={{
-                    width: "100%",
-                }}
-                control={
-                    <Checkbox
-                        checked={termsAccepted.privacyPolicy}
-                        onChange={(e) =>
-                            setTermsAccepted({
-                                ...termsAccepted,
-                                privacyPolicy: e.target.checked,
-                            })
-                        }
-                        required
-                    />
-                }
-                label={
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            display: "inline",
-                            wordBreak: "keep-all",
-                            hyphens: "none",
-                        }}
-                    >
-                        {OrderLanguageTranslations.iHaveRead[language]}{" "}
-                        <Link
-                            href={getPrivacyPolicyUrl(organizationSettings, language)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {OrderLanguageTranslations.privacyPolicy[language]}
-                        </Link>
-                    </Typography>
-                }
-            />
+            <Stack direction="row" alignItems={"center"}>
+                <Checkbox
+                    checked={termsAccepted.termsOfMembership}
+                    onChange={(e) =>
+                        setTermsAccepted({
+                            ...termsAccepted,
+                            termsOfMembership: e.target.checked,
+                        })
+                    }
+                    required
+                />
+                <Typography
+                    variant="body2"
+                    sx={{
+                        display: "inline",
+                        wordBreak: "keep-all",
+                        hyphens: "none",
+                        marginRight: 1,
+                    }}
+                >
+                    {OrderLanguageTranslations.iHaveRead[language]}{" "}
+                </Typography>
+                <Link
+                    href={getTermsOfMembershipUrl(organizationSettings, language)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {LanguageTranslations.termsOfMembership[language]}
+                </Link>
+            </Stack>
+
+            <Stack direction="row" alignItems={"center"}>
+                <Checkbox
+                    checked={termsAccepted.privacyPolicy}
+                    onChange={(e) =>
+                        setTermsAccepted({
+                            ...termsAccepted,
+                            privacyPolicy: e.target.checked,
+                        })
+                    }
+                    required
+                />
+                <Typography
+                    variant="body2"
+                    sx={{
+                        display: "inline",
+                        wordBreak: "keep-all",
+                        hyphens: "none",
+                        marginRight: 1,
+                    }}
+                >
+                    {OrderLanguageTranslations.iHaveRead[language]}{" "}
+                </Typography>
+                <Link
+                    href={getPrivacyPolicyUrl(organizationSettings, language)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {OrderLanguageTranslations.privacyPolicy[language]}
+                </Link>
+            </Stack>
+
             <Form
                 key={JSON.stringify(termsAccepted)}
                 name={GlobalConstants.APPLY}

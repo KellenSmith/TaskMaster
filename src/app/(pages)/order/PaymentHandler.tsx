@@ -60,85 +60,67 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         order.status === OrderStatus.pending && (
             <Stack component="form" onSubmit={handleSubmit}>
                 <Stack alignItems="center" width="100%">
-                    <FormControlLabel
-                        sx={{
-                            justifyContent: "center",
-                            width: "100%",
-                            margin: 0,
-                            "& .MuiFormControlLabel-label": {
-                                lineHeight: 1.4,
-                                paddingLeft: 1,
-                            },
-                        }}
-                        control={
-                            <Checkbox
-                                checked={termsAccepted.termsOfPurchase}
-                                onChange={(e) =>
-                                    setTermsAccepted({
-                                        ...termsAccepted,
-                                        termsOfPurchase: e.target.checked,
-                                    })
-                                }
-                                required
-                            />
-                        }
-                        label={
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    display: "inline",
-                                    wordBreak: "keep-all",
-                                    hyphens: "none",
-                                }}
+                    <Stack direction="row" alignItems={"center"}>
+                        <Checkbox
+                            checked={termsAccepted.termsOfPurchase}
+                            onChange={(e) =>
+                                setTermsAccepted({
+                                    ...termsAccepted,
+                                    termsOfPurchase: e.target.checked,
+                                })
+                            }
+                            required
+                        />
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                display: "inline",
+                                wordBreak: "keep-all",
+                                hyphens: "none",
+                                marginRight: 1,
+                            }}
+                        >
+                            {LanguageTranslations.iHaveRead[language]}{" "}
+                            <Link
+                                href={getTermsOfPurchaseUrl(organizationSettings, language)}
+                                target="_blank"
+                                rel="noopener noreferrer"
                             >
-                                {LanguageTranslations.iHaveRead[language]}{" "}
-                                <Link
-                                    href={getTermsOfPurchaseUrl(organizationSettings, language)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    {LanguageTranslations.termsOfPurchase[language]}
-                                </Link>
-                            </Typography>
-                        }
-                    />
-                    <FormControlLabel
-                        sx={{
-                            justifyContent: "center",
-                            width: "100%",
-                        }}
-                        control={
-                            <Checkbox
-                                checked={termsAccepted.privacyPolicy}
-                                onChange={(e) =>
-                                    setTermsAccepted({
-                                        ...termsAccepted,
-                                        privacyPolicy: e.target.checked,
-                                    })
-                                }
-                                required
-                            />
-                        }
-                        label={
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    display: "inline",
-                                    wordBreak: "keep-all",
-                                    hyphens: "none",
-                                }}
+                                {LanguageTranslations.termsOfPurchase[language]}
+                            </Link>
+                        </Typography>
+                    </Stack>
+                    <Stack direction="row" alignItems={"center"}>
+                        <Checkbox
+                            checked={termsAccepted.privacyPolicy}
+                            onChange={(e) =>
+                                setTermsAccepted({
+                                    ...termsAccepted,
+                                    privacyPolicy: e.target.checked,
+                                })
+                            }
+                            required
+                        />
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                display: "inline",
+                                wordBreak: "keep-all",
+                                hyphens: "none",
+                                marginRight: 1,
+                            }}
+                        >
+                            {LanguageTranslations.iHaveRead[language]}{" "}
+                            <Link
+                                href={getPrivacyPolicyUrl(organizationSettings, language)}
+                                target="_blank"
+                                rel="noopener noreferrer"
                             >
-                                {LanguageTranslations.iHaveRead[language]}{" "}
-                                <Link
-                                    href={getPrivacyPolicyUrl(organizationSettings, language)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    {LanguageTranslations.privacyPolicy[language]}
-                                </Link>
-                            </Typography>
-                        }
-                    />
+                                {LanguageTranslations.privacyPolicy[language]}
+                            </Link>
+                        </Typography>
+                    </Stack>
+
                     <Button
                         type="submit"
                         color="success"
