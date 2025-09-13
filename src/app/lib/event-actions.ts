@@ -186,7 +186,6 @@ export const getEventById = async (
         where: { id: userId },
         include: { user_membership: true },
     });
-    console.log(userId, loggedInUser, isUserAdmin(loggedInUser), event.host_id, userId);
     if (
         event.status !== EventStatus.published &&
         !isUserAdmin(loggedInUser) &&
