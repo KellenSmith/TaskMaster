@@ -100,6 +100,7 @@ export const getAllUsers = async (): Promise<
         };
     }>[]
 > => {
+    // TODO: Only admins can get users with personal info
     return await prisma.user.findMany({
         include: {
             user_membership: true,
