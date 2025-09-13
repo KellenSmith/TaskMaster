@@ -275,7 +275,7 @@ const NavPanel = () => {
                     <ChevronLeft />
                 </IconButton>
                 <Divider />
-                <List sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <List sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto" }}>
                     {user ? (
                         <Button
                             variant="outlined"
@@ -298,7 +298,7 @@ const NavPanel = () => {
                             {LoginLanguageTranslations.login[language]}
                         </Button>
                     )}
-                    <Stack sx={{ flex: 1, overflow: "auto" }}>
+                    <Stack sx={{ flex: 1 }}>
                         {[
                             ...new Set(
                                 routeTreeConfig.children.map((childRoute) => childRoute.role),
