@@ -56,13 +56,13 @@ export const createEventTicket = async (eventId: string, formData: FormData) => 
 };
 
 export const updateEventTicket = async (ticketId: string, formData: FormData) => {
-    // Validate ticket ID format
+    // Validate event ID format
     const validatedTicketId = UuidSchema.parse(ticketId);
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = TicketUpdateSchema.parse(Object.fromEntries(formData.entries()));
+    const formDataObject = Object.fromEntries(formData.entries());
 
-    const ticketFieldValues = TicketWithoutRelationsSchema.parse(validatedData);
-    const productFieldValues = ProductUpdateSchema.parse(validatedData);
+    const ticketFieldValues = TicketWithoutRelationsSchema.parse(formDataObject);
+    const productFieldValues = ProductCreateSchema.parse(formDataObject);
     await prisma.ticket.update({
         where: {
             product_id: validatedTicketId,
