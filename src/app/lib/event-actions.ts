@@ -383,8 +383,8 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         prisma.eventParticipant.deleteMany({
             where: { ticket: { event_id: validatedEventId } },
         }),
-        prisma.ticket.deleteMany({
-            where: { event_id: validatedEventId },
+        prisma.product.deleteMany({
+            where: { ticket: { event_id: validatedEventId } },
         }),
         prisma.event.delete({
             where: { id: validatedEventId },
