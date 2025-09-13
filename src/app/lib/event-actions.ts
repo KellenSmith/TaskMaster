@@ -90,15 +90,11 @@ export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPaylo
 
     const filterParams = {} as Prisma.EventWhereInput;
 
-    // Non-admins can only see their own event drafts and pending approval events
+    // Non-admins can only see their own event drafts and pending approval events or published events
     if (!isUserAdmin(loggedInUser)) {
         filterParams.OR = [
             {
-                status: {
-                    not: {
-                        in: [EventStatus.draft, EventStatus.pending_approval],
-                    },
-                },
+                status: EventStatus.published,
             },
             { host_id: userId },
         ];
@@ -190,10 +186,11 @@ export const getEventById = async (
         where: { id: userId },
     });
     if (
-        (event.status === EventStatus.draft || event.status === EventStatus.pending_approval) &&
+        event.status !== EventStatus.published &&
         !isUserAdmin(loggedInUser) &&
         event.host_id !== userId
     ) {
+        console.log(isUserAdmin(loggedInUser), event.host_id, userId);
         throw new Error("You are not authorized to view this event");
     }
     return event;
