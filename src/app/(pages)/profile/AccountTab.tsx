@@ -16,11 +16,14 @@ import MembershipStatusCard from "./MembershipStatusCard";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserStatus } from "@prisma/client";
+import { clientRedirect } from "../../lib/utils";
+import { useRouter } from "next/navigation";
 
 const AccountTab = () => {
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
     if (!user) return <LoadingFallback />;
 
@@ -40,22 +43,14 @@ const AccountTab = () => {
             }
         });
 
-    const activateMembership = async () =>
-        startTransition(async () => {
-            try {
-                await createMembershipOrder(user.id);
-            } catch (error) {
-                allowRedirectException(error);
-                // Show notification for all other errors
-                addNotification(LanguageTranslations.failedActivateMembership[language], "error");
-            }
-        });
-
     return (
         <Stack>
             <MembershipStatusCard />
             {user.status === UserStatus.validated && (
-                <Button onClick={activateMembership} disabled={isPending}>
+                <Button
+                    onClick={() => clientRedirect(router, [GlobalConstants.SHOP])}
+                    disabled={isPending}
+                >
                     {LanguageTranslations.activateMembership[language](user)}
                 </Button>
             )}

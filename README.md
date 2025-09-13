@@ -36,6 +36,7 @@ For payments, use the following test data:
 - ~~Event tags (munch/playparty/section etc...)~~
 - ~~Buttons to message the assignee and reviewer of a task~~
 - Enable different membership types.
+- Implement shopping cart.
 - Enable different event types (open to all members, open to specific membership types, open to public)
 - Enable task assignees to submit receipts
 - Solidarity and community funded event tickets - one bought solidarity ticket funds a ticket for someone else

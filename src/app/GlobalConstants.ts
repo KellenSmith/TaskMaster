@@ -15,6 +15,7 @@ const GlobalConstants = {
     ORGANIZATION_SETTINGS: "settings",
     CREATE: "create",
     CALENDAR: "calendar",
+    SHOP: "shop",
     // Don't call event route "event" as it's usually blocked by tracker blockers in browsers
     CALENDAR_POST: "calendar-post",
     YEAR_WHEEL: "year-wheel",

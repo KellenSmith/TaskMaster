@@ -19,6 +19,7 @@ import {
 import { auth, signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getRelativeUrl } from "./utils";
+import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
 
 export const getUserById = async (
     userId: string,
@@ -37,25 +38,34 @@ export const createUser = async (formData: FormData): Promise<void> => {
     const userCount = await prisma.user.count();
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
-    await prisma.user.create({
-        data: {
-            ...userData,
-            ...(userCount === 0 && {
-                status: UserStatus.validated,
-                role: UserRole.admin,
-            }),
-            ...(skill_badge_ids && {
-                skill_badges: {
-                    createMany: {
-                        data: skill_badge_ids.map((badgeId) => ({
-                            skill_badge_id: badgeId,
-                        })),
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const newUser = await tx.user.create({
+            data: {
+                ...userData,
+                ...(skill_badge_ids && {
+                    skill_badges: {
+                        createMany: {
+                            data: skill_badge_ids.map((badgeId) => ({
+                                skill_badge_id: badgeId,
+                            })),
+                        },
                     },
+                }),
+            },
+        });
+        if (userCount === 0) {
+            await tx.user.update({
+                where: { id: newUser.id },
+                data: {
+                    status: UserStatus.validated,
+                    role: UserRole.admin,
                 },
-            }),
-        },
+            });
+            const membershipProduct = await getMembershipProduct();
+            await renewUserMembership(tx, newUser.id, membershipProduct.id);
+        }
+        revalidateTag(GlobalConstants.USER);
     });
-    revalidateTag(GlobalConstants.USER);
 };
 
 export const submitMemberApplication = async (formData: FormData) => {

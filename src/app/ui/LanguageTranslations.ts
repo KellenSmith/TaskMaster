@@ -43,6 +43,10 @@ const LanguageTranslations = {
             [Language.english]: "Calendar",
             [Language.swedish]: "Kalender",
         },
+        [GlobalConstants.SHOP]: {
+            [Language.english]: "Shop",
+            [Language.swedish]: "Butik",
+        },
         [GlobalConstants.LOCATIONS]: {
             [Language.english]: "Locations",
             [Language.swedish]: "Lokaler",

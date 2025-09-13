@@ -204,22 +204,19 @@ export const ProductUpdateSchema = ProductCreateSchema;
 // MEMBERSHIP SCHEMAS
 // =============================================================================
 
-export const MembershipWithoutProductSchema = z
-    .object({
-        id: z.string().optional(),
-        duration: z.number().int().positive(), // days
-    })
-    .omit({ id: true });
+export const MembershipWithoutProductSchema = z.object({
+    duration: z.coerce.number().int().positive(), // days
+});
 
-export const MembershipCreateSchema = z.union([
+export const MembershipCreateSchema = z.intersection(
     MembershipWithoutProductSchema,
     ProductCreateSchema,
-]);
+);
 
-export const MembershipUpdateSchema = z.union([
+export const MembershipUpdateSchema = z.intersection(
     MembershipWithoutProductSchema,
     ProductUpdateSchema,
-]);
+);
 
 // =============================================================================
 // USER MEMBERSHIP SCHEMAS
@@ -248,9 +245,9 @@ export const TicketWithoutRelationsSchema: z.ZodType<TicketWithoutRelations> = z
     })
     .omit({ id: true });
 
-export const TicketCreateSchema = z.union([TicketWithoutRelationsSchema, ProductCreateSchema]);
+export const TicketCreateSchema = z.intersection(TicketWithoutRelationsSchema, ProductCreateSchema);
 
-export const TicketUpdateSchema = z.union([TicketWithoutRelationsSchema, ProductUpdateSchema]);
+export const TicketUpdateSchema = z.intersection(TicketWithoutRelationsSchema, ProductUpdateSchema);
 
 // =============================================================================
 // ORDER SCHEMAS

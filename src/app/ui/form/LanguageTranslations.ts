@@ -299,6 +299,10 @@ export const productFieldLabels = {
         [Language.english]: "Image",
         [Language.swedish]: "Bild",
     },
+    [GlobalConstants.DURATION]: {
+        [Language.english]: "Duration [days]",
+        [Language.swedish]: "Giltighetsperiod [dagar]",
+    },
 };
 
 export const ticketFieldLabels = {
