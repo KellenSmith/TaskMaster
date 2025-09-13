@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
 import { getLoggedInUser } from "./user-actions";
 import { UuidSchema } from "./zod-schemas";
+import { getOrganizationSettings } from "./organization-settings-actions";
 
 const makeSwedbankApiRequest = async (url: string, body?: any) => {
     return await fetch(url, {
@@ -54,6 +55,7 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
         where: { id: orderId },
         data: { payee_ref: payeeRef },
     });
+    const organizationSettings = await getOrganizationSettings();
 
     return {
         paymentorder: {
@@ -75,9 +77,8 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 callbackUrl: getAbsoluteUrl([GlobalConstants.PAYMENT_CALLBACK], {
                     [GlobalConstants.ORDER_ID]: orderId,
                 }),
-                // TODO
-                // logoUrl: "https://example.com/logo.png",
-                // termsOfServiceUrl: "https://example.com/termsandconditions.pdf",
+                logoUrl: organizationSettings?.logo_url || undefined,
+                termsOfServiceUrl: organizationSettings?.terms_of_purchase_english_url || undefined,
             },
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,

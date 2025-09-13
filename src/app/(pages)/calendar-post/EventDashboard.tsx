@@ -169,7 +169,6 @@ const EventDashboard = ({
         }
     };
 
-    // TODO: Events pending approval are visible to randos
     return (
         <Stack>
             <Stack padding="0 24px 0 24px" spacing={2}>
