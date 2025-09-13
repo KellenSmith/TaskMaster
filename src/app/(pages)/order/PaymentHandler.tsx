@@ -1,5 +1,5 @@
 "use client";
-import { Button, Stack, FormControlLabel, Checkbox, Typography, Link } from "@mui/material";
+import { Button, Stack, Checkbox, Typography, Link } from "@mui/material";
 import React, { use, useState } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
 import { OrderStatus, Prisma } from "@prisma/client";

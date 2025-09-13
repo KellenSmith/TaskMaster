@@ -5,7 +5,7 @@ import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { useMemo, useState } from "react";
-import { Checkbox, FormControlLabel, Link, Stack, Typography } from "@mui/material";
+import { Checkbox, Link, Stack, Typography } from "@mui/material";
 import LanguageTranslations from "./LanguageTranslations";
 import OrderLanguageTranslations from "../order/LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -32,7 +32,6 @@ const ApplyPage = () => {
         }
     };
 
-    // TODO: Fix production links
     return (
         <Stack spacing={1}>
             <Typography variant="h6">{LanguageTranslations.makeSureYouRead[language]}</Typography>

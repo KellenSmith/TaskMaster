@@ -40,11 +40,10 @@ type FilterFunctionProps = {
     userId?: string;
 };
 export const filterOptions = {
-    unassigned: ({ tasks, value }: FilterFunctionProps) =>
-        tasks?.filter((task) => !task.assignee_id),
-    assigned_to_me: ({ tasks, value, userId }: FilterFunctionProps) =>
+    unassigned: ({ tasks }: FilterFunctionProps) => tasks?.filter((task) => !task.assignee_id),
+    assigned_to_me: ({ tasks, userId }: FilterFunctionProps) =>
         tasks?.filter((task) => task.assignee_id === userId),
-    for_me_to_review: ({ tasks, value, userId }: FilterFunctionProps) =>
+    for_me_to_review: ({ tasks, userId }: FilterFunctionProps) =>
         tasks?.filter((task) => task.reviewer_id === userId),
     begins_after: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter(
