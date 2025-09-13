@@ -298,7 +298,7 @@ const NavPanel = () => {
                             {LoginLanguageTranslations.login[language]}
                         </Button>
                     )}
-                    <Stack sx={{ flex: 1 }}>
+                    <Stack sx={{ flexShrink: 1 }}>
                         {[
                             ...new Set(
                                 routeTreeConfig.children.map((childRoute) => childRoute.role),
