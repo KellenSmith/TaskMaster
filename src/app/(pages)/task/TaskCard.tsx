@@ -172,13 +172,14 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                 key={task.id}
                 sx={{
                     transition: "all 0.2s ease-in-out",
+                    overflowY: "auto",
                     "&:hover": {
                         transform: "translateY(-2px)",
                         boxShadow: 3,
                     },
                 }}
             >
-                <CardContent sx={{ p: 3, overflowY: "auto" }}>
+                <CardContent sx={{ p: 3 }}>
                     <Stack spacing={2}>
                         <Stack
                             direction={isSmallScreen ? "column" : "row"}
