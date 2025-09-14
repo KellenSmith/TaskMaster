@@ -13,6 +13,7 @@ import {
 import { addEventReserveWithTx } from "./event-reserve-actions";
 import { getLoggedInUser } from "./user-actions";
 import { sanitizeFormData } from "./html-sanitizer";
+import { isUserAdmin, isUserHost } from "./utils";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     // Validate task ID format
@@ -227,6 +228,35 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
     // Validate ID formats
     const validatedUserId = UuidSchema.parse(userId);
     const validatedTaskId = UuidSchema.parse(taskId);
+
+    // Get the current logged in user
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) {
+        throw new Error("User must be logged in to assign tasks");
+    }
+
+    // Get the existing task to check if it's already assigned and get event info
+    const existingTask = await prisma.task.findUniqueOrThrow({
+        where: {
+            id: validatedTaskId,
+        },
+        include: {
+            assignee: true,
+            event: true,
+        },
+    });
+
+    // If the task is already assigned to someone, check authorization
+    if (existingTask.assignee_id && existingTask.assignee_id !== validatedUserId) {
+        const isAdmin = isUserAdmin(loggedInUser);
+        const isHost = existingTask.event ? isUserHost(loggedInUser, existingTask.event) : false;
+
+        if (!isAdmin && !isHost) {
+            throw new Error(
+                "Only admins or event hosts can reassign tasks that are already assigned to someone else",
+            );
+        }
+    }
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const updatedTask = await tx.task.update({
