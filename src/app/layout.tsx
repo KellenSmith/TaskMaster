@@ -2,11 +2,13 @@ import React from "react";
 import NavPanel from "./ui/NavPanel";
 import { Stack } from "@mui/material";
 import ServerContextWrapper from "./context/ServerContextWrapper";
+import { generateSEOMetadata } from "./lib/seo-utils";
 
-export const metadata = {
-    title: process.env.NEXT_PUBLIC_ORG_NAME || "Task Master",
-    description: process.env.NEXT_PUBLIC_ORG_DESCRIPTION || "Your volunteer management platform",
-};
+export const metadata = generateSEOMetadata({
+    title: undefined, // Will use base title from environment
+    description: undefined, // Will use base description from environment
+    keywords: [], // Will use base keywords from environment
+});
 
 interface RootLayoutProps {
     children: React.ReactNode;
