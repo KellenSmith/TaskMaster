@@ -36,6 +36,7 @@ const GlobalConstants = {
     MEMBER_APPLICATION_PROMPT: "member_application_prompt",
     LOGO_URL: "logo_url",
     EVENT_MANAGER_EMAIL: "event_manager_email",
+    PRIMARY_COLOR: "primary_color",
     PRIVACY_POLICY_SWEDISH_URL: "privacy_policy_swedish_url",
     PRIVACY_POLICY_ENGLISH_URL: "privacy_policy_english_url",
     TERMS_OF_PURCHASE_SWEDISH_URL: "terms_of_purchase_swedish_url",

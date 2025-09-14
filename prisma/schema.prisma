@@ -45,6 +45,7 @@ model OrganizationSettings {
   member_application_prompt            String?
   ticket_instructions                  String?
   event_manager_email                  String?
+  primary_color                        String? @default("#607d8b")
 
   privacy_policy_swedish_url      String?
   privacy_policy_english_url      String?

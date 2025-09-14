@@ -72,6 +72,7 @@ export const explanatoryTexts = {
 export const RenderedFields = {
     // Org settings
     [GlobalConstants.ORGANIZATION_SETTINGS]: [
+        GlobalConstants.PRIMARY_COLOR,
         GlobalConstants.EVENT_MANAGER_EMAIL,
         GlobalConstants.DEFAULT_TASK_SHIFT_LENGTH,
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,

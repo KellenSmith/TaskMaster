@@ -390,6 +390,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     return (
         <>
             <Button
+                variant="outlined"
                 aria-controls="simple-menu"
                 aria-haspopup="true"
                 onClick={(event) => {

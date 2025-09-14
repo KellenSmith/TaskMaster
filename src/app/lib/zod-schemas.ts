@@ -55,6 +55,11 @@ export const OrganizationSettingsUpdateSchema = z
         default_task_shift_length: z.coerce.number().int().positive().optional(),
         member_application_prompt: z.string().nullable().optional(),
         logo_url: z.url().nullable().optional(),
+        primary_color: z
+            .string()
+            .regex(/^#([0-9A-Fa-f]{3}){1,2}$/, { message: "Invalid hex color" })
+            .nullable()
+            .optional(),
         privacy_policy_swedish_url: z.url().nullable().optional(),
         privacy_policy_english_url: z.url().nullable().optional(),
         terms_of_purchase_swedish_url: z.url().nullable().optional(),

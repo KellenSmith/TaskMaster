@@ -33,6 +33,10 @@ export const organizationSettingsFieldLabels = {
         [Language.english]: "Event Manager Email",
         [Language.swedish]: "Eventkoordinatorns e-post",
     },
+    [GlobalConstants.PRIMARY_COLOR]: {
+        [Language.english]: "Primary Color (Hex)",
+        [Language.swedish]: "Primärfärg (Hex)",
+    },
     [GlobalConstants.PRIVACY_POLICY_SWEDISH_URL]: {
         [Language.english]: "Privacy Policy (Swedish)",
         [Language.swedish]: "Integritetspolicy (Svenska)",
