@@ -221,7 +221,10 @@ RequiredFields[GlobalConstants.APPLY] = [
     GlobalConstants.CONSENT_GDPR,
 ];
 // User
-RequiredFields[GlobalConstants.USER] = [...RequiredFields[GlobalConstants.PROFILE]];
+RequiredFields[GlobalConstants.USER] = [
+    ...RequiredFields[GlobalConstants.PROFILE],
+    GlobalConstants.ROLE,
+];
 RequiredFields[GlobalConstants.MEMBERSHIP] = [
     ...RequiredFields[GlobalConstants.PRODUCT],
     GlobalConstants.DURATION,
