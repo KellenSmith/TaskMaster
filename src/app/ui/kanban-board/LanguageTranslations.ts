@@ -123,6 +123,10 @@ const LanguageTranslations = {
         [Language.english]: "Cancel shift booking",
         [Language.swedish]: "Avboka detta skift",
     },
+    booked: {
+        [Language.english]: "Booked",
+        [Language.swedish]: "Bokat",
+    },
     areYouSureBookThisShift: {
         [Language.english]: "Are you sure you want to book this shift?",
         [Language.swedish]: "Är du säker på att du vill boka detta skift?",

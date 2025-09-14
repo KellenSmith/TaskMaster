@@ -48,19 +48,24 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
         }
     };
 
-    if (task.assignee_id === user.id)
+    if (!user) return null;
+    if (task.assignee_id)
         return (
             <ConfirmButton
                 onClick={unassignFromTask}
+                disabled={task.assignee_id !== user.id}
                 fullWidth
                 color="error"
                 variant="outlined"
                 startIcon={<Delete />}
                 confirmText={LanguageTranslations.areYouSureCancelShiftBooking[language](event)}
             >
-                {LanguageTranslations.cancelShiftBooking[language]}
+                {task.assignee_id === user.id
+                    ? LanguageTranslations.cancelShiftBooking[language]
+                    : LanguageTranslations.booked[language]}
             </ConfirmButton>
         );
+
     if (!isUserQualifiedForTask(user, task.skill_badges))
         return (
             <Stack direction="row" alignItems="center" gap={1}>
@@ -82,6 +87,7 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
                 <Warning color="warning" />
             </Tooltip>
         );
+
     let confirmText = LanguageTranslations.areYouSureBookThisShift[language];
     if (event) {
         if (isEventSoldOut(event) && !isUserParticipant(user, event)) {
