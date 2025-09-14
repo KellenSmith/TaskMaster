@@ -185,7 +185,6 @@ export const RequiredFields = {
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,
         GlobalConstants.SURNAME,
-        GlobalConstants.NICKNAME,
         GlobalConstants.EMAIL,
     ],
     [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
@@ -222,10 +221,7 @@ RequiredFields[GlobalConstants.APPLY] = [
     GlobalConstants.CONSENT_GDPR,
 ];
 // User
-RequiredFields[GlobalConstants.USER] = [
-    ...RequiredFields[GlobalConstants.PROFILE],
-    GlobalConstants.ROLE,
-];
+RequiredFields[GlobalConstants.USER] = [...RequiredFields[GlobalConstants.PROFILE]];
 RequiredFields[GlobalConstants.MEMBERSHIP] = [
     ...RequiredFields[GlobalConstants.PRODUCT],
     GlobalConstants.DURATION,
