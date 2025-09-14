@@ -185,6 +185,7 @@ export const RequiredFields = {
     [GlobalConstants.PROFILE]: [
         GlobalConstants.FIRST_NAME,
         GlobalConstants.SURNAME,
+        GlobalConstants.NICKNAME,
         GlobalConstants.EMAIL,
     ],
     [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
