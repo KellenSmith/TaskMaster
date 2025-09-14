@@ -60,7 +60,9 @@
         "@tiptap/extension-underline": "^2.26.1",
         "@tiptap/pm": "^2.26.1",
         "@tiptap/react": "^2.26.1",
+        "@vercel/analytics": "^1.5.0",
         "@vercel/blob": "^1.1.1",
+        "@vercel/speed-insights": "^1.2.0",
         "axios": "^1.11.0",
         "dayjs": "^1.11.13",
         "dompurify": "^3.2.6",
@@ -107,7 +109,11 @@
     },
     "pnpm": {
         "overrides": {
-            "prettier": "3.6.2"
+            "prettier": "3.6.2",
+            "next@>=15.0.0 <=15.4.4": ">=15.4.5",
+            "vite@>=7.1.0 <=7.1.4": ">=7.1.5",
+            "next@>=15.0.0-canary.0 <15.4.7": ">=15.4.7",
+            "axios@<1.12.0": ">=1.12.0"
         }
     }
 }

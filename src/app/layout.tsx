@@ -3,6 +3,8 @@ import NavPanel from "./ui/NavPanel";
 import { Stack } from "@mui/material";
 import ServerContextWrapper from "./context/ServerContextWrapper";
 import { generateSEOMetadata } from "./lib/seo-utils";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = generateSEOMetadata({
     title: undefined, // Will use base title from environment
@@ -32,6 +34,8 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
         <html lang="en">
             <body style={{ height: "100vh", backgroundColor: "#121212" }}>
                 <RootLayoutInner>{children}</RootLayoutInner>
+                <Analytics />
+                <SpeedInsights />
             </body>
         </html>
     );
