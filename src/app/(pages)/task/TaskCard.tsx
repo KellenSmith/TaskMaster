@@ -178,7 +178,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                     },
                 }}
             >
-                <CardContent sx={{ p: 3 }}>
+                <CardContent sx={{ p: 3, overflowY: "auto" }}>
                     <Stack spacing={2}>
                         <Stack
                             direction={isSmallScreen ? "column" : "row"}
