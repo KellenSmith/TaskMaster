@@ -66,6 +66,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     const addMembershipAction = async (formData: FormData) => {
         try {
             await addUserMembership(addMembershipDialogOpen!.id, formData);
+            setAddMembershipDialogOpen(null);
             return LanguageTranslations.addedMembership[language];
         } catch {
             throw new Error(LanguageTranslations.failedAddedMembership[language]);
