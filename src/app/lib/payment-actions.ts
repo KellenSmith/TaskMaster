@@ -108,11 +108,10 @@ export const redirectToSwedbankPayment = async (orderId: string): Promise<void> 
             `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
             requestBody,
         );
-        const responseData: PaymentOrderResponse = await response.json();
         if (!response.ok) {
-            throw new Error(JSON.stringify(responseData));
+            throw new Error(response.statusText);
         }
-
+        const responseData: PaymentOrderResponse = await response.json();
         const redirectOperation = responseData.operations.find(
             (op) => op.rel === "redirect-checkout",
         );
