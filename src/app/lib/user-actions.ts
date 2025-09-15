@@ -82,14 +82,6 @@ export const submitMemberApplication = async (formData: FormData) => {
         throw new Error("Application message required but not provided.");
     }
 
-    // Send membership application to organization email
-    try {
-        await notifyOfMembershipApplication(validatedData);
-    } catch (error) {
-        console.error(error);
-        // Submit the membership application despite failed notification
-    }
-
     const userFieldValues = UserCreateSchema.parse(validatedData);
 
     await createUser(formData);
@@ -99,6 +91,15 @@ export const submitMemberApplication = async (formData: FormData) => {
         callback: getRelativeUrl([GlobalConstants.APPLY]),
         redirectTo: getRelativeUrl([GlobalConstants.PROFILE]),
     });
+
+    // Send membership application to organization email
+    try {
+        await notifyOfMembershipApplication(validatedData);
+    } catch (error) {
+        console.error(error);
+        // Submit the membership application despite failed notification
+    }
+
     revalidateTag(GlobalConstants.USER);
 };
 
