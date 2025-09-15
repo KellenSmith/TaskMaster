@@ -40,9 +40,10 @@ const NotificationToast: FC<NotificationToastProps> = ({
     );
 
     useEffect(() => {
-        const timer = setTimeout(deleteThisNotification, 5000);
+        const timeoutDuration = msg.length > 30 ? 8000 : 5000;
+        const timer = setTimeout(deleteThisNotification, timeoutDuration);
         return () => clearTimeout(timer);
-    }, [deleteThisNotification]);
+    }, [deleteThisNotification, msg]);
 
     return (
         <Alert severity={severity} onClose={deleteThisNotification}>
@@ -60,7 +61,7 @@ const NotificationContextProvider: FC<NotificationContextProviderProps> = ({ chi
                 notifications.length > 0 ? Math.max(...notifications.map((n) => n.id)) + 1 : 1;
             setNotifications((prev) => [...prev, { id: newNotificationId, msg, severity }]);
         },
-        [notifications],
+        [],
     );
 
     const removeNotification = useCallback((id: number) => {

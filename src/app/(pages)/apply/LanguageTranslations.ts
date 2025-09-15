@@ -13,8 +13,10 @@ const LanguageTranslations = {
             "Ansökan skickad. En inloggningslänk skickas till din e-postadress inom kort.",
     },
     failedApplicationSubmit: {
-        [Language.english]: "Failed to submit application",
-        [Language.swedish]: "Kunde inte skicka in ansökan",
+        [Language.english]:
+            "Failed to submit application. For security reasons we do not disclose whether you are already a member or not. If you are already a member you can log in via the login page.",
+        [Language.swedish]:
+            "Kunde inte skicka in ansökan. Av säkerhetsskäl avslöjar vi inte om du redan är medlem eller inte. Om du redan är medlem kan du logga in via inloggningssidan.",
     },
     makeSureYouRead: {
         [Language.english]:
