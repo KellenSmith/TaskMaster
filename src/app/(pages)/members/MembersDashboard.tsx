@@ -147,7 +147,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
 
     const customColumns: GridColDef[] = [
         {
-            field: GlobalConstants.USER_MEMBERSHIP,
+            field: GlobalConstants.STATUS,
             headerName: "Membership status",
             type: "string",
             valueGetter: (_, member: ImplementedDatagridEntities) => {
@@ -188,6 +188,22 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                         </Typography>
                     </Stack>
                 );
+            },
+        },
+        {
+            field: GlobalConstants.USER_MEMBERSHIP,
+            headerName: "Membership expires",
+            type: "dateTime",
+            valueGetter: (_, member: ImplementedDatagridEntities) => {
+                const expiresAt = (
+                    member as Prisma.UserGetPayload<{
+                        include: {
+                            user_membership: true;
+                            skill_badges: true;
+                        };
+                    }>
+                ).user_membership?.expires_at;
+                return expiresAt ? new Date(expiresAt) : null;
             },
         },
         {

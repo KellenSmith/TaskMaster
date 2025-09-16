@@ -135,7 +135,7 @@ const ParticipantDashboard = ({
         <List sx={{ minWidth: 200 }}>
             <ListSubheader>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    {FieldLabels[name][language] as string}
+                    {`${FieldLabels[name][language] as string} (${users.length})`}
                     <Button onClick={() => setAddDialogOpen(name)}>
                         <Add sx={{ cursor: "pointer" }} />
                     </Button>
