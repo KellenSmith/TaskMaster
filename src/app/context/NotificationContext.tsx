@@ -61,7 +61,7 @@ const NotificationContextProvider: FC<NotificationContextProviderProps> = ({ chi
                 notifications.length > 0 ? Math.max(...notifications.map((n) => n.id)) + 1 : 1;
             setNotifications((prev) => [...prev, { id: newNotificationId, msg, severity }]);
         },
-        [],
+        [notifications],
     );
 
     const removeNotification = useCallback((id: number) => {

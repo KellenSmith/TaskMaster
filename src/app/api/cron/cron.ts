@@ -1,8 +1,8 @@
 import { prisma } from "../../../../prisma/prisma-client";
-import GlobalConstants from "../../GlobalConstants";
 import dayjs from "dayjs";
 import { remindExpiringMembers } from "../../lib/mail-service/mail-service";
 import { getOrganizationSettings } from "../../lib/organization-settings-actions";
+import { Prisma } from "@prisma/client";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -46,9 +46,14 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
                     },
                 },
             },
+            select: { email: true },
         });
         if (expiringUsers.length > 0)
-            await remindExpiringMembers(expiringUsers.map((user) => user[GlobalConstants.EMAIL]));
+            await remindExpiringMembers(
+                expiringUsers.map(
+                    (user: Prisma.UserGetPayload<{ select: { email: true } }>) => user.email,
+                ),
+            );
         console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
     } catch (error) {
         console.error(`Error when reminding about expiring memberships: ${error.message}`);

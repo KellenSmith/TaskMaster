@@ -18,7 +18,7 @@ import {
 } from "./mail-service/mail-service";
 import { auth, signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
-import { getRelativeUrl } from "./utils";
+import { getRelativeUrl, isUserAdmin } from "./utils";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
 
 export const getUserById = async (
@@ -103,7 +103,9 @@ export const submitMemberApplication = async (formData: FormData) => {
     revalidateTag(GlobalConstants.USER);
 };
 
-export const getAllUsers = async (): Promise<
+export const getAllUsers = async (
+    userId: string,
+): Promise<
     Prisma.UserGetPayload<{
         include: {
             user_membership: true;
@@ -111,7 +113,13 @@ export const getAllUsers = async (): Promise<
         };
     }>[]
 > => {
-    // TODO: Only admins can get users with personal info
+    const loggedInUser = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        include: { user_membership: true },
+    });
+    if (!isUserAdmin(loggedInUser)) {
+        throw new Error("Access denied. Admins only.");
+    }
     return await prisma.user.findMany({
         include: {
             user_membership: true,

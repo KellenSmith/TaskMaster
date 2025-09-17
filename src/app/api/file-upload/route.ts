@@ -82,7 +82,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                 const sanitizedPathname = sanitizeFilename(pathname);
 
                 // ✅ SECURITY: Add user ID to prevent conflicts and enable tracking
-                const userSafeFilename = `${session.user.email?.split("@")[0]}-${Date.now()}-${sanitizedPathname}`;
+                const userSafeFilename = `${session.user.id?.split("@")[0]}-${Date.now()}-${sanitizedPathname}`;
 
                 // ✅ SECURITY: Validate file type and extension
                 const contentType = (() => {
@@ -119,7 +119,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
                     // ✅ SECURITY: Include user info in token payload for audit trail
                     tokenPayload: JSON.stringify({
-                        userId: session.user.email,
+                        userId: session.user.id,
                         originalFilename: pathname,
                         uploadTime: new Date().toISOString(),
                         clientPayload: clientPayload,
@@ -131,12 +131,12 @@ export async function POST(request: Request): Promise<NextResponse> {
                 console.log(`File uploaded successfully:`, {
                     blobUrl: blob.url,
                     filename: blob.pathname,
-                    userId: session.user.email,
+                    userId: session.user.id,
                     uploadTime: new Date().toISOString(),
                 });
 
                 // Optional: Store upload metadata in database for tracking
-                // await logFileUpload(session.user.email, blob.url, blob.pathname);
+                // await logFileUpload(session.user.id, blob.url, blob.pathname);
             },
         });
 
@@ -145,7 +145,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         // ✅ SECURITY: Log failed upload attempts for monitoring
         console.error("File upload failed:", {
             error: error.message,
-            userId: session.user.email,
+            userId: session.user.id,
             timestamp: new Date().toISOString(),
         });
 

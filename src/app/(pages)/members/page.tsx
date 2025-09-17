@@ -1,6 +1,6 @@
 "use server";
 
-import { getAllUsers } from "../../lib/user-actions";
+import { getAllUsers, getLoggedInUser } from "../../lib/user-actions";
 import GlobalConstants from "../../GlobalConstants";
 import { unstable_cache } from "next/cache";
 import MembersDashboard from "./MembersDashboard";
@@ -8,9 +8,11 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 
 const MembersPage = async () => {
-    const membersPromise = unstable_cache(getAllUsers, [], {
+    const loggedInUser = await getLoggedInUser();
+
+    const membersPromise = unstable_cache(getAllUsers, [loggedInUser.id], {
         tags: [GlobalConstants.USER],
-    })();
+    })(loggedInUser.id);
     const skillBadgesPromise = unstable_cache(getAllSkillBadges, [], {
         tags: [GlobalConstants.SKILL_BADGES],
     })();
