@@ -12,18 +12,23 @@ import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
 export const addUserMembership = async (userId: string, formData: FormData) => {
     const validatedData = AddMembershipSchema.parse(Object.fromEntries(formData.entries()));
     const membershipProduct = await getMembershipProduct();
-    await prisma.userMembership.create({
-        data: {
+    await prisma.userMembership.upsert({
+        where: {
+            user_id: userId,
+            membership_id: membershipProduct.id,
+        },
+        create: {
             user: { connect: { id: userId } },
             membership: { connect: { product_id: membershipProduct.id } },
             expires_at: validatedData.expires_at,
         },
+        update: { expires_at: validatedData.expires_at },
     });
     revalidateTag(GlobalConstants.USER);
 };
 
 export const renewUserMembership = async (
-    tx,
+    tx: Prisma.TransactionClient,
     userId: string,
     membershipId: string,
 ): Promise<void> => {
