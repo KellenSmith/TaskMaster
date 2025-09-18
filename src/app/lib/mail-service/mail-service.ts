@@ -77,7 +77,6 @@ const getEmailPayload = async (
         payload.to = "undisclosed-recipients:;";
         payload.bcc = recipients.join(", ");
     }
-
     if (replyTo) payload.replyTo = replyTo;
     return payload;
 };

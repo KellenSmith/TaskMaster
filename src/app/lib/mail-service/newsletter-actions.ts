@@ -8,6 +8,7 @@ import { getMailTransport } from "./mail-transport";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
 import { UuidSchema } from "../zod-schemas";
+import { sendMail } from "./mail-service";
 
 type CreateJobInput = {
     subject: string;
@@ -78,34 +79,12 @@ export async function processNextNewsletterBatch(jobId?: string) {
     const start = job.cursor;
     const end = Math.min(start + job.batchSize, total);
     const batch = recipients.slice(start, end);
-
-    // Prepare mail
     const mailContent = createElement(MailTemplate, { html: job.html });
-    const htmlContent = await render(mailContent);
-
-    // Build message
-    const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
-    const transport = await getMailTransport();
 
     try {
-        // BCC batch send (counts as 1 email to up to 250 recipients per provider docs)
-        const res = await transport.sendMail({
-            from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
-            bcc: batch.join(", "),
-            subject: job.subject,
-            html: htmlContent,
-            text: htmlContent
-                .replace(/<[^>]*>/g, " ")
-                .replace(/\s+/g, " ")
-                .trim(),
-            envelope: { from: `bounce@${domain}`, to: batch },
-            headers: {
-                "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
-                "Auto-Submitted": "auto-generated",
-                "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
-            },
-        });
-        const acceptedTotal = res?.accepted?.length || 0;
+        // BCC batch send (counts as 1 email to up to 250 recipients per one.com docs)
+        const result = await sendMail(batch, job.subject, mailContent);
+        const acceptedTotal = result?.accepted || 0;
 
         const newCursor = end;
         const done = newCursor >= total;
