@@ -1,8 +1,10 @@
 import { prisma } from "../../../../prisma/prisma-client";
 import dayjs from "dayjs";
-import { remindExpiringMembers } from "../../lib/mail-service/mail-service";
+import { sendMail } from "../../lib/mail-service/mail-service";
 import { getOrganizationSettings } from "../../lib/organization-settings-actions";
 import { Prisma } from "@prisma/client";
+import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
+import { createElement } from "react";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -48,12 +50,17 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
             },
             select: { email: true },
         });
-        if (expiringUsers.length > 0)
-            await remindExpiringMembers(
+        if (expiringUsers.length > 0) {
+            const mailContent = createElement(MembershipExpiresReminderTemplate);
+
+            await sendMail(
                 expiringUsers.map(
                     (user: Prisma.UserGetPayload<{ select: { email: true } }>) => user.email,
                 ),
+                `Your ${process.env.NEXT_PUBLIC_ORG_NAME || "Task Master"} membership is about to expire`,
+                mailContent,
             );
+        }
         console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
     } catch (error) {
         console.error(`Error when reminding about expiring memberships: ${error.message}`);

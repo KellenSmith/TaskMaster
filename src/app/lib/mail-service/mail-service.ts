@@ -2,27 +2,18 @@
 
 import { getMailTransport } from "./mail-transport";
 import { createElement, ReactElement } from "react";
-import MembershipExpiresReminderTemplate from "./mail-templates/MembershipExpiresReminderTemplate";
 import { render } from "@react-email/components";
-import MailTemplate from "./mail-templates/MailTemplate";
 import { prisma } from "../../../../prisma/prisma-client";
 import { Prisma } from "@prisma/client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
-import { EmailSendoutSchema, MembershipApplicationSchema } from "../zod-schemas";
-import z from "zod";
+import { EmailSendoutSchema } from "../zod-schemas";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 import { getEventParticipantEmails } from "../event-participant-actions";
 import { getEventReservesEmails } from "../event-reserve-actions";
-import MembershipApplicationTemplate from "./mail-templates/MembershipApplicationTemplate";
-import TaskUpdateTemplate from "./mail-templates/TaskUpdateTemplate";
-import EmailNotificationTemplate, {
-    MailButtonLink,
-} from "./mail-templates/MailNotificationTemplate";
-import MemberContactMemberTemplate from "./mail-templates/MemberContactMemberTemplate";
-import SignInEmailTemplate from "./mail-templates/SignInEmailTemplate";
 import { sanitizeFormData } from "../html-sanitizer";
 import { createNewsletterJob } from "./newsletter-actions";
+import z from "zod";
 
 interface EmailPayload {
     from: string;
@@ -46,37 +37,35 @@ const getEmailPayload = async (
     mailContent: ReactElement,
     replyTo?: string,
 ): Promise<EmailPayload> => {
-    const htmlContent = await render(mailContent);
-
     // Normalize and validate recipients
-    const recipients = (receivers || []).map((s) => (s || "").trim()).filter(Boolean);
+    const recipients = (receivers || []).map((s) => z.email().parse((s || "").trim()));
     if (recipients.length === 0) {
-        throw new Error("No recipients provided");
+        throw new Error("Invalid email address(es) provided");
     }
 
-    const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
-    const returnPath = process.env.EMAIL;
-
     // Base payload
+    const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
+    const htmlContent = await render(mailContent);
+    const strippedTextContent = htmlContent
+        .replace(/<[^>]*>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
     const payload: EmailPayload = {
         from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
         subject,
         html: htmlContent,
         // Add plain text version by stripping HTML
-        text: htmlContent
-            .replace(/<[^>]*>/g, "")
-            .replace(/\s+/g, " ")
-            .trim(),
+        text: strippedTextContent,
         headers: {
             "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
             "X-Priority": "3",
             "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
             "Auto-Submitted": "auto-generated",
-            "Message-ID": `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@${domain}>`,
+            "Message-ID": `<${Date.now()}-${Math.random().toString(36).slice(2, 11)}@${domain}>`,
         },
         // Ensure SMTP envelope has actual recipients
         envelope: {
-            from: returnPath,
+            from: process.env.EMAIL,
             to: recipients,
         },
     };
@@ -93,12 +82,17 @@ const getEmailPayload = async (
     return payload;
 };
 
+interface MailResult {
+    accepted: number;
+    rejected: number;
+}
 export const sendMail = async (
     recipients: string[],
     subject: string,
-    mailContent: ReactElement,
-) => {
-    const mailPayload = await getEmailPayload(recipients, subject, mailContent);
+    mailContent: ReactElement | Promise<ReactElement>,
+    replyTo?: string,
+): Promise<MailResult> => {
+    const mailPayload = await getEmailPayload(recipients, subject, await mailContent, replyTo);
     const mailTransport = await getMailTransport();
     const mailResponse = await mailTransport.sendMail(mailPayload);
     if (mailResponse.error) throw new Error(mailResponse.error.message);
@@ -111,24 +105,7 @@ export const sendMail = async (
 /**
  * @throws Error if email fails
  */
-export const remindExpiringMembers = async (userEmails: string[]): Promise<string> => {
-    const mailContent = createElement(MembershipExpiresReminderTemplate);
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(
-        await getEmailPayload(
-            userEmails,
-            `Your ${process.env.NEXT_PUBLIC_ORG_NAME || "Task Master"} membership is about to expire`,
-            mailContent,
-        ),
-    );
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return mailResponse;
-};
-
-/**
- * @throws Error if email fails
- */
-export const notifyEventReserves = async (eventId: string): Promise<string> => {
+export const notifyEventReserves = async (eventId: string): Promise<void> => {
     const reserveEmails = await getEventReservesEmails(eventId);
     if (reserveEmails.length === 0) return;
 
@@ -137,16 +114,11 @@ export const notifyEventReserves = async (eventId: string): Promise<string> => {
         event,
     });
 
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(
-        await getEmailPayload(
-            reserveEmails,
-            `A spot has opened up for the event: ${event.title}`,
-            mailContent,
-        ),
+    await sendMail(
+        reserveEmails,
+        `A spot has opened up for the event: ${event.title}`,
+        mailContent,
     );
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return mailResponse;
 };
 
 /**
@@ -165,19 +137,11 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
         event: event,
     });
 
-    const mailPayload = await getEmailPayload(
+    await sendMail(
         [...participantEmails, ...reserveEmails],
         `Cancelled event: ${event.title}`,
         mailContent,
     );
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(mailPayload);
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    const rejectedEmails = mailResponse?.rejected;
-    if (rejectedEmails.length > 0)
-        throw new Error(
-            `Failed to inform ${rejectedEmails.length} participants and reserves of cancelled event: ${rejectedEmails.join("\n")}`,
-        );
 };
 
 export const getEmailRecipientCount = async (
@@ -235,38 +199,8 @@ export const sendMassEmail = async (
     };
 };
 
-/**
- * @throws Error if email fails
- */
-export const sendEmailNotification = async (
-    recipient: string,
-    subject: string,
-    message: string,
-    linkButtons: MailButtonLink[],
-): Promise<{
-    accepted: number;
-    rejected: number;
-}> => {
-    const mailContent = createElement(EmailNotificationTemplate, {
-        message,
-        linkButtons,
-    });
-    const mailPayload = await getEmailPayload([recipient], subject, mailContent);
-    const mailTransport = await getMailTransport();
-    const mailResponse = await mailTransport.sendMail(mailPayload);
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return {
-        accepted: mailResponse?.accepted?.length || 0,
-        rejected: mailResponse?.rejected?.length || 0,
-    };
-};
-
-/**
- * @throws Error if email fails
- */
-export const sendOrderConfirmation = async (orderId: string): Promise<string> => {
-    // Fetch order details with items, products, and user email
-    const orderDetails = await prisma.order.findUniqueOrThrow({
+export const sendOrderConfirmation = async (orderId: string): Promise<void> => {
+    const order = await prisma.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
             user: {
@@ -286,68 +220,10 @@ export const sendOrderConfirmation = async (orderId: string): Promise<string> =>
             },
         },
     });
-    const mailContent = createElement(OrderConfirmationTemplate, {
-        orderId: orderDetails.id,
-        orderItems: orderDetails.order_items,
-        totalAmount: orderDetails.total_amount,
-    });
-
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(
-        await getEmailPayload(
-            [orderDetails.user.email],
-            `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
-            mailContent,
-        ),
-    );
-
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return mailResponse;
-};
-
-export const notifyTaskReviewer = async (
-    reviewerEmail: string,
-    taskName: string,
-    notificationMessage: string,
-) => {
-    const mailContent = createElement(TaskUpdateTemplate, {
-        taskName,
-        notificationMessage,
-    });
-
-    const transport = await getMailTransport();
-    return transport.sendMail(await getEmailPayload([reviewerEmail], `Task updated`, mailContent));
-};
-
-export const memberContactMember = async (
-    recipientEmail: string,
-    senderEmail: string,
-    subject: string,
-    reason: string,
-    content: string,
-) => {
-    // Import sanitizeRichText since we need to sanitize individual field
-    const { sanitizeRichText } = await import("../html-sanitizer");
-    const sanitizedContent = sanitizeRichText(content);
-
-    const mailContent = createElement(MemberContactMemberTemplate, {
-        reason,
-        content: sanitizedContent,
-    });
-
-    const transport = await getMailTransport();
-    // Set replyTo to the sender so the recipient can reply directly to the member
-    return transport.sendMail(
-        await getEmailPayload([recipientEmail], subject, mailContent, senderEmail),
-    );
-};
-
-export const notifyOfValidatedMembership = async (userEmail: string) => {
-    const mailContent = createElement(MailTemplate, {
-        html: `Your membership has been validated. You can now log in and access member features.`,
-    });
-    const transport = await getMailTransport();
-    return transport.sendMail(
-        await getEmailPayload([userEmail], `Your membership has been validated`, mailContent),
+    const mailContent = createElement(OrderConfirmationTemplate, { order });
+    await sendMail(
+        [order.user.email],
+        `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+        mailContent,
     );
 };

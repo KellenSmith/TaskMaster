@@ -5,15 +5,18 @@ import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema, UuidSchema } from "./zod-schemas";
-import { memberContactMember, notifyTaskReviewer } from "./mail-service/mail-service";
+import { sendMail } from "./mail-service/mail-service";
 import {
     addEventParticipantWithTx,
     deleteEventParticipantWithTx,
 } from "./event-participant-actions";
 import { addEventReserveWithTx } from "./event-reserve-actions";
 import { getLoggedInUser } from "./user-actions";
-import { sanitizeFormData } from "./html-sanitizer";
+import { sanitizeFormData, sanitizeRichText } from "./html-sanitizer";
 import { isUserAdmin, isUserHost } from "./utils";
+import { createElement } from "react";
+import TaskUpdateTemplate from "./mail-service/mail-templates/TaskUpdateTemplate";
+import MemberContactMemberTemplate from "./mail-service/mail-templates/MemberContactMemberTemplate";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     // Validate task ID format
@@ -125,12 +128,13 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
             ) {
                 notificationMessage = `\nTask "${updatedTask.name}" has been unassigned`;
             }
-            if (notificationMessage)
-                await notifyTaskReviewer(
-                    updatedTask.reviewer.email,
-                    updatedTask.name,
-                    notificationMessage,
-                );
+            if (notificationMessage) {
+                const mailContent = createElement(TaskUpdateTemplate, {
+                    taskName: updatedTask.name,
+                    notificationMessage: notificationMessage,
+                });
+                await sendMail([updatedTask.reviewer.email], `Task updated`, mailContent);
+            }
         }
     });
 
@@ -331,6 +335,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
                     },
                 },
             },
+            include: { reviewer: true },
         });
         revalidateTag(GlobalConstants.TASK);
 
@@ -371,11 +376,11 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
 
         if (updatedTask.reviewer_id)
             try {
-                await notifyTaskReviewer(
-                    userId,
-                    taskId,
-                    "The assignee of this task has cancelled their shift.",
-                );
+                const mailContent = createElement(TaskUpdateTemplate, {
+                    taskName: updatedTask.name,
+                    notificationMessage: "The assignee of this task has cancelled their shift.",
+                });
+                await sendMail([updatedTask.reviewer.email], `Task updated`, mailContent);
             } catch (error) {
                 // Still allow the user to unassign the task
                 console.error("Error notifying task reviewer:", error);
@@ -391,8 +396,6 @@ export const contactTaskMember = async (
     // Validate recipient and task ID formats
     const validatedRecipientId = UuidSchema.parse(recipientId);
     const validatedTaskId = taskId ? UuidSchema.parse(taskId) : null;
-    // Revalidate input with zod schema - don't trust the client
-    const validatedData = ContactMemberSchema.parse(Object.fromEntries(formData.entries()));
 
     const recipient = await prisma.user.findUniqueOrThrow({
         where: {
@@ -406,13 +409,15 @@ export const contactTaskMember = async (
         },
     });
 
-    await memberContactMember(
-        recipient.email,
-        sender.email,
-        `About ${task.name}`,
-        `${sender.nickname} is contacting you regarding the task ${task.name}. Please observe that your email address will be revealed if you reply to this message.`,
-        validatedData.content,
-    );
+    // Revalidate input with zod schema - don't trust the client
+    const validatedData = ContactMemberSchema.parse(Object.fromEntries(formData.entries()));
+    const sanitizedContent = sanitizeRichText(validatedData.content);
+    const mailContent = createElement(MemberContactMemberTemplate, {
+        reason: `${sender.nickname} is contacting you regarding the task ${task.name}.`,
+        content: sanitizedContent,
+    });
+    // Set replyTo to the sender so the recipient can reply directly to the member
+    await sendMail([recipient.email], `About ${task.name}`, mailContent, sender.email);
 
     // Implementation goes here
 };

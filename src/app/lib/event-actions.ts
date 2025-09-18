@@ -3,11 +3,7 @@
 import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import { CloneEventSchema, EventCreateSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
-import {
-    informOfCancelledEvent,
-    notifyEventReserves,
-    sendEmailNotification,
-} from "./mail-service/mail-service";
+import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
@@ -15,6 +11,8 @@ import dayjs from "dayjs";
 import { getLoggedInUser } from "./user-actions";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
+import { createElement } from "react";
+import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
 
 export const createEvent = async (userId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -287,12 +285,10 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
             organizationSettings.event_manager_email &&
             eventToUpdate.status !== EventStatus.pending_approval &&
             sanitizedData.status === EventStatus.pending_approval
-        )
-            sendEmailNotification(
-                organizationSettings.event_manager_email,
-                "Event requires approval",
-                "An event has been submitted for approval.",
-                [
+        ) {
+            const mailContent = createElement(EmailNotificationTemplate, {
+                message: "An event has been submitted for approval.",
+                linkButtons: [
                     {
                         buttonName: "Go to event",
                         url: getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
@@ -300,18 +296,22 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                         }),
                     },
                 ],
+            });
+            await sendMail(
+                [organizationSettings.event_manager_email],
+                "Event requires approval",
+                mailContent,
             );
+        }
 
         // Notify event host if the event is published
         if (
             eventToUpdate.status !== EventStatus.published &&
             sanitizedData.status === EventStatus.published
         ) {
-            sendEmailNotification(
-                eventToUpdate.host.email,
-                "Event published",
-                "Your event has been published.",
-                [
+            const mailContent = createElement(EmailNotificationTemplate, {
+                message: "Your event has been published.",
+                linkButtons: [
                     {
                         buttonName: "Go to event",
                         url: getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
@@ -319,7 +319,8 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                         }),
                     },
                 ],
-            );
+            });
+            await sendMail(eventToUpdate.host.email, "Event published", mailContent);
         }
 
         await prisma.event.update({

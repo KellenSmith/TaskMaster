@@ -2,6 +2,7 @@ import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
 import { formatPrice } from "../../../ui/utils";
+import { Prisma } from "@prisma/client";
 
 /**
  * Props for the OrderConfirmationTemplate component.
@@ -10,29 +11,20 @@ import { formatPrice } from "../../../ui/utils";
  * @property totalAmount - The total amount of the order.
  */
 interface IOrderConfirmationTemplateProps {
-    orderId: string;
-    orderItems: Array<{
-        product: {
-            name: string;
-            description?: string;
+    order: Prisma.OrderGetPayload<{
+        include: {
+            order_items: { include: { product: { select: { name: true; description: true } } } };
         };
-        quantity: number;
-        price: number;
     }>;
-    totalAmount: number;
 }
 
-const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
-    orderId,
-    orderItems,
-    totalAmount,
-}) => {
+const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({ order }) => {
     return (
         <MailTemplate>
             <Text>{`Your order has been completed successfully!`}</Text>
-            <Text>Order ID: {orderId}</Text>
+            <Text>Order ID: {order.id}</Text>
             <Text>Order Details:</Text>
-            {orderItems.map((item, index) => (
+            {order.order_items.map((item, index) => (
                 <div key={index} style={{ marginLeft: "20px", marginBottom: "10px" }}>
                     <Text>
                         • {item.product.name} (Quantity: {item.quantity}) -{" "}
@@ -46,7 +38,7 @@ const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
                 </div>
             ))}
             <Text style={{ fontWeight: "bold", marginTop: "20px" }}>
-                Total: {formatPrice(totalAmount)} SEK
+                Total: {formatPrice(order.total_amount)} SEK
             </Text>
             <Text style={{ marginTop: "20px" }}>Thank you for your purchase!</Text>
         </MailTemplate>

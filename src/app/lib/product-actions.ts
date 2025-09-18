@@ -14,8 +14,10 @@ import GlobalConstants from "../GlobalConstants";
 import { addEventParticipantWithTx } from "./event-participant-actions";
 import { deleteOldBlob } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
-import { sendEmailNotification } from "./mail-service/mail-service";
+import { sendMail } from "./mail-service/mail-service";
 import { getAbsoluteUrl } from "./utils";
+import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
+import { createElement } from "react";
 
 export const getAllNonTicketProducts = async (): Promise<
     Prisma.ProductGetPayload<{ include: { membership: true } }>[]
@@ -138,16 +140,23 @@ export const processOrderedProduct = async (
         } else if (orderItem.product.ticket) {
             await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);
         } else {
-            const subject = `Product purchased: ${orderItem.product.name}`;
-            const message = `User ID: ${userId}\nProduct: ${orderItem.product.name}\nQuantity: ${orderItem.quantity}`;
-            await sendEmailNotification(process.env.EMAIL, subject, message, [
-                {
-                    buttonName: "View Order",
-                    url: getAbsoluteUrl([GlobalConstants.ORDER], {
-                        [GlobalConstants.ORDER_ID]: orderItem.order_id,
-                    }),
-                },
-            ]); // TODO: replace with real fulfillment process
+            // TODO: replace with real fulfillment process
+            const mailContent = createElement(EmailNotificationTemplate, {
+                message: `User ID: ${userId}\nProduct: ${orderItem.product.name}\nQuantity: ${orderItem.quantity}`,
+                linkButtons: [
+                    {
+                        buttonName: "View Order",
+                        url: getAbsoluteUrl([GlobalConstants.ORDER], {
+                            [GlobalConstants.ORDER_ID]: orderItem.order_id,
+                        }),
+                    },
+                ],
+            });
+            await sendMail(
+                [process.env.EMAIL],
+                `Product purchased: ${orderItem.product.name}`,
+                mailContent,
+            );
         }
     }
 };
