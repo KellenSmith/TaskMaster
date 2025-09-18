@@ -12,13 +12,14 @@ import {
     UserUpdateSchema,
     UuidSchema,
 } from "./zod-schemas";
-import { notifyOfValidatedMembership, sendMail } from "./mail-service/mail-service";
+import { sendMail } from "./mail-service/mail-service";
 import { auth, signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getRelativeUrl, isUserAdmin } from "./utils";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
 import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
+import MailTemplate from "./mail-service/mail-templates/MailTemplate";
 
 export const getUserById = async (
     userId: string,
@@ -264,7 +265,10 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
         });
 
         // Notify the new member of their validated status
-        await notifyOfValidatedMembership(validatedUser.email);
+        const mailContent = createElement(MailTemplate, {
+            html: `Your membership has been validated. You can now log in and access member features.`,
+        });
+        await sendMail([validatedUser.email], `Your membership has been validated`, mailContent);
     });
 
     revalidateTag(GlobalConstants.USER);
