@@ -33,6 +33,13 @@ export async function createNewsletterJob(input: CreateJobInput) {
         },
     });
     revalidateTag(GlobalConstants.SENDOUT);
+
+    // Try to process immediately. All batches are sent if possible within
+    // the vercel function timeout (10s for free, 60s for pro).
+    // Remaining batches will be processed by cron or manual trigger.
+    processNextNewsletterBatch(job.id).catch((err) =>
+        console.error("Error processing initial newsletter batch", err),
+    );
     return { id: job.id, total: recipients.length, batchSize };
 }
 

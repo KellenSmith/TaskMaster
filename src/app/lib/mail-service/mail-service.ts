@@ -93,26 +93,19 @@ const getEmailPayload = async (
     return payload;
 };
 
-/**
- * Sends a sign-in email with magic link for authentication
- * @throws Error if email fails
- */
-export const sendSignInEmail = async (email: string, url: string): Promise<string> => {
-    const mailContent = createElement(SignInEmailTemplate, {
-        email,
-        url,
-    });
-
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(
-        await getEmailPayload(
-            [email],
-            `Sign in to ${process.env.NEXT_PUBLIC_ORG_NAME}`,
-            mailContent,
-        ),
-    );
+export const sendMail = async (
+    recipients: string[],
+    subject: string,
+    mailContent: ReactElement,
+) => {
+    const mailPayload = await getEmailPayload(recipients, subject, mailContent);
+    const mailTransport = await getMailTransport();
+    const mailResponse = await mailTransport.sendMail(mailPayload);
     if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return mailResponse;
+    return {
+        accepted: mailResponse?.accepted?.length || 0,
+        rejected: mailResponse?.rejected?.length || 0,
+    };
 };
 
 export const notifyOfMembershipApplication = async (

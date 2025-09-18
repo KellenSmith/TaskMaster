@@ -1,8 +1,10 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "../../../../prisma/prisma-client";
-import { sendSignInEmail } from "../mail-service/mail-service";
+import { sendMail } from "../mail-service/mail-service";
 import "./auth-types";
+import { createElement } from "react";
+import SignInEmailTemplate from "../mail-service/mail-templates/SignInEmailTemplate";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
@@ -15,7 +17,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             from: process.env.EMAIL,
             sendVerificationRequest: async ({ identifier: email, url }) => {
                 try {
-                    await sendSignInEmail(email, url);
+                    const mailContent = createElement(SignInEmailTemplate, {
+                        email,
+                        url,
+                    });
+                    await sendMail(
+                        [email],
+                        `Sign in to ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+                        mailContent,
+                    );
                 } catch (error) {
                     console.error("Failed to send sign-in email:", error);
                     throw new Error("Failed to send verification email");
