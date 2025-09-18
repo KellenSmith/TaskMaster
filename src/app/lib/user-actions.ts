@@ -12,14 +12,13 @@ import {
     UserUpdateSchema,
     UuidSchema,
 } from "./zod-schemas";
-import {
-    notifyOfMembershipApplication,
-    notifyOfValidatedMembership,
-} from "./mail-service/mail-service";
+import { notifyOfValidatedMembership, sendMail } from "./mail-service/mail-service";
 import { auth, signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getRelativeUrl, isUserAdmin } from "./utils";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
+import { createElement } from "react";
+import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 
 export const getUserById = async (
     userId: string,
@@ -94,7 +93,11 @@ export const submitMemberApplication = async (formData: FormData) => {
 
     // Send membership application to organization email
     try {
-        await notifyOfMembershipApplication(validatedData);
+        const mailContent = createElement(MembershipApplicationTemplate, {
+            parsedFieldValues: validatedData,
+        });
+
+        await sendMail([process.env.EMAIL], `New membership application received`, mailContent);
     } catch (error) {
         console.error(error);
         // Submit the membership application despite failed notification

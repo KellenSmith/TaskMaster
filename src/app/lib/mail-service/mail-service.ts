@@ -108,24 +108,6 @@ export const sendMail = async (
     };
 };
 
-export const notifyOfMembershipApplication = async (
-    parsedFieldValues: z.infer<typeof MembershipApplicationSchema>,
-): Promise<void> => {
-    const mailContent = createElement(MembershipApplicationTemplate, {
-        parsedFieldValues,
-    });
-
-    const transport = await getMailTransport();
-    const mailResponse = await transport.sendMail(
-        await getEmailPayload(
-            [process.env.EMAIL],
-            `New membership application received`,
-            mailContent,
-        ),
-    );
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-};
-
 /**
  * @throws Error if email fails
  */
