@@ -14,7 +14,6 @@ type CreateJobInput = {
     html: string; // rich HTML content to embed in MailTemplate
     recipients: string[]; // snapshot of recipients
     batchSize?: number; // defaults to 250 per provider limit
-    perRecipient?: boolean; // defaults to false (use BCC batches)
 };
 
 export async function createNewsletterJob(input: CreateJobInput) {
@@ -28,7 +27,6 @@ export async function createNewsletterJob(input: CreateJobInput) {
             html: input.html,
             recipients: recipients as unknown as object,
             batchSize,
-            perRecipient: !!input.perRecipient,
             status: "pending",
         },
     });
@@ -90,48 +88,24 @@ export async function processNextNewsletterBatch(jobId?: string) {
     const transport = await getMailTransport();
 
     try {
-        let acceptedTotal = 0;
-        if (job.perRecipient) {
-            // send one-by-one within the same request; keep under provider rate by batching outside
-            for (const rcpt of batch) {
-                const res = await transport.sendMail({
-                    from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
-                    to: rcpt,
-                    subject: job.subject,
-                    html: htmlContent,
-                    text: htmlContent
-                        .replace(/<[^>]*>/g, " ")
-                        .replace(/\s+/g, " ")
-                        .trim(),
-                    envelope: { from: `bounce@${domain}`, to: rcpt },
-                    headers: {
-                        "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
-                        "Auto-Submitted": "auto-generated",
-                        "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
-                    },
-                });
-                acceptedTotal += res?.accepted?.length ? 1 : 0;
-            }
-        } else {
-            // BCC batch send (counts as 1 email to up to 250 recipients per provider docs)
-            const res = await transport.sendMail({
-                from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
-                bcc: batch.join(", "),
-                subject: job.subject,
-                html: htmlContent,
-                text: htmlContent
-                    .replace(/<[^>]*>/g, " ")
-                    .replace(/\s+/g, " ")
-                    .trim(),
-                envelope: { from: `bounce@${domain}`, to: batch },
-                headers: {
-                    "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
-                    "Auto-Submitted": "auto-generated",
-                    "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
-                },
-            });
-            acceptedTotal = res?.accepted?.length || 0;
-        }
+        // BCC batch send (counts as 1 email to up to 250 recipients per provider docs)
+        const res = await transport.sendMail({
+            from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
+            bcc: batch.join(", "),
+            subject: job.subject,
+            html: htmlContent,
+            text: htmlContent
+                .replace(/<[^>]*>/g, " ")
+                .replace(/\s+/g, " ")
+                .trim(),
+            envelope: { from: `bounce@${domain}`, to: batch },
+            headers: {
+                "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
+                "Auto-Submitted": "auto-generated",
+                "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
+            },
+        });
+        const acceptedTotal = res?.accepted?.length || 0;
 
         const newCursor = end;
         const done = newCursor >= total;
@@ -151,7 +125,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
         revalidateTag(GlobalConstants.SENDOUT);
         return {
             jobId: job.id,
-            processed: job.perRecipient ? batch.length : acceptedTotal,
+            processed: acceptedTotal,
             start,
             end: newCursor,
             total,

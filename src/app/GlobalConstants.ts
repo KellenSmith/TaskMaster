@@ -151,7 +151,6 @@ const GlobalConstants = {
     CONTACT_MEMBER: "contactMember",
     RECIPIENTS: "recipients",
     BATCH_SIZE: "batchSize",
-    PER_RECIPIENT: "perRecipient",
     LAST_RUN_AT: "lastRunAt",
     COMPLETED_AT: "completedAt",
     ERROR: "error",

@@ -8,13 +8,12 @@ export async function POST(request: NextRequest) {
     if (!isAuthorized(request)) return new NextResponse("Unauthorized", { status: 401 });
     try {
         const body = await request.json();
-        const { subject, html, recipients, batchSize, perRecipient } = body || {};
+        const { subject, html, recipients, batchSize } = body || {};
         const result = await createNewsletterJob({
             subject,
             html,
             recipients,
             batchSize,
-            perRecipient,
         });
         return NextResponse.json(result);
     } catch (err: any) {

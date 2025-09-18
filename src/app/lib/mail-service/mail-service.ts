@@ -186,7 +186,6 @@ export const sendMassEmail = async (
         html: sanitizedContent.content,
         recipients,
         batchSize: 250,
-        perRecipient: false,
     });
     // Keep return shape compatible with existing UI (it shows counts)
     // Actual sending will be processed by the scheduled batch processor
