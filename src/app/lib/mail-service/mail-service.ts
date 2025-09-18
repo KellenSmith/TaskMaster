@@ -63,11 +63,6 @@ const getEmailPayload = async (
             "Auto-Submitted": "auto-generated",
             "Message-ID": `<${Date.now()}-${Math.random().toString(36).slice(2, 11)}@${domain}>`,
         },
-        // Ensure SMTP envelope has actual recipients
-        envelope: {
-            from: process.env.EMAIL,
-            to: recipients,
-        },
     };
 
     // Set header recipients: single uses To, multi uses BCC and an undisclosed To
