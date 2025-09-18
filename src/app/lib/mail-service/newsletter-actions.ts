@@ -1,10 +1,8 @@
 "use server";
 
 import { prisma } from "../../../../prisma/prisma-client";
-import { render } from "@react-email/components";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { createElement } from "react";
-import { getMailTransport } from "./mail-transport";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
 import { UuidSchema } from "../zod-schemas";
@@ -40,17 +38,6 @@ export async function createNewsletterJob(input: CreateJobInput) {
         console.error("Error processing initial newsletter batch", err),
     );
     return { id: job.id, total: recipients.length, batchSize };
-}
-
-export async function getNewsletterJob(jobId: string) {
-    const job = await prisma.newsletterJob.findUnique({ where: { id: jobId } });
-    if (!job) throw new Error("NewsletterJob not found");
-    const recipients: string[] = (job.recipients as unknown as string[]) || [];
-    return {
-        ...job,
-        totalRecipients: recipients.length,
-        remaining: Math.max(0, recipients.length - job.cursor),
-    };
 }
 
 // Processes a single batch for the oldest pending/running job or a specific jobId
