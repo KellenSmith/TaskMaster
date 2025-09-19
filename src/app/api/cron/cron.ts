@@ -5,6 +5,7 @@ import { getOrganizationSettings } from "../../lib/organization-settings-actions
 import { Prisma } from "@prisma/client";
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
 import { createElement } from "react";
+import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -64,5 +65,51 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
         console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
     } catch (error) {
         console.error(`Error when reminding about expiring memberships: ${error.message}`);
+    }
+};
+
+export const processNewsletterBacklog = async (): Promise<void> => {
+    /**
+     * Process newsletter jobs efficiently within Vercel's 1-minute cron limit.
+     * This ensures newsletters get sent even if there's no user activity.
+     */
+    try {
+        let processed = 0;
+        let attempts = 0;
+        const maxAttempts = 5; // Reduced for 1-minute limit
+        const startTime = Date.now();
+        const maxDuration = 45 * 1000; // 45 seconds max to stay well under 1-minute limit
+
+        // Keep processing until no more jobs, we hit limits, or run out of time
+        while (attempts < maxAttempts) {
+            // Check if we're approaching time limit
+            if (Date.now() - startTime > maxDuration) {
+                console.log(
+                    `Newsletter cron stopping due to time limit after ${attempts} attempts`,
+                );
+                break;
+            }
+
+            const result = await processNextNewsletterBatch();
+
+            if (result.processed === 0 || result.done) {
+                break; // No more work to do
+            }
+
+            processed += result.processed;
+            attempts++;
+
+            // No delays between batches to maximize processing within time limit
+        }
+
+        if (processed > 0) {
+            console.log(
+                `Cron job processed ${processed} newsletter recipients across ${attempts} batches in ${Date.now() - startTime}ms`,
+            );
+        } else if (attempts === 0) {
+            console.log(`No pending newsletter jobs found`);
+        }
+    } catch (error) {
+        console.error(`Error in newsletter backlog processing: ${error.message}`);
     }
 };

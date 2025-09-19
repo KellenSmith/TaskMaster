@@ -54,9 +54,8 @@ export async function processNextNewsletterBatch(jobId?: string) {
     const recipients = job.recipients || [];
     const total = recipients.length;
     if (job.cursor >= total) {
-        await prisma.newsletterJob.update({
+        await prisma.newsletterJob.delete({
             where: { id: job.id },
-            data: { status: "completed", completedAt: new Date() },
         });
         return { processed: 0, done: true, message: "Already complete" };
     }
@@ -64,14 +63,13 @@ export async function processNextNewsletterBatch(jobId?: string) {
     const start = job.cursor;
     const end = Math.min(start + job.batchSize, total);
     const recipientBatch = recipients.slice(start, end);
-    const mailContent = createElement(MailTemplate, { html: job.html });
 
     try {
         // BCC batch send (counts as 1 email to up to 250 recipients per one.com docs)
         const mailPayload = await getEmailPayload(
             recipientBatch,
             job.subject,
-            mailContent,
+            job.html,
             job.replyTo,
         );
         const mailTransport = await getMailTransport();
@@ -83,16 +81,24 @@ export async function processNextNewsletterBatch(jobId?: string) {
 
         const newCursor = end;
         const done = newCursor >= total;
-        await prisma.newsletterJob.update({
-            where: { id: job.id },
-            data: {
-                cursor: newCursor,
-                status: done ? "completed" : "running",
-                lastRunAt: new Date(),
-                completedAt: done ? new Date() : undefined,
-                error: null,
-            },
-        });
+
+        if (done) {
+            // Delete the job when it's completed
+            await prisma.newsletterJob.delete({
+                where: { id: job.id },
+            });
+        } else {
+            // Update progress for ongoing job
+            await prisma.newsletterJob.update({
+                where: { id: job.id },
+                data: {
+                    cursor: newCursor,
+                    status: "running",
+                    lastRunAt: new Date(),
+                    error: null,
+                },
+            });
+        }
         console.log(
             `NewsletterJob ${job.id}: Sent to ${acceptedTotal} recipients (cursor ${newCursor}/${total})`,
         );

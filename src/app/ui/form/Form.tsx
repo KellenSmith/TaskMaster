@@ -330,7 +330,7 @@ const Form: FC<FormProps> = ({
                 <Stack direction="row" justifyContent="flex-end" alignItems="center">
                     {editable && (
                         <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
-                            {editMode ? <Cancel /> : <Edit />}
+                            {editMode && editable ? <Cancel /> : <Edit />}
                         </IconButton>
                     )}
                 </Stack>

@@ -5,6 +5,7 @@ import GlobalConstants from "./app/GlobalConstants";
 import { getAbsoluteUrl, pathToRoutes } from "./app/lib/utils";
 import NextAuth from "next-auth";
 import { isUserAuthorized, routeTreeConfig } from "./app/lib/auth/auth-utils";
+import { triggerNewsletterProcessing } from "./app/lib/newsletter-trigger";
 import "./app/lib/auth/auth-types";
 
 export const config = {
@@ -61,6 +62,12 @@ export default async function middleware(req: NextRequest) {
 
     // Add security headers
     addSecurityHeaders(response);
+
+    // Trigger newsletter processing in background on user activity
+    // This runs asynchronously and doesn't block the user request
+    triggerNewsletterProcessing().catch(() => {
+        // Silently handle errors - newsletter processing is not critical for user experience
+    });
 
     return response;
 }

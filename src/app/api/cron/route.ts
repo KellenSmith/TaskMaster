@@ -7,7 +7,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { purgeStaleMembershipApplications, remindAboutExpiringMembership } from "./cron";
+import {
+    purgeStaleMembershipApplications,
+    remindAboutExpiringMembership,
+    processNewsletterBacklog,
+} from "./cron";
 
 const isRequestAuthorized = (request: NextRequest): boolean => {
     const authHeader = request.headers.get("authorization");
@@ -26,6 +30,9 @@ export async function GET(request: NextRequest) {
     await purgeStaleMembershipApplications();
 
     await remindAboutExpiringMembership();
+
+    await processNewsletterBacklog();
+
     return new NextResponse("OK", {
         status: 200,
     });

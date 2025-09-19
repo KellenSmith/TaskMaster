@@ -65,6 +65,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
     const sendMassEmailToRecipientsWithCriteria = async (formData: FormData) => {
         try {
             const result = await sendMassEmail(getRecipientCriteria(), formData);
+            if (result.fallbackJobId) return LanguageTranslations.successfulQueuedSendout[language];
             return LanguageTranslations.successfulSendout[language](result);
         } catch {
             throw new Error(LanguageTranslations.failedSendMail[language]);
@@ -101,14 +102,16 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
         },
     ];
     const hiddenSendoutColumns = [GlobalConstants.HTML, GlobalConstants.ID, GlobalConstants.TEXT];
+
     return (
         <Stack
             height="100%"
+            width={"100%"}
             direction={isSmall ? "column" : "row"}
             justifyContent={"space-around"}
             spacing={2}
         >
-            <Stack>
+            <Stack width={isSmall ? "100%" : "50%"}>
                 <Accordion sx={{ padding: 1 }} defaultExpanded={true}>
                     <AccordionSummary expandIcon={<ExpandMore />}>
                         <Typography>
@@ -135,7 +138,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
                     action={sendMassEmailToRecipientsWithCriteria}
                     buttonLabel={LanguageTranslations.send[language]}
                     readOnly={false}
-                    editable={true}
+                    editable={false}
                 />
             </Stack>
 

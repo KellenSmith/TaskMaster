@@ -8,9 +8,9 @@ const LanguageTranslations = {
     },
     sendToRecipients: {
         [Language.english]: (recipientCount: number) =>
-            `Send to ${recipientCount} recipients. One batch of 250 emails is processed per day at about 04:00. Your sendout will be queued and processed in ${Math.ceil(recipientCount / 250) - 1} days`,
+            `Send to ${recipientCount} recipients${recipientCount > 250 ? " in batches of 250 per minute as long as there is activity on the website. If there is not, batches will be sent once per day at about 04:00." : "."}`,
         [Language.swedish]: (recipientCount: number) =>
-            `Skicka till ${recipientCount} mottagare. En batch med 250 e-postmeddelanden behandlas per dag ungefär kl 04:00. Ditt utskick kommer att köas och behandlas på ${Math.ceil(recipientCount / 250) - 1} dagar`,
+            `Skicka till ${recipientCount} mottagare${recipientCount > 250 ? " i omgångar om 250 per minut så länge det finns aktivitet på webbplatsen. Om inte, skickas omgångar en gång per dag ungefär kl 04:00." : "."}`,
     },
     send: {
         [Language.english]: "Send",
@@ -27,6 +27,10 @@ const LanguageTranslations = {
             `Sendout succeeded: ${result.accepted} accepted, ${result.rejected} rejected`,
         [Language.swedish]: (result: MailResult) =>
             `Utskick lyckades: ${result.accepted} accepterade, ${result.rejected} avvisade`,
+    },
+    successfulQueuedSendout: {
+        [Language.english]: `Sendout queued: recipients will receive the email in batches as long as there's activity on the site. Check in later to see progress.`,
+        [Language.swedish]: `Utskick i kö: mottagare kommer att få e-postmeddelandet i omgångar så länge det finns aktivitet på webbplatsen. Kontrollera senare för att se framsteg.`,
     },
     failedSendMail: {
         [Language.english]: "Failed to send mail",

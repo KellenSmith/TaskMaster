@@ -51,10 +51,12 @@ const createFallbackNewsletterJob = async (
     replyTo?: string,
 ): Promise<{ id: string; total: number; batchSize: number }> => {
     const recipientCount = recipients.length;
-    let batchSize = 100;
-    if (recipientCount <= 10) batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
-    if (recipientCount <= 100) batchSize = Math.min(recipientCount, 25); // Small batches for small groups
-    if (recipientCount <= 1000) batchSize = 50; // Medium batches for medium groups
+    let batchSize = 250;
+    if (recipientCount <= 250)
+        batchSize = 50; // Medium batches for medium groups
+    else if (recipientCount <= 100)
+        batchSize = Math.min(recipientCount, 25); // Small batches for small groups
+    else if (recipientCount <= 10) batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
 
     return await createNewsletterJob({
         subject,
@@ -80,7 +82,7 @@ interface EmailPayload {
 export const getEmailPayload = async (
     receivers: string[],
     subject: string,
-    mailContent: ReactElement,
+    mailContent: ReactElement | string,
     replyTo?: string,
 ): Promise<EmailPayload> => {
     // Normalize and validate recipients
@@ -91,7 +93,7 @@ export const getEmailPayload = async (
 
     // Base payload
     const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
-    const htmlContent = await render(mailContent);
+    const htmlContent = typeof mailContent === "string" ? mailContent : await render(mailContent);
     const strippedTextContent = htmlContent
         .replace(/<[^>]*>/g, "")
         .replace(/\s+/g, " ")
@@ -130,9 +132,10 @@ export const sendMail = async (
 ): Promise<MailResult> => {
     const resolvedContent = await mailContent;
     try {
+        if (recipients.length > 250)
+            throw new Error("Too many recipients for direct send. Queueing a newsletter job...");
         const mailPayload = await getEmailPayload(recipients, subject, resolvedContent, replyTo);
         const mailTransport = await getMailTransport();
-        if (mailTransport) throw new Error("rate limit");
         const mailResponse = await mailTransport.sendMail(mailPayload);
         if (mailResponse.error) {
             throw new Error(mailResponse.error.message);
@@ -235,19 +238,10 @@ export const getEmailRecipientCount = async (
     return recipientCount;
 };
 
-/**
- * @throws Error if email fails
- */
-type MassEmailResult = { accepted: number; rejected: number } & Partial<{
-    jobId: string;
-    total: number;
-    batchSize: number;
-}>;
-
 export const sendMassEmail = async (
     recipientCriteria: Prisma.UserWhereInput,
     formData: FormData,
-): Promise<MassEmailResult> => {
+): Promise<MailResult> => {
     const recipients = (
         await prisma.user.findMany({
             where: recipientCriteria,
