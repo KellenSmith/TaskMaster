@@ -1,7 +1,7 @@
 "use client";
 
 import { Autocomplete, createFilterOptions, TextField } from "@mui/material";
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { allowSelectMultiple, FieldLabels, allowAddNew, selectFieldOptions } from "./FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 
@@ -80,18 +80,22 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
         <>
             <Autocomplete
                 value={selectedOption}
-                onChange={(_: any, newValue: any) => setSelectedOption(newValue)}
+                onChange={(
+                    _event: SyntheticEvent,
+                    newValue: CustomOptionProps | CustomOptionProps[] | null,
+                ) => setSelectedOption(newValue)}
                 renderInput={(params) => (
                     <TextField {...params} label={label} required={required} />
                 )}
-                options={options}
-                filterOptions={(options, params) => {
-                    const filtered = filter(options, params);
+                options={options as CustomOptionProps[]}
+                filterOptions={(opts, params) => {
+                    const optionsArr = opts as CustomOptionProps[];
+                    const filtered = filter(optionsArr, params);
                     if (!allowAddNew.includes(fieldId)) return filtered;
 
                     const { inputValue } = params;
                     // Suggest the creation of a new value
-                    const isExisting = options.some((option) => inputValue === option.title);
+                    const isExisting = optionsArr.some((option) => inputValue === option.label);
                     if (inputValue !== "" && !isExisting) {
                         filtered.push({
                             id: inputValue,

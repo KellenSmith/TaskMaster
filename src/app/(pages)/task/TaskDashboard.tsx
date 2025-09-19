@@ -13,7 +13,7 @@ interface TaskDashboardProps {
             };
         }>
     >;
-    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<{}>[]>;
+    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
     activeMembersPromise: Promise<
         Prisma.UserGetPayload<{
             select: { id: true; nickname: true; skill_badges: true };

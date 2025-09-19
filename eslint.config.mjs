@@ -27,10 +27,10 @@ const compat = new FlatCompat({
     },
 });
 
-const eslintConfig = [
-    ...compat.config({
-        extends: ["eslint:recommended", "next"],
-    }),
-];
+const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript"), {
+    ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"]
+}, ...compat.config({
+    extends: ["eslint:recommended", "next"],
+})];
 
 export default eslintConfig;

@@ -1,15 +1,15 @@
 import { DeepMockProxy } from "vitest-mock-extended";
 
 type prismaOperations = {
-    findUniqueOrThrow: any;
-    findUnique: any;
-    findFirst: any;
-    create: any;
-    findMany: any;
-    update: any;
-    count: any;
-    delete: any;
-    deleteMany: any;
+    findUniqueOrThrow;
+    findUnique;
+    findFirst;
+    create;
+    findMany;
+    update;
+    count;
+    delete;
+    deleteMany;
 };
 
 // Create a simpler mock type that doesn't include the problematic circular references
@@ -27,7 +27,7 @@ export type MockPrisma = {
     order: prismaOperations;
     orderItem: prismaOperations;
     textContent: prismaOperations;
-    $transaction: any;
+    $transaction;
 };
 
 export type TestContext = {

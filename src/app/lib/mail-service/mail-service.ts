@@ -20,7 +20,7 @@ import { MailResult } from "../../ui/utils";
 /**
  * Checks if an error indicates rate limiting from the email provider
  */
-export const isRateLimitError = async (error: any): Promise<boolean> => {
+export const isRateLimitError = async (error: Error): Promise<boolean> => {
     const errorMessage = (error?.message || error || "").toString().toLowerCase();
 
     // Common rate limiting message patterns
@@ -144,7 +144,7 @@ export const sendMail = async (
             accepted: mailResponse?.accepted?.length || 0,
             rejected: mailResponse?.rejected?.length || 0,
         };
-    } catch (error: any) {
+    } catch (error) {
         // Check if the error indicates rate limiting
         if (await isRateLimitError(error)) {
             try {
@@ -163,7 +163,7 @@ export const sendMail = async (
                     rejected: 0,
                     fallbackJobId: fallbackJob.id,
                 };
-            } catch (fallbackError: any) {
+            } catch (fallbackError) {
                 // If fallback also fails, throw the original error
                 console.error(`Fallback newsletter job creation failed: ${fallbackError.message}`);
                 throw error;

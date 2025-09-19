@@ -28,7 +28,7 @@ export const updateOrganizationSettings = async (formData: FormData): Promise<vo
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
     // attempt to delete the old blob from Vercel Blob storage.
-    for (let fieldId of fileUploadFields) {
+    for (const fieldId of fileUploadFields) {
         if (validatedData[fieldId]) {
             await deleteOldBlob(settings[fieldId], validatedData[fieldId]);
         }

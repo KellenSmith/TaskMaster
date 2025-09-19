@@ -91,8 +91,11 @@ export async function POST(request: Request): Promise<NextResponse> {
                             const parsed = JSON.parse(clientPayload);
                             return parsed?.type || "";
                         }
-                        return typeof clientPayload === "object" && clientPayload !== null
-                            ? (clientPayload as any)?.type || ""
+                        type PayloadObj = { type?: string };
+                        return typeof clientPayload === "object" &&
+                            clientPayload !== null &&
+                            "type" in clientPayload
+                            ? (clientPayload as PayloadObj).type || ""
                             : "";
                     } catch {
                         return "";

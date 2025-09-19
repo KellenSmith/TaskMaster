@@ -169,9 +169,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
 
-    let admins: Prisma.UserGetPayload<true>[];
-
-    admins = await prisma.user.findMany({
+    const admins = await prisma.user.findMany({
         where: {
             role: UserRole.admin,
         },

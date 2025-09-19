@@ -230,7 +230,6 @@ const EventDashboard = ({
                     sx={{ flex: 1, minWidth: 0 }}
                 >
                     {Object.keys(eventTabs).map((tabKey) => {
-                        // @ts-ignore -- dynamic indexing matches project pattern
                         const tabVal = eventTabs[tabKey];
                         if (!tabVal) return null;
                         const label = LanguageTranslations[tabVal][language] as string;

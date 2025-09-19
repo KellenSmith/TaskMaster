@@ -41,7 +41,9 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
     const ticket = useMemo(() => {
         const participantTicket = event.tickets.find((t) =>
             // tickets now include event_participants according to Prisma schema
-            t.event_participants?.find((ep: any) => ep.user_id === user.id),
+            t.event_participants?.find(
+                (ep: Prisma.EventParticipantGetPayload<true>) => ep.user_id === user.id,
+            ),
         );
         if (!participantTicket) return null;
         return tickets.find((ticket) => ticket.product_id === participantTicket?.product_id);

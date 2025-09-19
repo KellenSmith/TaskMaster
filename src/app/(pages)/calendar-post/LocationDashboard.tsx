@@ -1,4 +1,4 @@
-"use client";
+import { SyntheticEvent } from "react";
 
 import { Prisma } from "@prisma/client";
 import { use, useState, useTransition } from "react";
@@ -110,7 +110,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                         <Autocomplete
                             fullWidth
                             value={selectedLocationOption}
-                            onChange={(_: any, newValue: any) =>
+                            onChange={(_: SyntheticEvent, newValue: CustomOptionProps | null) =>
                                 setSelectedLocationOption(newValue)
                             }
                             renderInput={(params) => (

@@ -74,7 +74,7 @@ const RICH_TEXT_CONFIG: DOMPurify.Config = {
 
 // Create a server-side DOMPurify instance
 const { window } = new JSDOM("");
-const purify = DOMPurify(window as any);
+const purify = DOMPurify(window as unknown as Window & typeof globalThis);
 
 /**
  * Sanitizes HTML content for rich text fields
@@ -115,14 +115,14 @@ export const stripAllHtml = (html: string): string => {
  * Sanitize rich text fields in form data
  * Use this in server actions before saving to database
  */
-export const sanitizeFormData = <T extends Record<string, any>>(data: T): T => {
+export const sanitizeFormData = <T extends Record<string, unknown>>(data: T): T => {
     return Object.keys(data).reduce((sanitized, key) => {
         const value = data[key];
 
         if (richTextFields.includes(key) && typeof value === "string") {
-            (sanitized as any)[key] = sanitizeRichText(value);
+            (sanitized as T)[key as keyof T] = sanitizeRichText(value) as T[keyof T];
         } else {
-            (sanitized as any)[key] = value;
+            (sanitized as T)[key as keyof T] = value as T[keyof T];
         }
 
         return sanitized;

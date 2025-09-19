@@ -35,7 +35,7 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 type FilterNameType = keyof typeof filterOptions & string;
 type FilterValueType = boolean | string | string[] | TaskStatus[];
 type FilterFunctionProps = {
-    tasks: Prisma.TaskGetPayload<{}>[];
+    tasks: Prisma.TaskGetPayload<true>[];
     value?: FilterValueType;
     userId?: string;
 };
@@ -60,7 +60,7 @@ export const filterOptions = {
     has_tag: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
     [GlobalConstants.STATUS]: ({ tasks, value }) =>
-        tasks?.filter((task: Prisma.TaskGetPayload<{}>) =>
+        tasks?.filter((task: Prisma.TaskGetPayload<true>) =>
             (value as TaskStatus[]).includes(task.status),
         ),
 };
@@ -80,14 +80,14 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
 };
 
 interface KanBanBoardFilterProps {
-    eventPromise?: Promise<Prisma.EventGetPayload<{}>>;
+    eventPromise?: Promise<Prisma.EventGetPayload<true>>;
     tasksPromise: Promise<
         Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
         }>[]
     >;
     appliedFilter: z.infer<typeof TaskFilterSchema> | null;
-    setAppliedFilter: Dispatch<SetStateAction<any>>;
+    setAppliedFilter: Dispatch<SetStateAction<z.infer<typeof TaskFilterSchema> | null>>;
 }
 
 const KanBanBoardMenu = ({

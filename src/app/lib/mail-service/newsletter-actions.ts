@@ -109,10 +109,10 @@ export async function processNextNewsletterBatch(jobId?: string) {
             total,
             done,
         };
-    } catch (err: any) {
+    } catch (error) {
         // Don't set to error if it's a rate limit error - keep status as running to retry later
-        if (await isRateLimitError(err)) {
-            console.warn("Mail rate limit error detected, will retry later", err);
+        if (await isRateLimitError(error)) {
+            console.warn("Mail rate limit error detected, will retry later", error);
             return {
                 jobId: job.id,
                 processed: 0,
@@ -120,12 +120,16 @@ export async function processNextNewsletterBatch(jobId?: string) {
                 error: "Rate limit error, will retry",
             };
         }
-        console.error("Error sending newsletter batch", err);
+        console.error("Error sending newsletter batch", error);
         await prisma.newsletterJob.update({
             where: { id: job.id },
-            data: { status: "failed", error: err?.message || String(err), lastRunAt: new Date() },
+            data: {
+                status: "failed",
+                error: error?.message || String(error),
+                lastRunAt: new Date(),
+            },
         });
-        return { jobId: job.id, processed: 0, done: false, error: err?.message || String(err) };
+        return { jobId: job.id, processed: 0, done: false, error: error?.message || String(error) };
     }
 }
 

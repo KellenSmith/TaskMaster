@@ -11,7 +11,7 @@ import { getLoggedInUser } from "./user-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getOrganizationSettings } from "./organization-settings-actions";
 
-const makeSwedbankApiRequest = async (url: string, body?: any) => {
+const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
     return await fetch(url, {
         method: body ? "POST" : "GET",
         headers: {

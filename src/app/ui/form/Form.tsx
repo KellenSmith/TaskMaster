@@ -43,9 +43,9 @@ import { upload } from "@vercel/blob/client";
 interface FormProps {
     name: string;
     buttonLabel?: string;
-    action?: (fieldValues: any) => Promise<string>; // eslint-disable-line no-unused-vars
-    validationSchema?: ZodType<any>;
-    defaultValues?: any;
+    action?: (fieldValues: object) => Promise<string>; // eslint-disable-line no-unused-vars
+    validationSchema?: ZodType<object>;
+    defaultValues?: object;
     customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
     customIncludedFields?: string[]; // Include extra fields which are not preconfigured in FieldCfg.ts
@@ -141,7 +141,7 @@ const Form: FC<FormProps> = ({
     const uploadFiles = async (formData: FormData): Promise<FormData | null> => {
         try {
             // Use a copy of the keys to avoid iterator issues when modifying FormData
-            for (let fieldId of [...formData.keys()]) {
+            for (const fieldId of [...formData.keys()]) {
                 if (!fileUploadFields.includes(fieldId)) continue;
                 const file = formData.get(fieldId) as File;
                 if (!file?.name || file.size === 0) {
@@ -198,7 +198,7 @@ const Form: FC<FormProps> = ({
             try {
                 const submitResult = await action(formDataWithFileUrls);
                 addNotification(submitResult, "success");
-                !(editable && !readOnly) && setEditMode(false);
+                if (!(editable && !readOnly)) setEditMode(false);
             } catch (error) {
                 allowRedirectException(error);
                 addNotification(error.message, "error");

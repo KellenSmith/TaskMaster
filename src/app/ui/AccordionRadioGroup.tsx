@@ -9,12 +9,12 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import { FC } from "react";
+import { Dispatch, FC, SetStateAction } from "react";
 
 interface IAccordionRadioGroup {
     title: string;
     value: string;
-    setValue: Function;
+    setValue: Dispatch<SetStateAction<unknown>>;
     valueOptions: { [key: string]: string };
 }
 

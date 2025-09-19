@@ -401,8 +401,8 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
     const validatedData = CloneEventSchema.parse(Object.fromEntries(formData.entries()));
 
     const {
-        id: eventIdToOmit, // eslint-disable-line no-unused-vars
-        host_id: hostIdToOmit, // eslint-disable-line no-unused-vars
+        id: eventIdToOmit, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
+        host_id: hostIdToOmit, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
         location_id,
         ...eventData
     } = await prisma.event.findUniqueOrThrow({
@@ -443,13 +443,13 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         const clonedTickets = await Promise.all(
             tickets.map(async (ticket) => {
                 const {
-                    product_id: ticketIdToOmit, // eslint-disable-line no-unused-vars
-                    event_id: eventIdToOmit, // eslint-disable-line no-unused-vars
-                    product_id: ticketProductIdToOmit, // eslint-disable-line no-unused-vars
+                    product_id: ticketIdToOmit, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
+                    event_id: eventIdToOmit, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
+                    product_id: ticketProductIdToOmit, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
                     product,
                     ...ticketData
                 } = ticket;
-                // eslint-disable-next-line no-unused-vars
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
                 const { id: productIdToOmit, ...productData } = product;
                 return tx.ticket.create({
                     data: {
@@ -492,22 +492,18 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
 
         await tx.task.createMany({
             data: tasks.map((task) => {
-                const {
-                    id: taskIdToOmit, // eslint-disable-line no-unused-vars
-                    // Create the tasks as unassigned
-                    assignee_id: taskAssigneeIdToOmit, // eslint-disable-line no-unused-vars
-                    reviewer_id: taskReviewerIdToOmit, // eslint-disable-line no-unused-vars
-                    ...taskData
-                } = task;
                 return {
-                    ...taskData,
+                    ...task,
+                    id: undefined,
                     event_id: createdEvent.id,
+                    // Create as unassigned
+                    assignee_id: null,
                     // Add logged in user as reviewer
                     reviewer_id: loggedInUser.id,
                     // Create tasks as "To Do"
                     status: TaskStatus.toDo,
-                    start_time: moveTaskTimeForward(taskData.start_time),
-                    end_time: moveTaskTimeForward(taskData.end_time),
+                    start_time: moveTaskTimeForward(task.start_time),
+                    end_time: moveTaskTimeForward(task.end_time),
                 } as Prisma.TaskCreateManyInput;
             }),
         });

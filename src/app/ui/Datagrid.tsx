@@ -23,10 +23,8 @@ import LanguageTranslations from "./LanguageTranslations";
 
 export interface RowActionProps {
     name: string;
-    serverAction: (
-        clickedRow: any, // eslint-disable-line no-unused-vars
-    ) => Promise<string>;
-    available: (clickedRow: any) => boolean; // eslint-disable-line no-unused-vars
+    serverAction: (clickedRow: ImplementedDatagridEntities) => Promise<string>; // eslint-disable-line no-unused-vars
+    available: (clickedRow: ImplementedDatagridEntities) => boolean; // eslint-disable-line no-unused-vars
     buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning";
     buttonLabel: string;
 }
@@ -159,7 +157,10 @@ const Datagrid: React.FC<DatagridProps> = ({
         });
     };
 
-    const getRowActionButton = (clickedRow: any, rowAction: RowActionProps) => {
+    const getRowActionButton = (
+        clickedRow: ImplementedDatagridEntities,
+        rowAction: RowActionProps,
+    ) => {
         const ButtonComponent = rowAction.buttonColor === "error" ? ConfirmButton : Button;
         return (
             rowAction.available(clickedRow) && (

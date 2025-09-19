@@ -44,7 +44,7 @@ interface TaskCardProps {
             };
         }>
     >;
-    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<{}>[]>;
+    skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
     activeMembersPromise: Promise<
         Prisma.UserGetPayload<{
             select: { id: true; nickname: true; skill_badges: true };
@@ -68,12 +68,11 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
 
     const getStatusColor = () => {
         const status = task.status;
-        if (!status) return "default" as any;
-        if (status === GlobalConstants.TO_DO) return "info" as any;
-        if (status === GlobalConstants.IN_PROGRESS) return "warning" as any;
-        if (status === GlobalConstants.IN_REVIEW) return "secondary" as any;
-        if (status === GlobalConstants.DONE) return "success" as any;
-        return "default" as any;
+        if (status === GlobalConstants.TO_DO) return "info";
+        if (status === GlobalConstants.IN_PROGRESS) return "warning";
+        if (status === GlobalConstants.IN_REVIEW) return "secondary";
+        if (status === GlobalConstants.DONE) return "success";
+        return "default";
     };
 
     const updateTaskAction = async (formData: FormData) => {
@@ -139,7 +138,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                 name={GlobalConstants.TASK}
                 defaultValues={{
                     ...task,
-                    skill_badges: (task.skill_badges || []).map((b: any) => b.skill_badge_id),
+                    skill_badges: (task.skill_badges || []).map(
+                        (b: Prisma.TaskSkillBadgeGetPayload<true>) => b.skill_badge_id,
+                    ),
                 }}
                 customOptions={{
                     [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(

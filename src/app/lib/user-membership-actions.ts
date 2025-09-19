@@ -103,12 +103,10 @@ export const getMembershipProduct = async (): Promise<
 export const createMembershipOrder = async (userId: string): Promise<void> => {
     const validatedUserId = UuidSchema.parse(userId);
 
-    let orderItems: Prisma.OrderItemCreateManyOrderInput[];
-
     // Get or create the membership product
     const membershipProduct = await getMembershipProduct();
 
-    orderItems = [
+    const orderItems = [
         { product_id: membershipProduct.id, price: membershipProduct.price, quantity: 1 },
     ];
 

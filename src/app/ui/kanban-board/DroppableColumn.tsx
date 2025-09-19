@@ -216,7 +216,8 @@ const DroppableColumn = ({
                             ? {
                                   ...taskFormDefaultValues,
                                   skill_badges: taskFormDefaultValues.skill_badges?.map(
-                                      (b: any) => b.skill_badge_id,
+                                      (b: Prisma.TaskSkillBadgeGetPayload<true>) =>
+                                          b.skill_badge_id,
                                   ),
                               }
                             : null
