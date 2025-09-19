@@ -27,11 +27,11 @@ export async function GET(request: NextRequest) {
         });
     }
 
-    await purgeStaleMembershipApplications();
-
-    await remindAboutExpiringMembership();
-
-    await processNewsletterBacklog();
+    await Promise.all([
+        purgeStaleMembershipApplications(),
+        remindAboutExpiringMembership(),
+        processNewsletterBacklog(),
+    ]);
 
     return new NextResponse("OK", {
         status: 200,
