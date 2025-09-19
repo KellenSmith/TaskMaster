@@ -64,3 +64,9 @@ export const isUserQualifiedForTask = (
     requiredTaskSkillBadges.every((taskSkillBadge) =>
         userHasSkillBadge(user, taskSkillBadge.skill_badge_id),
     );
+
+export interface MailResult {
+    accepted: number;
+    rejected: number;
+    fallbackJobId?: string; // Set when rate limiting triggers fallback
+}

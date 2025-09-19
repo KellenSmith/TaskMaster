@@ -3,7 +3,13 @@
 import { Button, Dialog, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid, GridColDef, useGridApiRef } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
-import { checkboxFields, datePickerFields, FieldLabels, priceFields } from "./form/FieldCfg";
+import {
+    checkboxFields,
+    datePickerFields,
+    FieldLabels,
+    priceFields,
+    RenderedFields,
+} from "./form/FieldCfg";
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
 import { formatDate, formatPrice } from "./utils";
@@ -174,7 +180,7 @@ const Datagrid: React.FC<DatagridProps> = ({
             <DataGrid
                 apiRef={apiRef}
                 rows={datagridRows}
-                onRowClick={(row) => updateAction && setClickedRow(row.row)}
+                onRowClick={(row) => (updateAction || rowActions) && setClickedRow(row.row)}
                 columns={columns}
                 initialState={{
                     columns: {
@@ -200,20 +206,22 @@ const Datagrid: React.FC<DatagridProps> = ({
                     setAddNew(false);
                 }}
             >
-                <Form
-                    name={name}
-                    buttonLabel={GlobalLanguageTranslations.save[language]}
-                    action={clickedRow ? updateRow : createRow}
-                    validationSchema={validationSchema}
-                    defaultValues={
-                        clickedRow && {
-                            ...clickedRow,
-                            ...(getDefaultFormValues ? getDefaultFormValues(clickedRow) : []),
+                {name in RenderedFields && (
+                    <Form
+                        name={name}
+                        buttonLabel={GlobalLanguageTranslations.save[language]}
+                        action={clickedRow ? updateRow : createRow}
+                        validationSchema={validationSchema}
+                        defaultValues={
+                            clickedRow && {
+                                ...clickedRow,
+                                ...(getDefaultFormValues ? getDefaultFormValues(clickedRow) : []),
+                            }
                         }
-                    }
-                    readOnly={!updateAction}
-                    customOptions={customFormOptions}
-                />
+                        readOnly={!updateAction}
+                        customOptions={customFormOptions}
+                    />
+                )}
                 {!addNew &&
                     !!rowActions &&
                     rowActions.map((rowAction) => getRowActionButton(clickedRow, rowAction))}

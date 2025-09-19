@@ -64,26 +64,44 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
 
     const sendMassEmailToRecipientsWithCriteria = async (formData: FormData) => {
         try {
-            await sendMassEmail(getRecipientCriteria(), formData);
-            return LanguageTranslations.successfulSendout[language];
+            const result = await sendMassEmail(getRecipientCriteria(), formData);
+            return LanguageTranslations.successfulSendout[language](result);
         } catch {
             throw new Error(LanguageTranslations.failedSendMail[language]);
         }
     };
 
+    const deleteNewsletterJobAction = async (row: Prisma.NewsletterJobGetPayload<true>) => {
+        try {
+            await deleteNewsletterJob(row.id);
+            return GlobalLanguageTranslations.successfulDelete[language];
+        } catch (error) {
+            throw new Error(GlobalLanguageTranslations.failedDelete[language]);
+        }
+    };
+
+    const customColumns = [
+        {
+            field: GlobalConstants.RECIPIENTS,
+            valueGetter: (row: Prisma.NewsletterJobGetPayload<true>) => {
+                console.log(row.recipients);
+                if (row.recipients?.length > 2)
+                    return `${row.recipients.slice(0, 2).join("\n")}...${row.recipients.length - 2}`;
+                return row.recipients?.join("\n");
+            },
+        },
+    ];
+
     const rowActions: RowActionProps[] = [
         {
             name: GlobalLanguageTranslations.delete[language],
-            serverAction: async (row) => {
-                await deleteNewsletterJob(row.id);
-                return GlobalLanguageTranslations.successfulDelete[language];
-            },
+            serverAction: deleteNewsletterJobAction,
             available: (row) => !!row && !!row.id,
             buttonLabel: GlobalLanguageTranslations.delete[language],
             buttonColor: "error",
         },
     ];
-
+    const hiddenSendoutColumns = [GlobalConstants.HTML, GlobalConstants.ID];
     return (
         <Stack
             height="100%"
@@ -123,7 +141,12 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
             </Stack>
 
             <Stack height={"100%"} maxWidth={isSmall ? "100%" : "50%"} flex={1}>
-                <Datagrid dataGridRowsPromise={newsLetterJobsPromise} rowActions={rowActions} />
+                <Datagrid
+                    dataGridRowsPromise={newsLetterJobsPromise}
+                    rowActions={rowActions}
+                    hiddenColumns={hiddenSendoutColumns}
+                    customColumns={customColumns}
+                />
             </Stack>
         </Stack>
     );

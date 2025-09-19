@@ -1,4 +1,5 @@
 import { Language } from "@prisma/client";
+import { MailResult } from "../../ui/utils";
 
 const LanguageTranslations = {
     sendMassEmail: {
@@ -22,8 +23,10 @@ const LanguageTranslations = {
             `Är du säker på att du vill skicka detta e-postmeddelande till ${recipientCount} mottagare?`,
     },
     successfulSendout: {
-        [Language.english]: "Sendout processing",
-        [Language.swedish]: "Utskick pågår",
+        [Language.english]: (result: MailResult) =>
+            `Sendout succeeded: ${result.accepted} accepted, ${result.rejected} rejected`,
+        [Language.swedish]: (result: MailResult) =>
+            `Utskick lyckades: ${result.accepted} accepterade, ${result.rejected} avvisade`,
     },
     failedSendMail: {
         [Language.english]: "Failed to send mail",

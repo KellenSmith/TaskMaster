@@ -14,6 +14,52 @@ import { getEventReservesEmails } from "../event-reserve-actions";
 import { sanitizeFormData } from "../html-sanitizer";
 import { createNewsletterJob } from "./newsletter-actions";
 import z from "zod";
+import MailTemplate from "./mail-templates/MailTemplate";
+import { MailResult } from "../../ui/utils";
+
+/**
+ * Checks if an error indicates rate limiting from the email provider
+ */
+export const isRateLimitError = async (error: any): Promise<boolean> => {
+    const errorMessage = (error?.message || error || "").toString().toLowerCase();
+
+    // Common rate limiting message patterns
+    const rateLimitPatterns = [
+        "rate limit",
+        "rate exceeded",
+        "throttl",
+        "too many",
+        "quota",
+        "limit exceeded",
+        "try again later",
+        "submission rate",
+        "sending limit",
+        "daily limit",
+        "hourly limit",
+    ];
+
+    return rateLimitPatterns.some((pattern) => errorMessage.includes(pattern));
+};
+
+/**
+ * Creates a newsletter job as fallback when rate limiting is detected
+ */
+const createFallbackNewsletterJob = async (
+    recipients: string[],
+    subject: string,
+    mailContent: ReactElement,
+    replyTo?: string,
+): Promise<{ jobId: string; total: number }> => {
+    const job = await createNewsletterJob({
+        subject,
+        html: await render(mailContent),
+        recipients,
+        batchSize: 50, // Use smaller batch size for fallback
+        replyTo,
+    });
+
+    return { jobId: job.id, total: job.total };
+};
 
 interface EmailPayload {
     from: string;
@@ -25,13 +71,9 @@ interface EmailPayload {
     html: string;
     headers?: Record<string, string>;
     text?: string; // Plain text version for better deliverability
-    envelope?: {
-        from?: string;
-        to?: string | string[];
-    };
 }
 
-const getEmailPayload = async (
+export const getEmailPayload = async (
     receivers: string[],
     subject: string,
     mailContent: ReactElement,
@@ -76,24 +118,55 @@ const getEmailPayload = async (
     return payload;
 };
 
-interface MailResult {
-    accepted: number;
-    rejected: number;
-}
 export const sendMail = async (
     recipients: string[],
     subject: string,
     mailContent: ReactElement | Promise<ReactElement>,
     replyTo?: string,
 ): Promise<MailResult> => {
-    const mailPayload = await getEmailPayload(recipients, subject, await mailContent, replyTo);
-    const mailTransport = await getMailTransport();
-    const mailResponse = await mailTransport.sendMail(mailPayload);
-    if (mailResponse.error) throw new Error(mailResponse.error.message);
-    return {
-        accepted: mailResponse?.accepted?.length || 0,
-        rejected: mailResponse?.rejected?.length || 0,
-    };
+    const resolvedContent = await mailContent;
+    try {
+        const mailPayload = await getEmailPayload(recipients, subject, resolvedContent, replyTo);
+        const mailTransport = await getMailTransport();
+        if (mailTransport) throw new Error("rate limit");
+        const mailResponse = await mailTransport.sendMail(mailPayload);
+        if (mailResponse.error) {
+            throw new Error(mailResponse.error.message);
+        }
+        return {
+            accepted: mailResponse?.accepted?.length || 0,
+            rejected: mailResponse?.rejected?.length || 0,
+        };
+    } catch (error: any) {
+        // Check if the error indicates rate limiting
+        if (await isRateLimitError(error)) {
+            console.warn(
+                `Mail rate limiting detected: ${error.message}. Creating newsletter job as fallback.`,
+            );
+
+            try {
+                const fallbackJob = await createFallbackNewsletterJob(
+                    recipients,
+                    subject,
+                    resolvedContent,
+                    replyTo,
+                );
+
+                return {
+                    accepted: 0,
+                    rejected: 0,
+                    fallbackJobId: fallbackJob.jobId,
+                };
+            } catch (fallbackError: any) {
+                // If fallback also fails, throw the original error
+                console.error(`Fallback newsletter job creation failed: ${fallbackError.message}`);
+                throw error;
+            }
+        }
+
+        // For non-rate-limiting errors, throw the original error
+        throw error;
+    }
 };
 
 /**
@@ -108,11 +181,17 @@ export const notifyEventReserves = async (eventId: string): Promise<void> => {
         event,
     });
 
-    await sendMail(
+    const result = await sendMail(
         reserveEmails,
         `A spot has opened up for the event: ${event.title}`,
         mailContent,
     );
+
+    if (result.fallbackJobId) {
+        console.log(
+            `Event reserve notification queued as newsletter job ${result.fallbackJobId} due to rate limiting`,
+        );
+    }
 };
 
 /**
@@ -131,11 +210,17 @@ export const informOfCancelledEvent = async (eventId: string): Promise<void> => 
         event: event,
     });
 
-    await sendMail(
+    const result = await sendMail(
         [...participantEmails, ...reserveEmails],
         `Cancelled event: ${event.title}`,
         mailContent,
     );
+
+    if (result.fallbackJobId) {
+        console.log(
+            `Event cancellation notification queued as newsletter job ${result.fallbackJobId} due to rate limiting`,
+        );
+    }
 };
 
 export const getEmailRecipientCount = async (
@@ -173,23 +258,8 @@ export const sendMassEmail = async (
 
     // Sanitize rich text content before sending email
     const sanitizedContent = sanitizeFormData(revalidatedContent);
-
-    // Queue a newsletter job instead of sending immediately
-    const job = await createNewsletterJob({
-        subject: sanitizedContent.subject,
-        html: sanitizedContent.content,
-        recipients,
-        batchSize: 250,
-    });
-    // Keep return shape compatible with existing UI (it shows counts)
-    // Actual sending will be processed by the scheduled batch processor
-    return {
-        accepted: 0,
-        rejected: 0,
-        jobId: job.id,
-        total: recipients.length,
-        batchSize: job.batchSize,
-    };
+    const mailContent = createElement(MailTemplate, { html: sanitizedContent.content });
+    return await sendMail(recipients, sanitizedContent.subject, mailContent);
 };
 
 export const sendOrderConfirmation = async (orderId: string): Promise<void> => {
@@ -214,9 +284,15 @@ export const sendOrderConfirmation = async (orderId: string): Promise<void> => {
         },
     });
     const mailContent = createElement(OrderConfirmationTemplate, { order });
-    await sendMail(
+    const result = await sendMail(
         [order.user.email],
         `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
         mailContent,
     );
+
+    if (result.fallbackJobId) {
+        console.log(
+            `Order confirmation queued as newsletter job ${result.fallbackJobId} due to rate limiting`,
+        );
+    }
 };

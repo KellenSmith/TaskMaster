@@ -147,6 +147,7 @@ const GlobalConstants = {
     // Sendout
     SUBJECT: "subject",
     CONTENT: "content",
+    HTML: "html",
     RECIPIENT_CRITERIA: "recipientCriteria",
     CONTACT_MEMBER: "contactMember",
     RECIPIENTS: "recipients",

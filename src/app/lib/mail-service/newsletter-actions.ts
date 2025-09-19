@@ -6,18 +6,20 @@ import { createElement } from "react";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
 import { UuidSchema } from "../zod-schemas";
-import { sendMail } from "./mail-service";
+import { getEmailPayload, isRateLimitError } from "./mail-service";
+import { getMailTransport } from "./mail-transport";
 
 type CreateJobInput = {
     subject: string;
     html: string; // rich HTML content to embed in MailTemplate
     recipients: string[]; // snapshot of recipients
     batchSize?: number; // defaults to 250 per provider limit
+    replyTo?: string; // optional reply-to address
 };
 
 export async function createNewsletterJob(input: CreateJobInput) {
     const batchSize = Math.max(1, Math.min(input.batchSize ?? 250, 250));
-    const recipients = Array.from(new Set((input.recipients || []).filter(Boolean)));
+    const recipients = [...new Set((input.recipients || []).filter(Boolean))];
     if (recipients.length === 0) throw new Error("No recipients provided");
 
     const job = await prisma.newsletterJob.create({
@@ -26,17 +28,13 @@ export async function createNewsletterJob(input: CreateJobInput) {
             html: input.html,
             recipients: recipients as unknown as object,
             batchSize,
+            replyTo: input.replyTo,
             status: "pending",
         },
     });
     revalidateTag(GlobalConstants.SENDOUT);
+    // Batched are sent when nextauth route is accessed.
 
-    // Try to process immediately. All batches are sent if possible within
-    // the vercel function timeout (10s for free, 60s for pro).
-    // Remaining batches will be processed by cron or manual trigger.
-    processNextNewsletterBatch(job.id).catch((err) =>
-        console.error("Error processing initial newsletter batch", err),
-    );
     return { id: job.id, total: recipients.length, batchSize };
 }
 
@@ -65,13 +63,23 @@ export async function processNextNewsletterBatch(jobId?: string) {
 
     const start = job.cursor;
     const end = Math.min(start + job.batchSize, total);
-    const batch = recipients.slice(start, end);
+    const recipientBatch = recipients.slice(start, end);
     const mailContent = createElement(MailTemplate, { html: job.html });
 
     try {
         // BCC batch send (counts as 1 email to up to 250 recipients per one.com docs)
-        const result = await sendMail(batch, job.subject, mailContent);
-        const acceptedTotal = result?.accepted || 0;
+        const mailPayload = await getEmailPayload(
+            recipientBatch,
+            job.subject,
+            mailContent,
+            job.replyTo,
+        );
+        const mailTransport = await getMailTransport();
+        const mailResponse = await mailTransport.sendMail(mailPayload);
+        if (mailResponse.error) {
+            throw new Error(mailResponse.error.message);
+        }
+        const acceptedTotal = mailResponse?.accepted || 0;
 
         const newCursor = end;
         const done = newCursor >= total;
@@ -98,6 +106,16 @@ export async function processNextNewsletterBatch(jobId?: string) {
             done,
         };
     } catch (err: any) {
+        // Don't set to error if it's a rate limit error - keep status as running to retry later
+        if (await isRateLimitError(err)) {
+            console.warn("Mail rate limit error detected, will retry later", err);
+            return {
+                jobId: job.id,
+                processed: 0,
+                done: false,
+                error: "Rate limit error, will retry",
+            };
+        }
         console.error("Error sending newsletter batch", err);
         await prisma.newsletterJob.update({
             where: { id: job.id },

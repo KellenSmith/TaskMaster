@@ -22,7 +22,7 @@ model NewsletterJob {
   subject     String
   html        String
   text        String?
-  recipients  Json // array of recipient emails captured at enqueue time
+  recipients  String[] // array of recipient emails captured at enqueue time
   replyTo     String?
   cursor      Int                 @default(0) // next index to send from
   batchSize   Int                 @default(250)

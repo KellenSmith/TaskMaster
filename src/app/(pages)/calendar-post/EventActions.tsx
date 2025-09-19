@@ -321,9 +321,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         };
 
         try {
-            await sendMassEmail(recipientCriteria, formData);
+            const result = await sendMassEmail(recipientCriteria, formData);
             setDialogOpen(null);
-            return SendoutLanguageTranslations.successfulSendout[language];
+            return SendoutLanguageTranslations.successfulSendout[language](result);
         } catch {
             throw new Error(SendoutLanguageTranslations.failedSendMail[language]);
         }
