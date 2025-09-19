@@ -320,7 +320,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 ],
             });
-            await sendMail(eventToUpdate.host.email, "Event published", mailContent);
+            await sendMail([eventToUpdate.host.email], "Event published", mailContent);
         }
 
         await prisma.event.update({

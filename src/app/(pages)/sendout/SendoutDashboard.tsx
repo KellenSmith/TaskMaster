@@ -76,7 +76,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
         try {
             await deleteNewsletterJob(row.id);
             return GlobalLanguageTranslations.successfulDelete[language];
-        } catch (error) {
+        } catch {
             throw new Error(GlobalLanguageTranslations.failedDelete[language]);
         }
     };

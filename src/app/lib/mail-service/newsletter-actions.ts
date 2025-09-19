@@ -1,8 +1,6 @@
 "use server";
 
 import { prisma } from "../../../../prisma/prisma-client";
-import MailTemplate from "./mail-templates/MailTemplate";
-import { createElement } from "react";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
 import { UuidSchema } from "../zod-schemas";
