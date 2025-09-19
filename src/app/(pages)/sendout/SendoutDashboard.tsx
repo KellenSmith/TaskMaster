@@ -83,11 +83,10 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
     const customColumns = [
         {
             field: GlobalConstants.RECIPIENTS,
-            valueGetter: (row: Prisma.NewsletterJobGetPayload<true>) => {
-                console.log(row.recipients);
+            valueGetter: (_, row: Prisma.NewsletterJobGetPayload<true>) => {
                 if (row.recipients?.length > 2)
-                    return `${row.recipients.slice(0, 2).join("\n")}...${row.recipients.length - 2}`;
-                return row.recipients?.join("\n");
+                    return `${row.recipients[0]}... (${row.recipients.length - 1})`;
+                return row.recipients?.join(", ");
             },
         },
     ];
@@ -101,7 +100,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
             buttonColor: "error",
         },
     ];
-    const hiddenSendoutColumns = [GlobalConstants.HTML, GlobalConstants.ID];
+    const hiddenSendoutColumns = [GlobalConstants.HTML, GlobalConstants.ID, GlobalConstants.TEXT];
     return (
         <Stack
             height="100%"

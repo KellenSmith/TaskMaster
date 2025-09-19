@@ -49,16 +49,20 @@ const createFallbackNewsletterJob = async (
     subject: string,
     mailContent: ReactElement,
     replyTo?: string,
-): Promise<{ jobId: string; total: number }> => {
-    const job = await createNewsletterJob({
+): Promise<{ id: string; total: number; batchSize: number }> => {
+    const recipientCount = recipients.length;
+    let batchSize = 100;
+    if (recipientCount <= 10) batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
+    if (recipientCount <= 100) batchSize = Math.min(recipientCount, 25); // Small batches for small groups
+    if (recipientCount <= 1000) batchSize = 50; // Medium batches for medium groups
+
+    return await createNewsletterJob({
         subject,
         html: await render(mailContent),
         recipients,
-        batchSize: 50, // Use smaller batch size for fallback
+        batchSize,
         replyTo,
     });
-
-    return { jobId: job.id, total: job.total };
 };
 
 interface EmailPayload {
@@ -140,10 +144,6 @@ export const sendMail = async (
     } catch (error: any) {
         // Check if the error indicates rate limiting
         if (await isRateLimitError(error)) {
-            console.warn(
-                `Mail rate limiting detected: ${error.message}. Creating newsletter job as fallback.`,
-            );
-
             try {
                 const fallbackJob = await createFallbackNewsletterJob(
                     recipients,
@@ -151,11 +151,14 @@ export const sendMail = async (
                     resolvedContent,
                     replyTo,
                 );
+                console.warn(
+                    `Mail rate limiting detected: ${error.message}. Creating newsletter job as fallback. Batch size: ${fallbackJob.batchSize}`,
+                );
 
                 return {
                     accepted: 0,
                     rejected: 0,
-                    fallbackJobId: fallbackJob.jobId,
+                    fallbackJobId: fallbackJob.id,
                 };
             } catch (fallbackError: any) {
                 // If fallback also fails, throw the original error

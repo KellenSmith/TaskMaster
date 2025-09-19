@@ -26,7 +26,7 @@ export async function createNewsletterJob(input: CreateJobInput) {
         data: {
             subject: input.subject,
             html: input.html,
-            recipients: recipients as unknown as object,
+            recipients,
             batchSize,
             replyTo: input.replyTo,
             status: "pending",
@@ -51,7 +51,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
     if (job.status === "completed" || job.status === "cancelled")
         return { processed: 0, done: true, message: `Job ${job.status}` };
 
-    const recipients: string[] = (job.recipients as unknown as string[]) || [];
+    const recipients = job.recipients || [];
     const total = recipients.length;
     if (job.cursor >= total) {
         await prisma.newsletterJob.update({

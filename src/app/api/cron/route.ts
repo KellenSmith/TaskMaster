@@ -31,4 +31,5 @@ export async function GET(request: NextRequest) {
     });
 
     // TODO: Remind about tasks due soon
+    // TODO: Notify about unbooked event tasks / cancel events with unbooked tasks
 }
