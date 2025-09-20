@@ -124,7 +124,12 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                         </Table>
                     </TableContainer>
                 </Stack>
-                <Typography color="primary">{getStatusMessage(order.status)}</Typography>
+                <Stack direction="row" justifyContent="space-between" flexWrap="wrap" marginTop={2}>
+                    <Typography color="primary">
+                        {LanguageTranslations.orderId[language]}: {order.id}
+                    </Typography>
+                    <Typography color="primary">{getStatusMessage(order.status)}</Typography>
+                </Stack>
             </CardContent>
         </Card>
     );

@@ -19,6 +19,10 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Tack för din beställning! Din betalning har behandlats och håller på att uppfyllas",
     },
+    orderId: {
+        [Language.english]: "Order ID",
+        [Language.swedish]: "Order ID",
+    },
     orderPending: {
         [Language.english]: "Your order is currently pending payment",
         [Language.swedish]: "Din beställning väntar på betalning",
