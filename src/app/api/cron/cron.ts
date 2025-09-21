@@ -6,6 +6,14 @@ import { Prisma } from "@prisma/client";
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
 import { createElement } from "react";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
+import { userHasActiveMembershipSubscription } from "../../ui/utils";
+import { createOrder } from "../../lib/order-actions";
+import {
+    checkPaymentStatus,
+    createSwedbankPaymentRequest,
+    getSwedbankPaymentRequestPurchasePayload,
+} from "../../lib/payment-actions";
+import { SubscriptionToken } from "../../lib/payment-utils";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -31,8 +39,31 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
     }
 };
 
-export const remindAboutExpiringMembership = async (): Promise<void> => {
-    // Send reminders to members whose membership expires in X days from now
+const chargeMembershipWithActiveSubscriptions = async (
+    user: Prisma.UserGetPayload<{
+        include: { user_membership: { include: { membership: { include: { product: true } } } } };
+    }>,
+): Promise<void> => {
+    const subscriptionToken = user.user_membership?.subscription_token;
+    const membershipOrderItem = {
+        quantity: 1,
+        product_id: user.user_membership.membership.product_id,
+        price: user.user_membership.membership.product.price,
+    } as Prisma.OrderItemCreateManyOrderInput;
+    const membershipOrder = await createOrder(user.id, [membershipOrderItem]);
+    const paymentRequestPayload = await getSwedbankPaymentRequestPurchasePayload(
+        membershipOrder.id,
+    );
+    paymentRequestPayload.paymentorder.unscheduledToken = subscriptionToken as SubscriptionToken;
+    const { paymentOrderId } = await createSwedbankPaymentRequest(paymentRequestPayload);
+    if (paymentOrderId) await checkPaymentStatus(user.id, membershipOrder.id, paymentOrderId);
+};
+
+export const expiringMembershipMaintenance = async (): Promise<void> => {
+    /**
+     * 1. Send reminders to members whose membership expires in X days from now
+     * 2. Auto-renew memberships for members with active subscriptions
+     */
     const orgSettings = await getOrganizationSettings();
     const reminderDays = orgSettings?.remind_membership_expires_in_days || 7;
 
@@ -49,19 +80,31 @@ export const remindAboutExpiringMembership = async (): Promise<void> => {
                     },
                 },
             },
-            select: { email: true },
+            select: {
+                email: true,
+                user_membership: { include: { membership: { include: { product: true } } } },
+            },
         });
-        if (expiringUsers.length > 0) {
-            const mailContent = createElement(MembershipExpiresReminderTemplate);
 
+        const usersWithSubscriptions = expiringUsers.filter((user) =>
+            userHasActiveMembershipSubscription(user),
+        );
+        await Promise.all(
+            usersWithSubscriptions.map((user) => chargeMembershipWithActiveSubscriptions(user)),
+        ).then(() => console.log(`Auto-renewed ${usersWithSubscriptions.length} memberships`));
+
+        const usersWithoutSubscriptions = expiringUsers.filter(
+            (user) => !userHasActiveMembershipSubscription(user),
+        );
+        // Send email reminders to users without active subscriptions
+        if (usersWithoutSubscriptions.length > 0) {
             await sendMail(
-                expiringUsers.map(
-                    (user: Prisma.UserGetPayload<{ select: { email: true } }>) => user.email,
-                ),
+                usersWithoutSubscriptions.map((user) => user.email),
                 `Your ${process.env.NEXT_PUBLIC_ORG_NAME || "Task Master"} membership is about to expire`,
-                mailContent,
+                createElement(MembershipExpiresReminderTemplate),
             );
         }
+
         console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
     } catch (error) {
         console.error(`Error when reminding about expiring memberships: ${error.message}`);

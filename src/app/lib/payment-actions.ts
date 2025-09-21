@@ -39,7 +39,39 @@ const generatePayeeReference = (orderId: string, prefix: string = "PAY"): string
     return baseRef.substring(0, 30); // Ensure max length compliance
 };
 
-const getSwedbankPaymentRequestPurchasePayload = async (orderId: string, subscribe: boolean) => {
+interface SwedbankPaymentRequestBody {
+    paymentorder: {
+        operation: "Purchase";
+        currency: "SEK";
+        amount: number;
+        vatAmount: 0;
+        description: string;
+        generateUnscheduledToken?: boolean;
+        unscheduledToken?: SubscriptionToken;
+        userAgent: string;
+        language: string;
+        urls: {
+            hostUrls: string[];
+            completeUrl: string;
+            cancelUrl: string;
+            callbackUrl: string;
+            logoUrl: string | undefined;
+            termsOfServiceUrl: string;
+        };
+        payeeInfo: {
+            payeeId: string;
+            payeeReference: string; // Compliant: alphanumeric, max 30 chars, unique
+            payeeName: string;
+            orderReference: string; // Internal order reference (can contain hyphens)
+        };
+        // TODO: Include order items in the payment request for better tracking
+    };
+}
+
+export const getSwedbankPaymentRequestPurchasePayload = async (
+    orderId: string,
+    subscribe: boolean = false,
+): Promise<SwedbankPaymentRequestBody> => {
     // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
     let payeeRef = generatePayeeReference(orderId, "PAY");
 
@@ -97,8 +129,7 @@ const getSwedbankPaymentRequestPurchasePayload = async (orderId: string, subscri
                 callbackUrl: getAbsoluteUrl([GlobalConstants.PAYMENT_CALLBACK], {
                     [GlobalConstants.ORDER_ID]: orderId,
                 }),
-                // TODO:
-                // logoUrl: organizationSettings?.logo_url || undefined,
+                logoUrl: organizationSettings?.logo_url || undefined,
                 termsOfServiceUrl: organizationSettings?.terms_of_purchase_english_url || undefined,
             },
             payeeInfo: {
@@ -110,6 +141,23 @@ const getSwedbankPaymentRequestPurchasePayload = async (orderId: string, subscri
             // TODO: Include order items in the payment request for better tracking
         },
     };
+};
+
+export const createSwedbankPaymentRequest = async (requestBody: SwedbankPaymentRequestBody) => {
+    const response = await makeSwedbankApiRequest(
+        `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
+        requestBody,
+    );
+    if (!response.ok) throw new Error(`Swedbank Pay request failed: ${await response.text()}`);
+
+    const responseData: PaymentOrderResponse = await response.json();
+    const redirectOperation = responseData.operations.find((op) => op.rel === "redirect-checkout");
+
+    if (!redirectOperation || !redirectOperation.href) {
+        throw new Error("Redirect URL not found in payment response");
+    }
+
+    return { redirectUrl: redirectOperation.href, paymentOrderId: responseData.paymentOrder.id };
 };
 
 export const redirectToSwedbankPayment = async (
@@ -160,27 +208,16 @@ export const redirectToSwedbankPayment = async (
     );
     if (!requestBody) throw new Error("Failed to create payment request");
 
-    const response = await makeSwedbankApiRequest(
-        `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
-        requestBody,
-    );
-    if (!response.ok) throw new Error(`Swedbank Pay request failed: ${await response.text()}`);
-
-    const responseData: PaymentOrderResponse = await response.json();
-    const redirectOperation = responseData.operations.find((op) => op.rel === "redirect-checkout");
-
-    if (!redirectOperation || !redirectOperation.href) {
-        throw new Error("Redirect URL not found in payment response");
-    }
+    const { paymentOrderId, redirectUrl } = await createSwedbankPaymentRequest(requestBody);
 
     // Save payment order ID to the order to check status later
     await prisma.order.update({
         where: { id: validatedOrderId },
         data: {
-            payment_request_id: responseData.paymentOrder.id,
+            payment_request_id: paymentOrderId,
         },
     });
-    redirect(redirectOperation.href);
+    redirect(redirectUrl);
 };
 
 export const capturePaymentFunds = async (orderId: string) => {
@@ -229,7 +266,11 @@ export const capturePaymentFunds = async (orderId: string) => {
     return responseText;
 };
 
-export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {
+export const checkPaymentStatus = async (
+    userId: string,
+    orderId: string,
+    paymentRequestId: string = undefined,
+): Promise<void> => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedOrderId = UuidSchema.parse(orderId);
 
@@ -251,9 +292,9 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
         return;
     }
 
-    if (order.payment_request_id) {
+    if (paymentRequestId || order.payment_request_id) {
         const paymentStatusResponse = await makeSwedbankApiRequest(
-            `https://api.externalintegration.payex.com${order.payment_request_id}?$expand=paid`,
+            `https://api.externalintegration.payex.com${paymentRequestId || order.payment_request_id}?$expand=paid`,
         );
         if (!paymentStatusResponse.ok) {
             progressOrder(orderId, OrderStatus.error);
