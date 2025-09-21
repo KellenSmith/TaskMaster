@@ -49,9 +49,16 @@ const LanguageTranslations = {
         [Language.english]: "Cancel subscription",
         [Language.swedish]: "Avbryt prenumeration",
     },
+    areYouSureCancelSubscription: {
+        [Language.english]:
+            "Are you sure you want to cancel your subscription? Your membership is valid until the expiry date and will not be renewed thereafter.",
+        [Language.swedish]:
+            "Är du säker på att du vill avbryta din prenumeration? Ditt medlemskap är giltigt till utgångsdatumet och kommer inte fönyas därefter.",
+    },
     cancelledSubscription: {
-        [Language.english]: "Subscription cancelled",
-        [Language.swedish]: "Prenumeration avbruten",
+        [Language.english]: "Subscription cancelled. We will not charge you any further payments.",
+        [Language.swedish]:
+            "Prenumeration avbruten. Vi kommer inte att dra några fler betalningar.",
     },
     failedCancelSubscription: {
         [Language.english]: "Failed to cancel subscription",

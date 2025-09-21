@@ -89,17 +89,11 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                             <CardContent>
                                 <Stack spacing={2}>
                                     <Typography component="div">
-                                        {`Do you want to subscribe to the following membership? We will automatically extend your membership ${organizationSettings.remind_membership_expires_in_days} days before it expires so you will never lose access to ${process.env.NEXT_PUBLIC_ORG_NAME}.`}
+                                        {LanguageTranslations.subscribeToMembership[language](
+                                            organizationSettings,
+                                        )}
                                     </Typography>
-                                    <Typography variant="body2">
-                                        {
-                                            "If you don't want to subscribe now, you can always do it later from your profile settings."
-                                        }
-                                        <br />
-                                        {
-                                            "If you don't want to subscribe at all, we will remind you when your membership is about to expire."
-                                        }
-                                    </Typography>
+
                                     <Stack spacing={1} sx={{ pl: 2 }}>
                                         {subscribeableProducts.map((product) => (
                                             <Stack
@@ -114,6 +108,13 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                                             </Stack>
                                         ))}
                                     </Stack>
+                                    <Typography variant="body2">
+                                        {
+                                            LanguageTranslations.ifYouDontWantToSubscribeAtAll[
+                                                language
+                                            ]
+                                        }
+                                    </Typography>
                                     <FormControlLabel
                                         key="subscribe"
                                         control={
@@ -131,13 +132,15 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                                                 }
                                             />
                                         }
-                                        label={<Typography>Yes, subscribe!</Typography>}
+                                        label={
+                                            <Typography>
+                                                {LanguageTranslations.yesSubscribe[language]}
+                                            </Typography>
+                                        }
                                     />
                                     {!!subscribeToMembership && (
                                         <Typography variant="body2" sx={{ mt: 1 }}>
-                                            <b>Great!</b> Your membership will be renewed
-                                            automatically before it expires. You can manage your
-                                            subscription anytime from your profile settings.
+                                            <b>{LanguageTranslations.greatChoice[language]}</b>
                                         </Typography>
                                     )}
                                 </Stack>

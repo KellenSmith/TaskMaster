@@ -1,4 +1,4 @@
-import { Language, OrderStatus } from "@prisma/client";
+import { Language, OrderStatus, Prisma } from "@prisma/client";
 
 const LanguageTranslations = {
     failedCheckOrderStatus: {
@@ -100,6 +100,28 @@ const LanguageTranslations = {
     subscribe: {
         [Language.english]: "Subscribe to membership",
         [Language.swedish]: "Prenumerera på medlemskap",
+    },
+    subscribeToMembership: {
+        [Language.english]: (organizationSettings: Prisma.OrganizationSettingsGetPayload<true>) =>
+            `Do you want to subscribe to the following membership? We will automatically extend your membership ${organizationSettings.remind_membership_expires_in_days} days before it expires so you will never lose access to ${process.env.NEXT_PUBLIC_ORG_NAME}.`,
+        [Language.swedish]: (organizationSettings: Prisma.OrganizationSettingsGetPayload<true>) =>
+            `Vill du prenumerera på följande medlemskap? Vi kommer automatiskt att förlänga ditt medlemskap ${organizationSettings.remind_membership_expires_in_days} dagar innan det går ut så att du aldrig förlorar tillgången till ${process.env.NEXT_PUBLIC_ORG_NAME}.`,
+    },
+    ifYouDontWantToSubscribeAtAll: {
+        [Language.english]:
+            "If you don't want to subscribe at all, we will remind you when your membership is about to expire.",
+        [Language.swedish]:
+            "Om du inte vill prenumerera kommer vi att påminna dig när ditt medlemskap är på väg att gå ut.",
+    },
+    yesSubscribe: {
+        [Language.english]: "Yes, subscribe!",
+        [Language.swedish]: "Ja, prenumerera!",
+    },
+    greatChoice: {
+        [Language.english]:
+            "Great! Your membership will be renewed automatically before it expires. You can manage your subscription anytime from your profile settings.",
+        [Language.swedish]:
+            "Toppen! Ditt medlemskap kommer att förnyas automatiskt innan det går ut. Du kan hantera din prenumeration när som helst från dina profilsinställningar.",
     },
 };
 

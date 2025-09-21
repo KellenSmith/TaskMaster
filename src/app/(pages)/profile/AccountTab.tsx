@@ -75,6 +75,7 @@ const AccountTab = () => {
                     color="error"
                     onClick={cancelSubscriptionAction}
                     disabled={isPending}
+                    confirmText={LanguageTranslations.areYouSureCancelSubscription[language]}
                 >
                     {LanguageTranslations.cancelSubscription[language]}
                 </ConfirmButton>
