@@ -37,6 +37,26 @@ const LanguageTranslations = {
             }>,
         ) => `${isMembershipExpired(user) ? "Aktivera" : "Förläng"} medlemskap`,
     },
+    startMembershipSubscription: {
+        [Language.english]: "Start membership subscription",
+        [Language.swedish]: "Starta prenumeration för medlemskap",
+    },
+    failedStartMembershipSubscription: {
+        [Language.english]: "Failed to start membership subscription",
+        [Language.swedish]: "Kunde inte starta prenumeration för medlemskap",
+    },
+    cancelSubscription: {
+        [Language.english]: "Cancel subscription",
+        [Language.swedish]: "Avbryt prenumeration",
+    },
+    cancelledSubscription: {
+        [Language.english]: "Subscription cancelled",
+        [Language.swedish]: "Prenumeration avbruten",
+    },
+    failedCancelSubscription: {
+        [Language.english]: "Failed to cancel subscription",
+        [Language.swedish]: "Kunde inte avbryta prenumeration",
+    },
     failedActivateMembership: {
         [Language.english]: "Failed to activate membership",
         [Language.swedish]: "Misslyckades med att aktivera medlemskap",
@@ -90,6 +110,14 @@ const LanguageTranslations = {
     membershipExpires: {
         [Language.english]: "Membership expires",
         [Language.swedish]: "Medlemskapet går ut",
+    },
+    subscription: {
+        [Language.english]: "Subscription",
+        [Language.swedish]: "Prenumeration",
+    },
+    automaticallyExtendedOn: {
+        [Language.english]: "Your membership will be automatically extended on the date: ",
+        [Language.swedish]: "Ditt medlemskap kommer att förlängas automatiskt på datumet: ",
     },
     role: {
         [Language.english]: "Role",

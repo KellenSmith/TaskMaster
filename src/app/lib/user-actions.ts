@@ -1,10 +1,11 @@
 "use server";
 
-import { Prisma, UserRole, UserStatus } from "@prisma/client";
+import { Language, Prisma, UserRole, UserStatus } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { revalidateTag } from "next/cache";
+import { cookies } from "next/headers";
 import {
     LoginSchema,
     MembershipApplicationSchema,
@@ -130,6 +131,11 @@ export const getAllUsers = async (
             skill_badges: true,
         },
     });
+};
+
+export const getUserLanguage = async () => {
+    const cookieStore = await cookies();
+    return cookieStore.get(GlobalConstants.LANGUAGE)?.value || Language.english;
 };
 
 export const updateUser = async (userId: string, formData: FormData): Promise<void> => {

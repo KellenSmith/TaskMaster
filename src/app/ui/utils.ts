@@ -2,6 +2,7 @@ import { Language, Prisma } from "@prisma/client";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import Error from "next/error";
+import { SubscriptionToken } from "../lib/payment-utils";
 
 // Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
 dayjs.extend(utc);
@@ -53,6 +54,16 @@ export const userHasSkillBadge = (
     skillBadgeId: string,
 ): boolean => {
     return user.skill_badges.some((userBadge) => userBadge.skill_badge_id === skillBadgeId);
+};
+
+export const userHasActiveMembershipSubscription = (
+    user: Prisma.UserGetPayload<{
+        select: { id: true; nickname: true; user_membership: true };
+    }>,
+) => {
+    const subscriptionToken = user.user_membership?.subscription_token as SubscriptionToken;
+    const expiryDate = dayjs.utc(subscriptionToken?.expiryDate, "MM/YYYY");
+    return expiryDate.isValid() && expiryDate.isAfter(dayjs.utc());
 };
 
 export const isUserQualifiedForTask = (

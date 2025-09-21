@@ -97,6 +97,10 @@ const LanguageTranslations = {
         [Language.english]: "privacy policy",
         [Language.swedish]: "integritetspolicyn",
     },
+    subscribe: {
+        [Language.english]: "Subscribe to membership",
+        [Language.swedish]: "Prenumerera på medlemskap",
+    },
 };
 
 export default LanguageTranslations;

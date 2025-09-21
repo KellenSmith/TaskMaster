@@ -21,6 +21,13 @@ type PaymentOperation = {
     contentType: string;
 };
 
+export type SubscriptionToken = {
+    type: "unscheduled";
+    token: string;
+    name: string;
+    expiryDate: string; // format: MM/YYYY
+};
+
 export type PaymentOrderResponse = {
     paymentOrder: {
         id: string;
@@ -45,7 +52,11 @@ export type PaymentOrderResponse = {
         history: { id: string };
         failed: { id: string };
         aborted: { id: string };
-        paid: { id: string; transactionType: TransactionTypeType };
+        paid: {
+            id: string;
+            transactionType: TransactionTypeType;
+            tokens: SubscriptionToken[] | undefined;
+        };
         cancelled: { id: string };
         reversed: { id: string };
         financialTransactions: { id: string };

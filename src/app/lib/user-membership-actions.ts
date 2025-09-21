@@ -3,11 +3,15 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma } from "../../../prisma/prisma-client";
-import { Prisma } from "@prisma/client";
+import { Language, Prisma } from "@prisma/client";
 import { createOrder } from "./order-actions";
-import { isMembershipExpired } from "./utils";
+import { isMembershipExpired, isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
 import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
+import { PaymentOrderResponse, SubscriptionToken } from "./payment-utils";
+import { getLoggedInUser, getUserLanguage } from "./user-actions";
+import { headers } from "next/headers";
+import { makeSwedbankApiRequest } from "./payment-actions";
 
 export const addUserMembership = async (userId: string, formData: FormData) => {
     const validatedData = AddMembershipSchema.parse(Object.fromEntries(formData.entries()));
@@ -31,6 +35,7 @@ export const renewUserMembership = async (
     tx: Prisma.TransactionClient,
     userId: string,
     membershipId: string,
+    subscriptionToken?: SubscriptionToken,
 ): Promise<void> => {
     const membership = await tx.membership.findUniqueOrThrow({
         where: { product_id: membershipId },
@@ -56,13 +61,76 @@ export const renewUserMembership = async (
         update: {
             membership_id: membershipId,
             expires_at: newExpiryDate,
+            subscription_token: subscriptionToken,
         },
         // If no membership exists, create a new one
         create: {
             user_id: userId,
             membership_id: membershipId,
             expires_at: newExpiryDate,
+            subscription_token: subscriptionToken,
         },
+    });
+    revalidateTag(GlobalConstants.USER);
+};
+
+export const startMembershipSubscription = async (userId: string): Promise<void> => {
+    const validatedUserId = UuidSchema.parse(userId);
+
+    const loggedInUser = await getLoggedInUser();
+    // Only allow users to start their own subscription, unless they are an admin
+    if (loggedInUser?.id !== validatedUserId && !isUserAdmin(loggedInUser)) {
+        throw new Error("You do not have permission to start this subscription.");
+    }
+
+    // Only allow starting a subscription if the user has a membership.
+    // Otherwise subscription is started when paying for the membership.
+    const userMembership = await prisma.userMembership.findUniqueOrThrow({
+        where: { user_id: validatedUserId },
+        include: { membership: { include: { product: true } } },
+    });
+    const userLanguage = await getUserLanguage();
+
+    const verifySubscriptionRequestPayload = {
+        paymentorder: {
+            operation: "Verify",
+            currency: "SEK",
+            description: "Subscription for membership",
+            userAgent: (await headers()).get("user-agent") || "Unknown",
+            language: userLanguage === Language.swedish ? "sv-SE" : "en-US",
+            productName: userMembership.membership.product.name,
+            generateUnscheduledToken: "true",
+        },
+    };
+
+    const verificationResponse = await makeSwedbankApiRequest(
+        `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
+        verifySubscriptionRequestPayload,
+    );
+    if (!verificationResponse.ok)
+        throw new Error(`Swedbank Pay request failed: ${await verificationResponse.text()}`);
+
+    const responseData: PaymentOrderResponse = await verificationResponse.json();
+
+    const redirectOperation = responseData.operations.find((op) => op.rel === "redirect-checkout");
+
+    if (!redirectOperation || !redirectOperation.href) {
+        throw new Error("Redirect URL not found in payment response");
+    }
+};
+
+export const cancelMembershipSubscription = async (userId: string) => {
+    const validatedUserId = UuidSchema.parse(userId);
+
+    const loggedInUser = await getLoggedInUser();
+    // Only allow users to cancel their own subscription, unless they are an admin
+    if (loggedInUser?.id !== validatedUserId && !isUserAdmin(loggedInUser)) {
+        throw new Error("You do not have permission to cancel this subscription.");
+    }
+
+    await prisma.userMembership.update({
+        where: { user_id: validatedUserId },
+        data: { subscription_token: null },
     });
     revalidateTag(GlobalConstants.USER);
 };

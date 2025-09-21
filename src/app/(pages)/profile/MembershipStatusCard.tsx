@@ -1,16 +1,25 @@
 "use client";
 import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
 import { isMembershipExpired } from "../../lib/utils";
-import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
+import {
+    AdminPanelSettings,
+    CheckCircle,
+    Person,
+    Schedule,
+    Subscriptions,
+    Warning,
+} from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
-import { formatDate } from "../../ui/utils";
+import { formatDate, userHasActiveMembershipSubscription } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserStatus } from "@prisma/client";
+import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 
 const MembershipStatusCard = () => {
     const theme = useTheme();
     const { user, language } = useUserContext();
+    const { organizationSettings } = useOrganizationSettingsContext();
     return (
         <Card elevation={3}>
             <CardContent>
@@ -119,6 +128,27 @@ const MembershipStatusCard = () => {
                                     </Typography>
                                 </Stack>
                             </Stack>
+
+                            {userHasActiveMembershipSubscription(user) && (
+                                <Stack direction="row" alignItems="center" spacing={2}>
+                                    <Subscriptions color="primary" />
+                                    <Stack>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {LanguageTranslations.subscription[language]}
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {LanguageTranslations.automaticallyExtendedOn[language]}
+                                            {dayjs
+                                                .utc(user.user_membership.expires_at)
+                                                .subtract(
+                                                    organizationSettings.remind_membership_expires_in_days,
+                                                    "day",
+                                                )
+                                                .format("YYYY/MM/DD")}
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+                            )}
 
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <AdminPanelSettings color="primary" />

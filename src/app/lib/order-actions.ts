@@ -9,6 +9,7 @@ import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
 import { serverRedirect } from "./utils";
 import { UuidSchema } from "./zod-schemas";
+import { SubscriptionToken } from "./payment-utils";
 
 export const getOrderById = async (
     userId: string,
@@ -99,7 +100,11 @@ export const createOrder = async (
     serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
 };
 
-const processOrderItems = async (tx: Prisma.TransactionClient, orderId: string): Promise<void> => {
+const processOrderItems = async (
+    tx: Prisma.TransactionClient,
+    orderId: string,
+    subscriptionToken?: SubscriptionToken,
+): Promise<void> => {
     const order = await tx.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
@@ -122,7 +127,7 @@ const processOrderItems = async (tx: Prisma.TransactionClient, orderId: string):
 
     // Process each order item
     for (const orderItem of order.order_items) {
-        await processOrderedProduct(tx, order.user_id, orderItem);
+        await processOrderedProduct(tx, order.user_id, orderItem, subscriptionToken);
     }
 };
 
@@ -130,6 +135,7 @@ export const progressOrder = async (
     orderId: string,
     newStatus: OrderStatus,
     needsCapture = false,
+    subscriptionToken?: SubscriptionToken,
 ): Promise<void> => {
     // Always allow transitioning to cancelled or error
     if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(newStatus)) {
@@ -159,7 +165,7 @@ export const progressOrder = async (
         // This transaction may perform multiple updates and external work; increase timeout locally.
         await prisma.$transaction(
             async (tx: Prisma.TransactionClient) => {
-                await processOrderItems(tx, orderId);
+                await processOrderItems(tx, orderId, subscriptionToken);
                 order = await prisma.order.update({
                     where: { id: orderId },
                     data: { status: OrderStatus.shipped },

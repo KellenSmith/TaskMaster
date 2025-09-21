@@ -2,6 +2,7 @@
 
 import { createContext, FC, ReactNode, useContext, useState, useEffect, use } from "react";
 import { Language, Prisma } from "@prisma/client";
+import GlobalConstants from "../GlobalConstants";
 
 interface UserContextValue {
     user: Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }> | null;
@@ -19,7 +20,7 @@ export const useUserContext = (): UserContextValue => {
     return context;
 };
 
-const languageCookieName = "language";
+const languageCookieName = GlobalConstants.LANGUAGE;
 const readLanguageFromCookie = (): Language => {
     try {
         const raw = document.cookie.split("; ").find((c) => c.startsWith(`${languageCookieName}=`));

@@ -252,11 +252,12 @@ model Membership {
 }
 
 model UserMembership {
-  user_id       String     @unique
-  membership_id String
-  expires_at    DateTime
-  membership    Membership @relation(fields: [membership_id], references: [product_id], onDelete: Cascade)
-  user          User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id            String     @unique
+  membership_id      String
+  expires_at         DateTime
+  membership         Membership @relation(fields: [membership_id], references: [product_id], onDelete: Cascade)
+  user               User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  subscription_token Json?
 
   @@id([user_id, membership_id])
   @@map("user_memberships")

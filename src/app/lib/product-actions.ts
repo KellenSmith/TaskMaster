@@ -18,6 +18,7 @@ import { sendMail } from "./mail-service/mail-service";
 import { getAbsoluteUrl } from "./utils";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
 import { createElement } from "react";
+import { SubscriptionToken } from "./payment-utils";
 
 export const getAllNonTicketProducts = async (): Promise<
     Prisma.ProductGetPayload<{ include: { membership: true } }>[]
@@ -131,12 +132,18 @@ export const processOrderedProduct = async (
     orderItem: Prisma.OrderItemGetPayload<{
         include: { product: { include: { membership: true; ticket: true } } };
     }>,
+    subscriptionToken?: SubscriptionToken,
 ) => {
     if (!orderItem.product.unlimited_stock && orderItem.quantity > orderItem.product.stock)
         throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {
-            await renewUserMembership(tx, userId, orderItem.product.membership.product_id);
+            await renewUserMembership(
+                tx,
+                userId,
+                orderItem.product.membership.product_id,
+                subscriptionToken,
+            );
         } else if (orderItem.product.ticket) {
             await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);
         } else {

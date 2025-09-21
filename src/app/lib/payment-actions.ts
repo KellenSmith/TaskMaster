@@ -2,16 +2,23 @@
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById, progressOrder } from "./order-actions";
-import { OrderStatus } from "@prisma/client";
+import { Language, OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
-import { getNewOrderStatus, PaymentOrderResponse, TransactionType } from "./payment-utils";
+import {
+    getNewOrderStatus,
+    PaymentOrderResponse,
+    SubscriptionToken,
+    TransactionType,
+} from "./payment-utils";
 import { redirect } from "next/navigation";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser, getUserLanguage } from "./user-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getOrganizationSettings } from "./organization-settings-actions";
+import z from "zod";
+import dayjs from "dayjs";
 
-const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
+export const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
     return await fetch(url, {
         method: body ? "POST" : "GET",
         headers: {
@@ -32,7 +39,7 @@ const generatePayeeReference = (orderId: string, prefix: string = "PAY"): string
     return baseRef.substring(0, 30); // Ensure max length compliance
 };
 
-const getSwedbankPaymentRequestPayload = async (orderId: string) => {
+const getSwedbankPaymentRequestPurchasePayload = async (orderId: string, subscribe: boolean) => {
     // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
     let payeeRef = generatePayeeReference(orderId, "PAY");
 
@@ -50,13 +57,25 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
         payeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
     }
 
+    // Validate that the order contains subscribeable products
+    // only memberships are subscribeable currently
+    if (subscribe) {
+        const loggedInUser = await getLoggedInUser();
+        const order = await getOrderById(loggedInUser.id, orderId);
+        const hasSubscribeableProducts = order.order_items.some((item) => item.product.membership);
+        if (!hasSubscribeableProducts) {
+            throw new Error("Order does not contain subscribeable products");
+        }
+    }
+
     // Update order with payeeRef
     const order = await prisma.order.update({
         where: { id: orderId },
         data: { payee_ref: payeeRef },
     });
-    const organizationSettings = await getOrganizationSettings();
 
+    const organizationSettings = await getOrganizationSettings();
+    const userLanguage = await getUserLanguage();
     return {
         paymentorder: {
             operation: "Purchase",
@@ -64,8 +83,9 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
             amount: order.total_amount,
             vatAmount: 0,
             description: `Purchase`,
+            generateUnscheduledToken: subscribe,
             userAgent: (await headers()).get("user-agent") || "Unknown",
-            language: "en-US",
+            language: userLanguage === Language.swedish ? "sv-SE" : "en-US",
             urls: {
                 hostUrls: [getAbsoluteUrl([GlobalConstants.HOME])],
                 completeUrl: getAbsoluteUrl([GlobalConstants.ORDER], {
@@ -87,47 +107,80 @@ const getSwedbankPaymentRequestPayload = async (orderId: string) => {
                 payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
                 orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
+            // TODO: Include order items in the payment request for better tracking
         },
     };
 };
 
-export const redirectToSwedbankPayment = async (orderId: string): Promise<void> => {
+export const redirectToSwedbankPayment = async (
+    orderId: string,
+    subscribeToMembership: boolean,
+): Promise<void> => {
     const validatedOrderId = UuidSchema.parse(orderId);
 
     const order = await prisma.order.findUniqueOrThrow({ where: { id: validatedOrderId } });
     if (order?.status !== OrderStatus.pending) {
         throw new Error("Order is not in a pending state");
     }
-    if (order.total_amount < 1) {
-        await progressOrder(order.id, OrderStatus.paid);
-    } else {
-        const requestBody = await getSwedbankPaymentRequestPayload(validatedOrderId);
-        if (!requestBody) throw new Error("Failed to create payment request");
 
-        const response = await makeSwedbankApiRequest(
-            `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
-            requestBody,
-        );
-        if (!response.ok) throw new Error(`Swedbank Pay request failed: ${await response.text()}`);
-
-        const responseData: PaymentOrderResponse = await response.json();
-        const redirectOperation = responseData.operations.find(
-            (op) => op.rel === "redirect-checkout",
-        );
-
-        if (!redirectOperation || !redirectOperation.href) {
-            throw new Error("Redirect URL not found in payment response");
-        }
-
-        // Save payment order ID to the order to check status later
-        await prisma.order.update({
-            where: { id: orderId },
-            data: {
-                payment_request_id: responseData.paymentOrder.id,
+    const validatedSubscribeToMembership = z.boolean().parse(subscribeToMembership);
+    // TODO: Separate payments of subscriptions so they're not tied to each other.
+    // Only necessary if we implement a cart with multiple memberships
+    if (validatedSubscribeToMembership) {
+        const subscribeableOrderItems = await prisma.orderItem.findMany({
+            where: {
+                order_id: validatedOrderId,
+                product: {
+                    membership: { isNot: null },
+                },
             },
         });
-        redirect(redirectOperation.href);
+        if (subscribeableOrderItems.length === 0) {
+            throw new Error("No valid membership products found for subscription");
+        }
     }
+    if (order.total_amount < 1) {
+        // Free order - no payment needed
+        // Directly progress to completed
+        const subscriptionToken = validatedSubscribeToMembership
+            ? {
+                  type: "unscheduled" as const,
+                  token: "free-subscription-" + order.id,
+                  name: "Free subscription",
+                  expiryDate: dayjs().add(10, "year").format("MM/YYYY"),
+              }
+            : undefined;
+
+        await progressOrder(order.id, OrderStatus.paid, false, subscriptionToken);
+        return;
+    }
+    const requestBody = await getSwedbankPaymentRequestPurchasePayload(
+        validatedOrderId,
+        validatedSubscribeToMembership,
+    );
+    if (!requestBody) throw new Error("Failed to create payment request");
+
+    const response = await makeSwedbankApiRequest(
+        `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
+        requestBody,
+    );
+    if (!response.ok) throw new Error(`Swedbank Pay request failed: ${await response.text()}`);
+
+    const responseData: PaymentOrderResponse = await response.json();
+    const redirectOperation = responseData.operations.find((op) => op.rel === "redirect-checkout");
+
+    if (!redirectOperation || !redirectOperation.href) {
+        throw new Error("Redirect URL not found in payment response");
+    }
+
+    // Save payment order ID to the order to check status later
+    await prisma.order.update({
+        where: { id: validatedOrderId },
+        data: {
+            payment_request_id: responseData.paymentOrder.id,
+        },
+    });
+    redirect(redirectOperation.href);
 };
 
 export const capturePaymentFunds = async (orderId: string) => {
@@ -209,8 +262,10 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
+        const subscriptionToken: SubscriptionToken | undefined =
+            paymentStatusData.paymentOrder.paid.tokens?.[0];
         const needsCapture =
             paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
-        await progressOrder(orderId, newOrderStatus, needsCapture);
+        await progressOrder(orderId, newOrderStatus, needsCapture, subscriptionToken);
     }
 };
