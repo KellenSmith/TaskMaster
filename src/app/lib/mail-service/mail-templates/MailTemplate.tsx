@@ -1,8 +1,9 @@
 import { FC, ReactNode } from "react";
-import { Html, Head, Body, Container, Heading, Button } from "@react-email/components";
+import { Html, Head, Body, Container, Heading, Button, Img } from "@react-email/components";
 import mailTheme from "../mail-theme";
 import { getAbsoluteUrl } from "../../utils";
 import GlobalConstants from "../../../GlobalConstants";
+import { getOrganizationSettings } from "../../organization-settings-actions";
 
 interface MailTemplateProps {
     children?: ReactNode;
@@ -14,6 +15,7 @@ const MailTemplate: FC<MailTemplateProps> = async ({ children, html }) => {
         if (!html) return null;
         return <div dangerouslySetInnerHTML={{ __html: html }} />;
     };
+    const organizationSettings = await getOrganizationSettings();
 
     return (
         <Html>
@@ -29,13 +31,22 @@ const MailTemplate: FC<MailTemplateProps> = async ({ children, html }) => {
                 }}
             >
                 <Container>
-                    <Heading
-                        style={{
-                            ...mailTheme.typography.h3,
-                        }}
-                    >
-                        {process.env.NEXT_PUBLIC_ORG_NAME}
-                    </Heading>
+                    {organizationSettings?.logo_url ? (
+                        <Img
+                            alt={process.env.NEXT_PUBLIC_ORG_NAME}
+                            height={250}
+                            className="mx-auto"
+                            src={organizationSettings.logo_url}
+                        />
+                    ) : (
+                        <Heading
+                            style={{
+                                ...mailTheme.typography.h3,
+                            }}
+                        >
+                            {process.env.NEXT_PUBLIC_ORG_NAME}
+                        </Heading>
+                    )}
                     <Container style={{ color: mailTheme.palette.text.primary, padding: "16px" }}>
                         {children}
                         {renderHtml()}

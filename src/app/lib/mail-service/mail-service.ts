@@ -283,7 +283,7 @@ export const sendOrderConfirmation = async (orderId: string): Promise<void> => {
     const mailContent = createElement(OrderConfirmationTemplate, { order });
     const result = await sendMail(
         [order.user.email],
-        `Order Confirmation - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+        `Receipt - ${process.env.NEXT_PUBLIC_ORG_NAME}`,
         mailContent,
     );
 

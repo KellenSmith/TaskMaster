@@ -41,6 +41,7 @@ const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({ order 
                 Total: {formatPrice(order.total_amount)} SEK
             </Text>
             <Text style={{ marginTop: "20px" }}>Thank you for your purchase!</Text>
+            <Text>{`If you have any questions or concerns, don't hesitate to contact us at ${process.env.EMAIL}.`}</Text>
         </MailTemplate>
     );
 };
