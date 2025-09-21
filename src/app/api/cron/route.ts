@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
     purgeStaleMembershipApplications,
-    remindAboutExpiringMembership,
+    expiringMembershipMaintenance,
     processNewsletterBacklog,
 } from "./cron";
 
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     await Promise.all([
         purgeStaleMembershipApplications(),
-        remindAboutExpiringMembership(),
+        expiringMembershipMaintenance(),
         processNewsletterBacklog(),
     ]);
 

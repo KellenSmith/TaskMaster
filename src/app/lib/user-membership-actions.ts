@@ -4,7 +4,7 @@ import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma } from "../../../prisma/prisma-client";
 import { Language, Prisma } from "@prisma/client";
-import { createOrder } from "./order-actions";
+import { createAndRedirectToOrder } from "./order-actions";
 import { isMembershipExpired, isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
 import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
@@ -178,5 +178,5 @@ export const createMembershipOrder = async (userId: string): Promise<void> => {
         { product_id: membershipProduct.id, price: membershipProduct.price, quantity: 1 },
     ];
 
-    await createOrder(validatedUserId, orderItems);
+    await createAndRedirectToOrder(validatedUserId, orderItems);
 };

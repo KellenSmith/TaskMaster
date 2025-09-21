@@ -3,7 +3,7 @@ import { use, useState } from "react";
 import { Stack, Typography, useTheme, Button, Dialog, useMediaQuery } from "@mui/material";
 import { Prisma, TicketType } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
-import { createOrder } from "../../lib/order-actions";
+import { createAndRedirectToOrder } from "../../lib/order-actions";
 import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { isUserVolunteer } from "./event-utils";
@@ -53,7 +53,7 @@ const TicketShop = ({
             quantity: 1,
         };
         try {
-            await createOrder(user.id, [ticketOrderItems]);
+            await createAndRedirectToOrder(user.id, [ticketOrderItems]);
         } catch (error) {
             allowRedirectException(error);
             addNotification(LanguageTranslations.failedTicketOrder[language], "error");

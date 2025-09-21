@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { Prisma } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
-import { createOrder } from "../../lib/order-actions";
+import { createAndRedirectToOrder } from "../../lib/order-actions";
 import {
     createMembershipProduct,
     deleteProduct,
@@ -101,7 +101,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
             quantity: 1,
         };
         try {
-            await createOrder(user.id, [productOrderItems]);
+            await createAndRedirectToOrder(user.id, [productOrderItems]);
         } catch (error) {
             allowRedirectException(error);
             addNotification("Failed to create order", "error");

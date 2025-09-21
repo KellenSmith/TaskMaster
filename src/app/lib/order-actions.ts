@@ -60,7 +60,7 @@ export const getAllOrders = async (): Promise<
 export const createOrder = async (
     userId: string,
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
-): Promise<void> => {
+): Promise<Prisma.OrderGetPayload<true>> => {
     // Check that the stock of each product in the orderItems is sufficient
     for (const orderItem of orderItems) {
         const product = await prisma.product.findUniqueOrThrow({
@@ -97,6 +97,14 @@ export const createOrder = async (
             },
         });
     });
+    return order;
+};
+
+export const createAndRedirectToOrder = async (
+    userId: string,
+    orderItems: Prisma.OrderItemCreateManyOrderInput[],
+): Promise<void> => {
+    const order = await createOrder(userId, orderItems);
     serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
 };
 

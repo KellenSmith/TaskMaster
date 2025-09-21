@@ -49,7 +49,7 @@ export const getTermsOfPurchaseUrl = (
 
 export const userHasSkillBadge = (
     user: Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; skill_badges: true };
+        select: { skill_badges: true };
     }>,
     skillBadgeId: string,
 ): boolean => {
@@ -58,7 +58,7 @@ export const userHasSkillBadge = (
 
 export const userHasActiveMembershipSubscription = (
     user: Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; user_membership: true };
+        select: { user_membership: true };
     }>,
 ) => {
     const subscriptionToken = user.user_membership?.subscription_token as SubscriptionToken;
@@ -68,7 +68,7 @@ export const userHasActiveMembershipSubscription = (
 
 export const isUserQualifiedForTask = (
     user: Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; skill_badges: true };
+        select: { skill_badges: true };
     }>,
     requiredTaskSkillBadges: Prisma.TaskSkillBadgeGetPayload<true>[],
 ) =>
