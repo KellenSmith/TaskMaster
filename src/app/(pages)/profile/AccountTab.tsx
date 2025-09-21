@@ -62,7 +62,7 @@ const AccountTab = () => {
             try {
                 await cancelMembershipSubscription(user.id);
                 addNotification(LanguageTranslations.cancelledSubscription[language], "success");
-            } catch (error) {
+            } catch {
                 addNotification(LanguageTranslations.failedCancelSubscription[language], "error");
             }
         });
