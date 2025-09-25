@@ -25,11 +25,13 @@ import {
     Warning as WarningIcon,
 } from "@mui/icons-material";
 import { FC, use, useState } from "react";
+import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { addUserMembership } from "../../lib/user-membership-actions";
+import { openResourceInNewTab } from "../../ui/utils";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
@@ -80,6 +82,47 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         } catch {
             throw new Error("Failed deleting user");
         }
+    };
+
+    // PDF styles
+    const styles = StyleSheet.create({
+        page: { padding: 24 },
+        header: { fontSize: 18, marginBottom: 12, fontWeight: "bold" },
+        row: { flexDirection: "row", borderBottom: "1px solid #eee", paddingVertical: 4 },
+        cell: { flex: 1, fontSize: 12 },
+        tableHeader: { flexDirection: "row", borderBottom: "2px solid #333", marginBottom: 6 },
+        headerCell: { flex: 1, fontWeight: "bold", fontSize: 13 },
+    });
+
+    // PDF Document component
+    const MembersListPDF = ({ members }) => (
+        <Document>
+            <Page size="A4" style={styles.page}>
+                <Text style={styles.header}>Members List</Text>
+                <View style={styles.tableHeader}>
+                    <Text style={styles.headerCell}>Email</Text>
+                    <Text style={styles.headerCell}>Nickname</Text>
+                </View>
+                {members.map((member, idx) => (
+                    <View style={styles.row} key={idx}>
+                        <Text style={styles.cell}>{member.email}</Text>
+                        <Text style={styles.cell}>{member.nickname || ""}</Text>
+                    </View>
+                ))}
+            </Page>
+        </Document>
+    );
+
+    const printMembersList = async () => {
+        // Await the membersPromise to get the data
+        const members = await membersPromise;
+        // Only keep email and nickname
+        const simpleMembers = members.map((m) => ({ email: m.email, nickname: m.nickname }));
+        // Generate PDF blob
+        const doc = <MembersListPDF members={simpleMembers} />;
+        const asPdf = await pdf(doc).toBlob();
+        const url = URL.createObjectURL(asPdf);
+        openResourceInNewTab(url);
     };
 
     const rowActions: RowActionProps[] = [
@@ -283,6 +326,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     ),
                 }}
             />
+            <Button onClick={printMembersList}>print members list</Button>
             <Dialog
                 open={!!addMembershipDialogOpen}
                 onClose={() => setAddMembershipDialogOpen(null)}
