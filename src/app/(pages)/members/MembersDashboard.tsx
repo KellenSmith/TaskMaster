@@ -49,6 +49,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { user, language } = useUserContext();
+    const members = use(membersPromise);
     const skillBadges = use(skillBadgesPromise);
     const [addMembershipDialogOpen, setAddMembershipDialogOpen] =
         useState<ImplementedDatagridEntities | null>(null);
@@ -114,10 +115,10 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     );
 
     const printMembersList = async () => {
-        // Await the membersPromise to get the data
-        const members = await membersPromise;
         // Only keep email and nickname
-        const simpleMembers = members.map((m) => ({ email: m.email, nickname: m.nickname }));
+        const simpleMembers = members
+            .map((m) => ({ email: m.email, nickname: m.nickname }))
+            .sort((a, b) => a.email.localeCompare(b.email));
         // Generate PDF blob
         const doc = <MembersListPDF members={simpleMembers} />;
         const asPdf = await pdf(doc).toBlob();
