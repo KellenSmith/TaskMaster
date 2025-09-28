@@ -96,7 +96,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     });
 
     // PDF Document component
-    const MembersListPDF = ({ members }) => (
+    const MembersListPDF = ({ filteredMembers }: { filteredMembers: Prisma.UserGetPayload<true>[] }) => (
         <Document>
             <Page size="A4" style={styles.page}>
                 <Text style={styles.header}>Members List</Text>
@@ -104,10 +104,11 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     <Text style={styles.headerCell}>Email</Text>
                     <Text style={styles.headerCell}>Nickname</Text>
                 </View>
-                {members.map((member, idx) => (
-                    <View style={styles.row} key={idx}>
+                {filteredMembers.map((member) => (
+                    <View style={styles.row} key={member.nickname}>
+                        {/* Only print email and nickname - don't include sensitive info*/}
+                        <Text style={styles.cell}>{member.nickname}</Text>
                         <Text style={styles.cell}>{member.email}</Text>
-                        <Text style={styles.cell}>{member.nickname || ""}</Text>
                     </View>
                 ))}
             </Page>
@@ -115,12 +116,13 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     );
 
     const printMembersList = async () => {
-        // Only keep email and nickname
-        const simpleMembers = members
-            .map((m) => ({ email: m.email, nickname: m.nickname }))
-            .sort((a, b) => a.email.localeCompare(b.email));
+        
+        const filteredMembers = members
+            // Exclude pending members from the list
+            .filter((m) => m.status !== UserStatus.pending)
+            .sort((a, b) => a.nickname.localeCompare(b.nickname));
         // Generate PDF blob
-        const doc = <MembersListPDF members={simpleMembers} />;
+        const doc = <MembersListPDF filteredMembers={filteredMembers} />;
         const asPdf = await pdf(doc).toBlob();
         const url = URL.createObjectURL(asPdf);
         openResourceInNewTab(url);

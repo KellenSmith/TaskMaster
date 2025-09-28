@@ -11,7 +11,7 @@ TaskMaster helps volunteer-led organizations plan events, coordinate people, and
     - Create and update events, define tasks/shifts, limit by skill badges, manage participants/reserves
     - Communicate with assignees and reviewers; keep events on track
 - Members/volunteers
-    - Apply/join, manage profile and preferences, view calendar, claim or reserve shifts, receive updates
+    - Apply/join, manage profile and preferences, view calendar, reserve shifts, receive updates
 
 ## Problems it solves
 
