@@ -70,38 +70,43 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
     const earliestExpirationDate = dayjs.utc().add(reminderDays, "d").hour(0).minute(0).second(0);
     const latestExpirationDate = earliestExpirationDate.add(1, "d");
 
-    try {
-        const expiringUsers = await prisma.user.findMany({
-            where: {
-                OR: [
-                    { email: "gustaf.lawergren@swedbankpay.se" },
-                    {
-                        user_membership: {
-                            expires_at: {
-                                gte: earliestExpirationDate.toISOString(),
-                                lt: latestExpirationDate.toISOString(),
-                            },
+    const expiringUsers = await prisma.user.findMany({
+        where: {
+            OR: [
+                { email: "gustaf.lawergren@swedbankpay.se" },
+                {
+                    user_membership: {
+                        expires_at: {
+                            gte: earliestExpirationDate.toISOString(),
+                            lt: latestExpirationDate.toISOString(),
                         },
                     },
-                ],
-            },
-            select: {
-                id: true,
-                email: true,
-                user_membership: { include: { membership: { include: { product: true } } } },
-            },
-        });
+                },
+            ],
+        },
+        select: {
+            id: true,
+            email: true,
+            user_membership: { include: { membership: { include: { product: true } } } },
+        },
+    });
 
-        const usersWithSubscriptions = expiringUsers.filter((user) =>
-            userHasActiveMembershipSubscription(user),
-        );
+    const usersWithSubscriptions = expiringUsers.filter((user) =>
+        userHasActiveMembershipSubscription(user),
+    );
+    try {
         await Promise.all(
             usersWithSubscriptions.map((user) => chargeMembershipWithActiveSubscriptions(user)),
-        ).then(() => console.log(`Auto-renewed ${usersWithSubscriptions.length} memberships`));
+        ).then(() => console.log(`Auto-renewed ${usersWithSubscriptions.length} memberships`))
+    } catch (error) {
+        console.error(`Error when auto-renewing memberships: ${error.message}`);
+    }
 
-        const usersWithoutSubscriptions = expiringUsers.filter(
-            (user) => !userHasActiveMembershipSubscription(user),
-        );
+
+    const usersWithoutSubscriptions = expiringUsers.filter(
+        (user) => !userHasActiveMembershipSubscription(user),
+    );
+    try {
         // Send email reminders to users without active subscriptions
         if (usersWithoutSubscriptions.length > 0) {
             await sendMail(
@@ -110,8 +115,7 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
                 createElement(MembershipExpiresReminderTemplate),
             );
         }
-
-        console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
+        console.log(`Reminded about ${usersWithoutSubscriptions.length} expiring membership(s)`);
     } catch (error) {
         console.error(`Error when reminding about expiring memberships: ${error.message}`);
     }

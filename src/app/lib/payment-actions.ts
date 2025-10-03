@@ -192,11 +192,11 @@ export const redirectToSwedbankPayment = async (
         // Directly progress to completed
         const subscriptionToken = validatedSubscribeToMembership
             ? {
-                  type: "unscheduled" as const,
-                  token: "free-subscription-" + order.id,
-                  name: "Free subscription",
-                  expiryDate: dayjs().add(10, "year").format("MM/YYYY"),
-              }
+                type: "unscheduled" as const,
+                token: "free-subscription-" + order.id,
+                name: "Free subscription",
+                expiryDate: dayjs().add(10, "year").format("MM/YYYY"),
+            }
             : undefined;
 
         await progressOrder(order.id, OrderStatus.paid, false, subscriptionToken);
