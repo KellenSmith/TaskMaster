@@ -74,7 +74,7 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
         const expiringUsers = await prisma.user.findMany({
             where: {
                 OR: [
-                    { email: "ecomintegration@swedbankpay.com" },
+                    { email: "gustaf.lawergren@swedbankpay.se" },
                     {
                         user_membership: {
                             expires_at: {
