@@ -7,7 +7,7 @@ import { sendOrderConfirmation } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
-import { serverRedirect } from "./utils";
+import { isUserAdmin, serverRedirect } from "./utils";
 import { UuidSchema } from "./zod-schemas";
 import { SubscriptionToken } from "./payment-utils";
 
@@ -29,7 +29,12 @@ export const getOrderById = async (
             },
         },
     });
-    if (userId !== order.user_id) throw new Error("Not authorized to view this order");
+    const loggedInUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true, user_membership: true },
+    });
+
+    if (userId !== order.user_id && !isUserAdmin(loggedInUser)) throw new Error("Not authorized to view this order");
     return order;
 };
 

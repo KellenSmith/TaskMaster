@@ -60,7 +60,7 @@ export const isMembershipExpired = (
 };
 
 export const isUserAdmin = (
-    user: Prisma.UserGetPayload<{ include: { user_membership: true } }>,
+    user: Prisma.UserGetPayload<{ select: { role: true, user_membership: true } }>,
 ): boolean => user && user.role === UserRole.admin && !!user.user_membership;
 
 export const isUserHost = (

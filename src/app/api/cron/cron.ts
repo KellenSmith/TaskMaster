@@ -86,6 +86,7 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
                 ],
             },
             select: {
+                id: true,
                 email: true,
                 user_membership: { include: { membership: { include: { product: true } } } },
             },

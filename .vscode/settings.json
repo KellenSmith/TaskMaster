@@ -13,7 +13,6 @@
     "github.copilot.advanced": {
         "secret_key": "github.copilot.advanced"
     },
-    "github.copilot-chat.localeOverride": "en",
     "editor.inlineSuggest.enabled": true,
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "on",
@@ -25,5 +24,10 @@
     "typescript.preferences.importModuleSpecifier": "relative",
     "emmet.includeLanguages": {
         "typescript": "typescriptreact"
-    }
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
 }
