@@ -2,7 +2,7 @@ import { prisma } from "../../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import { getOrganizationSettings } from "../../lib/organization-settings-actions";
-import { Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
 import { createElement } from "react";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
@@ -14,6 +14,8 @@ import {
 } from "../../lib/payment-actions";
 import { SubscriptionToken } from "../../lib/payment-utils";
 import { userHasActiveMembershipSubscription } from "../../lib/user-membership-actions";
+import { revalidateTag } from "next/cache";
+import GlobalConstants from "../../GlobalConstants";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -33,6 +35,7 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
                 },
             },
         });
+        revalidateTag(GlobalConstants.USER);
         console.log(`Purged ${deleteStaleResult.count} stale membership application(s)`);
     } catch (error) {
         console.error(`Error when purging stale memberships: ${error.message}`);
@@ -44,34 +47,53 @@ const chargeMembershipWithActiveSubscriptions = async (
         include: { user_membership: { include: { membership: { include: { product: true } } } } };
     }>,
 ): Promise<void> => {
-    const latestMembershipOrder = await prisma.order.findFirst({
-        where: {
-            user_id: user.id,
-            order_items: {
-                some: {
-                    product: {
-                        id: user.user_membership?.membership_id,
-                    },
-                },
+    try {
+        const userMembership = await prisma.userMembership.findUnique({
+            where: { user_id: user.id },
+            include: {
+                orders: {
+                    orderBy: { created_at: "desc" }
+                }
             },
-        },
-        orderBy: { created_at: "desc" },
-    });
-    const subscriptionToken = latestMembershipOrder?.subscription_token;
-    const membershipOrderItem = {
-        quantity: 1,
-        product_id: user.user_membership.membership.product_id,
-        price: user.user_membership.membership.product.price,
-    } as Prisma.OrderItemCreateManyOrderInput;
-    const membershipOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        return await createOrder(tx, user.id, [membershipOrderItem]);
-    });
-    const paymentRequestPayload = await getSwedbankPaymentRequestPurchasePayload(
-        membershipOrder.id,
-    );
-    paymentRequestPayload.paymentorder.unscheduledToken = subscriptionToken as SubscriptionToken;
-    const { paymentOrderId } = await createSwedbankPaymentRequest(paymentRequestPayload);
-    if (paymentOrderId) await checkPaymentStatus(user.id, membershipOrder.id, paymentOrderId);
+        });
+        if (userMembership?.orders.length === 0) throw new Error(`No previous orders found for user ${user.id}, email: ${user.email}`);
+        const subscriptionToken = userMembership?.orders[0]?.subscription_token as SubscriptionToken;
+        if (!subscriptionToken) {
+            throw new Error(`No subscription token found for user ${user.id}, email: ${user.email}`);
+        }
+        const membershipOrderItem = {
+            quantity: 1,
+            product_id: user.user_membership.membership.product_id,
+            price: user.user_membership.membership.product.price,
+        } as Prisma.OrderItemCreateManyOrderInput;
+        const membershipOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+            return await createOrder(tx, user.id, [membershipOrderItem]);
+        });
+        await prisma.order.update({
+            where: { id: membershipOrder.id },
+            data: { subscription_token: subscriptionToken },
+        });
+        const paymentRequestPayload = await getSwedbankPaymentRequestPurchasePayload(
+            membershipOrder.id,
+        );
+        paymentRequestPayload.paymentorder.operation = "UnscheduledPurchase";
+        paymentRequestPayload.paymentorder.unscheduledToken = (subscriptionToken as SubscriptionToken).token;
+        const { paymentOrderId } = await createSwedbankPaymentRequest(paymentRequestPayload);
+        if (paymentOrderId) await checkPaymentStatus(user.id, membershipOrder.id, paymentOrderId);
+        const updatedMembershipOrder = await prisma.order.findUnique({
+            where: { id: membershipOrder.id },
+        });
+        if (updatedMembershipOrder.status !== OrderStatus.completed) {
+            throw new Error(`Membership renewal order not completed for user ${user.id}, email: ${user.email}`);
+        }
+    } catch (error) {
+        console.error(`Error when auto-renewing membership for user ${user.id}: ${error.message}`);
+        await sendMail(
+            [user.email],
+            `Failed to renew your ${process.env.NEXT_PUBLIC_ORG_NAME || "Task Master"} membership`,
+            createElement(MembershipExpiresReminderTemplate),
+        );
+    }
 };
 
 export const expiringMembershipMaintenance = async (): Promise<void> => {
@@ -101,6 +123,7 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
                 ],
             },
             select: {
+                id: true,
                 email: true,
                 user_membership: { include: { membership: { include: { product: true } } } },
             },
@@ -112,6 +135,7 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
         await Promise.all(
             usersWithSubscriptions.map((user) => chargeMembershipWithActiveSubscriptions(user)),
         ).then(() => console.log(`Auto-renewed ${usersWithSubscriptions.length} memberships`));
+        revalidateTag(GlobalConstants.ORDER);
 
         const usersWithoutSubscriptions = expiringUsers.filter(
             (user) => !usersWithSubscriptions.map((u) => u.id).includes(user.id),
@@ -169,6 +193,7 @@ export const processNewsletterBacklog = async (): Promise<void> => {
             console.log(
                 `Cron job processed ${processed} newsletter recipients across ${attempts} batches in ${Date.now() - startTime}ms`,
             );
+            revalidateTag(GlobalConstants.SENDOUT);
         } else if (attempts === 0) {
             console.log(`No pending newsletter jobs found`);
         }

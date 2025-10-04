@@ -41,13 +41,13 @@ const generatePayeeReference = (orderId: string, prefix: string = "PAY"): string
 
 interface SwedbankPaymentRequestBody {
     paymentorder: {
-        operation: "Purchase";
+        operation: "Purchase" | "UnscheduledPurchase";
         currency: "SEK";
         amount: number;
         vatAmount: 0;
         description: string;
         generateUnscheduledToken?: boolean;
-        unscheduledToken?: SubscriptionToken;
+        unscheduledToken?: string;
         userAgent: string;
         language: string;
         urls: {
@@ -312,7 +312,7 @@ export const checkPaymentStatus = async (
             paymentStatusData.paymentOrder.paid.tokens?.[0];
         if (subscriptionToken) await prisma.order.update({
             where: { id: orderId },
-            data: { subscription_token: subscriptionToken.token },
+            data: { subscription_token: subscriptionToken },
         });
         const needsCapture =
             paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;

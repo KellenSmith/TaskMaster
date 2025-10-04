@@ -153,6 +153,17 @@ export const progressOrder = async (
         select: { status: true }
     });
 
+    // Don't allow progressing to a higher status than stated by newStatus
+    const statusHierarchy = Object.values(OrderStatus);
+    const currentStatusIndex = statusHierarchy.indexOf(order.status);
+    const newStatusIndex = statusHierarchy.indexOf(newStatus);
+    if (currentStatusIndex >= newStatusIndex) {
+        throw new Error(
+            `Cannot progress order to ${newStatus} from ${order.status}`,
+        );
+    }
+    // Progress through each status step until reaching newStatus
+
     // Pending to paid
     if (order.status === OrderStatus.pending) {
         order = await prisma.order.update({
@@ -161,6 +172,8 @@ export const progressOrder = async (
             select: { status: true }
         });
         revalidateTag(GlobalConstants.ORDER);
+        // If the newStatus is just 'paid', we're done
+        if (newStatus === OrderStatus.paid) return;
     }
 
     // Paid to shipped
@@ -183,6 +196,7 @@ export const progressOrder = async (
             // Allow progressing order despite failed confirmation
             console.error("Failed to send order confirmation:", error);
         }
+        if (newStatus === OrderStatus.shipped) return;
     }
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {
