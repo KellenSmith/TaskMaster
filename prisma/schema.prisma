@@ -158,9 +158,12 @@ model Event {
 
 model EventParticipant {
   user_id   String
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   ticket_id String
   ticket    Ticket @relation(fields: [ticket_id], references: [product_id])
-  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  order_id String
+  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
   @@id([user_id, ticket_id])
   @@map("event_participants")
@@ -252,12 +255,15 @@ model Membership {
 }
 
 model UserMembership {
-  user_id            String     @unique
-  membership_id      String
-  expires_at         DateTime
-  membership         Membership @relation(fields: [membership_id], references: [product_id], onDelete: Cascade)
-  user               User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  subscription_token Json?
+  user_id String @unique
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  membership_id String
+  membership    Membership @relation(fields: [membership_id], references: [product_id], onDelete: Cascade)
+
+  expires_at DateTime
+
+  orders Order[]
 
   @@id([user_id, membership_id])
   @@map("user_memberships")
@@ -275,16 +281,26 @@ model Ticket {
 }
 
 model Order {
-  id                 String      @id @default(uuid())
-  status             OrderStatus @default(pending)
-  total_amount       Float       @default(0.0)
-  payment_request_id String?     @unique
-  payee_ref          String?     @unique
-  created_at         DateTime    @default(now())
-  updated_at         DateTime    @updatedAt
-  user_id            String?
-  order_items        OrderItem[]
-  user               User?       @relation(fields: [user_id], references: [id])
+  id           String      @id @default(uuid())
+  status       OrderStatus @default(pending)
+  total_amount Float       @default(0.0)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user_id String?
+  user    User?   @relation(fields: [user_id], references: [id])
+
+  order_items OrderItem[]
+
+  payment_request_id String? @unique
+  payee_ref          String? @unique
+  subscription_token Json?
+
+  userMembershipUser_id       String?
+  userMembershipMembership_id String?
+  UserMembership              UserMembership?    @relation(fields: [userMembershipUser_id, userMembershipMembership_id], references: [user_id, membership_id])
+  EventParticipant            EventParticipant[]
 
   @@map("orders")
 }
