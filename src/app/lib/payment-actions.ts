@@ -30,13 +30,29 @@ export const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
 };
 
 // Helper function to generate unique payee references
-const generatePayeeReference = (orderId: string, prefix: string = "PAY"): string => {
+export const generatePayeeReference = async (orderId: string, prefix: string = "PAY"): Promise<string> => {
     const cleanOrderId = orderId.replace(/[^a-zA-Z0-9]/g, "");
     const timestamp = Date.now().toString().slice(-10);
     // Add some randomness to prevent collisions in rapid succession
     const random = Math.random().toString(36).substring(2, 5); // 3 chars
     const baseRef = `${prefix}${cleanOrderId.slice(0, 13)}${timestamp}${random}`; // 3+13+10+3=29 chars max
-    return baseRef.substring(0, 30); // Ensure max length compliance
+    let payeeRef = baseRef.substring(0, 30); // Ensure max length compliance
+
+    // Check if this payeeRef is already used by another order
+    const existingOrder = await prisma.order.findFirst({
+        where: {
+            payee_ref: payeeRef,
+            id: { not: orderId }, // Exclude the current order
+        },
+    });
+
+    if (existingOrder) {
+        // Generate a new one with additional entropy
+        const fallbackPayeeRef = `${payeeRef}${Math.random().toString(36).substring(2, 5)}`;
+        payeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
+    }
+
+    return payeeRef
 };
 
 interface SwedbankPaymentRequestBody {
@@ -72,23 +88,6 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
     orderId: string,
     subscribe: boolean = false,
 ): Promise<SwedbankPaymentRequestBody> => {
-    // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
-    let payeeRef = generatePayeeReference(orderId, "PAY");
-
-    // Check if this payeeRef is already used by another order
-    const existingOrder = await prisma.order.findFirst({
-        where: {
-            payee_ref: payeeRef,
-            id: { not: orderId }, // Exclude the current order
-        },
-    });
-
-    if (existingOrder) {
-        // Generate a new one with additional entropy
-        const fallbackPayeeRef = `${payeeRef}${Math.random().toString(36).substring(2, 5)}`;
-        payeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
-    }
-
     // Validate that the order contains subscribeable products
     // only memberships are subscribeable currently
     if (subscribe) {
@@ -100,7 +99,8 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
         }
     }
 
-    // Update order with payeeRef
+    // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
+    let payeeRef = await generatePayeeReference(orderId, "PAY");
     const order = await prisma.order.update({
         where: { id: orderId },
         data: { payee_ref: payeeRef },

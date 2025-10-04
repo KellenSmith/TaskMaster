@@ -258,6 +258,7 @@ model UserMembership {
   membership         Membership @relation(fields: [membership_id], references: [product_id], onDelete: Cascade)
   user               User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   subscription_token Json?
+  payeeRef           String?    @unique
 
   @@id([user_id, membership_id])
   @@map("user_memberships")

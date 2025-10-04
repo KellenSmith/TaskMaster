@@ -11,7 +11,7 @@ import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
 import { PaymentOrderResponse, SubscriptionToken } from "./payment-utils";
 import { getLoggedInUser, getUserLanguage } from "./user-actions";
 import { headers } from "next/headers";
-import { makeSwedbankApiRequest } from "./payment-actions";
+import { generatePayeeReference, makeSwedbankApiRequest } from "./payment-actions";
 import { getOrganizationSettings } from "./organization-settings-actions";
 
 export const addUserMembership = async (userId: string, formData: FormData) => {
@@ -92,6 +92,11 @@ export const startMembershipSubscription = async (userId: string): Promise<void>
     });
     const userLanguage = await getUserLanguage();
     const organizationSettings = await getOrganizationSettings()
+    const payeeRef = await generatePayeeReference(validatedUserId, "SUB");
+    await prisma.userMembership.update({
+        where: { user_id: validatedUserId },
+        data: { payeeRef: payeeRef },
+    });
 
     const paymentRequestPayload = {
         paymentorder: {
@@ -107,7 +112,7 @@ export const startMembershipSubscription = async (userId: string): Promise<void>
                 completeUrl: getAbsoluteUrl([GlobalConstants.PROFILE]),
                 cancelUrl: getAbsoluteUrl([GlobalConstants.PROFILE]),
                 callbackUrl: getAbsoluteUrl([GlobalConstants.PAYMENT_CALLBACK], {
-                    [GlobalConstants.ORDER_ID]: "Subscription activation cancelled",
+                    [GlobalConstants.ORDER_ID]: "Subscription activation",
                 }),
                 logoUrl: organizationSettings?.logo_url || undefined,
                 termsOfServiceUrl: organizationSettings?.terms_of_purchase_english_url || undefined,
@@ -115,6 +120,7 @@ export const startMembershipSubscription = async (userId: string): Promise<void>
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
                 payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
+                payeeReference: payeeRef,
             },
             // TODO: Include order items in the payment request for better tracking
         },
