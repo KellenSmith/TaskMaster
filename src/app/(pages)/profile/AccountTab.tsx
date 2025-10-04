@@ -6,7 +6,7 @@ import { useUserContext } from "../../context/UserContext";
 import { deleteUser, logOut, updateUser } from "../../lib/user-actions";
 import { Button, Stack } from "@mui/material";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { allowRedirectException, userHasActiveMembershipSubscription } from "../../ui/utils";
+import { allowRedirectException } from "../../ui/utils";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { UserUpdateSchema } from "../../lib/zod-schemas";
 import { use, useTransition } from "react";

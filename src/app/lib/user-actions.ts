@@ -1,6 +1,6 @@
 "use server";
 
-import { Language, Prisma, UserRole, UserStatus } from "@prisma/client";
+import { Language, OrderStatus, Prisma, UserRole, UserStatus } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
@@ -21,6 +21,7 @@ import { getMembershipProduct, renewUserMembership } from "./user-membership-act
 import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 import MailTemplate from "./mail-service/mail-templates/MailTemplate";
+import { createOrder, progressOrder } from "./order-actions";
 
 export const getUserById = async (
     userId: string,
@@ -39,7 +40,7 @@ export const createUser = async (formData: FormData): Promise<void> => {
     const userCount = await prisma.user.count();
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const membershipOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const newUser = await tx.user.create({
             data: {
                 ...userData,
@@ -63,10 +64,12 @@ export const createUser = async (formData: FormData): Promise<void> => {
                 },
             });
             const membershipProduct = await getMembershipProduct();
-            await renewUserMembership(tx, newUser.id, membershipProduct.id);
+            const orderItem = { quantity: 1, product_id: membershipProduct.id, price: membershipProduct.price } as Prisma.OrderItemCreateManyOrderInput
+            return await createOrder(tx, newUser.id, [orderItem]);
         }
         revalidateTag(GlobalConstants.USER);
     });
+    if (membershipOrder) await progressOrder(membershipOrder.id, OrderStatus.completed);
 };
 
 export const submitMemberApplication = async (formData: FormData) => {

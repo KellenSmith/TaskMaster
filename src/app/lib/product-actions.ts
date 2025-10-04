@@ -141,8 +141,8 @@ export const processOrderedProduct = async (
             await renewUserMembership(
                 tx,
                 userId,
+                orderItem.order_id,
                 orderItem.product.membership.product_id,
-                subscriptionToken,
             );
         } else if (orderItem.product.ticket) {
             await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);

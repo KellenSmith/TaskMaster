@@ -192,11 +192,11 @@ export const redirectToSwedbankPayment = async (
         // Directly progress to completed
         const subscriptionToken = validatedSubscribeToMembership
             ? {
-                  type: "unscheduled" as const,
-                  token: "free-subscription-" + order.id,
-                  name: "Free subscription",
-                  expiryDate: dayjs().add(10, "year").format("MM/YYYY"),
-              }
+                type: "unscheduled" as const,
+                token: "free-subscription-" + order.id,
+                name: "Free subscription",
+                expiryDate: dayjs().add(10, "year").format("MM/YYYY"),
+            }
             : undefined;
 
         await progressOrder(order.id, OrderStatus.paid, false, subscriptionToken);
@@ -305,6 +305,10 @@ export const checkPaymentStatus = async (
         const newOrderStatus = getNewOrderStatus(paymentStatus);
         const subscriptionToken: SubscriptionToken | undefined =
             paymentStatusData.paymentOrder.paid.tokens?.[0];
+        if (subscriptionToken) await prisma.order.update({
+            where: { id: orderId },
+            data: { subscription_token: subscriptionToken.token },
+        });
         const needsCapture =
             paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
         await progressOrder(orderId, newOrderStatus, needsCapture, subscriptionToken);

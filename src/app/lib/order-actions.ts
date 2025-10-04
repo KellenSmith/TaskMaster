@@ -58,12 +58,13 @@ export const getAllOrders = async (): Promise<
 };
 
 export const createOrder = async (
+    tx: Prisma.TransactionClient,
     userId: string,
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
 ): Promise<Prisma.OrderGetPayload<true>> => {
     // Check that the stock of each product in the orderItems is sufficient
     for (const orderItem of orderItems) {
-        const product = await prisma.product.findUniqueOrThrow({
+        const product = await tx.product.findUniqueOrThrow({
             where: { id: orderItem.product_id },
         });
         if (!product.unlimited_stock && product.stock < orderItem.quantity) {
@@ -73,29 +74,27 @@ export const createOrder = async (
 
     // Calculate the price of each order item
     for (const item of orderItems) {
-        const product = await prisma.product.findUniqueOrThrow({
+        const product = await tx.product.findUniqueOrThrow({
             where: { id: item.product_id },
         });
         item.price = product.price * item.quantity;
     }
 
     // Create the order with items in a transaction
-    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        return await tx.order.create({
-            data: {
-                total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
-                user: {
-                    connect: {
-                        id: userId,
-                    },
-                },
-                order_items: {
-                    createMany: {
-                        data: orderItems,
-                    },
+    const order = await tx.order.create({
+        data: {
+            total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
+            user: {
+                connect: {
+                    id: userId,
                 },
             },
-        });
+            order_items: {
+                createMany: {
+                    data: orderItems,
+                },
+            },
+        },
     });
     return order;
 };
@@ -104,7 +103,10 @@ export const createAndRedirectToOrder = async (
     userId: string,
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
 ): Promise<void> => {
-    const order = await createOrder(userId, orderItems);
+    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) =>
+        await createOrder(tx, userId, orderItems)
+    );
+    revalidateTag(GlobalConstants.ORDER);
     serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
 };
 
