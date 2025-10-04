@@ -306,12 +306,13 @@ model Order {
 }
 
 model OrderItem {
-  quantity   Int     @default(1)
-  price      Float   @default(0)
+  status     OrderStatus @default(pending)
+  quantity   Int         @default(1)
+  price      Float       @default(0)
   order_id   String
   product_id String
-  order      Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  product    Product @relation(fields: [product_id], references: [id])
+  order      Order       @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product    Product     @relation(fields: [product_id], references: [id])
 
   @@id([order_id, product_id])
   @@map("order_items")

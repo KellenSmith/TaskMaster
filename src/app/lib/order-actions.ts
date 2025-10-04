@@ -111,33 +111,25 @@ export const createAndRedirectToOrder = async (
 };
 
 const processOrderItems = async (
-    tx: Prisma.TransactionClient,
     orderId: string,
-    subscriptionToken?: SubscriptionToken,
 ): Promise<void> => {
-    const order = await tx.order.findUniqueOrThrow({
+    const order = await prisma.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
             order_items: {
                 include: {
-                    product: {
-                        include: {
-                            membership: true,
-                            ticket: true,
-                        },
-                    },
+                    product: { include: { membership: true, ticket: true } },
                 },
             },
         },
     });
-
-    if (order.order_items.length === 0) {
+    if (order.order_items?.length === 0) {
         throw new Error("No items found for this order");
     }
 
     // Process each order item
     for (const orderItem of order.order_items) {
-        await processOrderedProduct(tx, order.user_id, orderItem, subscriptionToken);
+        await processOrderedProduct(order.user_id, orderItem);
     }
 };
 
@@ -145,7 +137,6 @@ export const progressOrder = async (
     orderId: string,
     newStatus: OrderStatus,
     needsCapture = false,
-    subscriptionToken?: SubscriptionToken,
 ): Promise<void> => {
     // Always allow transitioning to cancelled or error
     if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(newStatus)) {
@@ -159,6 +150,7 @@ export const progressOrder = async (
 
     let order: Prisma.OrderGetPayload<true> = await prisma.order.findUniqueOrThrow({
         where: { id: orderId },
+        select: { status: true }
     });
 
     // Pending to paid
@@ -166,6 +158,7 @@ export const progressOrder = async (
         order = await prisma.order.update({
             where: { id: orderId },
             data: { status: OrderStatus.paid },
+            select: { status: true }
         });
         revalidateTag(GlobalConstants.ORDER);
     }
@@ -175,19 +168,14 @@ export const progressOrder = async (
         // This transaction may perform multiple updates and external work; increase timeout locally.
         await prisma.$transaction(
             async (tx: Prisma.TransactionClient) => {
-                await processOrderItems(tx, orderId, subscriptionToken);
+                await processOrderItems(orderId);
                 order = await prisma.order.update({
                     where: { id: orderId },
                     data: { status: OrderStatus.shipped },
+                    select: { status: true }
                 });
                 revalidateTag(GlobalConstants.ORDER);
-            },
-            {
-                // timeout in ms for this interactive transaction; set to 30s for safety
-                timeout: 10000,
-                // max wait to acquire a connection for transaction
-                maxWait: 5000,
-            },
+            }
         );
         try {
             await sendOrderConfirmation(orderId);
@@ -202,6 +190,7 @@ export const progressOrder = async (
         order = await prisma.order.update({
             where: { id: orderId },
             data: { status: OrderStatus.completed },
+            select: { status: true }
         });
         revalidateTag(GlobalConstants.ORDER);
     }

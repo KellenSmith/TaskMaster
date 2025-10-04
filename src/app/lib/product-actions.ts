@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import {
     MembershipWithoutProductSchema,
@@ -127,43 +127,61 @@ export const deleteProduct = async (productId: string): Promise<void> => {
 };
 
 export const processOrderedProduct = async (
-    tx: Prisma.TransactionClient,
     userId: string,
     orderItem: Prisma.OrderItemGetPayload<{
         include: { product: { include: { membership: true; ticket: true } } };
     }>,
-    subscriptionToken?: SubscriptionToken,
 ) => {
+    if (orderItem.status === OrderStatus.completed) return; // Already processed
     if (!orderItem.product.unlimited_stock && orderItem.quantity > orderItem.product.stock)
         throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
-    for (let i = 0; i < orderItem.quantity; i++) {
-        if (orderItem.product.membership) {
-            await renewUserMembership(
-                tx,
-                userId,
-                orderItem.order_id,
-                orderItem.product.membership.product_id,
-            );
-        } else if (orderItem.product.ticket) {
-            await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);
-        } else {
-            // TODO: replace with real fulfillment process
-            const mailContent = createElement(EmailNotificationTemplate, {
-                message: `User ID: ${userId}\nProduct: ${orderItem.product.name}\nQuantity: ${orderItem.quantity}`,
-                linkButtons: [
-                    {
-                        buttonName: "View Order",
-                        url: getAbsoluteUrl([GlobalConstants.ORDER], {
-                            [GlobalConstants.ORDER_ID]: orderItem.order_id,
-                        }),
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        for (let i = 0; i < orderItem.quantity; i++) {
+            if (orderItem.product.membership) {
+                await renewUserMembership(
+                    tx,
+                    userId,
+                    orderItem.order_id,
+                    orderItem.product.membership.product_id,
+                );
+            } else if (orderItem.product.ticket) {
+                await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);
+            } else {
+                // TODO: replace with real fulfillment process
+                const mailContent = createElement(EmailNotificationTemplate, {
+                    message: `User ID: ${userId}\nProduct: ${orderItem.product.name}\nQuantity: ${orderItem.quantity}`,
+                    linkButtons: [
+                        {
+                            buttonName: "View Order",
+                            url: getAbsoluteUrl([GlobalConstants.ORDER], {
+                                [GlobalConstants.ORDER_ID]: orderItem.order_id,
+                            }),
+                        },
+                    ],
+                });
+                await sendMail(
+                    [process.env.EMAIL],
+                    `Product purchased: ${orderItem.product.name}`,
+                    mailContent,
+                );
+                await prisma.product.update({
+                    where: { id: orderItem.product_id },
+                    data: {
+                        stock: {
+                            decrement: 1,
+                        },
                     },
-                ],
-            });
-            await sendMail(
-                [process.env.EMAIL],
-                `Product purchased: ${orderItem.product.name}`,
-                mailContent,
-            );
+                });
+            }
         }
-    }
+        await tx.orderItem.update({
+            where: {
+                order_id_product_id: {
+                    order_id: orderItem.order_id,
+                    product_id: orderItem.product_id,
+                },
+            },
+            data: { status: OrderStatus.completed },
+        });
+    });
 };

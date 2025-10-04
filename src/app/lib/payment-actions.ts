@@ -198,8 +198,13 @@ export const redirectToSwedbankPayment = async (
                 expiryDate: dayjs().add(10, "year").format("MM/YYYY"),
             }
             : undefined;
-
-        await progressOrder(order.id, OrderStatus.paid, false, subscriptionToken);
+        if (subscriptionToken) await prisma.order.update({
+            where: { id: order.id },
+            data: {
+                subscription_token: subscriptionToken,
+            },
+        });
+        await progressOrder(order.id, OrderStatus.paid, false);
         return;
     }
     const requestBody = await getSwedbankPaymentRequestPurchasePayload(
@@ -311,6 +316,6 @@ export const checkPaymentStatus = async (
         });
         const needsCapture =
             paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
-        await progressOrder(orderId, newOrderStatus, needsCapture, subscriptionToken);
+        await progressOrder(orderId, newOrderStatus, needsCapture);
     }
 };

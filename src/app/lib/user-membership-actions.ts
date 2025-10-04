@@ -56,7 +56,7 @@ export const renewUserMembership = async (
             .add(membership.duration, "d")
             .toISOString();
 
-    await tx.userMembership.upsert({
+    const updatedUserMembership = await tx.userMembership.upsert({
         where: { user_id: userId },
         update: {
             membership_id: membershipId,
@@ -69,6 +69,13 @@ export const renewUserMembership = async (
             expires_at: newExpiryDate,
         },
     });
+    // Link the user membership to the order for reference
+    await tx.order.update({
+        where: { id: orderId },
+        data: {
+            UserMembership: { connect: { user_id: userId, membership_id: updatedUserMembership.membership_id } },
+        }
+    })
     revalidateTag(GlobalConstants.USER);
 };
 
@@ -145,7 +152,7 @@ export const userHasActiveMembershipSubscription = async (
         },
     });
     if (userMembership?.orders.length === 0) return false;
-    const subscriptionToken = userMembership.orders[0]?.subscription_token as SubscriptionToken;
+    const subscriptionToken = userMembership?.orders[0]?.subscription_token as SubscriptionToken;
     if (!subscriptionToken) return false;
     // Check that the subscription has not expired
     const expiryDate = dayjs.utc(subscriptionToken.expiryDate, "MM/YYYY");
