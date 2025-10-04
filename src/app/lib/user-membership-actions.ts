@@ -5,13 +5,14 @@ import dayjs from "dayjs";
 import { prisma } from "../../../prisma/prisma-client";
 import { Language, Prisma } from "@prisma/client";
 import { createAndRedirectToOrder } from "./order-actions";
-import { isMembershipExpired, isUserAdmin } from "./utils";
+import { getAbsoluteUrl, isMembershipExpired, isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
 import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
 import { PaymentOrderResponse, SubscriptionToken } from "./payment-utils";
 import { getLoggedInUser, getUserLanguage } from "./user-actions";
 import { headers } from "next/headers";
 import { makeSwedbankApiRequest } from "./payment-actions";
+import { getOrganizationSettings } from "./organization-settings-actions";
 
 export const addUserMembership = async (userId: string, formData: FormData) => {
     const validatedData = AddMembershipSchema.parse(Object.fromEntries(formData.entries()));
@@ -90,22 +91,38 @@ export const startMembershipSubscription = async (userId: string): Promise<void>
         include: { membership: { include: { product: true } } },
     });
     const userLanguage = await getUserLanguage();
+    const organizationSettings = await getOrganizationSettings()
 
-    const verifySubscriptionRequestPayload = {
+    const paymentRequestPayload = {
         paymentorder: {
             operation: "Verify",
             currency: "SEK",
+            generateUnscheduledToken: "true",
             description: "Subscription for membership",
+            productName: userMembership.membership.product.name,
             userAgent: (await headers()).get("user-agent") || "Unknown",
             language: userLanguage === Language.swedish ? "sv-SE" : "en-US",
-            productName: userMembership.membership.product.name,
-            generateUnscheduledToken: "true",
+            urls: {
+                hostUrls: [getAbsoluteUrl([GlobalConstants.HOME])],
+                completeUrl: getAbsoluteUrl([GlobalConstants.PROFILE]),
+                cancelUrl: getAbsoluteUrl([GlobalConstants.PROFILE]),
+                callbackUrl: getAbsoluteUrl([GlobalConstants.PAYMENT_CALLBACK], {
+                    [GlobalConstants.ORDER_ID]: "Subscription activation cancelled",
+                }),
+                logoUrl: organizationSettings?.logo_url || undefined,
+                termsOfServiceUrl: organizationSettings?.terms_of_purchase_english_url || undefined,
+            },
+            payeeInfo: {
+                payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
+                payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
+            },
+            // TODO: Include order items in the payment request for better tracking
         },
-    };
+    }
 
     const verificationResponse = await makeSwedbankApiRequest(
         `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
-        verifySubscriptionRequestPayload,
+        paymentRequestPayload,
     );
     if (!verificationResponse.ok)
         throw new Error(`Swedbank Pay request failed: ${await verificationResponse.text()}`);
