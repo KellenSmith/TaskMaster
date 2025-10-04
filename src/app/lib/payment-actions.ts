@@ -100,7 +100,7 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
     }
 
     // Create a compliant payeeReference: alphanumeric, max 30 chars, unique per payment attempt
-    let payeeRef = await generatePayeeReference(orderId, "PAY");
+    const payeeRef = await generatePayeeReference(orderId, "PAY");
     const order = await prisma.order.update({
         where: { id: orderId },
         data: { payee_ref: payeeRef },
