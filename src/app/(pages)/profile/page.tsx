@@ -7,6 +7,7 @@ import { getFilteredEvents } from "../../lib/event-actions";
 import { serverRedirect } from "../../lib/utils";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";
+import { userHasActiveMembershipSubscription } from "../../lib/user-membership-actions";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
@@ -38,11 +39,16 @@ const ProfilePage = async () => {
         tags: [GlobalConstants.SKILL_BADGE],
     })();
 
+    const hasActiveMembershipSubscriptionPromise = unstable_cache(userHasActiveMembershipSubscription, [loggedInUser.id], {
+        tags: [GlobalConstants.USER_MEMBERSHIP],
+    })(loggedInUser.id);
+
     return (
         <ProfileDashboard
             tasksPromise={tasksPromise}
             eventsPromise={eventsPromise}
             skillBadgesPromise={skillBadgesPromise}
+            hasActiveMembershipSubscriptionPromise={hasActiveMembershipSubscriptionPromise}
         />
     );
 };

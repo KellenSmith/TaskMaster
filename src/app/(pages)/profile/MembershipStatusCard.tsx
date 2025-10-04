@@ -10,16 +10,23 @@ import {
     Warning,
 } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
-import { formatDate, userHasActiveMembershipSubscription } from "../../ui/utils";
+import { formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserStatus } from "@prisma/client";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
+import { use } from "react";
 
-const MembershipStatusCard = () => {
+interface MembershipStatusCardProps {
+    hasActiveMembershipSubscriptionPromise: Promise<boolean>;
+}
+
+const MembershipStatusCard = ({ hasActiveMembershipSubscriptionPromise }: MembershipStatusCardProps) => {
     const theme = useTheme();
     const { user, language } = useUserContext();
     const { organizationSettings } = useOrganizationSettingsContext();
+    const hasActiveMembershipSubscription = use(hasActiveMembershipSubscriptionPromise);
+
     return (
         <Card elevation={3}>
             <CardContent>
@@ -129,7 +136,7 @@ const MembershipStatusCard = () => {
                                 </Stack>
                             </Stack>
 
-                            {userHasActiveMembershipSubscription(user) && (
+                            {hasActiveMembershipSubscription && (
                                 <Stack direction="row" alignItems="center" spacing={2}>
                                     <Subscriptions color="primary" />
                                     <Stack>

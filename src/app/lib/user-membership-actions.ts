@@ -34,8 +34,8 @@ export const addUserMembership = async (userId: string, formData: FormData) => {
 export const renewUserMembership = async (
     tx: Prisma.TransactionClient,
     userId: string,
+    orderId: string,
     membershipId: string,
-    subscriptionToken?: SubscriptionToken,
 ): Promise<void> => {
     const membership = await tx.membership.findUniqueOrThrow({
         where: { product_id: membershipId },
@@ -61,14 +61,12 @@ export const renewUserMembership = async (
         update: {
             membership_id: membershipId,
             expires_at: newExpiryDate,
-            subscription_token: subscriptionToken,
         },
         // If no membership exists, create a new one
         create: {
             user_id: userId,
             membership_id: membershipId,
             expires_at: newExpiryDate,
-            subscription_token: subscriptionToken,
         },
     });
     revalidateTag(GlobalConstants.USER);
@@ -133,6 +131,25 @@ export const cancelMembershipSubscription = async (userId: string) => {
         data: { subscription_token: null },
     });
     revalidateTag(GlobalConstants.USER);
+};
+
+export const userHasActiveMembershipSubscription = async (
+    userId: string,
+): Promise<boolean> => {
+    const userMembership = await prisma.userMembership.findUnique({
+        where: { user_id: userId },
+        include: {
+            orders: {
+                orderBy: { created_at: "desc" }
+            }
+        },
+    });
+    if (userMembership?.orders.length === 0) return false;
+    const subscriptionToken = userMembership.orders[0]?.subscription_token as SubscriptionToken;
+    if (!subscriptionToken) return false;
+    // Check that the subscription has not expired
+    const expiryDate = dayjs.utc(subscriptionToken.expiryDate, "MM/YYYY");
+    return expiryDate.isValid() && expiryDate.isAfter(dayjs.utc());
 };
 
 export const getMembershipProduct = async (): Promise<

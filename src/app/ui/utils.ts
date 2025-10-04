@@ -56,16 +56,6 @@ export const userHasSkillBadge = (
     return user.skill_badges.some((userBadge) => userBadge.skill_badge_id === skillBadgeId);
 };
 
-export const userHasActiveMembershipSubscription = (
-    user: Prisma.UserGetPayload<{
-        select: { user_membership: true };
-    }>,
-) => {
-    const subscriptionToken = user.user_membership?.subscription_token as SubscriptionToken;
-    const expiryDate = dayjs.utc(subscriptionToken?.expiryDate, "MM/YYYY");
-    return expiryDate.isValid() && expiryDate.isAfter(dayjs.utc());
-};
-
 export const isUserQualifiedForTask = (
     user: Prisma.UserGetPayload<{
         select: { skill_badges: true };

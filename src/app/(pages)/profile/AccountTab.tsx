@@ -9,7 +9,7 @@ import ConfirmButton from "../../ui/ConfirmButton";
 import { allowRedirectException, userHasActiveMembershipSubscription } from "../../ui/utils";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { UserUpdateSchema } from "../../lib/zod-schemas";
-import { useTransition } from "react";
+import { use, useTransition } from "react";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import MembershipStatusCard from "./MembershipStatusCard";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
@@ -22,11 +22,16 @@ import {
     startMembershipSubscription,
 } from "../../lib/user-membership-actions";
 
-const AccountTab = () => {
+interface AccountTabProps {
+    hasActiveMembershipSubscriptionPromise: Promise<boolean>;
+}
+
+const AccountTab = ({ hasActiveMembershipSubscriptionPromise }: AccountTabProps) => {
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
+    const hasActiveMembershipSubscription = use(hasActiveMembershipSubscriptionPromise);
 
     if (!user) return <LoadingFallback />;
 
@@ -69,7 +74,7 @@ const AccountTab = () => {
     };
 
     const getMembershipActionButton = () => {
-        if (userHasActiveMembershipSubscription(user))
+        if (hasActiveMembershipSubscription)
             return (
                 <ConfirmButton
                     color="error"
@@ -107,7 +112,7 @@ const AccountTab = () => {
 
     return (
         <Stack>
-            <MembershipStatusCard />
+            <MembershipStatusCard hasActiveMembershipSubscriptionPromise={hasActiveMembershipSubscriptionPromise} />
             {getMembershipActionButton()}
             <Form
                 name={GlobalConstants.PROFILE}

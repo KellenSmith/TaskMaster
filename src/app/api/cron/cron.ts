@@ -6,7 +6,6 @@ import { Prisma } from "@prisma/client";
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
 import { createElement } from "react";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
-import { userHasActiveMembershipSubscription } from "../../ui/utils";
 import { createOrder } from "../../lib/order-actions";
 import {
     checkPaymentStatus,
@@ -14,6 +13,7 @@ import {
     getSwedbankPaymentRequestPurchasePayload,
 } from "../../lib/payment-actions";
 import { SubscriptionToken } from "../../lib/payment-utils";
+import { userHasActiveMembershipSubscription } from "../../lib/user-membership-actions";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -44,13 +44,28 @@ const chargeMembershipWithActiveSubscriptions = async (
         include: { user_membership: { include: { membership: { include: { product: true } } } } };
     }>,
 ): Promise<void> => {
-    const subscriptionToken = user.user_membership?.subscription_token;
+    const latestMembershipOrder = await prisma.order.findFirst({
+        where: {
+            user_id: user.id,
+            order_items: {
+                some: {
+                    product: {
+                        id: user.user_membership?.membership_id,
+                    },
+                },
+            },
+        },
+        orderBy: { created_at: "desc" },
+    });
+    const subscriptionToken = latestMembershipOrder?.subscription_token;
     const membershipOrderItem = {
         quantity: 1,
         product_id: user.user_membership.membership.product_id,
         price: user.user_membership.membership.product.price,
     } as Prisma.OrderItemCreateManyOrderInput;
-    const membershipOrder = await createOrder(user.id, [membershipOrderItem]);
+    const membershipOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        return await createOrder(tx, user.id, [membershipOrderItem]);
+    });
     const paymentRequestPayload = await getSwedbankPaymentRequestPurchasePayload(
         membershipOrder.id,
     );
@@ -91,15 +106,15 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
             },
         });
 
-        const usersWithSubscriptions = expiringUsers.filter((user) =>
-            userHasActiveMembershipSubscription(user),
+        const usersWithSubscriptions = expiringUsers.filter(async (user) =>
+            await userHasActiveMembershipSubscription(user.id),
         );
         await Promise.all(
             usersWithSubscriptions.map((user) => chargeMembershipWithActiveSubscriptions(user)),
         ).then(() => console.log(`Auto-renewed ${usersWithSubscriptions.length} memberships`));
 
         const usersWithoutSubscriptions = expiringUsers.filter(
-            (user) => !userHasActiveMembershipSubscription(user),
+            (user) => !usersWithSubscriptions.map((u) => u.id).includes(user.id),
         );
         // Send email reminders to users without active subscriptions
         if (usersWithoutSubscriptions.length > 0) {
