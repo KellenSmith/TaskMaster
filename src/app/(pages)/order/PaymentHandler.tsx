@@ -69,18 +69,18 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
             addNotification(LanguageTranslations.cancelledOrder[language], "error");
         }
     };
-
-    const subscribeableProducts = order
-        ? order.order_items
-              .map((orderItem) => orderItem.product)
-              .filter((product) => product.membership)
-        : [];
+    /* 
+        const subscribeableProducts = order
+            ? order.order_items
+                .map((orderItem) => orderItem.product)
+                .filter((product) => product.membership)
+            : []; */
 
     return (
         order?.status === OrderStatus.pending && (
             <Stack component="form" onSubmit={handleSubmit}>
                 <Stack alignItems="center" width="100%">
-                    {subscribeableProducts.length > 0 && (
+                    {/* TODO: {subscribeableProducts.length > 0 && (
                         <Card
                             sx={{ width: "100%", my: 2 }}
                             aria-label="Membership subscription offer"
@@ -146,7 +146,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                                 </Stack>
                             </CardContent>
                         </Card>
-                    )}
+                    )} */}
                     <Stack direction="row" alignItems={"center"} width={"100%"}>
                         <Checkbox
                             checked={termsAccepted.termsOfPurchase}

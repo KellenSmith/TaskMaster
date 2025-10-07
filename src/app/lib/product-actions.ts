@@ -18,7 +18,6 @@ import { sendMail } from "./mail-service/mail-service";
 import { getAbsoluteUrl } from "./utils";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
 import { createElement } from "react";
-import { SubscriptionToken } from "./payment-utils";
 
 export const getAllNonTicketProducts = async (): Promise<
     Prisma.ProductGetPayload<{ include: { membership: true } }>[]

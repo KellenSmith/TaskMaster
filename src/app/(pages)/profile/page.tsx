@@ -40,7 +40,7 @@ const ProfilePage = async () => {
     })();
 
     const hasActiveMembershipSubscriptionPromise = unstable_cache(userHasActiveMembershipSubscription, [loggedInUser.id], {
-        tags: [GlobalConstants.USER_MEMBERSHIP],
+        tags: [GlobalConstants.USER],
     })(loggedInUser.id);
 
     return (

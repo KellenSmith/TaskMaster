@@ -162,8 +162,8 @@ model EventParticipant {
   ticket_id String
   ticket    Ticket @relation(fields: [ticket_id], references: [product_id])
 
-  order_id String
-  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  order_id String?
+  order    Order?  @relation(fields: [order_id], references: [id])
 
   @@id([user_id, ticket_id])
   @@map("event_participants")
@@ -297,9 +297,8 @@ model Order {
   payee_ref          String? @unique
   subscription_token Json?
 
-  userMembershipUser_id       String?
   userMembershipMembership_id String?
-  UserMembership              UserMembership?    @relation(fields: [userMembershipUser_id, userMembershipMembership_id], references: [user_id, membership_id])
+  UserMembership              UserMembership?    @relation(fields: [user_id, userMembershipMembership_id], references: [user_id, membership_id])
   EventParticipant            EventParticipant[]
 
   @@map("orders")

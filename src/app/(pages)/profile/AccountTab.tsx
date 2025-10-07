@@ -19,7 +19,6 @@ import { clientRedirect, isMembershipExpired } from "../../lib/utils";
 import { useRouter } from "next/navigation";
 import {
     cancelMembershipSubscription,
-    startMembershipSubscription,
 } from "../../lib/user-membership-actions";
 
 interface AccountTabProps {
@@ -50,17 +49,6 @@ const AccountTab = ({ hasActiveMembershipSubscriptionPromise }: AccountTabProps)
                 addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
-
-    const startMembershipSubscriptionAction = () => {
-        startTransition(async () => {
-            try {
-                await startMembershipSubscription(user.id);
-            } catch (error) {
-                allowRedirectException(error);
-                addNotification(LanguageTranslations.failedActivateMembership[language], "error");
-            }
-        });
-    };
 
     const cancelSubscriptionAction = async () => {
         startTransition(async () => {
@@ -96,18 +84,7 @@ const AccountTab = ({ hasActiveMembershipSubscriptionPromise }: AccountTabProps)
             </Button>
         );
         if (isMembershipExpired(user)) return ActivateMembershipButton;
-        return (
-            <>
-                {ActivateMembershipButton}
-                <ConfirmButton
-                    color="success"
-                    onClick={startMembershipSubscriptionAction}
-                    disabled={isPending}
-                >
-                    {LanguageTranslations.startMembershipSubscription[language]}
-                </ConfirmButton>
-            </>
-        );
+        return ActivateMembershipButton;
     };
 
     return (

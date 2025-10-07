@@ -9,7 +9,7 @@ import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
 import { serverRedirect } from "./utils";
 import { UuidSchema } from "./zod-schemas";
-import { SubscriptionToken } from "./payment-utils";
+import { getLoggedInUser } from "./user-actions";
 
 export const getOrderById = async (
     userId: string,
@@ -148,6 +148,8 @@ export const progressOrder = async (
         return;
     }
 
+    const loggedInUser = await getLoggedInUser();
+    console.log(loggedInUser.id, orderId);
     let order: Prisma.OrderGetPayload<true> = await prisma.order.findUniqueOrThrow({
         where: { id: orderId },
         select: { status: true }

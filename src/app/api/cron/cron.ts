@@ -13,7 +13,7 @@ import {
     getSwedbankPaymentRequestPurchasePayload,
 } from "../../lib/payment-actions";
 import { SubscriptionToken } from "../../lib/payment-utils";
-import { userHasActiveMembershipSubscription } from "../../lib/user-membership-actions";
+import { getUserMembershipSubscriptionToken, userHasActiveMembershipSubscription } from "../../lib/user-membership-actions";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../../GlobalConstants";
 
@@ -48,16 +48,7 @@ const chargeMembershipWithActiveSubscriptions = async (
     }>,
 ): Promise<void> => {
     try {
-        const userMembership = await prisma.userMembership.findUnique({
-            where: { user_id: user.id },
-            include: {
-                orders: {
-                    orderBy: { created_at: "desc" }
-                }
-            },
-        });
-        if (userMembership?.orders.length === 0) throw new Error(`No previous orders found for user ${user.id}, email: ${user.email}`);
-        const subscriptionToken = userMembership?.orders[0]?.subscription_token as SubscriptionToken;
+        const subscriptionToken = await getUserMembershipSubscriptionToken(user.id);
         if (!subscriptionToken) {
             throw new Error(`No subscription token found for user ${user.id}, email: ${user.email}`);
         }
@@ -68,10 +59,6 @@ const chargeMembershipWithActiveSubscriptions = async (
         } as Prisma.OrderItemCreateManyOrderInput;
         const membershipOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             return await createOrder(tx, user.id, [membershipOrderItem]);
-        });
-        await prisma.order.update({
-            where: { id: membershipOrder.id },
-            data: { subscription_token: subscriptionToken },
         });
         const paymentRequestPayload = await getSwedbankPaymentRequestPurchasePayload(
             membershipOrder.id,
@@ -110,17 +97,13 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
     try {
         const expiringUsers = await prisma.user.findMany({
             where: {
-                OR: [
-                    { email: "ecomintegration@swedbankpay.com" },
-                    {
-                        user_membership: {
-                            expires_at: {
-                                gte: earliestExpirationDate.toISOString(),
-                                lt: latestExpirationDate.toISOString(),
-                            },
-                        },
+                user_membership: {
+                    expires_at: {
+                        gte: earliestExpirationDate.toISOString(),
+                        lt: latestExpirationDate.toISOString(),
                     },
-                ],
+                },
+
             },
             select: {
                 id: true,

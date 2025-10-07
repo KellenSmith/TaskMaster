@@ -3,15 +3,13 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma } from "../../../prisma/prisma-client";
-import { Language, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { createAndRedirectToOrder } from "./order-actions";
 import { isMembershipExpired, isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
 import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
-import { PaymentOrderResponse, SubscriptionToken } from "./payment-utils";
-import { getLoggedInUser, getUserLanguage } from "./user-actions";
-import { headers } from "next/headers";
-import { makeSwedbankApiRequest } from "./payment-actions";
+import { SubscriptionToken } from "./payment-utils";
+import { getLoggedInUser } from "./user-actions";
 
 export const addUserMembership = async (userId: string, formData: FormData) => {
     const validatedData = AddMembershipSchema.parse(Object.fromEntries(formData.entries()));
@@ -79,49 +77,47 @@ export const renewUserMembership = async (
     revalidateTag(GlobalConstants.USER);
 };
 
-export const startMembershipSubscription = async (userId: string): Promise<void> => {
-    const validatedUserId = UuidSchema.parse(userId);
-
-    const loggedInUser = await getLoggedInUser();
-    // Only allow users to start their own subscription, unless they are an admin
-    if (loggedInUser?.id !== validatedUserId && !isUserAdmin(loggedInUser)) {
-        throw new Error("You do not have permission to start this subscription.");
-    }
-
-    // Only allow starting a subscription if the user has a membership.
-    // Otherwise subscription is started when paying for the membership.
-    const userMembership = await prisma.userMembership.findUniqueOrThrow({
-        where: { user_id: validatedUserId },
-        include: { membership: { include: { product: true } } },
-    });
-    const userLanguage = await getUserLanguage();
-
-    const verifySubscriptionRequestPayload = {
-        paymentorder: {
-            operation: "Verify",
-            currency: "SEK",
-            description: "Subscription for membership",
-            userAgent: (await headers()).get("user-agent") || "Unknown",
-            language: userLanguage === Language.swedish ? "sv-SE" : "en-US",
-            productName: userMembership.membership.product.name,
-            generateUnscheduledToken: "true",
+export const getUserMembershipSubscriptionOrder = async (userId: string) => {
+    const orders = await prisma.order.findFirst({
+        where: {
+            user_id: userId,
+            subscription_token: { not: null },
+            order_items: {
+                some: {
+                    product: {
+                        membership: { isNot: null },
+                    },
+                },
+            },
         },
-    };
+        orderBy: { created_at: "desc" },
+        include: {
+            order_items: {
+                include: { product: { include: { membership: true } } },
+            },
+        },
+    });
+    return orders?.[0]
+}
 
-    const verificationResponse = await makeSwedbankApiRequest(
-        `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
-        verifySubscriptionRequestPayload,
-    );
-    if (!verificationResponse.ok)
-        throw new Error(`Swedbank Pay request failed: ${await verificationResponse.text()}`);
+export const getUserMembershipSubscriptionToken = async (userId: string): Promise<SubscriptionToken | null> => {
+    // Find the latest order (by created_at) that:
+    // 1. Belongs to this user's membership (userMembershipUser_id)
+    // 2. Has a non-null subscription_token
+    // 3. Contains at least one order item whose product is a membership product
+    const latestMembershipSubscriptionOrder = await getUserMembershipSubscriptionOrder(userId);
+    const subscriptionToken = latestMembershipSubscriptionOrder?.subscription_token as SubscriptionToken;
+    return subscriptionToken;
+}
 
-    const responseData: PaymentOrderResponse = await verificationResponse.json();
-
-    const redirectOperation = responseData.operations.find((op) => op.rel === "redirect-checkout");
-
-    if (!redirectOperation || !redirectOperation.href) {
-        throw new Error("Redirect URL not found in payment response");
-    }
+export const userHasActiveMembershipSubscription = async (
+    userId: string,
+): Promise<boolean> => {
+    const subscriptionToken = await getUserMembershipSubscriptionToken(userId)
+    if (!subscriptionToken) return false;
+    // Check that the subscription has not expired
+    const expiryDate = dayjs.utc(subscriptionToken.expiryDate, "MM/YYYY");
+    return expiryDate.isValid() && expiryDate.isAfter(dayjs.utc());
 };
 
 export const cancelMembershipSubscription = async (userId: string) => {
@@ -133,30 +129,33 @@ export const cancelMembershipSubscription = async (userId: string) => {
         throw new Error("You do not have permission to cancel this subscription.");
     }
 
-    await prisma.userMembership.update({
-        where: { user_id: validatedUserId },
+    const subscriptionOrder = await getUserMembershipSubscriptionOrder(userId);
+
+    if (!subscriptionOrder?.subscription_token) {
+        throw new Error("No active subscription found for this user.");
+    }
+    // const payload = {
+    //     state: "Deleted",
+    //     comment: "Cancelled membership subscription",
+    // }
+    // const deleteResponse = await fetch(`${process.env.SWEDBANK_BASE_URL}/psp/paymentorders/unscheduledTokens/${subscriptionToken.token}`, {
+    //     method: "PATCH",
+    //     headers: {
+    //         "Content-Type": "application/json;version=3.1",
+    //         Authorization: `Bearer ${process.env.SWEDBANK_PAY_ACCESS_TOKEN}`,
+    //     },
+    //     body: JSON.stringify(payload)
+    // })
+    // if (!deleteResponse.ok) throw new Error(`Swedbank Pay request failed: ${await deleteResponse.text()}`);
+
+
+    // Remove the subscription token from the user's membership
+    await prisma.order.update({
+        where: { id: subscriptionOrder.id },
         data: { subscription_token: null },
     });
-    revalidateTag(GlobalConstants.USER);
-};
 
-export const userHasActiveMembershipSubscription = async (
-    userId: string,
-): Promise<boolean> => {
-    const userMembership = await prisma.userMembership.findUnique({
-        where: { user_id: userId },
-        include: {
-            orders: {
-                orderBy: { created_at: "desc" }
-            }
-        },
-    });
-    if (userMembership?.orders.length === 0) return false;
-    const subscriptionToken = userMembership?.orders[0]?.subscription_token as SubscriptionToken;
-    if (!subscriptionToken) return false;
-    // Check that the subscription has not expired
-    const expiryDate = dayjs.utc(subscriptionToken.expiryDate, "MM/YYYY");
-    return expiryDate.isValid() && expiryDate.isAfter(dayjs.utc());
+    revalidateTag(GlobalConstants.USER);
 };
 
 export const getMembershipProduct = async (): Promise<
