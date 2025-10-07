@@ -288,6 +288,12 @@ export const checkPaymentStatus = async (
         );
         if (!paymentStatusResponse.ok) {
             progressOrder(orderId, OrderStatus.error);
+            console.error(
+                `Failed to check payment status for order ${order.id}:`,
+                paymentStatusResponse.status,
+                paymentStatusResponse.statusText,
+                await paymentStatusResponse.text(),
+            );
             throw new Error("Failed to check payment status");
         }
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
