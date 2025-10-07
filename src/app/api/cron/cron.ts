@@ -2,18 +2,9 @@ import { prisma } from "../../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import { getOrganizationSettings } from "../../lib/organization-settings-actions";
-import { Prisma } from "@prisma/client";
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
 import { createElement } from "react";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
-import { userHasActiveMembershipSubscription } from "../../ui/utils";
-import { createOrder } from "../../lib/order-actions";
-import {
-    checkPaymentStatus,
-    createSwedbankPaymentRequest,
-    getSwedbankPaymentRequestPurchasePayload,
-} from "../../lib/payment-actions";
-import { SubscriptionToken } from "../../lib/payment-utils";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -38,7 +29,7 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
         console.error(`Error when purging stale memberships: ${error.message}`);
     }
 };
-
+/*
 const chargeMembershipWithActiveSubscriptions = async (
     user: Prisma.UserGetPayload<{
         include: { user_membership: { include: { membership: { include: { product: true } } } } };
@@ -57,7 +48,7 @@ const chargeMembershipWithActiveSubscriptions = async (
     paymentRequestPayload.paymentorder.unscheduledToken = subscriptionToken as SubscriptionToken;
     const { paymentOrderId } = await createSwedbankPaymentRequest(paymentRequestPayload);
     if (paymentOrderId) await checkPaymentStatus(user.id, membershipOrder.id, paymentOrderId);
-};
+}; */
 
 export const expiringMembershipMaintenance = async (): Promise<void> => {
     /**
@@ -91,31 +82,16 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
         },
     });
 
-    const usersWithSubscriptions = expiringUsers.filter((user) =>
-        userHasActiveMembershipSubscription(user),
-    );
-    try {
-        await Promise.all(
-            usersWithSubscriptions.map((user) => chargeMembershipWithActiveSubscriptions(user)),
-        ).then(() => console.log(`Auto-renewed ${usersWithSubscriptions.length} memberships`))
-    } catch (error) {
-        console.error(`Error when auto-renewing memberships: ${error.message}`);
-    }
-
-
-    const usersWithoutSubscriptions = expiringUsers.filter(
-        (user) => !userHasActiveMembershipSubscription(user),
-    );
     try {
         // Send email reminders to users without active subscriptions
-        if (usersWithoutSubscriptions.length > 0) {
+        if (expiringUsers.length > 0) {
             await sendMail(
-                usersWithoutSubscriptions.map((user) => user.email),
+                expiringUsers.map((user) => user.email),
                 `Your ${process.env.NEXT_PUBLIC_ORG_NAME || "Task Master"} membership is about to expire`,
                 createElement(MembershipExpiresReminderTemplate),
             );
         }
-        console.log(`Reminded about ${usersWithoutSubscriptions.length} expiring membership(s)`);
+        console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
     } catch (error) {
         console.error(`Error when reminding about expiring memberships: ${error.message}`);
     }

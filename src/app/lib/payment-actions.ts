@@ -16,7 +16,6 @@ import { getLoggedInUser, getUserLanguage } from "./user-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import z from "zod";
-import dayjs from "dayjs";
 
 export const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
     return await fetch(url, {
@@ -190,16 +189,7 @@ export const redirectToSwedbankPayment = async (
     if (order.total_amount < 1) {
         // Free order - no payment needed
         // Directly progress to completed
-        const subscriptionToken = validatedSubscribeToMembership
-            ? {
-                type: "unscheduled" as const,
-                token: "free-subscription-" + order.id,
-                name: "Free subscription",
-                expiryDate: dayjs().add(10, "year").format("MM/YYYY"),
-            }
-            : undefined;
-
-        await progressOrder(order.id, OrderStatus.paid, false, subscriptionToken);
+        await progressOrder(order.id, OrderStatus.paid, false);
         return;
     }
     const requestBody = await getSwedbankPaymentRequestPurchasePayload(
@@ -303,10 +293,8 @@ export const checkPaymentStatus = async (
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
-        const subscriptionToken: SubscriptionToken | undefined =
-            paymentStatusData.paymentOrder.paid.tokens?.[0];
         const needsCapture =
             paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
-        await progressOrder(orderId, newOrderStatus, needsCapture, subscriptionToken);
+        await progressOrder(orderId, newOrderStatus, needsCapture);
     }
 };

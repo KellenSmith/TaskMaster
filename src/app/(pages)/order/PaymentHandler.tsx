@@ -5,10 +5,6 @@ import {
     Checkbox,
     Typography,
     Link,
-    Card,
-    CardHeader,
-    CardContent,
-    FormControlLabel,
 } from "@mui/material";
 import React, { use, useState } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
@@ -21,7 +17,6 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
-import { Circle } from "@mui/icons-material";
 
 interface PaymentHandlerProps {
     orderPromise: Promise<
@@ -40,7 +35,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         termsOfPurchase: false,
         privacyPolicy: false,
     });
-    const [subscribeToMembership, setSubscribeToMembership] = useState(false);
+    // const [subscribeToMembership, setSubscribeToMembership] = useState(false);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -53,7 +48,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
 
     const redirectToPayment = async () => {
         try {
-            await redirectToSwedbankPayment(order.id, subscribeToMembership);
+            await redirectToSwedbankPayment(order.id, false); // TODO: false = do not create subscription
         } catch (error) {
             allowRedirectException(error);
             // Show notification for all other errors
@@ -70,17 +65,17 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         }
     };
 
-    const subscribeableProducts = order
-        ? order.order_items
-              .map((orderItem) => orderItem.product)
-              .filter((product) => product.membership)
-        : [];
+    /*     const subscribeableProducts = order
+            ? order.order_items
+                  .map((orderItem) => orderItem.product)
+                  .filter((product) => product.membership)
+            : []; */
 
     return (
         order?.status === OrderStatus.pending && (
             <Stack component="form" onSubmit={handleSubmit}>
                 <Stack alignItems="center" width="100%">
-                    {subscribeableProducts.length > 0 && (
+                    {/* {subscribeableProducts.length > 0 && (
                         <Card
                             sx={{ width: "100%", my: 2 }}
                             aria-label="Membership subscription offer"
@@ -111,7 +106,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                                     <Typography variant="body2">
                                         {
                                             LanguageTranslations.ifYouDontWantToSubscribeAtAll[
-                                                language
+                                            language
                                             ]
                                         }
                                     </Typography>
@@ -146,7 +141,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                                 </Stack>
                             </CardContent>
                         </Card>
-                    )}
+                    )} */}
                     <Stack direction="row" alignItems={"center"} width={"100%"}>
                         <Checkbox
                             checked={termsAccepted.termsOfPurchase}

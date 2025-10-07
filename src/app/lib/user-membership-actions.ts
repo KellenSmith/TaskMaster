@@ -8,7 +8,7 @@ import { createAndRedirectToOrder } from "./order-actions";
 import { getAbsoluteUrl, isMembershipExpired, isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
 import { AddMembershipSchema, UuidSchema } from "./zod-schemas";
-import { PaymentOrderResponse, SubscriptionToken } from "./payment-utils";
+import { PaymentOrderResponse } from "./payment-utils";
 import { getLoggedInUser, getUserLanguage } from "./user-actions";
 import { headers } from "next/headers";
 import { generatePayeeReference, makeSwedbankApiRequest } from "./payment-actions";
@@ -36,7 +36,6 @@ export const renewUserMembership = async (
     tx: Prisma.TransactionClient,
     userId: string,
     membershipId: string,
-    subscriptionToken?: SubscriptionToken,
 ): Promise<void> => {
     const membership = await tx.membership.findUniqueOrThrow({
         where: { product_id: membershipId },
@@ -62,14 +61,12 @@ export const renewUserMembership = async (
         update: {
             membership_id: membershipId,
             expires_at: newExpiryDate,
-            subscription_token: subscriptionToken,
         },
         // If no membership exists, create a new one
         create: {
             user_id: userId,
             membership_id: membershipId,
             expires_at: newExpiryDate,
-            subscription_token: subscriptionToken,
         },
     });
     revalidateTag(GlobalConstants.USER);
