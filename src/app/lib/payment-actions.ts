@@ -286,18 +286,19 @@ export const checkPaymentStatus = async (
         const paymentStatusResponse = await makeSwedbankApiRequest(
             `https://api.externalintegration.payex.com${paymentRequestId || order.payment_request_id}?$expand=paid`,
         );
-        const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
+        console.log(`Payment status response for order ${order.id}:`, paymentStatusResponse);
         if (!paymentStatusResponse.ok) {
             progressOrder(orderId, OrderStatus.error);
             console.error(
                 `Failed to check payment status for order ${order.id}:`,
                 paymentStatusResponse.status,
                 paymentStatusResponse.statusText,
-                paymentStatusData,
+                await paymentStatusResponse.text(),
             );
             throw new Error("Failed to check payment status");
         }
-
+        console.log(`Payment status check succeeded for order ${order.id}`);
+        const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
         const needsCapture =
