@@ -163,9 +163,10 @@ export const progressOrder = async (
 
     // If order status is error, allow trying to go through the flow again by setting to pending
     if (order.status === OrderStatus.error)
-        await prisma.order.update({
+        order = await prisma.order.update({
             where: { id: orderId },
             data: { status: OrderStatus.pending },
+            select: { status: true },
         });
 
     // Pending to paid
