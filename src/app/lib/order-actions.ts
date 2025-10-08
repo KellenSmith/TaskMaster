@@ -161,8 +161,8 @@ export const progressOrder = async (
         where: { id: orderId },
     });
 
-    // If order status is cancelled or error, allow trying to go through the flow again by setting to pending
-    if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(order.status))
+    // If order status is error, allow trying to go through the flow again by setting to pending
+    if (order.status === OrderStatus.error)
         await prisma.order.update({
             where: { id: orderId },
             data: { status: OrderStatus.pending },
