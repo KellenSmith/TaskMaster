@@ -228,7 +228,7 @@ export const capturePaymentFunds = async (orderId: string) => {
     const capturePayeeRef = `${order.payee_ref}CAP`.substring(0, 30);
 
     const capturePaymentResponse = await makeSwedbankApiRequest(
-        `https://api.externalintegration.payex.com${order.payment_request_id}/captures`,
+        `${process.env.SWEDBANK_BASE_URL}${order.payment_request_id}/captures`,
         {
             transaction: {
                 description: "Capturing authorized payment",
@@ -284,7 +284,7 @@ export const checkPaymentStatus = async (
 
     if (paymentRequestId || order.payment_request_id) {
         const paymentStatusResponse = await makeSwedbankApiRequest(
-            `https://api.externalintegration.payex.com${paymentRequestId || order.payment_request_id}?$expand=paid`,
+            `${process.env.SWEDBANK_BASE_URL}${paymentRequestId || order.payment_request_id}?$expand=paid`,
         );
         console.log(`Payment status response for order ${order.id}:`, paymentStatusResponse);
         if (!paymentStatusResponse.ok) {

@@ -3,7 +3,7 @@ import { Language, OrderStatus, Prisma } from "@prisma/client";
 const LanguageTranslations = {
     failedCheckOrderStatus: {
         [Language.english]:
-            "Thank you for your order! Your payment has been processed and your order is complete",
+            "Failed to check order status. What you see may not be up to date",
         [Language.swedish]:
             "Misslyckades med att kontrollera orderstatus. Det du ser kanske inte är aktuellt",
     },
