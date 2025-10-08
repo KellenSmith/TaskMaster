@@ -301,6 +301,8 @@ export const checkPaymentStatus = async (
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
+        console.log(`Order ${order.id} payment status: ${paymentStatus}, mapped to order status: ${newOrderStatus}`);
+        console.log(paymentStatusData)
         const needsCapture =
             paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
         await progressOrder(orderId, newOrderStatus, needsCapture);
