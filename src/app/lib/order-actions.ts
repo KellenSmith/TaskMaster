@@ -161,6 +161,13 @@ export const progressOrder = async (
         where: { id: orderId },
     });
 
+    // If order status is cancelled or error, allow trying to go through the flow again by setting to pending
+    if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(order.status))
+        await prisma.order.update({
+            where: { id: orderId },
+            data: { status: OrderStatus.pending },
+        });
+
     // Pending to paid
     if (order.status === OrderStatus.pending) {
         order = await prisma.order.update({
@@ -168,6 +175,7 @@ export const progressOrder = async (
             data: { status: OrderStatus.paid },
         });
         revalidateTag(GlobalConstants.ORDER);
+        if (newStatus === OrderStatus.paid) return
     }
 
     // Paid to shipped
@@ -195,6 +203,7 @@ export const progressOrder = async (
             // Allow progressing order despite failed confirmation
             console.error("Failed to send order confirmation:", error);
         }
+        if (newStatus === OrderStatus.shipped) return
     }
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {
