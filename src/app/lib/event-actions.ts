@@ -300,7 +300,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
             await sendMail(
                 [organizationSettings.event_manager_email],
                 "Event requires approval",
-                mailContent,
+                mailContent, eventToUpdate.host.email
             );
         }
 
