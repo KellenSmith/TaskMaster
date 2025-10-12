@@ -286,7 +286,6 @@ export const checkPaymentStatus = async (
         const paymentStatusResponse = await makeSwedbankApiRequest(
             `${process.env.SWEDBANK_BASE_URL}${paymentRequestId || order.payment_request_id}?$expand=paid`,
         );
-        console.log(`Payment status response for order ${order.id}:`, paymentStatusResponse);
         if (!paymentStatusResponse.ok) {
             progressOrder(orderId, OrderStatus.error);
             console.error(
@@ -297,12 +296,9 @@ export const checkPaymentStatus = async (
             );
             throw new Error("Failed to check payment status");
         }
-        console.log(`Payment status check succeeded for order ${order.id}`);
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
-        console.log(`Order ${order.id} payment status: ${paymentStatus}, mapped to order status: ${newOrderStatus}`);
-        console.log(paymentStatusData)
         const needsCapture =
             paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
         await progressOrder(orderId, newOrderStatus, needsCapture);

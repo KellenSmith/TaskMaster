@@ -1,42 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { prisma } from "../../../../prisma/prisma-client";
-import { PaymentStateType } from "../../lib/payment-utils";
-
-interface PaymentCallbackRequestBody {
-    paymentorder: string;
-    authorization: {
-        id: string;
-        itemDescriptions: {
-            id: string;
-        };
-        transaction: {
-            id: string;
-            created: string;
-            updated: string;
-            type: string;
-            state: PaymentStateType;
-            number: number;
-            amount: number;
-            vatAmount: number;
-            description: string;
-            payeeReference: string;
-            isOperational: boolean;
-            problem?: {
-                type: string;
-                title: string;
-                status: number;
-                detail: string;
-                problems: unknown[];
-                operations: Array<{
-                    href: string;
-                    rel: string;
-                    method: string;
-                }>;
-            };
-        };
-    };
-}
 
 const getClientIp = (request: NextRequest): string | null => {
     // Try multiple headers for better IP detection
@@ -90,13 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     try {
-        const requestBody: PaymentCallbackRequestBody = await request.json();
-
         const orderId = request.nextUrl.searchParams.get("orderId");
-        if (!orderId || !requestBody.authorization?.transaction?.state) {
-            console.warn(`Invalid payload structure from IP: ${clientIp}`);
-            return new NextResponse("Bad Request: Missing required fields", { status: 400 });
-        }
 
         // ✅ SECURITY: Simple idempotency check to prevent duplicate processing
         const order = await prisma.order.findUniqueOrThrow({
