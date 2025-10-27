@@ -414,6 +414,7 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
     });
     const tasks = await prisma.task.findMany({
         where: { event_id: eventId },
+        include: { skill_badges: true },
     });
 
     const loggedInUser = await getLoggedInUser();
@@ -490,23 +491,31 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                 .add(dayjs.utc(validatedData.start_time).diff(dayjs.utc(eventData.start_time)))
                 .toISOString();
 
-        await tx.task.createMany({
-            data: tasks.map((task) => {
-                return {
-                    ...task,
-                    id: undefined,
-                    event_id: createdEvent.id,
-                    // Create as unassigned
-                    assignee_id: null,
-                    // Add logged in user as reviewer
-                    reviewer_id: loggedInUser.id,
-                    // Create tasks as "To Do"
-                    status: TaskStatus.toDo,
-                    start_time: moveTaskTimeForward(task.start_time),
-                    end_time: moveTaskTimeForward(task.end_time),
-                } as Prisma.TaskCreateManyInput;
-            }),
-        });
+        await Promise.all(
+            tasks.map((task: Prisma.TaskGetPayload<{ include: { skill_badges: true } }>) => {
+                const skillBadgesWithoutTaskId = task.skill_badges.map((badge) => ({
+                    ...badge,
+                    task_id: undefined,
+                }));
+
+                return tx.task.create({
+                    data: {
+                        ...task,
+                        id: undefined,
+                        event_id: createdEvent.id,
+                        // Create as unassigned
+                        assignee_id: null,
+                        // Add logged in user as reviewer
+                        reviewer_id: loggedInUser.id,
+                        // Create tasks as "To Do"
+                        status: TaskStatus.toDo,
+                        start_time: moveTaskTimeForward(task.start_time),
+                        end_time: moveTaskTimeForward(task.end_time),
+                        skill_badges: { createMany: { data: skillBadgesWithoutTaskId } },
+                    },
+                });
+            })
+        );
         return createdEvent;
     });
 
