@@ -345,13 +345,17 @@ export const orderFieldLabels = {
         [Language.english]: "Total amount",
         [Language.swedish]: "Total summa",
     },
+    [GlobalConstants.TOTAL_VAT_AMOUNT]: {
+        [Language.english]: "Total VAT Amount",
+        [Language.swedish]: "Total moms",
+    },
     [GlobalConstants.PAYMENT_REQUEST_ID]: {
         [Language.english]: "Payment Request ID",
         [Language.swedish]: "Betalningsbegäran ID",
     },
     [GlobalConstants.PAYEE_REF]: {
         [Language.english]: "Payee Reference",
-        [Language.swedish]: "Betalningsmottagare Referens",
+        [Language.swedish]: "Betalningsreferens",
     },
     [OrderStatus.pending]: {
         [Language.english]: "Pending",

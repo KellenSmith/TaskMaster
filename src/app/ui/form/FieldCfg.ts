@@ -264,7 +264,6 @@ export const checkboxFields = [
     GlobalConstants.CONSENT_TO_NEWSLETTERS,
     GlobalConstants.CONSENT_GDPR,
     GlobalConstants.UNLIMITED_STOCK,
-    GlobalConstants.PAYMENT_REQUEST_ID,
     GlobalConstants.PAYEE_REF,
 ];
 

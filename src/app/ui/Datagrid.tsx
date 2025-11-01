@@ -31,23 +31,25 @@ export interface RowActionProps {
 
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
-          include: {
-              user_membership: true;
-              skill_badges: true;
-          };
-      }>
+        include: {
+            user_membership: true;
+            skill_badges: true;
+        };
+    }>
     | Product
     | Prisma.OrderGetPayload<{
-          include: {
-              user: { select: { nickname: true } };
-              order_items: { include: { product: true } };
-          };
-      }>
+        include: {
+            user: { select: { nickname: true } };
+            order_items: { include: { product: true } };
+        };
+    }>
     | Prisma.NewsletterJobGetPayload<true>;
 
 interface DatagridProps {
     name?: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
+    // eslint-disable-next-line no-unused-vars
+    onRowClick?: (row: any) => void;
     updateAction?: (
         rowId: string, // eslint-disable-line no-unused-vars
         fieldValues: FormData, // eslint-disable-line no-unused-vars
@@ -55,9 +57,9 @@ interface DatagridProps {
     // eslint-disable-next-line no-unused-vars
     createAction?: (fieldValues: FormData) => Promise<void>;
     validationSchema?:
-        | typeof UserUpdateSchema
-        | typeof ProductUpdateSchema
-        | typeof OrderUpdateSchema;
+    | typeof UserUpdateSchema
+    | typeof ProductUpdateSchema
+    | typeof OrderUpdateSchema;
     rowActions?: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
@@ -69,6 +71,7 @@ interface DatagridProps {
 const Datagrid: React.FC<DatagridProps> = ({
     name,
     dataGridRowsPromise,
+    onRowClick,
     updateAction,
     createAction,
     validationSchema,
@@ -181,7 +184,7 @@ const Datagrid: React.FC<DatagridProps> = ({
             <DataGrid
                 apiRef={apiRef}
                 rows={datagridRows}
-                onRowClick={(row) => (updateAction || rowActions) && setClickedRow(row.row)}
+                onRowClick={(row) => onRowClick ? onRowClick(row) : (updateAction || rowActions) && setClickedRow(row.row)}
                 columns={columns}
                 initialState={{
                     columns: {
