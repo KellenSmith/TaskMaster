@@ -297,6 +297,7 @@ export const sendoutFieldLabels = {
 
 export const productFieldLabels = {
     [GlobalConstants.PRICE]: ProductLanguageTranslations.price,
+    [GlobalConstants.VAT_PERCENTAGE]: ProductLanguageTranslations.vat_percentage,
     [GlobalConstants.STOCK]: ProductLanguageTranslations.stock,
     [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations[GlobalConstants.UNLIMITED_STOCK],
     [GlobalConstants.IMAGE_URL]: {

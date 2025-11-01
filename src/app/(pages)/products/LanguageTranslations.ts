@@ -6,6 +6,14 @@ const LanguageTranslations = {
         [Language.english]: "Price",
         [Language.swedish]: "Pris",
     },
+    [GlobalConstants.VAT_AMOUNT]: {
+        [Language.english]: "VAT",
+        [Language.swedish]: "Moms",
+    },
+    [GlobalConstants.TOTAL_VAT_AMOUNT]: {
+        [Language.english]: "Total VAT",
+        [Language.swedish]: "Total Moms",
+    },
     [GlobalConstants.STOCK]: {
         [Language.english]: "Stock",
         [Language.swedish]: "Lager",

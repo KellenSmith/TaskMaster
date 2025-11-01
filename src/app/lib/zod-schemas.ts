@@ -197,6 +197,7 @@ export const ProductCreateSchema = z
         name: z.string(),
         description: z.string().optional(),
         price: priceSchema.optional(),
+        vat_percentage: z.coerce.number().min(0).max(100).optional(),
         stock: z.coerce.number().int().nonnegative().nullable().optional(),
         unlimited_stock: z.coerce.boolean().optional(),
         image_url: z.string().optional(),

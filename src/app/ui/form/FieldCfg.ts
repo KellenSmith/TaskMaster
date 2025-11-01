@@ -136,6 +136,7 @@ export const RenderedFields = {
     [GlobalConstants.PRODUCT]: [
         GlobalConstants.NAME,
         GlobalConstants.PRICE,
+        GlobalConstants.VAT_PERCENTAGE,
         GlobalConstants.STOCK,
         GlobalConstants.UNLIMITED_STOCK,
         GlobalConstants.DESCRIPTION,
@@ -208,7 +209,7 @@ export const RequiredFields = {
         GlobalConstants.REVIEWER,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
-    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE],
+    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.VAT_PERCENTAGE],
     [GlobalConstants.PARTICIPANT_USERS]: RenderedFields[GlobalConstants.PARTICIPANT_USERS],
     [GlobalConstants.RESERVE_USERS]: RenderedFields[GlobalConstants.RESERVE_USERS],
 };

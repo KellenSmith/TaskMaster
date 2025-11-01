@@ -2,7 +2,7 @@
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { getOrderById, progressOrder } from "./order-actions";
-import { Language, OrderStatus } from "@prisma/client";
+import { Language, OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import {
     getNewOrderStatus,
@@ -54,6 +54,24 @@ export const generatePayeeReference = async (orderId: string, prefix: string = "
     return payeeRef
 };
 
+interface SwedbankPaymentRequestOrderItem {
+    reference: string;
+    name: string;
+    type: string;
+    class: string;
+    itemUrl: string;
+    imageUrl: string;
+    description: string;
+    discountDescription: string;
+    quantity: number;
+    quantityUnit: string;
+    unitPrice: number;
+    discountPrice: number;
+    vatPercent: number;
+    amount: number;
+    vatAmount: number;
+}
+
 interface SwedbankPaymentRequestBody {
     paymentorder: {
         operation: "Purchase";
@@ -79,7 +97,7 @@ interface SwedbankPaymentRequestBody {
             payeeName: string;
             orderReference: string; // Internal order reference (can contain hyphens)
         };
-        // TODO: Include order items in the payment request for better tracking
+        orderItems: SwedbankPaymentRequestOrderItem[];
     };
 }
 
@@ -103,6 +121,7 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
     const order = await prisma.order.update({
         where: { id: orderId },
         data: { payee_ref: payeeRef },
+        include: { order_items: { include: { product: { include: { membership: true, ticket: true } } } } },
     });
 
     const organizationSettings = await getOrganizationSettings();
@@ -111,8 +130,9 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
         paymentorder: {
             operation: "Purchase",
             currency: "SEK",
+            // TODO: Add age restriction
             amount: order.total_amount,
-            vatAmount: 0,
+            vatAmount: order.total_vat_amount,
             description: `Purchase`,
             generateUnscheduledToken: subscribe,
             userAgent: (await headers()).get("user-agent") || "Unknown",
@@ -137,7 +157,20 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
                 payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
                 orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
-            // TODO: Include order items in the payment request for better tracking
+            orderItems: order.order_items.map((orderItem: Prisma.OrderItemGetPayload<{ include: { product: { include: { membership: true, ticket: true } } } }>) => ({
+                reference: orderItem.product.id,
+                name: orderItem.product.name,
+                type: "PRODUCT",
+                class: orderItem.product.membership ? "Membership" : orderItem.product.ticket ? "Ticket" : "Product",
+                description: orderItem.product.description || orderItem.product.membership ? "Membership" : orderItem.product.ticket ? "Ticket" : "Product",
+                quantity: orderItem.quantity,
+                quantityUnit: "pcs",
+                unitPrice: orderItem.product.price,
+                discountPrice: 0,
+                vatPercent: orderItem.product.vat_percentage,
+                amount: orderItem.price,
+                vatAmount: orderItem.vat_amount
+            }))
         },
     };
 };

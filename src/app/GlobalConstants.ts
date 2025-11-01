@@ -111,6 +111,7 @@ const GlobalConstants = {
     // Product
     PRODUCT: "product",
     PRICE: "price",
+    VAT_PERCENTAGE: "vat_percentage",
     STOCK: "stock",
     UNLIMITED_STOCK: "unlimited_stock",
     IMAGE_URL: "image_url",
@@ -122,12 +123,14 @@ const GlobalConstants = {
     ORDER: "order",
     ORDER_ID: "order_id",
     TOTAL_AMOUNT: "total_amount",
+    TOTAL_VAT_AMOUNT: "total_vat_amount",
     PAYMENT_REQUEST_ID: "payment_request_id",
     PAYEE_REF: "payee_ref",
     // Order items
     ORDER_ITEMS: "order_items",
     QUANTITY: "quantity",
     TOTAL: "total",
+    VAT_AMOUNT: "vat_amount",
     // Task
     TASK: "task",
     TASKS: "tasks",
