@@ -267,7 +267,7 @@ export const checkboxFields = [
     GlobalConstants.PAYEE_REF,
 ];
 
-export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT];
+export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT, GlobalConstants.VAT_AMOUNT, GlobalConstants.TOTAL_VAT_AMOUNT];
 
 export const getUserSelectOptions = (
     users: Prisma.UserGetPayload<{
