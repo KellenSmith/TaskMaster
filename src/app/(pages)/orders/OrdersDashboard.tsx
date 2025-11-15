@@ -11,6 +11,9 @@ import { FieldLabels } from "../../ui/form/FieldCfg";
 import { Cancel, Check, Error, Warning } from "@mui/icons-material";
 import { clientRedirect } from "../../lib/utils";
 import { useRouter } from "next/navigation";
+import { openResourceInNewTab } from "../../ui/utils";
+import OrdersReportPDF from "./OrdersReportPDF";
+import { pdf } from "@react-pdf/renderer";
 
 interface OrdersDashboardProps {
     ordersPromise: Promise<
@@ -125,6 +128,21 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     const onRowClick = (order: Prisma.OrderGetPayload<true>) =>
         clientRedirect(router, [GlobalConstants.ORDER], { order_id: order.id });
 
+    const printOrdersReport = async (filteredRows: ImplementedDatagridEntities[]) => {
+        const orders = filteredRows as Prisma.OrderGetPayload<{ include: { order_items: { include: { product: true } } } }>[];
+        // Generate PDF blob
+        const doc = <OrdersReportPDF orders={orders} language={language} />;
+        const asPdf = await pdf(doc).toBlob();
+        const url = URL.createObjectURL(asPdf);
+        openResourceInNewTab(url);
+    }
+
+    const filteredRowsActions = [
+        {
+            action: async (filteredRows: ImplementedDatagridEntities[]) => printOrdersReport(filteredRows),
+            buttonLabel: LanguageTranslations.printReport[language],
+        }
+    ]
 
     // TODO: If on mobile, minimize content
     return (
@@ -134,9 +152,11 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
                 dataGridRowsPromise={ordersPromise}
                 validationSchema={OrderUpdateSchema}
                 onRowClick={onRowClick}
+                filteredRowsActions={filteredRowsActions}
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
             />
+
         </Stack>
     );
 };

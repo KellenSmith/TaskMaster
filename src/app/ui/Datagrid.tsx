@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Dialog, Stack, useMediaQuery, useTheme } from "@mui/material";
-import { DataGrid, GridColDef, useGridApiRef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, useGridApiRef, gridFilteredSortedRowIdsSelector, gridFilteredSortedRowEntriesSelector } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import {
     checkboxFields,
@@ -25,6 +25,13 @@ export interface RowActionProps {
     name: string;
     serverAction: (clickedRow: ImplementedDatagridEntities) => Promise<string>; // eslint-disable-line no-unused-vars
     available: (clickedRow: ImplementedDatagridEntities) => boolean; // eslint-disable-line no-unused-vars
+    buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning";
+    buttonLabel: string;
+}
+
+export interface FilteredRowsActionProps {
+    // eslint-disable-next-line no-unused-vars
+    action: (filteredRows: ImplementedDatagridEntities[]) => Promise<void>;
     buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning";
     buttonLabel: string;
 }
@@ -56,6 +63,7 @@ interface DatagridProps {
     ) => Promise<void>;
     // eslint-disable-next-line no-unused-vars
     createAction?: (fieldValues: FormData) => Promise<void>;
+    filteredRowsActions?: FilteredRowsActionProps[];
     validationSchema?:
     | typeof UserUpdateSchema
     | typeof ProductUpdateSchema
@@ -74,6 +82,7 @@ const Datagrid: React.FC<DatagridProps> = ({
     onRowClick,
     updateAction,
     createAction,
+    filteredRowsActions,
     validationSchema,
     rowActions = [],
     customColumns = [],
@@ -200,6 +209,19 @@ const Datagrid: React.FC<DatagridProps> = ({
                     {LanguageTranslations.addNew[language]}
                 </Button>
             )}
+            {filteredRowsActions && filteredRowsActions.map((filteredRowsAction) => (
+                <Button
+                    key={filteredRowsAction.buttonLabel}
+                    onClick={() => {
+                        const filteredRows = gridFilteredSortedRowEntriesSelector(apiRef).map(entry => entry.model);
+                        filteredRowsAction.action(filteredRows as ImplementedDatagridEntities[]);
+                    }}
+                    color={filteredRowsAction.buttonColor || "secondary"}
+                    disabled={isPending}
+                >
+                    {filteredRowsAction.buttonLabel}
+                </Button>
+            ))}
             <Dialog
                 fullScreen={isSmallScreen}
                 fullWidth
