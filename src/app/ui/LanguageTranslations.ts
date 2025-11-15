@@ -118,6 +118,14 @@ const LanguageTranslations = {
         [Language.english]: "Add New",
         [Language.swedish]: "Lägg till ny",
     },
+    before: {
+        [Language.english]: "Before",
+        [Language.swedish]: "Före",
+    },
+    after: {
+        [Language.english]: "After",
+        [Language.swedish]: "Efter",
+    },
 };
 
 export default LanguageTranslations;
