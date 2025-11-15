@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, Dialog, Stack, useMediaQuery, useTheme, TextField, Box } from "@mui/material";
-import { DataGrid, GridColDef, useGridApiRef, gridFilteredSortedRowIdsSelector, gridFilteredSortedRowEntriesSelector, GridFilterOperator, getGridDateOperators, GridFilterInputValueProps } from "@mui/x-data-grid";
+import { Button, Dialog, Stack, useMediaQuery, useTheme, TextField } from "@mui/material";
+import { DataGrid, GridColDef, useGridApiRef, gridFilteredSortedRowEntriesSelector, GridFilterOperator, getGridDateOperators, GridFilterInputValueProps, GridRowParams } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import {
     checkboxFields,
@@ -56,7 +56,7 @@ interface DatagridProps {
     name?: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
     // eslint-disable-next-line no-unused-vars
-    onRowClick?: (row: any) => void;
+    onRowClick?: (row: GridRowParams) => void;
     updateAction?: (
         rowId: string, // eslint-disable-line no-unused-vars
         fieldValues: FormData, // eslint-disable-line no-unused-vars

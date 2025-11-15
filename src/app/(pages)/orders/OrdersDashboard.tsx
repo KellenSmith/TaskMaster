@@ -3,7 +3,7 @@ import { Stack, Typography } from "@mui/material";
 import Datagrid, { ImplementedDatagridEntities } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { OrderUpdateSchema } from "../../lib/zod-schemas";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridRowParams } from "@mui/x-data-grid";
 import { OrderStatus, Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -125,8 +125,10 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
         GlobalConstants.USER_ID,
     ];
 
-    const onRowClick = (order: Prisma.OrderGetPayload<true>) =>
+    const onRowClick = (clickedRow: GridRowParams) => {
+        const order = clickedRow.row as Prisma.OrderGetPayload<true>;
         clientRedirect(router, [GlobalConstants.ORDER], { order_id: order.id });
+    }
 
     const printOrdersReport = async (filteredRows: ImplementedDatagridEntities[]) => {
         const orders = filteredRows as Prisma.OrderGetPayload<{ include: { order_items: { include: { product: true } } } }>[];
