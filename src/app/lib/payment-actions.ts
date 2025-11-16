@@ -59,10 +59,10 @@ interface SwedbankPaymentRequestOrderItem {
     name: string;
     type: string;
     class: string;
-    itemUrl: string;
-    imageUrl: string;
+    itemUrl?: string;
+    imageUrl?: string;
     description: string;
-    discountDescription: string;
+    discountDescription?: string;
     quantity: number;
     quantityUnit: string;
     unitPrice: number;
@@ -330,6 +330,7 @@ export const checkPaymentStatus = async (
             throw new Error("Failed to check payment status");
         }
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
+        console.log(paymentStatusData)
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
         const needsCapture =

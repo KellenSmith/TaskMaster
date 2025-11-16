@@ -232,7 +232,7 @@ model Product {
   name            String
   description     String?
   price           Float   @default(0)
-  vat_percentage  Int     @default(6)
+  vat_percentage  Int     @default(6) // Default to 6% VAT (as per Swedish regulations for event tickets)
   stock           Int?
   unlimited_stock Boolean @default(false)
   image_url       String?
