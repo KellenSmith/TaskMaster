@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, Dialog, Stack, useMediaQuery, useTheme } from "@mui/material";
-import { DataGrid, GridColDef, useGridApiRef } from "@mui/x-data-grid";
+import { Button, Dialog, Stack, useMediaQuery, useTheme, TextField } from "@mui/material";
+import { DataGrid, GridColDef, useGridApiRef, gridFilteredSortedRowEntriesSelector, GridFilterOperator, getGridDateOperators, GridFilterInputValueProps, GridRowParams } from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import {
     checkboxFields,
@@ -29,35 +29,45 @@ export interface RowActionProps {
     buttonLabel: string;
 }
 
+export interface FilteredRowsActionProps {
+    // eslint-disable-next-line no-unused-vars
+    action: (filteredRows: ImplementedDatagridEntities[]) => Promise<void>;
+    buttonColor?: "inherit" | "error" | "secondary" | "primary" | "success" | "info" | "warning";
+    buttonLabel: string;
+}
+
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
-          include: {
-              user_membership: true;
-              skill_badges: true;
-          };
-      }>
+        include: {
+            user_membership: true;
+            skill_badges: true;
+        };
+    }>
     | Product
     | Prisma.OrderGetPayload<{
-          include: {
-              user: { select: { nickname: true } };
-              order_items: { include: { product: true } };
-          };
-      }>
+        include: {
+            user: { select: { nickname: true } };
+            order_items: { include: { product: true } };
+        };
+    }>
     | Prisma.NewsletterJobGetPayload<true>;
 
 interface DatagridProps {
     name?: string;
     dataGridRowsPromise: Promise<ImplementedDatagridEntities[]>;
+    // eslint-disable-next-line no-unused-vars
+    onRowClick?: (row: GridRowParams) => void;
     updateAction?: (
         rowId: string, // eslint-disable-line no-unused-vars
         fieldValues: FormData, // eslint-disable-line no-unused-vars
     ) => Promise<void>;
     // eslint-disable-next-line no-unused-vars
     createAction?: (fieldValues: FormData) => Promise<void>;
+    filteredRowsActions?: FilteredRowsActionProps[];
     validationSchema?:
-        | typeof UserUpdateSchema
-        | typeof ProductUpdateSchema
-        | typeof OrderUpdateSchema;
+    | typeof UserUpdateSchema
+    | typeof ProductUpdateSchema
+    | typeof OrderUpdateSchema;
     rowActions?: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
@@ -69,8 +79,10 @@ interface DatagridProps {
 const Datagrid: React.FC<DatagridProps> = ({
     name,
     dataGridRowsPromise,
+    onRowClick,
     updateAction,
     createAction,
+    filteredRowsActions,
     validationSchema,
     rowActions = [],
     customColumns = [],
@@ -90,7 +102,91 @@ const Datagrid: React.FC<DatagridProps> = ({
 
     const getColumnType = (fieldKey: string) => {
         if (checkboxFields.includes(fieldKey)) return "boolean";
+        if (datePickerFields.includes(fieldKey)) return "date";
         return "string";
+    };
+
+    // Custom date filter operators for "after" and "before" filtering
+    const getDateFilterOperators = (): GridFilterOperator[] => {
+        const defaultOperators = getGridDateOperators();
+
+        // Find and customize the "after" and "before" operators
+        const afterOperator = defaultOperators.find(op => op.value === 'after');
+        const beforeOperator = defaultOperators.find(op => op.value === 'before');
+
+        // Custom date range filter operator
+        const dateRangeOperator: GridFilterOperator = {
+            label: 'is between',
+            value: 'between',
+            getApplyFilterFn: (filterItem) => {
+                if (!filterItem.value || !Array.isArray(filterItem.value)) {
+                    return null;
+                }
+                const [startDate, endDate] = filterItem.value;
+                if (!startDate || !endDate) {
+                    return null;
+                }
+
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+
+                // Set start to beginning of day and end to end of day
+                start.setHours(0, 0, 0, 0);
+                end.setHours(23, 59, 59, 999);
+
+                return (value) => {
+                    if (!value) return false;
+                    const cellDate = new Date(value);
+                    return cellDate >= start && cellDate <= end;
+                };
+            },
+            InputComponent: (props: GridFilterInputValueProps) => {
+                const { item, applyValue } = props;
+                const [startDate, endDate] = Array.isArray(item.value) ? item.value : ['', ''];
+
+                const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                    const newValue = [event.target.value, endDate];
+                    applyValue({ ...item, value: newValue });
+                };
+
+                const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                    const newValue = [startDate, event.target.value];
+                    applyValue({ ...item, value: newValue });
+                };
+
+                return (
+                    <Stack direction="row" spacing={1} marginTop={1}>
+                        <TextField
+                            label="From"
+                            type="date"
+                            value={startDate}
+                            onChange={handleStartDateChange}
+                            slotProps={{
+                                inputLabel: { shrink: true }
+                            }}
+                            size="small"
+                        />
+                        <TextField
+                            label="To"
+                            type="date"
+                            value={endDate}
+                            onChange={handleEndDateChange}
+                            slotProps={{
+                                inputLabel: { shrink: true }
+                            }}
+                            size="small"
+                        />
+                    </Stack>
+                );
+            },
+        };
+
+        // Return only the operators we want to support
+        return [
+            dateRangeOperator,
+            afterOperator,
+            beforeOperator,
+        ].filter(Boolean) as GridFilterOperator[];
     };
 
     const getColumns = () => {
@@ -98,10 +194,16 @@ const Datagrid: React.FC<DatagridProps> = ({
         const columns: GridColDef[] = Object.keys(datagridRows[0]).map((key) => {
             const customColumn = customColumns.find((col) => col.field === key);
             if (customColumn) return null;
+
+
             return {
                 field: key,
                 headerName: key in FieldLabels ? FieldLabels[key][language] : key,
                 type: getColumnType(key),
+                ...(datePickerFields.includes(key) && {
+                    filterOperators: getDateFilterOperators(),
+                    valueGetter: (value) => value ? new Date(value) : null,
+                }),
                 valueFormatter: (value) => {
                     if (datePickerFields.includes(key)) {
                         return formatDate(value);
@@ -181,7 +283,7 @@ const Datagrid: React.FC<DatagridProps> = ({
             <DataGrid
                 apiRef={apiRef}
                 rows={datagridRows}
-                onRowClick={(row) => (updateAction || rowActions) && setClickedRow(row.row)}
+                onRowClick={(row) => onRowClick ? onRowClick(row) : (updateAction || rowActions) && setClickedRow(row.row)}
                 columns={columns}
                 initialState={{
                     columns: {
@@ -197,6 +299,19 @@ const Datagrid: React.FC<DatagridProps> = ({
                     {LanguageTranslations.addNew[language]}
                 </Button>
             )}
+            {filteredRowsActions && filteredRowsActions.map((filteredRowsAction) => (
+                <Button
+                    key={filteredRowsAction.buttonLabel}
+                    onClick={() => {
+                        const filteredRows = gridFilteredSortedRowEntriesSelector(apiRef).map(entry => entry.model);
+                        filteredRowsAction.action(filteredRows as ImplementedDatagridEntities[]);
+                    }}
+                    color={filteredRowsAction.buttonColor || "secondary"}
+                    disabled={isPending}
+                >
+                    {filteredRowsAction.buttonLabel}
+                </Button>
+            ))}
             <Dialog
                 fullScreen={isSmallScreen}
                 fullWidth

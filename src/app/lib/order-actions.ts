@@ -80,7 +80,8 @@ export const createOrder = async (
         const product = await prisma.product.findUniqueOrThrow({
             where: { id: item.product_id },
         });
-        item.price = product.price * item.quantity;
+        item.price = product.price;
+        item.vat_amount = product.vat_percentage / 100 * product.price;
     }
 
     // Create the order with items in a transaction
@@ -88,6 +89,7 @@ export const createOrder = async (
         return await tx.order.create({
             data: {
                 total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
+                total_vat_amount: orderItems.reduce((acc, item) => item.vat_amount * item.quantity + acc, 0),
                 user: {
                     connect: {
                         id: userId,

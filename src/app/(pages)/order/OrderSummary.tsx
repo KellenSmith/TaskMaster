@@ -82,6 +82,9 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                         {ProductLanguageTranslations.price[language] as string}
                                     </TableCell>
                                     <TableCell align="right">
+                                        {ProductLanguageTranslations.vat_amount[language] as string}
+                                    </TableCell>
+                                    <TableCell align="right">
                                         {ProductLanguageTranslations.quantity[language] as string}
                                     </TableCell>
                                     <TableCell align="right">
@@ -102,6 +105,9 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                         <TableCell align="right">
                                             {formatPrice(item.price)} SEK
                                         </TableCell>
+                                        <TableCell align="right">
+                                            {formatPrice(item.vat_amount)} SEK
+                                        </TableCell>
                                         <TableCell align="right">{item.quantity}</TableCell>
                                         <TableCell align="right">
                                             {formatPrice(item.price * item.quantity)} SEK
@@ -109,7 +115,7 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                     </TableRow>
                                 ))}
                                 <TableRow>
-                                    <TableCell colSpan={3}>
+                                    <TableCell colSpan={4}>
                                         <Typography variant="subtitle1">
                                             {LanguageTranslations.total[language]}
                                         </Typography>
@@ -117,6 +123,18 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                     <TableCell align="right">
                                         <Typography variant="subtitle1">
                                             {formatPrice(order.total_amount)} SEK
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell colSpan={4}>
+                                        <Typography variant="subtitle1">
+                                            {ProductLanguageTranslations.total_vat_amount[language] as string}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Typography variant="subtitle1">
+                                            {formatPrice(order.total_vat_amount)} SEK
                                         </Typography>
                                     </TableCell>
                                 </TableRow>

@@ -1,13 +1,19 @@
 "use client";
-import { Stack } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import Datagrid, { ImplementedDatagridEntities } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { OrderUpdateSchema } from "../../lib/zod-schemas";
-import { GridColDef } from "@mui/x-data-grid";
-import { Prisma } from "@prisma/client";
+import { GridColDef, GridRowParams } from "@mui/x-data-grid";
+import { OrderStatus, Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import { FieldLabels } from "../../ui/form/FieldCfg";
+import { Cancel, Check, Error, Warning } from "@mui/icons-material";
+import { clientRedirect } from "../../lib/utils";
+import { useRouter } from "next/navigation";
+import { openResourceInNewTab } from "../../ui/utils";
+import OrdersReportPDF from "./OrdersReportPDF";
+import { pdf } from "@react-pdf/renderer";
 
 interface OrdersDashboardProps {
     ordersPromise: Promise<
@@ -22,6 +28,39 @@ interface OrdersDashboardProps {
 
 const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     const { language } = useUserContext();
+    const router = useRouter()
+
+    const getStatusConfig = (order: Prisma.OrderGetPayload<true>) => {
+        switch (order.status) {
+            case OrderStatus.pending:
+            case OrderStatus.paid:
+            case OrderStatus.shipped:
+                return {
+                    status: order.status,
+                    icon: Warning,
+                    color: "warning.main",
+                };
+            case OrderStatus.completed:
+                return {
+                    status: order.status,
+                    icon: Check,
+                    color: "success.main",
+                };
+            case OrderStatus.cancelled:
+                return {
+                    status: order.status,
+                    icon: Cancel,
+                    color: "error.main",
+                };
+
+            default:
+                return {
+                    status: order.status,
+                    icon: Error,
+                    color: "error.main",
+                };
+        }
+    };
 
     const customColumns: GridColDef[] = [
         {
@@ -38,18 +77,32 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
                 ).user.nickname,
         },
         {
-            field: GlobalConstants.PAYMENT_REQUEST_ID,
-            headerName: FieldLabels[GlobalConstants.PAYMENT_REQUEST_ID][language] as string,
-            type: "boolean",
-            valueGetter: (_, order: ImplementedDatagridEntities) =>
-                !!(
-                    order as Prisma.OrderGetPayload<{
-                        include: {
-                            user: { select: { nickname: true } };
-                            order_items: { include: { product: true } };
-                        };
-                    }>
-                ).payment_request_id,
+            field: GlobalConstants.STATUS,
+            headerName: "Status",
+            type: "string",
+            valueGetter: (_, order: Prisma.OrderGetPayload<true>) => {
+                const { status } = getStatusConfig(order);
+                return status;
+            },
+            renderCell: (params) => {
+                const order: Prisma.OrderGetPayload<true> = params.row;
+                const { status, icon: Icon, color } = getStatusConfig(order);
+                const statusText = (FieldLabels[status][language] as string) || status;
+                return (
+                    <Stack
+                        height="100%"
+                        direction="row"
+                        justifyContent="flex-start"
+                        alignItems="center"
+                        gap={1}
+                    >
+                        <Icon sx={{ color }} />
+                        <Typography variant="body2" sx={{ color }}>
+                            {statusText}
+                        </Typography>
+                    </Stack>
+                );
+            },
         },
         {
             field: GlobalConstants.PAYEE_REF,
@@ -72,6 +125,27 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
         GlobalConstants.USER_ID,
     ];
 
+    const onRowClick = (clickedRow: GridRowParams) => {
+        const order = clickedRow.row as Prisma.OrderGetPayload<true>;
+        clientRedirect(router, [GlobalConstants.ORDER], { order_id: order.id });
+    }
+
+    const printOrdersReport = async (filteredRows: ImplementedDatagridEntities[]) => {
+        const orders = filteredRows as Prisma.OrderGetPayload<{ include: { order_items: { include: { product: true } } } }>[];
+        // Generate PDF blob
+        const doc = <OrdersReportPDF orders={orders} language={language} />;
+        const asPdf = await pdf(doc).toBlob();
+        const url = URL.createObjectURL(asPdf);
+        openResourceInNewTab(url);
+    }
+
+    const filteredRowsActions = [
+        {
+            action: async (filteredRows: ImplementedDatagridEntities[]) => printOrdersReport(filteredRows),
+            buttonLabel: LanguageTranslations.printReport[language],
+        }
+    ]
+
     // TODO: If on mobile, minimize content
     return (
         <Stack sx={{ height: "100%" }}>
@@ -79,10 +153,12 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
                 name={GlobalConstants.USER}
                 dataGridRowsPromise={ordersPromise}
                 validationSchema={OrderUpdateSchema}
-                rowActions={[]}
+                onRowClick={onRowClick}
+                filteredRowsActions={filteredRowsActions}
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
             />
+
         </Stack>
     );
 };

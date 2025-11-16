@@ -228,16 +228,19 @@ model TaskSkillBadge {
 }
 
 model Product {
-  id              String      @id @default(uuid())
+  id              String  @id @default(uuid())
   name            String
   description     String?
-  price           Float       @default(0)
+  price           Float   @default(0)
+  vat_percentage  Int     @default(6) // Default to 6% VAT (as per Swedish regulations for event tickets)
   stock           Int?
-  unlimited_stock Boolean     @default(false)
+  unlimited_stock Boolean @default(false)
   image_url       String?
-  membership      Membership?
-  order_items     OrderItem[]
-  ticket          Ticket?
+
+  membership Membership?
+  ticket     Ticket?
+
+  order_items OrderItem[]
 
   @@map("products")
 }
@@ -278,7 +281,8 @@ model Ticket {
 model Order {
   id                 String      @id @default(uuid())
   status             OrderStatus @default(pending)
-  total_amount       Float       @default(0.0)
+  total_amount       Float       @default(0.0) // Total amount including VAT
+  total_vat_amount   Float       @default(0.0) // Total VAT amount
   payment_request_id String?     @unique
   payee_ref          String?     @unique
   created_at         DateTime    @default(now())
@@ -292,7 +296,8 @@ model Order {
 
 model OrderItem {
   quantity   Int     @default(1)
-  price      Float   @default(0)
+  price      Float   @default(0.0) // Price per unit at time of order
+  vat_amount Float   @default(0.0) // VAT amount per unit at time of order
   order_id   String
   product_id String
   order      Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)

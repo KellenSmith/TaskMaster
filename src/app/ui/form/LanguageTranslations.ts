@@ -297,6 +297,7 @@ export const sendoutFieldLabels = {
 
 export const productFieldLabels = {
     [GlobalConstants.PRICE]: ProductLanguageTranslations.price,
+    [GlobalConstants.VAT_PERCENTAGE]: ProductLanguageTranslations.vat_percentage,
     [GlobalConstants.STOCK]: ProductLanguageTranslations.stock,
     [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations[GlobalConstants.UNLIMITED_STOCK],
     [GlobalConstants.IMAGE_URL]: {
@@ -344,13 +345,17 @@ export const orderFieldLabels = {
         [Language.english]: "Total amount",
         [Language.swedish]: "Total summa",
     },
+    [GlobalConstants.TOTAL_VAT_AMOUNT]: {
+        [Language.english]: "Total VAT Amount",
+        [Language.swedish]: "Total moms",
+    },
     [GlobalConstants.PAYMENT_REQUEST_ID]: {
         [Language.english]: "Payment Request ID",
         [Language.swedish]: "Betalningsbegäran ID",
     },
     [GlobalConstants.PAYEE_REF]: {
         [Language.english]: "Payee Reference",
-        [Language.swedish]: "Betalningsmottagare Referens",
+        [Language.swedish]: "Betalningsreferens",
     },
     [OrderStatus.pending]: {
         [Language.english]: "Pending",
