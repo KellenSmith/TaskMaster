@@ -495,6 +495,7 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
             tasks.map((task: Prisma.TaskGetPayload<{ include: { skill_badges: true } }>) => {
                 const skillBadgesWithoutTaskId = task.skill_badges.map((badge) => ({
                     ...badge,
+                    id: undefined,
                     task_id: undefined,
                 }));
 
