@@ -162,7 +162,7 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
                 name: orderItem.product.name,
                 type: "PRODUCT",
                 class: orderItem.product.membership ? "Membership" : orderItem.product.ticket ? "Ticket" : "Product",
-                description: orderItem.product.description || orderItem.product.membership ? "Membership" : orderItem.product.ticket ? "Ticket" : "Product",
+                description: orderItem.product.description || (orderItem.product.membership ? "Membership" : orderItem.product.ticket ? "Ticket" : "Product"),
                 quantity: orderItem.quantity,
                 quantityUnit: "pcs",
                 unitPrice: orderItem.product.price,
