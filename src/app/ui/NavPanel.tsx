@@ -246,7 +246,29 @@ const NavPanel = () => {
                             onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                         />
                     </Box>
-                    <LanguageMenu />
+                    <Stack direction="row" alignItems="center"><LanguageMenu />
+                        {user ? (
+                            <Button
+                                variant="outlined"
+                                onClick={logOutAction}
+                                fullWidth
+                            >
+                                {!isSmallScreen && LoginLanguageTranslations.logout[language]}
+                                <LogoutIcon sx={!isSmallScreen && { ml: 1 }} />
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outlined"
+                                onClick={() => {
+                                    setDrawerOpen(false);
+                                    clientRedirect(router, [GlobalConstants.LOGIN]);
+                                }}
+                                fullWidth
+                            >
+                                {!isSmallScreen && LoginLanguageTranslations.login[language]}
+                                <LoginIcon sx={!isSmallScreen && { ml: 1 }} />
+                            </Button>
+                        )}</Stack>
                 </Toolbar>
             </AppBar>
             <SwipeableDrawer
@@ -276,28 +298,6 @@ const NavPanel = () => {
                 </IconButton>
                 <Divider />
                 <List sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto" }}>
-                    {user ? (
-                        <Button
-                            variant="outlined"
-                            onClick={logOutAction}
-                            endIcon={<LogoutIcon />}
-                            fullWidth
-                        >
-                            {LoginLanguageTranslations.logout[language]}
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="outlined"
-                            onClick={() => {
-                                setDrawerOpen(false);
-                                clientRedirect(router, [GlobalConstants.LOGIN]);
-                            }}
-                            endIcon={<LoginIcon />}
-                            fullWidth
-                        >
-                            {LoginLanguageTranslations.login[language]}
-                        </Button>
-                    )}
                     <Stack sx={{ flexShrink: 1 }}>
                         {[
                             ...new Set(
