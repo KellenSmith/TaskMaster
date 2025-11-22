@@ -1,20 +1,22 @@
 "use client";
 import { Error } from "@mui/icons-material";
-import { CircularProgress, Stack } from "@mui/material";
+import { CircularProgress, Stack, useTheme } from "@mui/material";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { allowRedirectException } from "./utils";
 
-const Container = ({ children }) => (
-    <Stack height="100%" width="100%" justifyContent="center" alignItems="center">
+const Container = ({ children }) => {
+    const theme = useTheme();
+    return <Stack color={theme.palette.grey[500]} height="100%" width="100%" justifyContent="center" alignItems="center">
         {children}
     </Stack>
-);
+}
 
 export const ErrorFallback = () => {
     return (
         <Container>
             <Error />
+            An unexpected error occurred.
         </Container>
     );
 };
