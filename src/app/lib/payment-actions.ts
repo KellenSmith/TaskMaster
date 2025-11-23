@@ -29,7 +29,10 @@ export const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
 };
 
 // Helper function to generate unique payee references
-export const generatePayeeReference = async (orderId: string, prefix: string = "PAY"): Promise<string> => {
+export const generatePayeeReference = async (
+    orderId: string,
+    prefix: string = "PAY",
+): Promise<string> => {
     const cleanOrderId = orderId.replace(/[^a-zA-Z0-9]/g, "");
     const timestamp = Date.now().toString().slice(-10);
     // Add some randomness to prevent collisions in rapid succession
@@ -51,7 +54,7 @@ export const generatePayeeReference = async (orderId: string, prefix: string = "
         payeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
     }
 
-    return payeeRef
+    return payeeRef;
 };
 
 interface SwedbankPaymentRequestOrderItem {
@@ -121,7 +124,9 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
     const order = await prisma.order.update({
         where: { id: orderId },
         data: { payee_ref: payeeRef },
-        include: { order_items: { include: { product: { include: { membership: true, ticket: true } } } } },
+        include: {
+            order_items: { include: { product: { include: { membership: true, ticket: true } } } },
+        },
     });
 
     const organizationSettings = await getOrganizationSettings();
@@ -157,20 +162,36 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
                 payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
                 orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
-            orderItems: order.order_items.map((orderItem: Prisma.OrderItemGetPayload<{ include: { product: { include: { membership: true, ticket: true } } } }>) => ({
-                reference: orderItem.product.id,
-                name: orderItem.product.name,
-                type: "PRODUCT",
-                class: orderItem.product.membership ? "Membership" : orderItem.product.ticket ? "Ticket" : "Product",
-                description: orderItem.product.description || (orderItem.product.membership ? "Membership" : orderItem.product.ticket ? "Ticket" : "Product"),
-                quantity: orderItem.quantity,
-                quantityUnit: "pcs",
-                unitPrice: orderItem.product.price,
-                discountPrice: 0,
-                vatPercent: orderItem.product.vat_percentage,
-                amount: orderItem.price,
-                vatAmount: orderItem.vat_amount
-            }))
+            orderItems: order.order_items.map(
+                (
+                    orderItem: Prisma.OrderItemGetPayload<{
+                        include: { product: { include: { membership: true; ticket: true } } };
+                    }>,
+                ) => ({
+                    reference: orderItem.product.id,
+                    name: orderItem.product.name,
+                    type: "PRODUCT",
+                    class: orderItem.product.membership
+                        ? "Membership"
+                        : orderItem.product.ticket
+                          ? "Ticket"
+                          : "Product",
+                    description:
+                        orderItem.product.description ||
+                        (orderItem.product.membership
+                            ? "Membership"
+                            : orderItem.product.ticket
+                              ? "Ticket"
+                              : "Product"),
+                    quantity: orderItem.quantity,
+                    quantityUnit: "pcs",
+                    unitPrice: orderItem.product.price,
+                    discountPrice: 0,
+                    vatPercent: orderItem.product.vat_percentage,
+                    amount: orderItem.price,
+                    vatAmount: orderItem.vat_amount,
+                }),
+            ),
         },
     };
 };
@@ -330,7 +351,7 @@ export const checkPaymentStatus = async (
             throw new Error("Failed to check payment status");
         }
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
-        console.log(paymentStatusData)
+        console.log(paymentStatusData);
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
         const needsCapture =

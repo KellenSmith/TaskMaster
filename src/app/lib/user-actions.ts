@@ -99,7 +99,12 @@ export const submitMemberApplication = async (formData: FormData) => {
             parsedFieldValues: validatedData,
         });
 
-        await sendMail([process.env.EMAIL], `New membership application received`, mailContent, userFieldValues.email);
+        await sendMail(
+            [process.env.EMAIL],
+            `New membership application received`,
+            mailContent,
+            userFieldValues.email,
+        );
     } catch (error) {
         console.error(error);
         // Submit the membership application despite failed notification

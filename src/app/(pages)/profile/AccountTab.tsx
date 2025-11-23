@@ -54,8 +54,7 @@ const AccountTab = () => {
             </Button>
         );
         if (isMembershipExpired(user)) return ActivateMembershipButton;
-        return ActivateMembershipButton
-
+        return ActivateMembershipButton;
     };
 
     return (

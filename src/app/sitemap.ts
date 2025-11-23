@@ -6,7 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         : process.env.NEXT_PUBLIC_BASE_URL || "https://taskmaster.com";
 
     // Static pages
-    const staticPages = ["", "/apply", "/login", "/contact",];
+    const staticPages = ["", "/apply", "/login", "/contact"];
 
     // Generate sitemap entries
     const sitemap: MetadataRoute.Sitemap = staticPages.map((route) => ({

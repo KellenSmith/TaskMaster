@@ -28,7 +28,7 @@ interface OrdersDashboardProps {
 
 const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     const { language } = useUserContext();
-    const router = useRouter()
+    const router = useRouter();
 
     const getStatusConfig = (order: Prisma.OrderGetPayload<true>) => {
         switch (order.status) {
@@ -128,23 +128,26 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     const onRowClick = (clickedRow: GridRowParams) => {
         const order = clickedRow.row as Prisma.OrderGetPayload<true>;
         clientRedirect(router, [GlobalConstants.ORDER], { order_id: order.id });
-    }
+    };
 
     const printOrdersReport = async (filteredRows: ImplementedDatagridEntities[]) => {
-        const orders = filteredRows as Prisma.OrderGetPayload<{ include: { order_items: { include: { product: true } } } }>[];
+        const orders = filteredRows as Prisma.OrderGetPayload<{
+            include: { order_items: { include: { product: true } } };
+        }>[];
         // Generate PDF blob
         const doc = <OrdersReportPDF orders={orders} language={language} />;
         const asPdf = await pdf(doc).toBlob();
         const url = URL.createObjectURL(asPdf);
         openResourceInNewTab(url);
-    }
+    };
 
     const filteredRowsActions = [
         {
-            action: async (filteredRows: ImplementedDatagridEntities[]) => printOrdersReport(filteredRows),
+            action: async (filteredRows: ImplementedDatagridEntities[]) =>
+                printOrdersReport(filteredRows),
             buttonLabel: LanguageTranslations.printReport[language],
-        }
-    ]
+        },
+    ];
 
     // TODO: If on mobile, minimize content
     return (
@@ -158,7 +161,6 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
             />
-
         </Stack>
     );
 };

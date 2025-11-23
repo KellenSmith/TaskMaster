@@ -88,7 +88,7 @@ export const startMembershipSubscription = async (userId: string): Promise<void>
         include: { membership: { include: { product: true } } },
     });
     const userLanguage = await getUserLanguage();
-    const organizationSettings = await getOrganizationSettings()
+    const organizationSettings = await getOrganizationSettings();
     const payeeRef = await generatePayeeReference(validatedUserId, "SUB");
     await prisma.userMembership.update({
         where: { user_id: validatedUserId },
@@ -121,7 +121,7 @@ export const startMembershipSubscription = async (userId: string): Promise<void>
             },
             // TODO: Include order items in the payment request for better tracking
         },
-    }
+    };
 
     const verificationResponse = await makeSwedbankApiRequest(
         `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,

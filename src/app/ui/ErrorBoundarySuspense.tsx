@@ -7,10 +7,18 @@ import { allowRedirectException } from "./utils";
 
 const Container = ({ children }) => {
     const theme = useTheme();
-    return <Stack color={theme.palette.grey[500]} height="100%" width="100%" justifyContent="center" alignItems="center">
-        {children}
-    </Stack>
-}
+    return (
+        <Stack
+            color={theme.palette.grey[500]}
+            height="100%"
+            width="100%"
+            justifyContent="center"
+            alignItems="center"
+        >
+            {children}
+        </Stack>
+    );
+};
 
 export const ErrorFallback = () => {
     return (

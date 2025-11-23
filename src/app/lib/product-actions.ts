@@ -136,11 +136,7 @@ export const processOrderedProduct = async (
         throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {
-            await renewUserMembership(
-                tx,
-                userId,
-                orderItem.product.membership.product_id,
-            );
+            await renewUserMembership(tx, userId, orderItem.product.membership.product_id);
         } else if (orderItem.product.ticket) {
             await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);
         } else {

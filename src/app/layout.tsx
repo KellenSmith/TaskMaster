@@ -5,6 +5,7 @@ import ServerContextWrapper from "./context/ServerContextWrapper";
 import { generateSEOMetadata } from "./lib/seo-utils";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Footer from "./ui/Footer";
 
 export const metadata = generateSEOMetadata({
     title: undefined, // Will use base title from environment
@@ -25,6 +26,7 @@ export const RootLayoutInner: React.FC<RootLayoutProps> = ({ children }) => {
             <Stack sx={{ height: "100%" }} padding={4}>
                 {children}
             </Stack>
+            <Footer />
         </ServerContextWrapper>
     );
 };

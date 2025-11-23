@@ -209,7 +209,11 @@ export const RequiredFields = {
         GlobalConstants.REVIEWER,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
-    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.VAT_PERCENTAGE],
+    [GlobalConstants.PRODUCT]: [
+        GlobalConstants.NAME,
+        GlobalConstants.PRICE,
+        GlobalConstants.VAT_PERCENTAGE,
+    ],
     [GlobalConstants.PARTICIPANT_USERS]: RenderedFields[GlobalConstants.PARTICIPANT_USERS],
     [GlobalConstants.RESERVE_USERS]: RenderedFields[GlobalConstants.RESERVE_USERS],
 };
@@ -267,7 +271,12 @@ export const checkboxFields = [
     GlobalConstants.PAYEE_REF,
 ];
 
-export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT, GlobalConstants.VAT_AMOUNT, GlobalConstants.TOTAL_VAT_AMOUNT];
+export const priceFields = [
+    GlobalConstants.PRICE,
+    GlobalConstants.TOTAL_AMOUNT,
+    GlobalConstants.VAT_AMOUNT,
+    GlobalConstants.TOTAL_VAT_AMOUNT,
+];
 
 export const getUserSelectOptions = (
     users: Prisma.UserGetPayload<{

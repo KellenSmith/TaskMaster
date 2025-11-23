@@ -31,8 +31,8 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                         marginBottom: "0",
                     }}
                 >
-                    You asked to sign in to your account at {process.env.NEXT_PUBLIC_ORG_NAME} for <strong>{email}</strong>.
-                    Click the button to continue.
+                    You asked to sign in to your account at {process.env.NEXT_PUBLIC_ORG_NAME} for{" "}
+                    <strong>{email}</strong>. Click the button to continue.
                 </Text>
             </Section>
 
@@ -98,8 +98,7 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                         ...mailTheme.typography.caption,
                     }}
                 >
-                    Having trouble with the button?{" "}
-                    Copy and paste this link into your browser:{" "}
+                    Having trouble with the button? Copy and paste this link into your browser:{" "}
                     <a
                         href={url}
                         style={{

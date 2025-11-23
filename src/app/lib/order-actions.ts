@@ -33,7 +33,8 @@ export const getOrderById = async (
         select: { role: true, user_membership: true },
     });
 
-    if (userId !== order.user_id && !isUserAdmin(loggedInUser)) throw new Error("Not authorized to view this order");
+    if (userId !== order.user_id && !isUserAdmin(loggedInUser))
+        throw new Error("Not authorized to view this order");
     return order;
 };
 
@@ -81,7 +82,7 @@ export const createOrder = async (
             where: { id: item.product_id },
         });
         item.price = product.price;
-        item.vat_amount = product.vat_percentage / 100 * product.price;
+        item.vat_amount = (product.vat_percentage / 100) * product.price;
     }
 
     // Create the order with items in a transaction
@@ -89,7 +90,10 @@ export const createOrder = async (
         return await tx.order.create({
             data: {
                 total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
-                total_vat_amount: orderItems.reduce((acc, item) => item.vat_amount * item.quantity + acc, 0),
+                total_vat_amount: orderItems.reduce(
+                    (acc, item) => item.vat_amount * item.quantity + acc,
+                    0,
+                ),
                 user: {
                     connect: {
                         id: userId,
@@ -114,10 +118,7 @@ export const createAndRedirectToOrder = async (
     serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
 };
 
-const processOrderItems = async (
-    tx: Prisma.TransactionClient,
-    orderId: string,
-): Promise<void> => {
+const processOrderItems = async (tx: Prisma.TransactionClient, orderId: string): Promise<void> => {
     const order = await tx.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
@@ -178,7 +179,7 @@ export const progressOrder = async (
             data: { status: OrderStatus.paid },
         });
         revalidateTag(GlobalConstants.ORDER);
-        if (newStatus === OrderStatus.paid) return
+        if (newStatus === OrderStatus.paid) return;
     }
 
     // Paid to shipped
@@ -206,7 +207,7 @@ export const progressOrder = async (
             // Allow progressing order despite failed confirmation
             console.error("Failed to send order confirmation:", error);
         }
-        if (newStatus === OrderStatus.shipped) return
+        if (newStatus === OrderStatus.shipped) return;
     }
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {

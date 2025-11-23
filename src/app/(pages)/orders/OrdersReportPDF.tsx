@@ -80,7 +80,6 @@ const OrdersReportPDF = ({ orders, language, startDate, endDate }: OrdersReportP
         );
     }, [productSummary]);
 
-
     const getReportDetails = () => (
         <View key="report-details" style={styles.eventDetails}>
             <View style={styles.eventDetailRow}>
@@ -172,12 +171,7 @@ const OrdersReportPDF = ({ orders, language, startDate, endDate }: OrdersReportP
                                 style={{
                                     ...styles.tableCell,
                                     ...styles.headerCell,
-                                    width:
-                                        index === 0
-                                            ? "30%"
-                                            : index === 1
-                                                ? "10%"
-                                                : "15%",
+                                    width: index === 0 ? "30%" : index === 1 ? "10%" : "15%",
                                 }}
                             >
                                 {header}

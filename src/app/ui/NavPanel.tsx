@@ -24,7 +24,7 @@ import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/utils";
-import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
+import { Cancel, ChevronLeft, Delete, Edit, Person } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
@@ -89,6 +89,7 @@ const NavPanel = () => {
     const hiddenRoutes = [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
+        GlobalConstants.PROFILE,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
         GlobalConstants.APPLY,
@@ -246,13 +247,16 @@ const NavPanel = () => {
                             onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
                         />
                     </Box>
-                    <Stack direction="row" alignItems="center"><LanguageMenu />
-                        {user ? (
-                            <Button
-                                variant="outlined"
-                                onClick={logOutAction}
-                                fullWidth
+                    <Stack spacing={2} direction="row" alignItems="center">
+                        {user && (
+                            <IconButton
+                                onClick={() => clientRedirect(router, [GlobalConstants.PROFILE])}
                             >
+                                <Person />
+                            </IconButton>
+                        )}
+                        {user ? (
+                            <Button variant="outlined" onClick={logOutAction} fullWidth>
                                 {!isSmallScreen && LoginLanguageTranslations.logout[language]}
                                 <LogoutIcon sx={!isSmallScreen && { ml: 1 }} />
                             </Button>
@@ -268,7 +272,9 @@ const NavPanel = () => {
                                 {!isSmallScreen && LoginLanguageTranslations.login[language]}
                                 <LoginIcon sx={!isSmallScreen && { ml: 1 }} />
                             </Button>
-                        )}</Stack>
+                        )}
+                        <LanguageMenu />
+                    </Stack>
                 </Toolbar>
             </AppBar>
             <SwipeableDrawer
