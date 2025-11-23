@@ -35,12 +35,12 @@ For payments, use the following test data:
 - ~~Move task shift start and end time when cloning an event~~
 - ~~Event tags (munch/playparty/section etc...)~~
 - ~~Buttons to message the assignee and reviewer of a task~~
-- Implement membership subscription
 - Fine tune filtering of tasks in the task board and events
+- Implement membership subscription
 - Add age check for purchases
+- Add automatic notification to event participants if there are unbooked tasks remaining a configurable time before the event starts.
 - QR code scanner usable from any mobile device to check in event participants along with qr codes for tickets. Currently tickets are checked manually by crossing off nicknames on the participant list. The QR code scanner should be reachable through a link on a task if configured by the event host.
 - Implement checklists for tasks.
-- Add automatic notification to event participants if there are unbooked tasks remaining a configurable time before the event starts.
 - Enable different membership types.
 - Implement shopping cart.
 - Enable different event types (open to all members, open to specific membership types, open to public)

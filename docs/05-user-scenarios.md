@@ -66,7 +66,7 @@ Is your volunteer organization struggling with fragmented communication, manual 
 - Capture and preserve institutional knowledge
 - Build stronger organizational capacity beyond just events
 
-**Real Example**: A member with graphic design skills sees a task for "update organization logo" on the task board, completes it in their spare time, and earns a "Design" skill badge - contributing meaningfully without attending a single event.
+**Real Example**: An administrator creates a task for "update organization website" requiring a "Web Development" skill badge. A member who earned that badge at a coding workshop sees the task, assigns it to themselves, completes it during their lunch break, and contributes meaningfully without attending another event. Meanwhile, other members with different badges tackle tasks matching their abilities - distributing the workload naturally.
 
 ---
 

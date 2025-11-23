@@ -25,7 +25,7 @@ const ThemeContextProvider: FC<ThemeContextProviderProps> = ({ children }) => {
             palette: {
                 mode: "dark",
                 primary: {
-                    main: organizationSettings?.primary_color || blueGrey[500],
+                    main: organizationSettings?.primary_color || blueGrey[300],
                 },
             },
         });

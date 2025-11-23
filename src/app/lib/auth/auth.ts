@@ -23,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     });
                     await sendMail(
                         [email],
-                        `Sign in to ${process.env.NEXT_PUBLIC_ORG_NAME}`,
+                        `Sign in to ${process.env.NEXT_PUBLIC_ORG_NAME} - one-time link`,
                         mailContent,
                     );
                 } catch (error) {

@@ -23,7 +23,7 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                         marginBottom: "16px",
                     }}
                 >
-                    Welcome back!
+                    {`Your requested Sign-In Link to ${process.env.NEXT_PUBLIC_ORG_NAME}`}
                 </Text>
                 <Text
                     style={{
@@ -31,8 +31,8 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                         marginBottom: "0",
                     }}
                 >
-                    We received a request to sign in to your account for <strong>{email}</strong>.
-                    Click the button below to continue.
+                    You asked to sign in to your account at {process.env.NEXT_PUBLIC_ORG_NAME} for <strong>{email}</strong>.
+                    Click the button to continue.
                 </Text>
             </Section>
 
@@ -48,11 +48,7 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                 </Button>
             </Section>
 
-            <Hr
-                style={{
-                    margin: "32px 0",
-                }}
-            />
+            <Hr />
 
             <Section
                 style={{
@@ -68,7 +64,7 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                         marginBottom: "12px",
                     }}
                 >
-                    Security Information
+                    Important
                 </Text>
                 <Text
                     style={{
@@ -103,13 +99,14 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                     }}
                 >
                     Having trouble with the button?{" "}
+                    Copy and paste this link into your browser:{" "}
                     <a
                         href={url}
                         style={{
                             textDecoration: "none",
                         }}
                     >
-                        Copy and paste this link into your browser
+                        {url}
                     </a>
                 </Text>
             </Section>
