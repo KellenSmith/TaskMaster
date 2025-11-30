@@ -22,7 +22,7 @@ const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode = false, defa
     const rteRef = useRef<RichTextEditorRef>(null);
 
     const [content, setContent] = useState(
-        defaultValue || (FieldLabels[fieldId][language] as string) || "",
+        defaultValue || (FieldLabels[fieldId]?.[language] as string) || "",
     );
 
     return (
