@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { prisma } from "../../../../prisma/prisma-client";
+import GlobalConstants from "../../GlobalConstants";
 
 const getClientIp = (request: NextRequest): string | null => {
     // Try multiple headers for better IP detection
@@ -54,10 +55,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     try {
-        const orderId = request.nextUrl.searchParams.get("orderId");
+        const orderId = request.nextUrl.searchParams.get(GlobalConstants.ORDER_ID);
 
         // ✅ SECURITY: Simple idempotency check to prevent duplicate processing
-        const order = await prisma.order.findUniqueOrThrow({
+        const order = await prisma.order.findUnique({
             where: { id: orderId },
             select: {
                 user_id: true,
@@ -65,6 +66,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 updated_at: true,
             },
         });
+
+        if (!order) {
+            console.warn(`Order ${orderId} not found`);
+            return new NextResponse("Order not found", { status: 404 });
+        }
 
         // Skip if order is already completed
         if (order.status === "completed") {
