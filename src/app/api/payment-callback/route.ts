@@ -88,7 +88,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         // Process the payment check as normal
         await checkPaymentStatus(order.user_id, orderId);
-        console.log(`Order ${orderId} status verified and updated via GET request`);
 
         return new NextResponse("OK", { status: 200 });
     } catch (error) {

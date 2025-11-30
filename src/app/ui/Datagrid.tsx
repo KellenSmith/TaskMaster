@@ -47,18 +47,18 @@ export interface FilteredRowsActionProps {
 
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
-          include: {
-              user_membership: true;
-              skill_badges: true;
-          };
-      }>
+        include: {
+            user_membership: true;
+            skill_badges: true;
+        };
+    }>
     | Product
     | Prisma.OrderGetPayload<{
-          include: {
-              user: { select: { nickname: true } };
-              order_items: { include: { product: true } };
-          };
-      }>
+        include: {
+            user: { select: { nickname: true } };
+            order_items: { include: { product: true } };
+        };
+    }>
     | Prisma.NewsletterJobGetPayload<true>;
 
 interface DatagridProps {
@@ -74,9 +74,9 @@ interface DatagridProps {
     createAction?: (fieldValues: FormData) => Promise<void>;
     filteredRowsActions?: FilteredRowsActionProps[];
     validationSchema?:
-        | typeof UserUpdateSchema
-        | typeof ProductUpdateSchema
-        | typeof OrderUpdateSchema;
+    | typeof UserUpdateSchema
+    | typeof ProductUpdateSchema
+    | typeof OrderUpdateSchema;
     rowActions?: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];

@@ -174,15 +174,15 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
                     class: orderItem.product.membership
                         ? "Membership"
                         : orderItem.product.ticket
-                          ? "Ticket"
-                          : "Product",
+                            ? "Ticket"
+                            : "Product",
                     description:
                         orderItem.product.description ||
                         (orderItem.product.membership
                             ? "Membership"
                             : orderItem.product.ticket
-                              ? "Ticket"
-                              : "Product"),
+                                ? "Ticket"
+                                : "Product"),
                     quantity: orderItem.quantity,
                     quantityUnit: "pcs",
                     unitPrice: orderItem.product.price,
@@ -351,7 +351,6 @@ export const checkPaymentStatus = async (
             throw new Error("Failed to check payment status");
         }
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
-        console.log(paymentStatusData);
         const paymentStatus = paymentStatusData.paymentOrder.status;
         const newOrderStatus = getNewOrderStatus(paymentStatus);
         const needsCapture =
