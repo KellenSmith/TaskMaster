@@ -62,7 +62,7 @@ export const createInfoPage = async (formData: FormData): Promise<void> => {
         });
         createdInfoPageId = newInfoPage.id;
     });
-    revalidateTag(GlobalConstants.INFO_PAGE);
+    revalidateTag(GlobalConstants.INFO_PAGE, "max");
     serverRedirect([GlobalConstants.INFO_PAGE], {
         [GlobalConstants.INFO_PAGE_ID]: createdInfoPageId,
     });
@@ -102,7 +102,7 @@ export const updateInfoPage = async (
         }
         // Content is updated directly in the rich text component (InfoPageEditor)
     });
-    revalidateTag(GlobalConstants.INFO_PAGE);
+    revalidateTag(GlobalConstants.INFO_PAGE, "max");
 };
 
 export const getInfoPages = async (
@@ -145,5 +145,5 @@ export const deleteInfoPage = async (id: string): Promise<void> => {
         where: { id: validatedId },
     });
 
-    revalidateTag(GlobalConstants.INFO_PAGE);
+    revalidateTag(GlobalConstants.INFO_PAGE, "max");
 };

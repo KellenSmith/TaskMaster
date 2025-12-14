@@ -20,7 +20,7 @@ export const createSkillBadge = async (formData: FormData): Promise<void> => {
     const sanitizedData = sanitizeFormData(validatedData);
 
     await prisma.skillBadge.create({ data: sanitizedData });
-    revalidateTag(GlobalConstants.SKILL_BADGES);
+    revalidateTag(GlobalConstants.SKILL_BADGES, "max");
 };
 
 export const updateSkillBadge = async (skillBadgeId: string, formData: FormData): Promise<void> => {
@@ -37,7 +37,7 @@ export const updateSkillBadge = async (skillBadgeId: string, formData: FormData)
     });
     await deleteOldBlob(oldSkillBadge.image_url, sanitizedData.image_url);
     await prisma.skillBadge.update({ where: { id: validatedSkillBadgeId }, data: sanitizedData });
-    revalidateTag(GlobalConstants.SKILL_BADGES);
+    revalidateTag(GlobalConstants.SKILL_BADGES, "max");
 };
 
 export const deleteSkillBadge = async (skillBadgeId: string): Promise<void> => {
@@ -48,5 +48,5 @@ export const deleteSkillBadge = async (skillBadgeId: string): Promise<void> => {
         where: { id: validatedSkillBadgeId },
     });
     await deleteOldBlob(deletedSkillBadge.image_url);
-    revalidateTag(GlobalConstants.SKILL_BADGES);
+    revalidateTag(GlobalConstants.SKILL_BADGES, "max");
 };

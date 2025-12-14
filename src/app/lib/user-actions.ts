@@ -65,7 +65,7 @@ export const createUser = async (formData: FormData): Promise<void> => {
             const membershipProduct = await getMembershipProduct();
             await renewUserMembership(tx, newUser.id, membershipProduct.id);
         }
-        revalidateTag(GlobalConstants.USER);
+        revalidateTag(GlobalConstants.USER, "max");
     });
 };
 
@@ -105,7 +105,7 @@ export const submitMemberApplication = async (formData: FormData) => {
         // Submit the membership application despite failed notification
     }
 
-    revalidateTag(GlobalConstants.USER);
+    revalidateTag(GlobalConstants.USER, "max");
 };
 
 export const getAllUsers = async (
@@ -168,7 +168,7 @@ export const updateUser = async (userId: string, formData: FormData): Promise<vo
         }
     });
 
-    revalidateTag(GlobalConstants.USER);
+    revalidateTag(GlobalConstants.USER, "max");
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
@@ -200,10 +200,10 @@ export const deleteUser = async (userId: string): Promise<void> => {
     await prisma.$transaction([deleteUser]);
 
     // TODO: Check revalidation tags for all caches
-    revalidateTag(GlobalConstants.USER);
-    revalidateTag(GlobalConstants.USER_MEMBERSHIP);
-    revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(GlobalConstants.USER_MEMBERSHIP, "max");
+    revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
+    revalidateTag(GlobalConstants.EVENT, "max");
 };
 
 export const getActiveMembers = async (): Promise<
@@ -275,5 +275,5 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
         await sendMail([validatedUser.email], `Your membership has been validated`, mailContent);
     });
 
-    revalidateTag(GlobalConstants.USER);
+    revalidateTag(GlobalConstants.USER, "max");
 };

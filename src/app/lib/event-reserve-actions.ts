@@ -47,9 +47,9 @@ export const addEventReserveWithTx = async (
         },
         update: {},
     });
-    revalidateTag(GlobalConstants.RESERVE_USERS);
+    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
     // Event reserves with limited data is cached with the event
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.EVENT, "max");
 };
 
 export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
@@ -78,9 +78,9 @@ export const deleteEventReserveWithTx = async (
             event_id: validatedEventId,
         },
     });
-    revalidateTag(GlobalConstants.RESERVE_USERS);
+    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
     // Event reserves with limited data is cached with the event
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.EVENT, "max");
 };
 
 export const deleteEventReserve = async (userId: string, eventId: string) => {

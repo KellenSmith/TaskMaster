@@ -155,7 +155,7 @@ export const progressOrder = async (
             where: { id: orderId },
             data: { status: newStatus },
         });
-        revalidateTag(GlobalConstants.ORDER);
+        revalidateTag(GlobalConstants.ORDER, "max");
         return;
     }
 
@@ -177,7 +177,7 @@ export const progressOrder = async (
             where: { id: orderId },
             data: { status: OrderStatus.paid },
         });
-        revalidateTag(GlobalConstants.ORDER);
+        revalidateTag(GlobalConstants.ORDER, "max");
         if (newStatus === OrderStatus.paid) return
     }
 
@@ -191,7 +191,7 @@ export const progressOrder = async (
                     where: { id: orderId },
                     data: { status: OrderStatus.shipped },
                 });
-                revalidateTag(GlobalConstants.ORDER);
+                revalidateTag(GlobalConstants.ORDER, "max");
             },
             {
                 // timeout in ms for this interactive transaction; set to 30s for safety
@@ -215,7 +215,7 @@ export const progressOrder = async (
             where: { id: orderId },
             data: { status: OrderStatus.completed },
         });
-        revalidateTag(GlobalConstants.ORDER);
+        revalidateTag(GlobalConstants.ORDER, "max");
     }
 };
 

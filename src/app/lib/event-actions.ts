@@ -75,7 +75,7 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
         return createdEvent;
     });
 
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.EVENT, "max");
     serverRedirect([GlobalConstants.CALENDAR_POST], {
         [GlobalConstants.EVENT_ID]: createdEvent.id,
     });
@@ -327,8 +327,8 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
             where: { id: eventId },
             data: sanitizedData,
         });
-        revalidateTag(GlobalConstants.EVENT);
-        revalidateTag(GlobalConstants.TICKET);
+        revalidateTag(GlobalConstants.EVENT, "max");
+        revalidateTag(GlobalConstants.TICKET, "max");
         try {
             if (notifyEventReservesPromise) await notifyEventReservesPromise;
         } catch {
@@ -345,7 +345,7 @@ export const cancelEvent = async (eventId: string): Promise<void> => {
     const cancelFormData = new FormData();
     cancelFormData.append(GlobalConstants.STATUS, EventStatus.cancelled);
     await updateEvent(validatedEventId, cancelFormData);
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.EVENT, "max");
 
     try {
         await informOfCancelledEvent(validatedEventId);
@@ -392,7 +392,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             where: { id: validatedEventId },
         }),
     ]);
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.EVENT, "max");
     serverRedirect([GlobalConstants.CALENDAR]);
 };
 
@@ -520,6 +520,6 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         return createdEvent;
     });
 
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.EVENT, "max");
     serverRedirect([GlobalConstants.CALENDAR_POST], { [GlobalConstants.EVENT_ID]: eventClone.id });
 };

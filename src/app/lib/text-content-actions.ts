@@ -99,5 +99,5 @@ export const updateTextContent = async (
             },
         });
     });
-    revalidateTag(GlobalConstants.TEXT_CONTENT);
+    revalidateTag(GlobalConstants.TEXT_CONTENT, "max");
 };

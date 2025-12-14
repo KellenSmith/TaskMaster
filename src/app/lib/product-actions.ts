@@ -42,7 +42,7 @@ export const createProduct = async (formData: FormData): Promise<void> => {
     await prisma.product.create({
         data: sanitizedData,
     });
-    revalidateTag(GlobalConstants.PRODUCT);
+    revalidateTag(GlobalConstants.PRODUCT, "max");
 };
 
 export const createMembershipProduct = async (formData: FormData): Promise<void> => {
@@ -60,8 +60,8 @@ export const createMembershipProduct = async (formData: FormData): Promise<void>
             },
         },
     });
-    revalidateTag(GlobalConstants.PRODUCT);
-    revalidateTag(GlobalConstants.MEMBERSHIP);
+    revalidateTag(GlobalConstants.PRODUCT, "max");
+    revalidateTag(GlobalConstants.MEMBERSHIP, "max");
 };
 
 export const updateMembershipProduct = async (
@@ -87,8 +87,8 @@ export const updateMembershipProduct = async (
             },
         },
     });
-    revalidateTag(GlobalConstants.PRODUCT);
-    revalidateTag(GlobalConstants.MEMBERSHIP);
+    revalidateTag(GlobalConstants.PRODUCT, "max");
+    revalidateTag(GlobalConstants.MEMBERSHIP, "max");
 };
 
 export const updateProduct = async (productId: string, formData: FormData): Promise<void> => {
@@ -107,7 +107,7 @@ export const updateProduct = async (productId: string, formData: FormData): Prom
         data: sanitizedData,
     });
     await deleteOldBlob(oldProduct.image_url, sanitizedData.image_url);
-    revalidateTag(GlobalConstants.PRODUCT);
+    revalidateTag(GlobalConstants.PRODUCT, "max");
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
@@ -120,9 +120,9 @@ export const deleteProduct = async (productId: string): Promise<void> => {
     });
     await deleteOldBlob(deletedProduct.image_url);
 
-    if (deletedProduct.membership) revalidateTag(GlobalConstants.MEMBERSHIP);
-    if (deletedProduct.ticket) revalidateTag(GlobalConstants.TICKET);
-    revalidateTag(GlobalConstants.PRODUCT);
+    if (deletedProduct.membership) revalidateTag(GlobalConstants.MEMBERSHIP, "max");
+    if (deletedProduct.ticket) revalidateTag(GlobalConstants.TICKET, "max");
+    revalidateTag(GlobalConstants.PRODUCT, "max");
 };
 
 export const processOrderedProduct = async (

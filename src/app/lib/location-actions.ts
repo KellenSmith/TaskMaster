@@ -19,7 +19,7 @@ export const createLocation = async (formData: FormData): Promise<Location> => {
     const sanitizedData = sanitizeFormData(validatedData);
 
     const location = await prisma.location.create({ data: sanitizedData });
-    revalidateTag(GlobalConstants.LOCATION);
+    revalidateTag(GlobalConstants.LOCATION, "max");
     return location;
 };
 
@@ -31,8 +31,8 @@ export const updateLocation = async (locationId: string, formData: FormData): Pr
     const sanitizedData = sanitizeFormData(validatedData);
 
     await prisma.location.update({ where: { id: locationId }, data: sanitizedData });
-    revalidateTag(GlobalConstants.LOCATION);
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.LOCATION, "max");
+    revalidateTag(GlobalConstants.EVENT, "max");
 };
 
 export const deleteLocation = async (locationId: string): Promise<void> => {
@@ -40,6 +40,6 @@ export const deleteLocation = async (locationId: string): Promise<void> => {
     const validatedLocationId = UuidSchema.parse(locationId);
 
     await prisma.location.delete({ where: { id: validatedLocationId } });
-    revalidateTag(GlobalConstants.LOCATION);
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.LOCATION, "max");
+    revalidateTag(GlobalConstants.EVENT, "max");
 };

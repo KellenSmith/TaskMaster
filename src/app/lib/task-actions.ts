@@ -27,7 +27,7 @@ export const deleteTask = async (taskId: string): Promise<void> => {
             id: validatedTaskId,
         },
     });
-    revalidateTag(GlobalConstants.TASK);
+    revalidateTag(GlobalConstants.TASK, "max");
 };
 
 export const getTaskById = async (
@@ -138,7 +138,7 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         }
     });
 
-    revalidateTag(GlobalConstants.TASK);
+    revalidateTag(GlobalConstants.TASK, "max");
 };
 
 export const createTask = async (formData: FormData): Promise<void> => {
@@ -194,7 +194,7 @@ export const createTask = async (formData: FormData): Promise<void> => {
         },
         include: { reviewer: true },
     });
-    revalidateTag(GlobalConstants.TASK);
+    revalidateTag(GlobalConstants.TASK, "max");
 };
 
 export const getFilteredTasks = async (
@@ -314,8 +314,8 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
             }
         }
     });
-    revalidateTag(GlobalConstants.TASK);
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.TASK, "max");
+    revalidateTag(GlobalConstants.EVENT, "max");
 };
 
 export const unassignTaskFromUser = async (userId: string, taskId: string) => {
@@ -337,7 +337,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
             },
             include: { reviewer: true },
         });
-        revalidateTag(GlobalConstants.TASK);
+        revalidateTag(GlobalConstants.TASK, "max");
 
         if (!updatedTask.event_id) return;
 

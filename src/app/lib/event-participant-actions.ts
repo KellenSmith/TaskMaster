@@ -43,7 +43,7 @@ export const addEventParticipantWithTx = async (
     }
 
     await deleteEventReserveWithTx(tx, validatedUserId, ticket.event_id);
-    revalidateTag(GlobalConstants.RESERVE_USERS);
+    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
 
     // Decrement the product stock of all tickets with limited stock belonging to the same event
     // Ticket product stock reflects the total number of available tickets across all types
@@ -62,7 +62,7 @@ export const addEventParticipantWithTx = async (
             },
         },
     });
-    revalidateTag(GlobalConstants.TICKET);
+    revalidateTag(GlobalConstants.TICKET, "max");
     // Create the participant and connect it to the user, ticket, and event
     await tx.eventParticipant.create({
         data: {
@@ -78,8 +78,8 @@ export const addEventParticipantWithTx = async (
             },
         },
     });
-    revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-    revalidateTag(GlobalConstants.EVENT);
+    revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
+    revalidateTag(GlobalConstants.EVENT, "max");
 };
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
@@ -130,9 +130,9 @@ export const deleteEventParticipantWithTx = async (
         },
     });
 
-    revalidateTag(GlobalConstants.PARTICIPANT_USERS);
-    revalidateTag(GlobalConstants.EVENT);
-    revalidateTag(GlobalConstants.TICKET);
+    revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
+    revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(GlobalConstants.TICKET, "max");
     await notifyEventReserves(eventId);
 };
 

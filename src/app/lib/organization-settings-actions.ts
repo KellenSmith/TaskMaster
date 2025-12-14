@@ -40,7 +40,7 @@ export const updateOrganizationSettings = async (formData: FormData): Promise<vo
         },
         data: validatedData,
     });
-    revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS);
+    revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS, "max");
 };
 
 export const deleteOldBlob = async (

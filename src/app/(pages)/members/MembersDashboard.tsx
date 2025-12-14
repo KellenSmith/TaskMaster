@@ -309,12 +309,12 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 getDefaultFormValues={(member: ImplementedDatagridEntities) =>
                     member
                         ? {
-                              [GlobalConstants.SKILL_BADGES]: (
-                                  member as Prisma.UserGetPayload<{
-                                      include: { skill_badges: true };
-                                  }>
-                              ).skill_badges.map((badge) => badge.skill_badge_id),
-                          }
+                            [GlobalConstants.SKILL_BADGES]: (
+                                member as Prisma.UserGetPayload<{
+                                    include: { skill_badges: true };
+                                }>
+                            ).skill_badges.map((badge) => badge.skill_badge_id),
+                        }
                         : null
                 }
                 customFormOptions={{

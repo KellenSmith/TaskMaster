@@ -29,7 +29,7 @@ export const addUserMembership = async (userId: string, formData: FormData) => {
         },
         update: { expires_at: validatedData.expires_at },
     });
-    revalidateTag(GlobalConstants.USER);
+    revalidateTag(GlobalConstants.USER, "max");
 };
 
 export const renewUserMembership = async (
@@ -69,7 +69,7 @@ export const renewUserMembership = async (
             expires_at: newExpiryDate,
         },
     });
-    revalidateTag(GlobalConstants.USER);
+    revalidateTag(GlobalConstants.USER, "max");
 };
 
 export const startMembershipSubscription = async (userId: string): Promise<void> => {
@@ -152,7 +152,7 @@ export const cancelMembershipSubscription = async (userId: string) => {
         where: { user_id: validatedUserId },
         data: { subscription_token: null },
     });
-    revalidateTag(GlobalConstants.USER);
+    revalidateTag(GlobalConstants.USER, "max");
 };
 
 export const getMembershipProduct = async (): Promise<

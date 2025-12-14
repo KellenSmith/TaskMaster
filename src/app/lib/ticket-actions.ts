@@ -45,7 +45,7 @@ export const createEventTicket = async (eventId: string, formData: FormData) => 
             },
         },
     });
-    revalidateTag(GlobalConstants.TICKET);
+    revalidateTag(GlobalConstants.TICKET, "max");
 };
 
 export const updateEventTicket = async (ticketId: string, formData: FormData) => {
@@ -69,7 +69,7 @@ export const updateEventTicket = async (ticketId: string, formData: FormData) =>
             },
         },
     });
-    revalidateTag(GlobalConstants.TICKET);
+    revalidateTag(GlobalConstants.TICKET, "max");
 };
 
 export const deleteEventTicket = async (ticketId: string) => {
@@ -80,7 +80,7 @@ export const deleteEventTicket = async (ticketId: string) => {
             id: validatedTicketId,
         },
     });
-    revalidateTag(GlobalConstants.TICKET);
+    revalidateTag(GlobalConstants.TICKET, "max");
 };
 
 export const getEventTickets = async (eventId: string) => {

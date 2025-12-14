@@ -30,7 +30,7 @@ export async function createNewsletterJob(input: CreateJobInput) {
             status: "pending",
         },
     });
-    revalidateTag(GlobalConstants.SENDOUT);
+    revalidateTag(GlobalConstants.SENDOUT, "max");
     // Batched are sent when nextauth route is accessed.
 
     return { id: job.id, total: recipients.length, batchSize };
@@ -41,9 +41,9 @@ export async function processNextNewsletterBatch(jobId?: string) {
     const job = jobId
         ? await prisma.newsletterJob.findUnique({ where: { id: jobId } })
         : await prisma.newsletterJob.findFirst({
-              where: { status: { in: ["pending", "running"] } },
-              orderBy: { created_at: "asc" },
-          });
+            where: { status: { in: ["pending", "running"] } },
+            orderBy: { created_at: "asc" },
+        });
 
     if (!job) return { processed: 0, done: true, message: "No pending jobs" };
     if (job.status === "completed" || job.status === "cancelled")
@@ -100,7 +100,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
         console.log(
             `NewsletterJob ${job.id}: Sent to ${acceptedTotal} recipients (cursor ${newCursor}/${total})`,
         );
-        revalidateTag(GlobalConstants.SENDOUT);
+        revalidateTag(GlobalConstants.SENDOUT, "max");
         return {
             jobId: job.id,
             processed: acceptedTotal,
@@ -141,5 +141,5 @@ export const getAllNewsletterJobs = async () =>
 export const deleteNewsletterJob = async (jobId: string) => {
     const validatedJobId = UuidSchema.parse(jobId);
     await prisma.newsletterJob.delete({ where: { id: validatedJobId } });
-    revalidateTag(GlobalConstants.SENDOUT);
+    revalidateTag(GlobalConstants.SENDOUT, "max");
 };
