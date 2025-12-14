@@ -6,6 +6,9 @@ import { unstable_cache } from "next/cache";
 import { getTextContent } from "./lib/text-content-actions";
 
 const HomePage: React.FC = async () => {
+
+    // TODO: unstable_cache can corrupt deeply nested objects due to serialization issues.
+    // Refactor with new solution.
     const textContentPromise = unstable_cache(getTextContent, ["home"], {
         tags: [GlobalConstants.TEXT_CONTENT],
     })("home");

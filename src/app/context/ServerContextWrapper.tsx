@@ -17,16 +17,14 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
 
     const loggedInUser = await getLoggedInUser();
 
-    // Only cache the user data fetching if we have a user ID
+    // Only fetch the user data if we have a user ID
     const userPromise = loggedInUser?.id
-        ? unstable_cache(getUserById, [loggedInUser.id], {
-              tags: [GlobalConstants.USER],
-          })(loggedInUser.id)
+        ? getUserById(loggedInUser.id)
         : Promise.resolve(null);
 
     const infoPagesPromise = unstable_cache(getInfoPages, [loggedInUser?.id], {
         tags: [GlobalConstants.INFO_PAGE],
-    })(loggedInUser?.id);
+    })(loggedInUser?.id ?? null);
 
     return (
         <ContextWrapper

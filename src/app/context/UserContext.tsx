@@ -45,7 +45,7 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children, userPromi
     const [language, setLanguage] = useState<Language>(() => readLanguageFromCookie());
 
     // Persist language to a cookie whenever it changes
-    useEffect(() => {}, [language]);
+    useEffect(() => { }, [language]);
     const [editMode, setEditMode] = useState(false);
 
     const updateLanguage = (newLanguage: Language) => {
