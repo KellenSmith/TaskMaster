@@ -15,7 +15,7 @@ export const config = {
     ],
 };
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
     // Skip middleware for Next.js Server Actions and related special POSTs
     // Next adds special headers like Next-Action/RSC and often uses text/plain bodies
     // Be generous so we never block/redirect action requests by mistake.
