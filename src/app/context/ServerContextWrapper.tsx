@@ -1,6 +1,5 @@
 import { ReactNode, FC } from "react";
 import ContextWrapper from "./ContextWrapper";
-import { unstable_cache } from "next/cache";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
 import GlobalConstants from "../GlobalConstants";
 import { getLoggedInUser, getUserById } from "../lib/user-actions";
@@ -11,9 +10,7 @@ interface ServerContextWrapperProps {
 }
 
 const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
-    const organizationSettingsPromise = unstable_cache(getOrganizationSettings, [], {
-        tags: [GlobalConstants.ORGANIZATION_SETTINGS],
-    })();
+    const organizationSettingsPromise = getOrganizationSettings();
 
     const loggedInUser = await getLoggedInUser();
 
@@ -22,9 +19,7 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
         ? getUserById(loggedInUser.id)
         : Promise.resolve(null);
 
-    const infoPagesPromise = unstable_cache(getInfoPages, [loggedInUser?.id], {
-        tags: [GlobalConstants.INFO_PAGE],
-    })(loggedInUser?.id ?? null);
+    const infoPagesPromise = getInfoPages(loggedInUser?.id ?? null);
 
     return (
         <ContextWrapper

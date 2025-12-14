@@ -1,7 +1,6 @@
 "use server";
 import React from "react";
 import ErrorBoundarySuspense, { ErrorFallback } from "../../ui/ErrorBoundarySuspense";
-import { unstable_cache } from "next/cache";
 import { getOrderById } from "../../lib/order-actions";
 import GlobalConstants from "../../GlobalConstants";
 import OrderDashboard from "./OrderDashboard";
@@ -20,9 +19,7 @@ const OrderPage = async ({ searchParams }: OrderPageProps) => {
         return <ErrorFallback />;
     }
 
-    const orderPromise = unstable_cache(getOrderById, [loggedInUser?.id, orderId], {
-        tags: [GlobalConstants.ORDER],
-    })(loggedInUser?.id, orderId);
+    const orderPromise = getOrderById(loggedInUser?.id, orderId);
 
     return (
         <ErrorBoundarySuspense>

@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
@@ -9,15 +8,11 @@ import { isUserAdmin } from "../../lib/utils";
 
 const TasksPage = async () => {
     const loggedInUser = await getLoggedInUser();
-    const tasksPromise = unstable_cache(getFilteredTasks, [], { tags: [GlobalConstants.TASK] })({
+    const tasksPromise = getFilteredTasks({
         event_id: null,
     });
-    const activeMembersPromise = unstable_cache(getActiveMembers, [], {
-        tags: [GlobalConstants.USER],
-    })();
-    const skillBadgesPromise = unstable_cache(getAllSkillBadges, [], {
-        tags: [GlobalConstants.SKILL_BADGE],
-    })();
+    const activeMembersPromise = getActiveMembers();
+    const skillBadgesPromise = getAllSkillBadges();
 
     return (
         <ErrorBoundarySuspense>

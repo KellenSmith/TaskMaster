@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import InfoDashboard from "./InfoDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import { getTextContent } from "../../lib/text-content-actions";
@@ -22,9 +21,7 @@ const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
         if (!userHasRolePrivileges(loggedInUser, infoPage.lowest_allowed_user_role))
             throw new Error("Unauthorized");
 
-        const textContentPromise = unstable_cache(getTextContent, [infoPage.content.id], {
-            tags: [GlobalConstants.TEXT_CONTENT],
-        })(infoPage.content.id);
+        const textContentPromise = getTextContent(infoPage.content.id);
 
         return (
             <ErrorBoundarySuspense>

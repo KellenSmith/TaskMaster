@@ -1,5 +1,4 @@
 "use server";
-import { unstable_cache } from "next/cache";
 import ProfileDashboard from "./ProfileDashboard";
 import { getFilteredTasks } from "../../lib/task-actions";
 import GlobalConstants from "../../GlobalConstants";
@@ -12,12 +11,8 @@ const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser) serverRedirect([GlobalConstants.LOGIN]);
 
-    const tasksPromise = unstable_cache(getFilteredTasks, [loggedInUser.id], {
-        tags: [GlobalConstants.TASK],
-    })({ OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] });
-    const eventsPromise = unstable_cache(getFilteredEvents, [loggedInUser.id], {
-        tags: [GlobalConstants.EVENT],
-    })({
+    const tasksPromise = getFilteredTasks({ OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] });
+    const eventsPromise = getFilteredEvents({
         OR: [
             { host_id: loggedInUser.id },
             {
@@ -34,9 +29,7 @@ const ProfilePage = async () => {
             { event_reserves: { some: { user_id: loggedInUser.id } } },
         ],
     });
-    const skillBadgesPromise = unstable_cache(getAllSkillBadges, [loggedInUser.id], {
-        tags: [GlobalConstants.SKILL_BADGE],
-    })();
+    const skillBadgesPromise = getAllSkillBadges();
 
     return (
         <ProfileDashboard
