@@ -71,6 +71,10 @@ const LanguageTranslations = {
             [Language.english]: "Members",
             [Language.swedish]: "Medlemmar",
         },
+        [GlobalConstants.VOLUNTEER_LEADERBOARD]: {
+            [Language.english]: "Volunteer Leaderboard",
+            [Language.swedish]: "Volontärtopplista",
+        },
         [GlobalConstants.PRODUCTS]: {
             [Language.english]: "Products",
             [Language.swedish]: "Produkter",

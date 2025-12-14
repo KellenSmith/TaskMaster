@@ -12,6 +12,7 @@ const GlobalConstants = {
     PROFILE: "profile",
     RECEIPT: "receipt",
     MEMBERS: "members",
+    VOLUNTEER_LEADERBOARD: "volunteer-leaderboard",
     ORGANIZATION_SETTINGS: "settings",
     CREATE: "create",
     CALENDAR: "calendar",

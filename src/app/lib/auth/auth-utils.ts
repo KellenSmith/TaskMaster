@@ -95,6 +95,13 @@ export const routeTreeConfig: RouteConfigType = {
             children: [],
         },
         {
+            name: GlobalConstants.VOLUNTEER_LEADERBOARD,
+            status: UserStatus.validated,
+            role: UserRole.admin,
+            membershipRequired: true,
+            children: [],
+        },
+        {
             name: GlobalConstants.ORDER,
             status: UserStatus.validated,
             role: UserRole.member,
