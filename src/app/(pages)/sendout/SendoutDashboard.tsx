@@ -16,7 +16,7 @@ import { FC, useCallback, useEffect, useState } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/mail-service";
 import Form from "../../ui/form/Form";
-import { Language, Prisma } from "@prisma/client";
+import { Language, Prisma, UserStatus } from "@prisma/client";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
@@ -47,7 +47,9 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
     const isSmall = useMediaQuery(theme.breakpoints.down("md"));
 
     const getRecipientCriteria = useCallback(() => {
-        const recipientCriteria: Prisma.UserWhereInput = {};
+        const recipientCriteria: Prisma.UserWhereInput = {
+            status: UserStatus.validated
+        };
         if (sendTo === sendToOptions.CONSENTING[language]) {
             recipientCriteria[GlobalConstants.CONSENT_TO_NEWSLETTERS] = true;
         }
