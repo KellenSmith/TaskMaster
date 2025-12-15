@@ -5,16 +5,17 @@ import { getAbsoluteUrl } from "../../utils";
 import GlobalConstants from "../../../GlobalConstants";
 import { getOrganizationSettings } from "../../organization-settings-actions";
 
+export const renderHtml = (html: string) => {
+    if (!html) return null;
+    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+};
+
 interface MailTemplateProps {
     children?: ReactNode;
     html?: string;
 }
 
 const MailTemplate: FC<MailTemplateProps> = async ({ children, html }) => {
-    const renderHtml = () => {
-        if (!html) return null;
-        return <div dangerouslySetInnerHTML={{ __html: html }} />;
-    };
     const organizationSettings = await getOrganizationSettings();
 
     return (
@@ -49,7 +50,7 @@ const MailTemplate: FC<MailTemplateProps> = async ({ children, html }) => {
                     )}
                     <Container style={{ color: mailTheme.palette.text.primary, padding: "16px" }}>
                         {children}
-                        {renderHtml()}
+                        {renderHtml(html)}
                     </Container>
                     <Button style={mailTheme.components.button} href={getAbsoluteUrl()}>
                         visit us

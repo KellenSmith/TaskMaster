@@ -1,16 +1,10 @@
 import { Text } from "@react-email/components";
-import MailTemplate from "./MailTemplate";
+import MailTemplate, { renderHtml } from "./MailTemplate";
 import { FC } from "react";
 
-/**
- * Props for the OrderConfirmationTemplate component.
- * @property orderId - The ID of the completed order.
- * @property orderItems - Array of order items with product details.
- * @property totalAmount - The total amount of the order.
- */
 interface MemberContactMemberTemplateProps {
     reason: string;
-    content: string;
+    content: string; // HTML content of the message
 }
 
 const MemberContactMemberTemplate: FC<MemberContactMemberTemplateProps> = async ({
@@ -33,7 +27,7 @@ const MemberContactMemberTemplate: FC<MemberContactMemberTemplateProps> = async 
                 to this message.
             </Text>
             <Text>{reason}</Text>
-            <Text>{content}</Text>
+            <Text>{renderHtml(content)}</Text>
         </MailTemplate>
     );
 };

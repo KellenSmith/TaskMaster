@@ -89,9 +89,9 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
         try {
             await contactTaskMember(messageRecipientId, formData, task.id);
             setMessageRecipientId(null);
-            return GlobalLanguageTranslations.successfulSave[language];
+            return LanguageTranslations.massageSentSuccess[language];
         } catch {
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            throw new Error(LanguageTranslations.messageSendError[language]);
         }
     };
 

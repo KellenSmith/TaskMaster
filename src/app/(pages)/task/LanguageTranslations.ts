@@ -25,6 +25,14 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Observera att din mailadress kommer att vara synlig för mottagaren av meddelandet.",
     },
+    massageSentSuccess: {
+        [Language.english]: "Message sent successfully",
+        [Language.swedish]: "Meddelandet skickades",
+    },
+    messageSendError: {
+        [Language.english]: "Could not send message. Please try again later.",
+        [Language.swedish]: "Kunde inte skicka meddelandet. Försök igen senare.",
+    }
 };
 
 export default LanguageTranslations;
