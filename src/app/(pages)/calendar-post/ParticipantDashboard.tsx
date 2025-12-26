@@ -30,7 +30,7 @@ import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
 
-interface ParticipantDashboard {
+interface ParticipantDashboardProps {
     eventPromise: Promise<
         Prisma.EventGetPayload<{
             include: { tickets: { include: { event_participants: true } }; event_reserves: true };
@@ -58,7 +58,7 @@ const ParticipantDashboard = ({
     eventReservesPromise,
     eventTicketsPromise,
     activeMembersPromise,
-}: ParticipantDashboard) => {
+}: ParticipantDashboardProps) => {
     const theme = useTheme();
     const { language } = useUserContext();
     const { addNotification } = useNotificationContext();

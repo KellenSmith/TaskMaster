@@ -1,7 +1,6 @@
 "use server";
 import OrdersDashboard from "./OrdersDashboard";
 import { getAllOrders } from "../../lib/order-actions";
-import GlobalConstants from "../../GlobalConstants";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const OrdersPage = () => {

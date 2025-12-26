@@ -1,7 +1,6 @@
 "use server";
 
 import { getAllUsers, getLoggedInUser } from "../../lib/user-actions";
-import GlobalConstants from "../../GlobalConstants";
 import MembersDashboard from "./MembersDashboard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";

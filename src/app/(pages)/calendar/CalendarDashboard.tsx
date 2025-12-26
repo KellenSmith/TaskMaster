@@ -1,11 +1,11 @@
 "use client";
 
-import React, { FC, use, useState } from "react";
+import { FC, use, useState } from "react";
 import {
     Stack,
     Typography,
     Button,
-    Grid2,
+    Grid,
     Dialog,
     DialogContent,
     useMediaQuery,
@@ -100,9 +100,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const getCalendarGrid = () => {
         return (
             <Stack sx={{ width: "100%" }}>
-                <Grid2 container spacing={2} columns={7}>
+                <Grid container spacing={2} columns={7}>
                     {LanguageTranslations.weekDaysShort[language].map((day) => (
-                        <Grid2 key={day} size={1} alignContent="center">
+                        <Grid key={day} size={1} alignContent="center">
                             <Typography
                                 key={day}
                                 variant="subtitle2"
@@ -110,14 +110,14 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                             >
                                 {day}
                             </Typography>
-                        </Grid2>
+                        </Grid>
                     ))}
                     {getDaysToShow().map((date) => (
-                        <Grid2 key={date.format("YYYY-MM-DD")} size={1}>
+                        <Grid key={date.format("YYYY-MM-DD")} size={1}>
                             <CalendarDay date={date} eventsPromise={eventsPromise} />
-                        </Grid2>
+                        </Grid>
                     ))}
-                </Grid2>
+                </Grid>
             </Stack>
         );
     };

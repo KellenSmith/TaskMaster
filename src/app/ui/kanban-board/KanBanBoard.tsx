@@ -1,7 +1,7 @@
 "use client";
 
-import React, { use, useState } from "react";
-import { Grid2, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { use, useState } from "react";
+import { Grid, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DroppableColumn from "./DroppableColumn";
 import { Prisma, TaskStatus } from "@prisma/client";
 import KanBanBoardMenu from "./KanBanBoardMenu";
@@ -51,9 +51,9 @@ const KanBanBoard = ({
     const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
         !(isUserHost(user, event) || isUserAdmin(user))
             ? {
-                  unassigned: true,
-                  [GlobalConstants.STATUS]: event ? [TaskStatus.toDo] : Object.values(TaskStatus),
-              }
+                unassigned: true,
+                [GlobalConstants.STATUS]: event ? [TaskStatus.toDo] : Object.values(TaskStatus),
+            }
             : null,
     );
 
@@ -65,7 +65,7 @@ const KanBanBoard = ({
                     : LanguageTranslations.assignYourselfPrompt[language]}
             </Typography>
             <Stack direction="row">
-                <Grid2
+                <Grid
                     key={appliedFilter ? JSON.stringify(appliedFilter) : "all-tasks"}
                     container
                     spacing={2}
@@ -76,7 +76,7 @@ const KanBanBoard = ({
                         ? (appliedFilter.status as TaskStatus[])
                         : Object.values(TaskStatus)
                     ).map((status) => (
-                        <Grid2 size={1} key={status}>
+                        <Grid size={1} key={status}>
                             <DroppableColumn
                                 readOnly={readOnly}
                                 eventPromise={eventPromise}
@@ -90,9 +90,9 @@ const KanBanBoard = ({
                                 draggedOverColumn={draggedOverColumn}
                                 setDraggedOverColumn={setDraggedOverColumn}
                             />
-                        </Grid2>
+                        </Grid>
                     ))}
-                </Grid2>
+                </Grid>
                 <KanBanBoardMenu
                     tasksPromise={tasksPromise}
                     appliedFilter={appliedFilter}
