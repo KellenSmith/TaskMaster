@@ -1,7 +1,6 @@
 "use server";
 import CalendarDashboard from "./CalendarDashboard";
 import { getAllEvents } from "../../lib/event-actions";
-import GlobalConstants from "../../GlobalConstants";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { getAllLocations } from "../../lib/location-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";

@@ -1,6 +1,5 @@
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { getFilteredTasks } from "../../lib/task-actions";
-import GlobalConstants from "../../GlobalConstants";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";

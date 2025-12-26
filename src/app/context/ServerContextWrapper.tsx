@@ -1,7 +1,6 @@
 import { ReactNode, FC } from "react";
 import ContextWrapper from "./ContextWrapper";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
-import GlobalConstants from "../GlobalConstants";
 import { getLoggedInUser, getUserById } from "../lib/user-actions";
 import { getInfoPages } from "../lib/info-page-actions";
 
