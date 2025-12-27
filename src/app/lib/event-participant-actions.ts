@@ -180,37 +180,3 @@ export const unassignUserFromEventTasks = async (
         },
     });
 };
-
-export const getEventParticipants = async (
-    eventId: string,
-): Promise<
-    Prisma.EventParticipantGetPayload<{
-        include: { user: { select: { id: true; nickname: true } } };
-    }>[]
-> => {
-    return await prisma.eventParticipant.findMany({
-        where: { ticket: { event_id: eventId } },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-        },
-    });
-};
-
-export const getEventParticipantEmails = async (eventId: string): Promise<string[]> => {
-    const participants = await prisma.eventParticipant.findMany({
-        where: { ticket: { event_id: eventId } },
-        select: {
-            user: {
-                select: {
-                    email: true,
-                },
-            },
-        },
-    });
-    return participants.map((participant) => participant.user.email);
-};
