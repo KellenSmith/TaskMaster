@@ -3,9 +3,9 @@ import GlobalConstants from "../../GlobalConstants";
 import { getTextContent } from "../../lib/text-content-actions";
 import { FC } from "react";
 import { getLoggedInUser } from "../../lib/user-actions";
-import { getInfoPageById } from "../../lib/info-page-actions";
 import { userHasRolePrivileges } from "../../lib/auth/auth-utils";
-import ErrorBoundarySuspense, { ErrorFallback } from "../../ui/ErrorBoundarySuspense";
+import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import { prisma } from "../../../../prisma/prisma-client";
 
 interface InfoPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
@@ -16,21 +16,25 @@ const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
 
     const loggedInUser = await getLoggedInUser();
 
-    try {
-        const infoPage = await getInfoPageById(pageId);
-        if (!userHasRolePrivileges(loggedInUser, infoPage.lowest_allowed_user_role))
-            throw new Error("Unauthorized");
+    const infoPage = await prisma.infoPage.findUniqueOrThrow({
+        where: { id: pageId },
+        include: {
+            titleText: { include: { translations: true } },
+            content: true,
+        },
+    });
 
-        const textContentPromise = getTextContent(infoPage.content.id);
+    if (!userHasRolePrivileges(loggedInUser, infoPage.lowest_allowed_user_role))
+        throw new Error("Unauthorized");
 
-        return (
-            <ErrorBoundarySuspense>
-                <InfoDashboard textContentPromise={textContentPromise} id={infoPage.content.id} />
-            </ErrorBoundarySuspense>
-        );
-    } catch {
-        return <ErrorFallback />;
-    }
+    const textContentPromise = getTextContent(infoPage.content.id);
+
+    return (
+        <ErrorBoundarySuspense>
+            <InfoDashboard textContentPromise={textContentPromise} id={infoPage.content.id} />
+        </ErrorBoundarySuspense>
+    );
+
 };
 
 export default InfoPage;
