@@ -6,7 +6,6 @@ import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import { getEventTickets } from "../../lib/ticket-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { getAllLocations } from "../../lib/location-actions";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 import { prisma } from "../../../../prisma/prisma-client";
 import { EventStatus } from "@prisma/client";
@@ -68,7 +67,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
             },
         },
     });
-    const locationsPromise = getAllLocations();
+    const locationsPromise = prisma.location.findMany()
     const eventTagsPromise = getEventTags();
 
     return (
