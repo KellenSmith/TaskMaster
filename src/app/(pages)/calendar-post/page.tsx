@@ -1,6 +1,5 @@
 "use server";
 import { getEventTags } from "../../lib/event-actions";
-import { getFilteredTasks } from "../../lib/task-actions";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
@@ -40,7 +39,18 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
         throw new Error("You are not authorized to view this event");
     }
 
-    const eventTasksPromise = getFilteredTasks({ event_id: eventId });
+    const eventTasksPromise = await prisma.task.findMany({
+        where: { event_id: eventId },
+        include: {
+            assignee: {
+                select: {
+                    id: true,
+                    nickname: true,
+                },
+            },
+            skill_badges: true,
+        },
+    });
     const eventTicketsPromise = getEventTickets(eventId);
     const activeMembersPromise = getActiveMembers();
     const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
