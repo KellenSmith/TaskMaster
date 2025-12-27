@@ -19,19 +19,6 @@ import { getAbsoluteUrl } from "./utils";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
 import { createElement } from "react";
 
-export const getAllNonTicketProducts = async (): Promise<
-    Prisma.ProductGetPayload<{ include: { membership: true } }>[]
-> => {
-    return await prisma.product.findMany({
-        where: {
-            ticket: null,
-        },
-        include: {
-            membership: true,
-        },
-    });
-};
-
 export const createProduct = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ProductCreateSchema.parse(Object.fromEntries(formData.entries()));
