@@ -7,6 +7,12 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
     plugins: [react()],
+    poolOptions: {
+        threads: {
+            minThreads: 2,
+            maxThreads: 4,
+        },
+    },
     test: {
         environment: "jsdom",
         setupFiles: ["./src/test/setup.ts"],
@@ -27,12 +33,6 @@ export default defineConfig({
         ],
         // Performance optimizations
         pool: "threads",
-        poolOptions: {
-            threads: {
-                minThreads: 2,
-                maxThreads: 4,
-            },
-        },
         testTimeout: 10000,
         hookTimeout: 10000,
         isolate: true,
