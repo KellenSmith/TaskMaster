@@ -3,11 +3,29 @@ import CalendarDashboard from "./CalendarDashboard";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { getAllLocations } from "../../lib/location-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { getAllEvents } from "./server-actions";
+import { EventStatus, Prisma } from "@prisma/client";
+import { isUserAdmin } from "../../lib/utils";
+import { prisma } from "../../../../prisma/prisma-client";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
-    const eventsPromise = getAllEvents(loggedInUser.id);
+
+
+    const eventFilterParams = {} as Prisma.EventWhereInput;
+
+    // Non-admins can only see their own event drafts and pending approval events or published events
+    if (!isUserAdmin(loggedInUser)) {
+        eventFilterParams.OR = [
+            {
+                status: EventStatus.published,
+            },
+            { host_id: loggedInUser.id },
+        ];
+    }
+
+    const eventsPromise = prisma.event.findMany({
+        where: eventFilterParams,
+    });
     const locationsPromise = getAllLocations();
 
     return (

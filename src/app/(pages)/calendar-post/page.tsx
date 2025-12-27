@@ -1,5 +1,5 @@
 "use server";
-import { getEventById, getEventTags } from "../../lib/event-actions";
+import { getEventTags } from "../../lib/event-actions";
 import { getFilteredTasks } from "../../lib/task-actions";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
@@ -10,6 +10,9 @@ import { getEventParticipants } from "../../lib/event-participant-actions";
 import { getEventReserves } from "../../lib/event-reserve-actions";
 import { getAllLocations } from "../../lib/location-actions";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";
+import { prisma } from "../../../../prisma/prisma-client";
+import { EventStatus } from "@prisma/client";
+import { isUserAdmin, isUserHost } from "../../lib/utils";
 
 interface EventPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
@@ -17,13 +20,30 @@ interface EventPageProps {
 
 const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventId = (await searchParams)[GlobalConstants.EVENT_ID];
-
-    // Make sure the user is available before fetching the event
-    // When cloning events the user goes from possibly not host to host
-    // of the shown event which causes timing issues
     const loggedInUser = await getLoggedInUser();
 
-    const eventPromise = getEventById(eventId, loggedInUser.id);
+    const event = await prisma.event.findUniqueOrThrow({
+        where: {
+            id: eventId,
+        },
+        include: {
+            location: true,
+            tickets: {
+                include: {
+                    event_participants: true,
+                },
+            },
+            event_reserves: true,
+        },
+    });
+    if (
+        event.status !== EventStatus.published &&
+        !isUserAdmin(loggedInUser) &&
+        !isUserHost(loggedInUser, event)
+    ) {
+        throw new Error("You are not authorized to view this event");
+    }
+
     const eventTasksPromise = getFilteredTasks({ event_id: eventId });
     const eventTicketsPromise = getEventTickets(eventId);
     const activeMembersPromise = getActiveMembers();
@@ -36,7 +56,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     return (
         <ErrorBoundarySuspense>
             <EventDashboard
-                eventPromise={eventPromise}
+                eventPromise={new Promise((resolve) => resolve(event))}
                 eventTasksPromise={eventTasksPromise}
                 eventTicketsPromise={eventTicketsPromise}
                 activeMembersPromise={activeMembersPromise}
