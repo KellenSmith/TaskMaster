@@ -1,9 +1,9 @@
-import { Prisma, TicketType } from "@prisma/client";
+import { EventStatus, Prisma, TicketType } from "@prisma/client";
 import { prisma } from "../../../../prisma/prisma-client";
 import { sanitizeFormData } from "../../lib/html-sanitizer";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import GlobalConstants from "../../GlobalConstants";
-import { serverRedirect } from "../../lib/utils";
+import { isUserAdmin, serverRedirect } from "../../lib/utils";
 
 export const createEvent = async (userId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -68,5 +68,28 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
 
     serverRedirect([GlobalConstants.CALENDAR_POST], {
         [GlobalConstants.EVENT_ID]: createdEvent.id,
+    });
+};
+
+export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPayload<true>[]> => {
+    const loggedInUser = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        include: { user_membership: true },
+    });
+
+    const filterParams = {} as Prisma.EventWhereInput;
+
+    // Non-admins can only see their own event drafts and pending approval events or published events
+    if (!isUserAdmin(loggedInUser)) {
+        filterParams.OR = [
+            {
+                status: EventStatus.published,
+            },
+            { host_id: userId },
+        ];
+    }
+
+    return await prisma.event.findMany({
+        where: filterParams,
     });
 };
