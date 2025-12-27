@@ -14,29 +14,6 @@ import { sanitizeFormData } from "./html-sanitizer";
 import { createElement } from "react";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
 
-export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPayload<true>[]> => {
-    const loggedInUser = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        include: { user_membership: true },
-    });
-
-    const filterParams = {} as Prisma.EventWhereInput;
-
-    // Non-admins can only see their own event drafts and pending approval events or published events
-    if (!isUserAdmin(loggedInUser)) {
-        filterParams.OR = [
-            {
-                status: EventStatus.published,
-            },
-            { host_id: userId },
-        ];
-    }
-
-    return await prisma.event.findMany({
-        where: filterParams,
-    });
-};
-
 export const getEventTags = async (): Promise<string[]> => {
     const events = (await prisma.event.findMany({
         select: { tags: true },

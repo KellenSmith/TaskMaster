@@ -1,9 +1,9 @@
 "use server";
 import CalendarDashboard from "./CalendarDashboard";
-import { getAllEvents } from "../../lib/event-actions";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { getAllLocations } from "../../lib/location-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import { getAllEvents } from "./server-actions";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
