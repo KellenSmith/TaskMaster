@@ -9,7 +9,6 @@ import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { EmailSendoutSchema } from "../zod-schemas";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
-import { getEventParticipantEmails } from "../event-participant-actions";
 import { getEventReservesEmails } from "../event-reserve-actions";
 import { sanitizeFormData } from "../html-sanitizer";
 import { createNewsletterJob } from "./newsletter-actions";
@@ -204,7 +203,17 @@ export const notifyEventReserves = async (eventId: string): Promise<void> => {
  * @throws Error if email fails
  */
 export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
-    const participantEmails = await getEventParticipantEmails(eventId);
+    const participants = await prisma.eventParticipant.findMany({
+        where: { ticket: { event_id: eventId } },
+        select: {
+            user: {
+                select: {
+                    email: true,
+                },
+            },
+        },
+    });
+    const participantEmails = participants.map((participant) => participant.user.email);
     const reserveEmails = await getEventReservesEmails(eventId);
     if (participantEmails.length === 0 && reserveEmails.length === 0) return;
 
