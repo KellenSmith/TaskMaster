@@ -2,39 +2,11 @@
 import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "./user-actions";
 import { InfoPageCreateSchema, UuidSchema } from "./zod-schemas";
-import { userHasRolePrivileges } from "./auth/auth-utils";
 import { Language, Prisma, UserRole } from "@prisma/client";
 import { serverRedirect } from "./utils";
 import GlobalConstants from "../GlobalConstants";
 import { createTextContent } from "./text-content-actions";
 import { revalidateTag } from "next/cache";
-
-export const getInfoPageById = async (
-    id: string,
-): Promise<
-    Prisma.InfoPageGetPayload<{
-        include: {
-            titleText: { include: { translations: true } };
-            content: true;
-        };
-    }>
-> => {
-    const validatedId = UuidSchema.parse(id);
-
-    const infoPage = await prisma.infoPage.findUniqueOrThrow({
-        where: { id: validatedId },
-        include: {
-            titleText: { include: { translations: true } },
-            content: true,
-        },
-    });
-
-    const loggedInUser = await getLoggedInUser();
-    if (!userHasRolePrivileges(loggedInUser, infoPage.lowest_allowed_user_role))
-        throw new Error("Unauthorized");
-
-    return infoPage;
-};
 
 export const createInfoPage = async (formData: FormData): Promise<void> => {
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));
@@ -103,36 +75,6 @@ export const updateInfoPage = async (
         // Content is updated directly in the rich text component (InfoPageEditor)
     });
     revalidateTag(GlobalConstants.INFO_PAGE, "max");
-};
-
-export const getInfoPages = async (
-    userId: string,
-): Promise<
-    Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>[]
-> => {
-    const loggedInUser = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
-
-    if (!loggedInUser)
-        return await prisma.infoPage.findMany({
-            where: {
-                lowest_allowed_user_role: null,
-            },
-            include: { titleText: { include: { translations: true } } },
-        });
-
-    const allowedUserRolePrivileges = Object.values(UserRole).filter((role) =>
-        userHasRolePrivileges(loggedInUser, role),
-    ) as UserRole[];
-
-    return await prisma.infoPage.findMany({
-        where: {
-            OR: [
-                { lowest_allowed_user_role: null },
-                { lowest_allowed_user_role: { in: allowedUserRolePrivileges } },
-            ],
-        },
-        include: { titleText: { include: { translations: true } } },
-    });
 };
 
 export const deleteInfoPage = async (id: string): Promise<void> => {

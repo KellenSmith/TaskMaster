@@ -1,8 +1,10 @@
 import { ReactNode, FC } from "react";
 import ContextWrapper from "./ContextWrapper";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
-import { getLoggedInUser, getUserById } from "../lib/user-actions";
-import { getInfoPages } from "../lib/info-page-actions";
+import { getLoggedInUser } from "../lib/user-actions";
+import { prisma } from "../../../prisma/prisma-client";
+import { UserRole } from "@prisma/client";
+import { userHasRolePrivileges } from "../lib/auth/auth-utils";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
@@ -12,19 +14,33 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     const organizationSettingsPromise = getOrganizationSettings();
 
     const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser)
+        return await prisma.infoPage.findMany({
+            where: {
+                lowest_allowed_user_role: null,
+            },
+            include: { titleText: { include: { translations: true } } },
+        });
 
-    // Only fetch the user data if we have a user ID
-    const userPromise = loggedInUser?.id
-        ? getUserById(loggedInUser.id)
-        : Promise.resolve(null);
+    const allowedUserRolePrivileges = Object.values(UserRole).filter((role) =>
+        userHasRolePrivileges(loggedInUser, role),
+    ) as UserRole[];
+    // All users are allowed to view pages with no role restrictions
+    allowedUserRolePrivileges.push(null);
 
-    const infoPagesPromise = getInfoPages(loggedInUser?.id ?? null);
+    const infoPages = await prisma.infoPage.findMany({
+        where: {
+            lowest_allowed_user_role: { in: allowedUserRolePrivileges }
+
+        },
+        include: { titleText: { include: { translations: true } } },
+    });
 
     return (
         <ContextWrapper
             organizationSettingsPromise={organizationSettingsPromise}
-            userPromise={userPromise}
-            infoPagesPromise={infoPagesPromise}
+            userPromise={new Promise((resolve) => resolve(loggedInUser))}
+            infoPagesPromise={new Promise((resolve) => resolve(infoPages))}
         >
             {children}
         </ContextWrapper>
