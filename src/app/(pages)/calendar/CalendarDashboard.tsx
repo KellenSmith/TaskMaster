@@ -13,7 +13,6 @@ import {
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
-import { createEvent } from "../../lib/event-actions";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
@@ -25,6 +24,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { allowRedirectException } from "../../ui/utils";
 import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
+import { createEvent } from "./server-actions";
 
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
