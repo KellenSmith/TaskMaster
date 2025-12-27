@@ -1,9 +1,9 @@
-import { getAllSkillBadges } from "../../lib/skill-badge-actions";
+import { prisma } from "../../../../prisma/prisma-client";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import SkillBadgesDashboard from "./SkillBadgesDashboard";
 
 const SkillBadgesPage = async () => {
-    const skillBadgesPromise = getAllSkillBadges();
+    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 
     return (
         <ErrorBoundarySuspense>
