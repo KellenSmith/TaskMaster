@@ -82,18 +82,3 @@ export const deleteEventTicket = async (ticketId: string) => {
     });
     revalidateTag(GlobalConstants.TICKET, "max");
 };
-
-export const getEventTickets = async (eventId: string) => {
-    // Validate event ID format
-    const validatedEventId = UuidSchema.parse(eventId);
-
-    return await prisma.ticket.findMany({
-        where: {
-            event_id: validatedEventId,
-        },
-        include: {
-            product: true,
-            event_participants: true,
-        },
-    });
-};
