@@ -30,34 +30,6 @@ export const deleteTask = async (taskId: string): Promise<void> => {
     revalidateTag(GlobalConstants.TASK, "max");
 };
 
-export const getTaskById = async (
-    taskId: string,
-): Promise<
-    Prisma.TaskGetPayload<{
-        include: {
-            assignee: { select: { id: true; nickname: true } };
-            reviewer: { select: { id: true; nickname: true } };
-            event: true;
-            skill_badges: true;
-        };
-    }>
-> => {
-    // Validate task ID format
-    const validatedTaskId = UuidSchema.parse(taskId);
-
-    return await prisma.task.findUniqueOrThrow({
-        where: {
-            id: validatedTaskId,
-        },
-        include: {
-            assignee: { select: { id: true, nickname: true } },
-            reviewer: { select: { id: true, nickname: true } },
-            event: true,
-            skill_badges: true,
-        },
-    });
-};
-
 export const updateTaskById = async (taskId: string, formData: FormData): Promise<void> => {
     // Validate task ID format
     const validatedTaskId = UuidSchema.parse(taskId);
@@ -195,37 +167,6 @@ export const createTask = async (formData: FormData): Promise<void> => {
         include: { reviewer: true },
     });
     revalidateTag(GlobalConstants.TASK, "max");
-};
-
-export const getFilteredTasks = async (
-    searchParams: Prisma.TaskWhereInput | null, // Null if fetching default tasks
-): Promise<
-    Prisma.TaskGetPayload<{
-        include: {
-            assignee: { select: { id: true; nickname: true } };
-            reviewer: { select: { id: true; nickname: true } };
-            skill_badges: true;
-        };
-    }>[]
-> => {
-    return await prisma.task.findMany({
-        where: searchParams,
-        include: {
-            assignee: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-            reviewer: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-            skill_badges: true,
-        },
-    });
 };
 
 export const assignTaskToUser = async (userId: string, taskId: string) => {
@@ -418,6 +359,4 @@ export const contactTaskMember = async (
     });
     // Set replyTo to the sender so the recipient can reply directly to the member
     await sendMail([recipient.email], `About ${task.name}`, mailContent, sender.email);
-
-    // Implementation goes here
 };
