@@ -9,7 +9,6 @@ import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { EmailSendoutSchema } from "../zod-schemas";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
-import { getEventReservesEmails } from "../event-reserve-actions";
 import { sanitizeFormData } from "../html-sanitizer";
 import { createNewsletterJob } from "./newsletter-actions";
 import z from "zod";
@@ -172,6 +171,20 @@ export const sendMail = async (
         // For non-rate-limiting errors, throw the original error
         throw error;
     }
+};
+
+const getEventReservesEmails = async (eventId: string): Promise<string[]> => {
+    const reserves = await prisma.eventReserve.findMany({
+        where: { event_id: eventId },
+        select: {
+            user: {
+                select: {
+                    email: true,
+                },
+            },
+        },
+    });
+    return reserves.map((reserve) => reserve.user.email);
 };
 
 /**

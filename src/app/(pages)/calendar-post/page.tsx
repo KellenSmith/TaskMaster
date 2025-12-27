@@ -6,7 +6,6 @@ import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import { getEventTickets } from "../../lib/ticket-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { getEventReserves } from "../../lib/event-reserve-actions";
 import { getAllLocations } from "../../lib/location-actions";
 import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 import { prisma } from "../../../../prisma/prisma-client";
@@ -58,7 +57,17 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
             },
         },
     });
-    const eventReservesPromise = getEventReserves(eventId);
+    const eventReservesPromise = prisma.eventReserve.findMany({
+        where: { event_id: eventId },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    nickname: true,
+                },
+            },
+        },
+    });
     const locationsPromise = getAllLocations();
     const eventTagsPromise = getEventTags();
 

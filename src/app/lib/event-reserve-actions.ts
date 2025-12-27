@@ -92,37 +92,3 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
         await deleteEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
 };
-
-export const getEventReserves = async (eventId: string) => {
-    // Validate event ID format
-    const validatedEventId = UuidSchema.parse(eventId);
-
-    return await prisma.eventReserve.findMany({
-        where: { event_id: validatedEventId },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-        },
-    });
-};
-
-export const getEventReservesEmails = async (eventId: string): Promise<string[]> => {
-    // Validate event ID format
-    const validatedEventId = UuidSchema.parse(eventId);
-
-    const reserves = await prisma.eventReserve.findMany({
-        where: { event_id: validatedEventId },
-        select: {
-            user: {
-                select: {
-                    email: true,
-                },
-            },
-        },
-    });
-    return reserves.map((reserve) => reserve.user.email);
-};
