@@ -1,16 +1,11 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
 import { SkillBadgeCreateSchema, UuidSchema } from "./zod-schemas";
 import { prisma } from "../../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { deleteOldBlob } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
-
-export const getAllSkillBadges = async (): Promise<Prisma.SkillBadgeGetPayload<true>[]> => {
-    return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
-};
 
 export const createSkillBadge = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client

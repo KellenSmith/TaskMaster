@@ -6,7 +6,6 @@ import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import { getEventTickets } from "../../lib/ticket-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { getAllSkillBadges } from "../../lib/skill-badge-actions";
 import { prisma } from "../../../../prisma/prisma-client";
 import { EventStatus } from "@prisma/client";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
@@ -44,7 +43,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventTasksPromise = getFilteredTasks({ event_id: eventId });
     const eventTicketsPromise = getEventTickets(eventId);
     const activeMembersPromise = getActiveMembers();
-    const skillBadgesPromise = getAllSkillBadges();
+    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
     const eventParticipantsPromise = prisma.eventParticipant.findMany({
         where: { ticket: { event_id: eventId } },
         include: {
