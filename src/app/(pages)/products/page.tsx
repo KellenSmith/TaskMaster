@@ -1,9 +1,16 @@
 import ProductsDashboard from "./ProductsDashboard";
-import { getAllNonTicketProducts } from "../../lib/product-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import { prisma } from "../../../../prisma/prisma-client";
 
 const ProductsPage = () => {
-    const productsPromise = getAllNonTicketProducts();
+    const productsPromise = prisma.product.findMany({
+        where: {
+            ticket: null,
+        },
+        include: {
+            membership: true,
+        },
+    });
 
     return (
         <ErrorBoundarySuspense>
