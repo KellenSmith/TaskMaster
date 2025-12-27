@@ -22,15 +22,6 @@ import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 import MailTemplate from "./mail-service/mail-templates/MailTemplate";
 
-export const getUserById = async (
-    userId: string,
-): Promise<Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }>> => {
-    return await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        include: { user_membership: true, skill_badges: true },
-    });
-};
-
 export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = UserCreateSchema.parse(Object.fromEntries(formData.entries()));
@@ -106,31 +97,6 @@ export const submitMemberApplication = async (formData: FormData) => {
     }
 
     revalidateTag(GlobalConstants.USER, "max");
-};
-
-export const getAllUsers = async (
-    userId: string,
-): Promise<
-    Prisma.UserGetPayload<{
-        include: {
-            user_membership: true;
-            skill_badges: true;
-        };
-    }>[]
-> => {
-    const loggedInUser = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        include: { user_membership: true },
-    });
-    if (!isUserAdmin(loggedInUser)) {
-        throw new Error("Access denied. Admins only.");
-    }
-    return await prisma.user.findMany({
-        include: {
-            user_membership: true,
-            skill_badges: true,
-        },
-    });
 };
 
 export const getUserLanguage = async () => {
