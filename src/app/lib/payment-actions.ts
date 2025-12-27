@@ -1,7 +1,7 @@
 "use server";
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
-import { getOrderById, progressOrder } from "./order-actions";
+import { progressOrder } from "./order-actions";
 import { Language, OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import {
@@ -108,8 +108,16 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
     // Validate that the order contains subscribeable products
     // only memberships are subscribeable currently
     if (subscribe) {
-        const loggedInUser = await getLoggedInUser();
-        const order = await getOrderById(loggedInUser.id, orderId);
+        const order = prisma.order.findUniqueOrThrow({
+            where: { id: orderId },
+            include: {
+                order_items: {
+                    include: {
+                        product: { include: { membership: true } },
+                    },
+                },
+            },
+        })
         const hasSubscribeableProducts = order.order_items.some((item) => item.product.membership);
         if (!hasSubscribeableProducts) {
             throw new Error("Order does not contain subscribeable products");
@@ -297,7 +305,16 @@ export const checkPaymentStatus = async (
     const validatedUserId = UuidSchema.parse(userId);
     const validatedOrderId = UuidSchema.parse(orderId);
 
-    const order = await getOrderById(validatedUserId, validatedOrderId);
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: validatedOrderId },
+        include: {
+            order_items: {
+                include: {
+                    product: { include: { membership: true } },
+                },
+            },
+        },
+    })
 
     // Only allow admins to check other users' orders
     const loggedInUser = await getLoggedInUser();

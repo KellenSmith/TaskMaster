@@ -7,59 +7,8 @@ import { sendOrderConfirmation } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
-import { isUserAdmin, serverRedirect } from "./utils";
+import { serverRedirect } from "./utils";
 import { UuidSchema } from "./zod-schemas";
-
-export const getOrderById = async (
-    userId: string,
-    orderId: string,
-): Promise<
-    Prisma.OrderGetPayload<{
-        include: { order_items: { include: { product: { include: { membership: true } } } } };
-    }>
-> => {
-    const order = await prisma.order.findUniqueOrThrow({
-        where: { id: orderId },
-        include: {
-            order_items: {
-                include: {
-                    product: { include: { membership: true } },
-                },
-            },
-        },
-    });
-    const loggedInUser = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { role: true, user_membership: true },
-    });
-
-    if (userId !== order.user_id && !isUserAdmin(loggedInUser)) throw new Error("Not authorized to view this order");
-    return order;
-};
-
-export const getAllOrders = async (): Promise<
-    Prisma.OrderGetPayload<{
-        include: {
-            user: { select: { nickname: true } };
-            order_items: { include: { product: true } };
-        };
-    }>[]
-> => {
-    return prisma.order.findMany({
-        include: {
-            user: {
-                select: {
-                    nickname: true,
-                },
-            },
-            order_items: {
-                include: {
-                    product: true,
-                },
-            },
-        },
-    });
-};
 
 export const createOrder = async (
     userId: string,
