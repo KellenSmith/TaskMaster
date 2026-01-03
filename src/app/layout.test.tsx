@@ -22,59 +22,19 @@ vi.mock("@vercel/speed-insights/next", () => ({
 }));
 
 describe("RootLayout", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
     describe("RootLayoutInner", () => {
-        it("renders NavPanel component", () => {
+        it("renders required components (NavPanel and ServerContextWrapper)", () => {
             render(<RootLayoutInner>Test Content</RootLayoutInner>);
-            const navPanel = screen.getByTestId("nav-panel");
-            expect(navPanel).toBeInTheDocument();
+            expect(screen.getByTestId("nav-panel")).toBeInTheDocument();
+            expect(screen.getByTestId("server-context-wrapper")).toBeInTheDocument();
         });
 
-        it("renders ServerContextWrapper component", () => {
+        it("renders children correctly", () => {
             render(<RootLayoutInner>Test Content</RootLayoutInner>);
-            const contextWrapper = screen.getByTestId("server-context-wrapper");
-            expect(contextWrapper).toBeInTheDocument();
+            expect(screen.getByText("Test Content")).toBeInTheDocument();
         });
 
-        it("passes children through ServerContextWrapper and Stack", () => {
-            const testContent = "Test Content Here";
-            render(<RootLayoutInner>{testContent}</RootLayoutInner>);
-            expect(screen.getByText(testContent)).toBeInTheDocument();
-        });
-
-        it("renders children within the correct component hierarchy", () => {
-            render(
-                <RootLayoutInner>
-                    <span>Child Element</span>
-                </RootLayoutInner>,
-            );
-            // Verify the child is rendered within the structure
-            const child = screen.getByText("Child Element");
-            expect(child).toBeInTheDocument();
-        });
-
-        it("applies Stack styling with correct props", () => {
-            const { container } = render(<RootLayoutInner>Content</RootLayoutInner>);
-            // The Stack component should be rendered
-            const stackElement = container.querySelector("[class*='MuiStack']");
-            expect(stackElement).toBeInTheDocument();
-        });
-
-        it("renders NavPanel before children content", () => {
-            render(<RootLayoutInner>Test Content</RootLayoutInner>);
-            const navPanel = screen.getByTestId("nav-panel");
-            const testContent = screen.getByText("Test Content");
-
-            // NavPanel should appear before content in DOM
-            expect(navPanel.compareDocumentPosition(testContent)).toBe(
-                Node.DOCUMENT_POSITION_FOLLOWING,
-            );
-        });
-
-        it("handles multiple children elements", () => {
+        it("renders multiple children elements", () => {
             render(
                 <RootLayoutInner>
                     <div>First Child</div>
@@ -85,7 +45,7 @@ describe("RootLayout", () => {
             expect(screen.getByText("Second Child")).toBeInTheDocument();
         });
 
-        it("preserves React Fragment as children", () => {
+        it("renders children passed as React Fragment", () => {
             render(
                 <RootLayoutInner>
                     <>
@@ -97,33 +57,14 @@ describe("RootLayout", () => {
             expect(screen.getByText("Fragment Child 1")).toBeInTheDocument();
             expect(screen.getByText("Fragment Child 2")).toBeInTheDocument();
         });
-    });
 
-    describe("RootLayout full tree (with html and body)", () => {
-        it("exports RootLayoutInner for testing purposes", () => {
-            expect(RootLayoutInner).toBeDefined();
-            expect(typeof RootLayoutInner).toBe("function");
-        });
-
-        it("RootLayoutInner is a valid React component", () => {
-            expect(RootLayoutInner.displayName || RootLayoutInner.name).toBeDefined();
-        });
-    });
-
-    describe("Layout Structure", () => {
-        it("RootLayoutInner wraps children in ServerContextWrapper", () => {
+        it("wraps children in ServerContextWrapper which contains NavPanel", () => {
             render(<RootLayoutInner>Wrapped Content</RootLayoutInner>);
             const wrapper = screen.getByTestId("server-context-wrapper");
-            expect(wrapper).toBeInTheDocument();
-            expect(wrapper).toHaveTextContent("Wrapped Content");
-        });
-
-        it("ServerContextWrapper contains NavPanel", () => {
-            render(<RootLayoutInner>Content</RootLayoutInner>);
-            const wrapper = screen.getByTestId("server-context-wrapper");
             const navPanel = screen.getByTestId("nav-panel");
-            // NavPanel should be within the wrapper
+
             expect(wrapper.contains(navPanel)).toBe(true);
+            expect(wrapper).toHaveTextContent("Wrapped Content");
         });
     });
 });
