@@ -355,11 +355,13 @@ enum Language {
   english
 }
 
+// Role hierarchy: member < admin
 enum UserRole {
   member
   admin
 }
 
+// Status hierarchy: pending < validated
 enum UserStatus {
   pending
   validated
