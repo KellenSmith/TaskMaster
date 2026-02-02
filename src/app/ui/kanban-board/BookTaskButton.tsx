@@ -5,7 +5,7 @@ import ConfirmButton from "../ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
 import { CheckCircle, Delete, Warning } from "@mui/icons-material";
 import { assignTaskToUser, unassignTaskFromUser } from "../../lib/task-actions";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { isUserQualifiedForTask } from "../utils";
 import { Stack, Tooltip, Typography } from "@mui/material";
 import {
@@ -28,23 +28,25 @@ interface BookTaskButtonProps {
 
 const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
     const { user, language } = useUserContext();
+    if (!user) return null;
+
     const { addNotification } = useNotificationContext();
 
     const assignTaskToMe = async () => {
         try {
             await assignTaskToUser(user.id, task.id);
-            addNotification(LanguageTranslations.bookedTask[language], "success");
+            addNotification(LanguageTranslations.bookedTask[language], NotificationSeverity.success);
         } catch {
-            addNotification(LanguageTranslations.failedBookTask[language], "error");
+            addNotification(LanguageTranslations.failedBookTask[language], NotificationSeverity.error);
         }
     };
 
     const unassignFromTask = async () => {
         try {
             await unassignTaskFromUser(user.id, task.id);
-            addNotification(LanguageTranslations.unassignedTask[language], "success");
+            addNotification(LanguageTranslations.unassignedTask[language], NotificationSeverity.success);
         } catch {
-            addNotification(LanguageTranslations.failedUnassignTask[language], "error");
+            addNotification(LanguageTranslations.failedUnassignTask[language], NotificationSeverity.error);
         }
     };
 

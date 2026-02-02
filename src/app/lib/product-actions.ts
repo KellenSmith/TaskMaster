@@ -87,7 +87,7 @@ export const updateProduct = async (productId: string, formData: FormData): Prom
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
 
-    const oldProduct = await prisma.product.findUnique({ where: { id: validatedProductId } });
+    const oldProduct = await prisma.product.findUniqueOrThrow({ where: { id: validatedProductId } });
 
     await prisma.product.update({
         where: { id: validatedProductId },
@@ -119,7 +119,7 @@ export const processOrderedProduct = async (
         include: { product: { include: { membership: true; ticket: true } } };
     }>,
 ) => {
-    if (!orderItem.product.unlimited_stock && orderItem.quantity > orderItem.product.stock)
+    if (!orderItem.product.unlimited_stock && (orderItem.product.stock && orderItem.quantity > orderItem.product.stock))
         throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {
@@ -144,7 +144,7 @@ export const processOrderedProduct = async (
                 ],
             });
             await sendMail(
-                [process.env.EMAIL],
+                [process.env.EMAIL as string],
                 `Product purchased: ${orderItem.product.name}`,
                 mailContent,
             );

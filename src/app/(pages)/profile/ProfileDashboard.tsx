@@ -47,13 +47,13 @@ const ProfileDashboard = ({
     const { user, language } = useUserContext();
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
-    const tabs = useMemo(() => {
-        const availableTabs = {
+    const tabs = useMemo<Record<keyof typeof implementedTabs, string | null>>(() => {
+        const availableTabs: Record<keyof typeof implementedTabs, string | null> = {
             account: implementedTabs.account,
             events: null,
             tasks: null,
             skill_badges: null,
-        } as typeof implementedTabs;
+        };
         if (!isMembershipExpired(user)) {
             availableTabs.events = implementedTabs.events;
             availableTabs.tasks = implementedTabs.tasks;
@@ -100,7 +100,7 @@ const ProfileDashboard = ({
                 aria-label="profile tabs"
             >
                 {Object.keys(tabs).map((tabKey) => {
-                    const tabVal = tabs[tabKey];
+                    const tabVal = tabs[tabKey as keyof typeof tabs];
                     if (!tabVal) return null;
                     const label = LanguageTranslations[tabVal][language] as string;
                     const icon =

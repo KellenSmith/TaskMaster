@@ -55,7 +55,7 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                             </Box>
                         </Stack>
 
-                        <Stack
+                        {event.location && <Stack
                             direction="row"
                             spacing={1}
                             sx={{ alignItems: "center", minWidth: 0 }}
@@ -69,7 +69,7 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                             >
                                 {event.location.name}, {event.location.address}
                             </Typography>
-                        </Stack>
+                        </Stack>}
                         {event.tags && event.tags.length > 0 && (
                             <Box>
                                 <Typography

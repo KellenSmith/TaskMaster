@@ -1,6 +1,6 @@
 "use server";
 
-import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
+import { Event, EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
 import { prisma } from "../../../prisma/prisma-client";
 import { CloneEventSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
@@ -13,6 +13,7 @@ import { getOrganizationSettings } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
 import { createElement } from "react";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
+import z from "zod";
 
 export const getEventTags = async (): Promise<string[]> => {
     const events = (await prisma.event.findMany({
@@ -58,9 +59,9 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
     );
 
     // Sanitize rich text fields before saving to database
-    const sanitizedData = sanitizeFormData(validatedData);
+    const sanitizedData = sanitizeFormData(validatedData) as z.infer<typeof EventUpdateSchema>;
 
-    let notifyEventReservesPromise;
+    let notifyEventReservesPromise: Promise<void> | null = null;
     const eventToUpdate = await prisma.event.findUniqueOrThrow({
         where: { id: eventId },
         include: { tickets: { include: { product: true } }, host: true },
@@ -83,6 +84,9 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
         const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
+        if (!sanitizedData.max_participants) {
+            throw new Error("Maximum participants must be specified");
+        }
         if (eventParticipantsCount > sanitizedData.max_participants) {
             throw new Error(
                 `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
@@ -124,6 +128,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 ],
             });
+            if (!eventToUpdate.host) throw new Error(`Event host not found in event ${eventId}. Failed to notify event host of event update.`);
             await sendMail(
                 [organizationSettings.event_manager_email],
                 "Event requires approval",
@@ -147,6 +152,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 ],
             });
+            if (!eventToUpdate.host) throw new Error(`Event host not found in event ${eventId}. Failed to notify event host of event update.`);
             await sendMail([eventToUpdate.host.email], "Event published", mailContent);
         }
 
@@ -224,6 +230,13 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 };
 
 export const cloneEvent = async (eventId: string, formData: FormData) => {
+
+    const loggedInUser = await getLoggedInUser();
+    // Ensure user is logged in
+    if (!loggedInUser) {
+        throw new Error("You must be logged in to clone an event");
+    }
+
     // Revalidate input with zod schema - don't trust the client
     const validatedData = CloneEventSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -243,8 +256,6 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         where: { event_id: eventId },
         include: { skill_badges: true },
     });
-
-    const loggedInUser = await getLoggedInUser();
 
     const eventClone = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Copy event itself with default values
@@ -300,6 +311,9 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
 
         // Add the event host as participant
         const volunteerTicket = clonedTickets.find((t) => t.type === TicketType.volunteer);
+        if (!volunteerTicket) {
+            throw new Error(`Volunteer ticket not found in cloned tickets for cloned event ${createdEvent.id}`);
+        }
         await tx.eventParticipant.create({
             data: {
                 user: {
@@ -337,7 +351,7 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                         reviewer_id: loggedInUser.id,
                         // Create tasks as "To Do"
                         status: TaskStatus.toDo,
-                        start_time: moveTaskTimeForward(task.start_time),
+                        start_time: task.start_time ? moveTaskTimeForward(task.start_time) : eventClone.start_time,
                         end_time: moveTaskTimeForward(task.end_time),
                         skill_badges: { createMany: { data: skillBadgesWithoutTaskId } },
                     },

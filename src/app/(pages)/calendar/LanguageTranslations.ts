@@ -24,6 +24,10 @@ const LanguageTranslations = {
         [Language.english]: dayjs.weekdaysShort(),
         [Language.swedish]: ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"],
     },
+    locationNotFound: {
+        [Language.english]: "Selected location not found",
+        [Language.swedish]: "Vald plats hittades inte",
+    }
 };
 
 export default LanguageTranslations;

@@ -17,6 +17,8 @@ import { UserStatus } from "@prisma/client";
 const MembershipStatusCard = () => {
     const theme = useTheme();
     const { user, language } = useUserContext();
+    if (!user) throw new Error("User must be logged in to view membership status");
+
     return (
         <Card elevation={3}>
             <CardContent>
@@ -114,17 +116,18 @@ const MembershipStatusCard = () => {
                             </Stack>
 
                             {/* Expiration Date */}
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                                <Schedule color="primary" />
-                                <Stack>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {LanguageTranslations.membershipExpires[language]}
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                        {formatDate(dayjs.utc(user.user_membership.expires_at))}
-                                    </Typography>
-                                </Stack>
-                            </Stack>
+                            {user.user_membership &&
+                                <Stack direction="row" alignItems="center" spacing={2}>
+                                    <Schedule color="primary" />
+                                    <Stack>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {LanguageTranslations.membershipExpires[language]}
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {formatDate(dayjs.utc(user.user_membership.expires_at))}
+                                        </Typography>
+                                    </Stack>
+                                </Stack>}
 
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <AdminPanelSettings color="primary" />

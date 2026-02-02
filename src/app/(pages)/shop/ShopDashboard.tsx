@@ -24,7 +24,7 @@ import { isUserAdmin } from "../../lib/utils";
 import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";
 import { allowRedirectException } from "../../ui/utils";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clientRedirect } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
@@ -56,6 +56,8 @@ const tabLabels = {
 
 const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw new Error("You must be logged in to view the shop");
+
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
@@ -104,7 +106,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
             await createAndRedirectToOrder(user.id, [productOrderItems]);
         } catch (error) {
             allowRedirectException(error);
-            addNotification("Failed to create order", "error");
+            addNotification("Failed to create order", NotificationSeverity.error);
         }
     };
 
@@ -132,9 +134,9 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     const deleteProductAction = async (productId: string) => {
         try {
             await deleteProduct(productId);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
         } catch {
-            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
         }
     };
 
@@ -144,9 +146,9 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     };
 
     const getFormDefaultValues = () => {
-        if (!editingProductId) return null;
+        if (!editingProductId) return undefined;
         const product = products.find((p) => p.id === editingProductId);
-        if (!product) return null;
+        if (!product) return undefined;
         return { ...product, ...(product.membership && { duration: product.membership.duration }) };
     };
 

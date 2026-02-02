@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { allowRedirectException } from "./utils";
 
-const Container = ({ children }) => (
+const Container = ({ children }: { children: React.ReactNode }) => (
     <Stack height="100%" width="100%" justifyContent="center" alignItems="center">
         {children}
     </Stack>
@@ -27,7 +27,7 @@ export const LoadingFallback = () => {
     );
 };
 
-const ErrorBoundarySuspense = ({ children }) => {
+const ErrorBoundarySuspense = ({ children }: { children: React.ReactNode }) => {
     return (
         <ErrorBoundary
             fallbackRender={({ error }) => {

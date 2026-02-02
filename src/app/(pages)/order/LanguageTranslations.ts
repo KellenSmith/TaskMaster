@@ -61,6 +61,10 @@ const LanguageTranslations = {
         [Language.english]: "Error",
         [Language.swedish]: "Error",
     },
+    [OrderStatus.shipped]: {
+        [Language.english]: "Shipped",
+        [Language.swedish]: "Skickad",
+    },
     total: {
         [Language.english]: "Total",
         [Language.swedish]: "Summa",

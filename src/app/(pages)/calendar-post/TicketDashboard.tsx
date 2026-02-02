@@ -15,7 +15,7 @@ import {
 import { CheckCircle, ExitToApp } from "@mui/icons-material";
 import ProductCard from "../../ui/shop/ProductCard";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { deleteEventParticipant } from "../../lib/event-participant-actions";
 import { useRouter } from "next/navigation";
 import LanguageTranslations from "./LanguageTranslations";
@@ -33,6 +33,8 @@ interface TicketDashboardProps {
 
 const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw Error("You must be logged in to view the ticket dashboard");
+
     const { addNotification } = useNotificationContext();
     const router = useRouter();
     const theme = useTheme();
@@ -40,7 +42,6 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
     const tickets = use(ticketsPromise);
     const ticket = useMemo(() => {
         const participantTicket = event.tickets.find((t) =>
-            // tickets now include event_participants according to Prisma schema
             t.event_participants?.find(
                 (ep: Prisma.EventParticipantGetPayload<true>) => ep.user_id === user.id,
             ),
@@ -49,13 +50,15 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
         return tickets.find((ticket) => ticket.product_id === participantTicket?.product_id);
     }, [tickets, user, event]);
 
+    if (!ticket) throw new Error("No ticket found for user");
+
     const leaveParticipantList = async () => {
         try {
             await deleteEventParticipant(event.id, user.id);
-            addNotification(LanguageTranslations.leftEvent[language], "success");
+            addNotification(LanguageTranslations.leftEvent[language], NotificationSeverity.success);
             router.refresh();
         } catch {
-            addNotification(LanguageTranslations.failedToLeaveEvent[language], "error");
+            addNotification(LanguageTranslations.failedToLeaveEvent[language], NotificationSeverity.error);
         }
     };
 
@@ -77,7 +80,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
             >
                 {/* Product Card Section */}
                 <Stack sx={{ flex: "0 0 auto" }}>
-                    <ProductCard product={ticket?.product} />
+                    <ProductCard product={ticket.product} />
                 </Stack>
 
                 {/* Content Section */}

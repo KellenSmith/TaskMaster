@@ -25,7 +25,7 @@ import { addEventParticipant, deleteEventParticipant } from "../../lib/event-par
 import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-actions";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
@@ -107,9 +107,9 @@ const ParticipantDashboard = ({
         startTransition(async () => {
             try {
                 await deleteEventParticipant(event.id, userId);
-                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
             } catch {
-                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
             }
         });
     };
@@ -118,9 +118,9 @@ const ParticipantDashboard = ({
         startTransition(async () => {
             try {
                 await deleteEventReserve(userId, event.id);
-                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
             } catch {
-                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
             }
         });
     };
@@ -209,8 +209,7 @@ const ParticipantDashboard = ({
                 open={!!addDialogOpen}
                 onClose={() => setAddDialogOpen(null)}
             >
-                {/* Dialog content goes here */}
-                <Form
+                {!!addDialogOpen && <Form
                     name={addDialogOpen}
                     action={
                         addDialogOpen === GlobalConstants.PARTICIPANT_USERS
@@ -223,7 +222,7 @@ const ParticipantDashboard = ({
                     }}
                     editable={true}
                     readOnly={false}
-                />
+                />}
                 <Button onClick={() => setAddDialogOpen(null)}>
                     {GlobalLanguageTranslations.cancel[language]}
                 </Button>

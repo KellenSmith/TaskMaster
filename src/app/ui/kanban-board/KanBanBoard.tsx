@@ -44,8 +44,10 @@ const KanBanBoard = ({
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
-    const [draggedTask, setDraggedTask] = useState(null);
-    const [draggedOverColumn, setDraggedOverColumn] = useState(null);
+    const [draggedTask, setDraggedTask] = useState<Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } } };
+    }> | null>(null);
+    const [draggedOverColumn, setDraggedOverColumn] = useState<TaskStatus | null>(null);
     const event = eventPromise ? use(eventPromise) : null;
     // Default to "booked for me" and not "unbooked" if kanbanboard seen from profile page
     const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
@@ -72,7 +74,7 @@ const KanBanBoard = ({
                     columns={isSmallScreen ? 1 : appliedFilter?.status?.length || 4}
                     width="100%"
                 >
-                    {(appliedFilter?.status?.length > 0
+                    {(appliedFilter?.status && appliedFilter.status.length > 0
                         ? (appliedFilter.status as TaskStatus[])
                         : Object.values(TaskStatus)
                     ).map((status) => (

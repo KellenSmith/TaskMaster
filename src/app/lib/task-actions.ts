@@ -86,7 +86,7 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         // task ready for review
         // unassigned if not status to do
         let notificationMessage = "";
-        if (updatedTask.reviewer_id) {
+        if (updatedTask.reviewer) {
             if (
                 updatedTask.status === TaskStatus.inReview &&
                 oldTask.status !== TaskStatus.inReview
@@ -315,7 +315,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
 
         await deleteEventParticipantWithTx(tx, updatedTask.event_id, userId);
 
-        if (updatedTask.reviewer_id)
+        if (updatedTask.reviewer)
             try {
                 const mailContent = createElement(TaskUpdateTemplate, {
                     taskName: updatedTask.name,
@@ -336,7 +336,7 @@ export const contactTaskMember = async (
 ): Promise<void> => {
     // Validate recipient and task ID formats
     const validatedRecipientId = UuidSchema.parse(recipientId);
-    const validatedTaskId = taskId ? UuidSchema.parse(taskId) : null;
+    const validatedTaskId = taskId ? UuidSchema.parse(taskId) : undefined;
 
     const recipient = await prisma.user.findUniqueOrThrow({
         where: {
@@ -344,11 +344,13 @@ export const contactTaskMember = async (
         },
     });
     const sender = await getLoggedInUser();
-    const task = await prisma.task.findUniqueOrThrow({
+    const task = validatedTaskId ? await prisma.task.findUniqueOrThrow({
         where: {
             id: validatedTaskId,
         },
-    });
+    }) : null;
+    if (!task) throw new Error("Task not found");
+    if (!sender) throw new Error("User must be logged in to contact members");
 
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ContactMemberSchema.parse(Object.fromEntries(formData.entries()));

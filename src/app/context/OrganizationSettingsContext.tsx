@@ -6,7 +6,7 @@ import { CircularProgress } from "@mui/material";
 
 interface OrganizationSettingsContextValue {
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>;
-    infopagesPromise?: Promise<
+    infopagesPromise: Promise<
         Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>[]
     >;
 }

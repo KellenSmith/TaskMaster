@@ -5,7 +5,7 @@ import { Portal, Stack, Alert } from "@mui/material";
 
 interface NotificationContextValue {
     // eslint-disable-next-line no-unused-vars
-    addNotification: (msg: string, severity: "success" | "error" | "info" | "warning") => void;
+    addNotification: (msg: string, severity: NotificationSeverity) => void;
 }
 
 export const NotificationContext = createContext<NotificationContextValue | null>(null);
@@ -21,10 +21,17 @@ interface NotificationContextProviderProps {
     children: ReactNode;
 }
 
+export enum NotificationSeverity {
+    success = "success",
+    error = "error",
+    info = "info",
+    warning = "warning",
+}
+
 interface NotificationToastProps {
     id: number;
     msg: string;
-    severity: "success" | "error" | "info" | "warning";
+    severity: NotificationSeverity;
     removeNotification: (id: number) => void; // eslint-disable-line no-unused-vars
 }
 
@@ -53,10 +60,10 @@ const NotificationToast: FC<NotificationToastProps> = ({
 };
 
 const NotificationContextProvider: FC<NotificationContextProviderProps> = ({ children }) => {
-    const [notifications, setNotifications] = useState([]);
+    const [notifications, setNotifications] = useState<{ id: number; msg: string; severity: NotificationSeverity }[]>([]);
 
     const addNotification = useCallback(
-        (msg: string, severity: "success" | "error" | "info" | "warning") => {
+        (msg: string, severity: NotificationSeverity) => {
             const newNotificationId =
                 notifications.length > 0 ? Math.max(...notifications.map((n) => n.id)) + 1 : 1;
             setNotifications((prev) => [...prev, { id: newNotificationId, msg, severity }]);

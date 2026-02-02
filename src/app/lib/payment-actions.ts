@@ -77,7 +77,7 @@ interface SwedbankPaymentRequestBody {
         operation: "Purchase";
         currency: "SEK";
         amount: number;
-        vatAmount: 0;
+        vatAmount: number;
         description: string;
         generateUnscheduledToken?: boolean;
         unscheduledToken?: SubscriptionToken;
@@ -89,7 +89,7 @@ interface SwedbankPaymentRequestBody {
             cancelUrl: string;
             callbackUrl: string;
             logoUrl: string | undefined;
-            termsOfServiceUrl: string;
+            termsOfServiceUrl?: string | null;
         };
         payeeInfo: {
             payeeId: string;
@@ -108,7 +108,7 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
     // Validate that the order contains subscribeable products
     // only memberships are subscribeable currently
     if (subscribe) {
-        const order = prisma.order.findUniqueOrThrow({
+        const order = await prisma.order.findUniqueOrThrow({
             where: { id: orderId },
             include: {
                 order_items: {
@@ -157,12 +157,12 @@ export const getSwedbankPaymentRequestPurchasePayload = async (
                     [GlobalConstants.ORDER_ID]: orderId,
                 }),
                 logoUrl: organizationSettings?.logo_url || undefined,
-                termsOfServiceUrl: organizationSettings?.terms_of_purchase_english_url || undefined,
+                termsOfServiceUrl: organizationSettings.terms_of_purchase_english_url,
             },
             payeeInfo: {
-                payeeId: process.env.SWEDBANK_PAY_PAYEE_ID,
+                payeeId: process.env.SWEDBANK_PAY_PAYEE_ID as string,
                 payeeReference: payeeRef, // Compliant: alphanumeric, max 30 chars, unique
-                payeeName: process.env.NEXT_PUBLIC_ORG_NAME,
+                payeeName: process.env.NEXT_PUBLIC_ORG_NAME as string,
                 orderReference: orderId, // Your internal order reference (can contain hyphens)
             },
             orderItems: order.order_items.map((orderItem: Prisma.OrderItemGetPayload<{ include: { product: { include: { membership: true, ticket: true } } } }>) => ({
@@ -300,7 +300,6 @@ export const capturePaymentFunds = async (orderId: string) => {
 export const checkPaymentStatus = async (
     userId: string,
     orderId: string,
-    paymentRequestId: string = undefined,
 ): Promise<void> => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedOrderId = UuidSchema.parse(orderId);
@@ -332,9 +331,9 @@ export const checkPaymentStatus = async (
         return;
     }
 
-    if (paymentRequestId || order.payment_request_id) {
+    if (order.payment_request_id) {
         const paymentStatusResponse = await makeSwedbankApiRequest(
-            `${process.env.SWEDBANK_BASE_URL}${paymentRequestId || order.payment_request_id}?$expand=paid`,
+            `${process.env.SWEDBANK_BASE_URL}${order.payment_request_id}?$expand=paid`,
         );
         if (!paymentStatusResponse.ok) {
             progressOrder(orderId, OrderStatus.error);

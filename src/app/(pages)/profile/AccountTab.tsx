@@ -7,7 +7,7 @@ import { deleteUser, logOut, updateUser } from "../../lib/user-actions";
 import { Button, Stack } from "@mui/material";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { allowRedirectException } from "../../ui/utils";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { UserUpdateSchema } from "../../lib/zod-schemas";
 import { useTransition } from "react";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
@@ -38,7 +38,7 @@ const AccountTab = () => {
                 await logOut();
             } catch (error) {
                 allowRedirectException(error);
-                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
             }
         });
 

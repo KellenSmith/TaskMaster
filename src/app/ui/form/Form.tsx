@@ -31,7 +31,7 @@ import { Cancel, Edit } from "@mui/icons-material";
 import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
 import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
 import dayjs from "dayjs";
@@ -43,9 +43,9 @@ import { upload } from "@vercel/blob/client";
 interface FormProps {
     name: string;
     buttonLabel?: string;
-    action?: (fieldValues: object) => Promise<string>; // eslint-disable-line no-unused-vars
+    action?: (formData: FormData) => Promise<string>; // eslint-disable-line no-unused-vars
     validationSchema?: ZodType<object>;
-    defaultValues?: object;
+    defaultValues?: { [key: string]: any };
     customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
     customIncludedFields?: string[]; // Include extra fields which are not preconfigured in FieldCfg.ts
@@ -154,7 +154,9 @@ const Form: FC<FormProps> = ({
             }
             return formData;
         } catch (error) {
-            addNotification("File upload failed: " + error.message, "error");
+            if (error instanceof Error)
+                addNotification("File upload failed: " + error.message, NotificationSeverity.error);
+            throw error;
         }
     };
 
@@ -185,7 +187,7 @@ const Form: FC<FormProps> = ({
 
         // Ensure action is available before proceeding
         if (!action || typeof action !== "function") {
-            addNotification("Form action is not available. Please try again.", "error");
+            addNotification("Form action is not available. Please try again.", NotificationSeverity.error);
             return;
         }
 
@@ -197,11 +199,13 @@ const Form: FC<FormProps> = ({
             if (!parsedFieldValues) return;
             try {
                 const submitResult = await action(formDataWithFileUrls);
-                addNotification(submitResult, "success");
+                addNotification(submitResult, NotificationSeverity.success);
                 if (!(editable && !readOnly)) setEditMode(false);
             } catch (error) {
                 allowRedirectException(error);
-                addNotification(error.message, "error");
+                if (error instanceof Error)
+                    addNotification(error.message, NotificationSeverity.error);
+                throw error;
             }
         });
     };

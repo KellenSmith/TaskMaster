@@ -1,9 +1,10 @@
-import DOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
 import { richTextFields } from "../ui/form/FieldCfg";
+import DOMPurify from "dompurify";
+import type { Config } from "dompurify";
 
 // Rich text sanitization configuration
-const RICH_TEXT_CONFIG: DOMPurify.Config = {
+const RICH_TEXT_CONFIG: Config = {
     // Allow common rich text elements
     ALLOWED_TAGS: [
         "p",

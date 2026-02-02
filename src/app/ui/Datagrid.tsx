@@ -13,7 +13,7 @@ import {
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
 import { formatDate, formatPrice } from "./utils";
-import { useNotificationContext } from "../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
@@ -221,7 +221,7 @@ const Datagrid: React.FC<DatagridProps> = ({
     const columns = useMemo(getColumns, [datagridRows, customColumns, language]);
 
     useEffect(() => {
-        apiRef.current.autosizeColumns({
+        apiRef.current && apiRef.current.autosizeColumns({
             includeOutliers: true,
             includeHeaders: true,
         });
@@ -229,6 +229,7 @@ const Datagrid: React.FC<DatagridProps> = ({
 
     const createRow = async (fieldValues: FormData) => {
         try {
+            if (!createAction) throw new Error("No create action provided");
             await createAction(fieldValues);
             setAddNew(false);
             return GlobalLanguageTranslations.successfulSave[language];
@@ -239,6 +240,8 @@ const Datagrid: React.FC<DatagridProps> = ({
 
     const updateRow = async (fieldValues: FormData) => {
         try {
+            if (!updateAction) throw new Error("No update action provided");
+            if (!clickedRow) throw new Error("No row selected");
             await updateAction(clickedRow.id, fieldValues);
             setClickedRow(null);
             return GlobalLanguageTranslations.successfulSave[language];
@@ -250,25 +253,29 @@ const Datagrid: React.FC<DatagridProps> = ({
     const handleRowAction = (rowAction: RowActionProps) => {
         startTransition(async () => {
             try {
+                if (!clickedRow) throw new Error("No row selected");
                 const result = await rowAction.serverAction(clickedRow);
                 setClickedRow(null);
-                addNotification(result, "success");
+                addNotification(result, NotificationSeverity.success);
             } catch (error) {
-                addNotification(error.message, "error");
+                if (error instanceof Error)
+                    addNotification(error.message, NotificationSeverity.error);
+                throw error
             }
         });
     };
 
     const getRowActionButton = (
-        clickedRow: ImplementedDatagridEntities,
+        clickedRow: ImplementedDatagridEntities | null,
         rowAction: RowActionProps,
     ) => {
+        if (!clickedRow) return null;
         const ButtonComponent = rowAction.buttonColor === "error" ? ConfirmButton : Button;
         return (
             rowAction.available(clickedRow) && (
                 <ButtonComponent
                     key={rowAction.name}
-                    onClick={() => handleRowAction(rowAction)}
+                    onClick={async () => handleRowAction(rowAction)}
                     color={rowAction.buttonColor || "secondary"}
                     disabled={isPending}
                 >
@@ -322,18 +329,18 @@ const Datagrid: React.FC<DatagridProps> = ({
                     setAddNew(false);
                 }}
             >
-                {name in RenderedFields && (
+                {name && name in RenderedFields && (
                     <Form
                         name={name}
                         buttonLabel={GlobalLanguageTranslations.save[language]}
                         action={clickedRow ? updateRow : createRow}
                         validationSchema={validationSchema}
-                        defaultValues={
-                            clickedRow && {
+                        {...(clickedRow ? {
+                            defaultValues: {
                                 ...clickedRow,
                                 ...(getDefaultFormValues ? getDefaultFormValues(clickedRow) : []),
                             }
-                        }
+                        } : {})}
                         readOnly={!updateAction}
                         customOptions={customFormOptions}
                     />

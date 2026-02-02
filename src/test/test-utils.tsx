@@ -10,9 +10,9 @@ import testdata from "./testdata";
 const mockUserContextValue = {
     user: testdata.user,
     language: Language.english,
-    setLanguage: () => {},
+    setLanguage: () => { },
     editMode: false,
-    setEditMode: () => {},
+    setEditMode: () => { },
 };
 
 // Mock OrganizationSettingsContext value
@@ -26,6 +26,7 @@ const mockOrganizationSettingsContextValue = {
         ticket_instructions:
             "Please include any relevant information or questions you have about the event.",
     } as Prisma.OrganizationSettingsGetPayload<true>,
+    infopagesPromise: Promise.resolve([])
 };
 
 interface WrapperProps {

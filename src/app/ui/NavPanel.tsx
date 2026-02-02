@@ -27,7 +27,7 @@ import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
-import { useNotificationContext } from "../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../context/NotificationContext";
 import LanguageMenu from "./LanguageMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
@@ -75,13 +75,17 @@ const NavPanel = () => {
             await logOut();
             // If logout is successful, redirect exception is thrown
             // We do not expect to run this line
-            addNotification(LanguageTranslations.failedToLogOut[language], "error");
+            addNotification(LanguageTranslations.failedToLogOut[language], NotificationSeverity.error);
             setDrawerOpen(false);
         } catch (error) {
-            // Catch redirect exception and refresh session before moving on.
-            if (error?.digest?.startsWith("NEXT_REDIRECT")) {
-                setDrawerOpen(false);
+            try {
+                allowRedirectException(error);
+                // If we reach here, it was not a redirect exception
                 throw error;
+            } catch (redirectError) {
+                // Close drawer before redirecting
+                setDrawerOpen(false);
+                throw redirectError;
             }
         }
     };
@@ -133,6 +137,9 @@ const NavPanel = () => {
     };
 
     const updateInfoPageAction = async (formData: FormData) => {
+        if (!updateInfoPageId) {
+            throw new Error("No InfoPage ID provided for update");
+        }
         try {
             await updateInfoPage(formData, updateInfoPageId, language);
             setUpdateInfoPageId(null);
@@ -144,12 +151,15 @@ const NavPanel = () => {
     };
 
     const deleteInfoPageAction = async (infoPageId: string) => {
+        if (!infoPageId) {
+            throw new Error("No InfoPage ID provided for delete");
+        }
         try {
             await deleteInfoPage(infoPageId);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
         } catch (error) {
             allowRedirectException(error);
-            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
         }
     };
 
@@ -193,15 +203,14 @@ const NavPanel = () => {
         );
     };
 
-    const getInfoPageTitle = (infoPage: {
-        titleText: { translations: { language: string; text: string }[] };
-    }) => {
+    const getInfoPageTitle = (infoPage: Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>) => {
         const titleTextContent = infoPage?.titleText;
         if (!titleTextContent) return "No title";
         const titleInLanguage = titleTextContent.translations.find((t) => t.language === language);
 
         if (titleInLanguage && titleInLanguage.text.trim() !== "") return titleInLanguage.text;
 
+        if (!infoPage.titleText) return "No title found";
         return infoPage.titleText.translations.find((t) => t.language === language)?.text || "";
     };
 
@@ -356,10 +365,9 @@ const NavPanel = () => {
                     </Stack>
                     <Stack sx={{ mt: "auto", pb: 2 }}>
                         <ListItem>
-                            {" "}
                             <Link
                                 textTransform="capitalize"
-                                href={getTermsOfMembershipUrl(organizationSettings, language)}
+                                href={getTermsOfMembershipUrl(organizationSettings, language) ?? undefined}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -369,7 +377,7 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
-                                href={getPrivacyPolicyUrl(organizationSettings, language)}
+                                href={getPrivacyPolicyUrl(organizationSettings, language) ?? undefined}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -379,7 +387,7 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
-                                href={getTermsOfPurchaseUrl(organizationSettings, language)}
+                                href={getTermsOfPurchaseUrl(organizationSettings, language) ?? undefined}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

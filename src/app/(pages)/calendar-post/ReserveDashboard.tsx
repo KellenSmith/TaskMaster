@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-actions";
 import { use } from "react";
@@ -15,6 +15,7 @@ interface ReserveDashboardProps {
 
 const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw Error("You must be logged in to view the reserve dashboard");
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const event = use(eventPromise);
@@ -24,18 +25,18 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
     const joinReserveList = async () => {
         try {
             await addEventReserve(user.id, event.id);
-            addNotification(LanguageTranslations.joinedReserveList[language], "success");
+            addNotification(LanguageTranslations.joinedReserveList[language], NotificationSeverity.success);
         } catch {
-            addNotification(LanguageTranslations.failedToAddReserve[language], "error");
+            addNotification(LanguageTranslations.failedToAddReserve[language], NotificationSeverity.error);
         }
     };
 
     const leaveReserveList = async () => {
         try {
             await deleteEventReserve(user.id, event.id);
-            addNotification(LanguageTranslations.leftReserveList[language], "success");
+            addNotification(LanguageTranslations.leftReserveList[language], NotificationSeverity.success);
         } catch {
-            addNotification(LanguageTranslations.failedToLeaveReserve[language], "error");
+            addNotification(LanguageTranslations.failedToLeaveReserve[language], NotificationSeverity.error);
         }
     };
 

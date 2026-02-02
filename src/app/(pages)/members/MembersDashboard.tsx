@@ -96,7 +96,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     });
 
     // PDF Document component
-    const MembersListPDF = ({ members }) => (
+    const MembersListPDF = () => (
         <Document>
             <Page size="A4" style={styles.page}>
                 <Text style={styles.header}>Members List</Text>
@@ -104,7 +104,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     <Text style={styles.headerCell}>Email</Text>
                     <Text style={styles.headerCell}>Nickname</Text>
                 </View>
-                {members.map((member, idx) => (
+                {members.sort((a, b) => a.email.localeCompare(b.email)).map((member, idx) => (
                     <View style={styles.row} key={idx}>
                         <Text style={styles.cell}>{member.email}</Text>
                         <Text style={styles.cell}>{member.nickname || ""}</Text>
@@ -115,12 +115,8 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     );
 
     const printMembersList = async () => {
-        // Only keep email and nickname
-        const simpleMembers = members
-            .map((m) => ({ email: m.email, nickname: m.nickname }))
-            .sort((a, b) => a.email.localeCompare(b.email));
         // Generate PDF blob
-        const doc = <MembersListPDF members={simpleMembers} />;
+        const doc = <MembersListPDF />;
         const asPdf = await pdf(doc).toBlob();
         const url = URL.createObjectURL(asPdf);
         openResourceInNewTab(url);
@@ -137,7 +133,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         {
             name: GlobalConstants.DELETE,
             serverAction: deleteUserAction,
-            available: (member: ImplementedDatagridEntities) => user && member?.id !== user.id,
+            available: (member: ImplementedDatagridEntities) => !!user && member?.id !== user.id,
             buttonColor: "error",
             buttonLabel: GlobalLanguageTranslations.delete[language],
         },
@@ -213,6 +209,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 }
                 // expired - pending/active
                 if (value1 === GlobalConstants.EXPIRED) return 1;
+                return 0
             },
             renderCell: (params) => {
                 const member: ImplementedDatagridEntities = params.row;
@@ -315,7 +312,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                                 }>
                             ).skill_badges.map((badge) => badge.skill_badge_id),
                         }
-                        : null
+                        : {}
                 }
                 customFormOptions={{
                     [GlobalConstants.SKILL_BADGES]: skillBadges.map(

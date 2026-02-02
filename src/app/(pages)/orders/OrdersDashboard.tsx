@@ -66,15 +66,16 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
         {
             field: GlobalConstants.NICKNAME,
             headerName: LanguageTranslations.nickname[language],
-            valueGetter: (_, order: ImplementedDatagridEntities) =>
-                (
-                    order as Prisma.OrderGetPayload<{
-                        include: {
-                            user: { select: { nickname: true } };
-                            order_items: { include: { product: true } };
-                        };
-                    }>
-                ).user.nickname,
+            valueGetter: (_, order: ImplementedDatagridEntities) => {
+                const typedOrder = order as Prisma.OrderGetPayload<{
+                    include: {
+                        user: { select: { nickname: true } };
+                        order_items: { include: { product: true } };
+                    };
+                }>
+                if (!typedOrder.user) return "None";
+                return typedOrder.user.nickname
+            },
         },
         {
             field: GlobalConstants.STATUS,

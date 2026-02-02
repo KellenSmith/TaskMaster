@@ -49,7 +49,7 @@ export default function ProductCard({
     const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
 
     const getStockChipLabel = () => {
-        if (product.unlimited_stock || product.stock > 5) {
+        if (product.unlimited_stock || (product.stock && product.stock > 5)) {
             return ProductLanguageTranslations.inStock[language];
         }
         if (!product.stock) return ProductLanguageTranslations.outOfStock[language];
@@ -57,7 +57,7 @@ export default function ProductCard({
     };
 
     const getStockChipColor = () => {
-        if (product.unlimited_stock || product.stock > 5) {
+        if (product.unlimited_stock || (product.stock && product.stock > 5)) {
             return "success";
         }
         if (!product.stock) return "error";

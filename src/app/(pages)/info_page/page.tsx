@@ -23,6 +23,7 @@ const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
             content: true,
         },
     });
+    if (!infoPage?.content) throw new Error("Info page content not found");
 
     if (!userHasRolePrivileges(loggedInUser, infoPage.lowest_allowed_user_role))
         throw new Error("Unauthorized");
