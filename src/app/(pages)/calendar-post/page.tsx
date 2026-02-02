@@ -1,5 +1,4 @@
 "use server";
-import { getEventTags } from "../../lib/event-actions";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
@@ -84,7 +83,8 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
         },
     });
     const locationsPromise = prisma.location.findMany()
-    const eventTagsPromise = getEventTags();
+    const events = await prisma.event.findMany({ select: { tags: true } });
+    const uniqueEventTags = [...new Set(events.flatMap(e => e.tags))];
 
     return (
         <ErrorBoundarySuspense>
@@ -97,7 +97,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
                 eventParticipantsPromise={eventParticipantsPromise}
                 eventReservesPromise={eventReservesPromise}
                 locationsPromise={locationsPromise}
-                eventTagsPromise={eventTagsPromise}
+                eventTags={uniqueEventTags}
             />
         </ErrorBoundarySuspense>
     );

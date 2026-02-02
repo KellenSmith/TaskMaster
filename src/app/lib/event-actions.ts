@@ -15,14 +15,6 @@ import { createElement } from "react";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
 import z from "zod";
 
-export const getEventTags = async (): Promise<string[]> => {
-    const events = (await prisma.event.findMany({
-        select: { tags: true },
-    })) as Prisma.EventGetPayload<{ select: { tags: true } }>[];
-
-    return [...new Set(events.flatMap((event) => event.tags))];
-};
-
 export const getEventParticipants = async (
     eventId: string,
 ): Promise<
