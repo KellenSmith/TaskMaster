@@ -18,9 +18,10 @@ export const openResourceInNewTab = (resourceUrl: string) => {
 
 export const allowRedirectException = (error: unknown) => {
     const hasDigest = error instanceof Error && error !== null && "digest" in error;
-    if (hasDigest && (error as any).digest.startsWith("NEXT_REDIRECT")) {
+    if (hasDigest && (error as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT")) {
         throw error;
     }
+
 };
 
 export const getPrivacyPolicyUrl = (

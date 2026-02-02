@@ -29,7 +29,7 @@ import AccordionRadioGroup from "../../ui/AccordionRadioGroup";
 import { pdf } from "@react-pdf/renderer";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { MoreHoriz } from "@mui/icons-material";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { CloneEventSchema, EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
@@ -57,7 +57,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     const { organizationSettings } = useOrganizationSettingsContext();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
-    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState<EventTarget & HTMLElement | null>(null);
+    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState<HTMLElement | null>(null);
     const [dialogOpen, setDialogOpen] = useState<"event" | "sendout" | null>(null);
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
@@ -90,10 +90,10 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 const formData = new FormData();
                 formData.append(GlobalConstants.STATUS, EventStatus.pending_approval);
                 await updateEvent(event.id, formData);
-                addNotification(LanguageTranslations.submittedEvent[language], NotificationSeverity.success);
+                addNotification(LanguageTranslations.submittedEvent[language], "success");
                 closeActionMenu();
             } catch {
-                addNotification(LanguageTranslations.failedSubmitEvent[language], NotificationSeverity.error);
+                addNotification(LanguageTranslations.failedSubmitEvent[language], "error");
             }
         });
     };
@@ -104,10 +104,10 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 const formData = new FormData();
                 formData.append(GlobalConstants.STATUS, EventStatus.published);
                 await updateEvent(event.id, formData);
-                addNotification(LanguageTranslations.publishedEvent[language], NotificationSeverity.success);
+                addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
             } catch {
-                addNotification(LanguageTranslations.failedPublishEvent[language], NotificationSeverity.error);
+                addNotification(LanguageTranslations.failedPublishEvent[language], "error");
             }
         });
     };
@@ -116,10 +116,10 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         startTransition(async () => {
             try {
                 await cancelEvent(event.id);
-                addNotification(LanguageTranslations.cancelledEvent[language], NotificationSeverity.success);
+                addNotification(LanguageTranslations.cancelledEvent[language], "success");
                 closeActionMenu();
             } catch {
-                addNotification(LanguageTranslations.failedToCancelEvent[language], NotificationSeverity.error);
+                addNotification(LanguageTranslations.failedToCancelEvent[language], "error");
             }
         });
 
@@ -129,7 +129,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 await deleteEvent(event.id);
             } catch (error) {
                 allowRedirectException(error);
-                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };
@@ -156,7 +156,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
             } catch {
                 addNotification(
                     LanguageTranslations.failedToPrintParticipantList[language],
-                    NotificationSeverity.error,
+                    "error",
                 );
             }
         });
@@ -170,9 +170,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                     return (
                         <MenuItem key="statusAction">
                             <ConfirmButton
-                                color="success"
                                 confirmText={LanguageTranslations.areYouSureSubmitEvent[language]}
                                 onClick={submitForApproval}
+                                buttonProps={{ color: "success" }}
                             >
                                 {LanguageTranslations.submitEvent[language]}
                             </ConfirmButton>
@@ -182,7 +182,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 return (
                     <MenuItem key="statusAction">
                         <ConfirmButton
-                            color="success"
+                            buttonProps={{ color: "success" }}
                             confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
                             onClick={publishEvent}
                         >
@@ -196,7 +196,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                     return (
                         <MenuItem key="statusAction">
                             <ConfirmButton
-                                color="success"
+                                buttonProps={{ color: "success" }}
                                 confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
                                 onClick={publishEvent}
                             >
@@ -216,7 +216,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 return (
                     <MenuItem key="statusAction">
                         <ConfirmButton
-                            color="error"
+                            buttonProps={{ color: "error" }}
                             confirmText={LanguageTranslations.areYouSureCancelEvent[language](
                                 getEventParticipantCount(event),
                             )}
@@ -245,7 +245,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         if (getEventParticipantCount(event) <= 1) {
             ActionButtons.unshift(
                 <MenuItem key="delete">
-                    <ConfirmButton color="error" onClick={deleteAction}>
+                    <ConfirmButton buttonProps={{ color: "error" }} onClick={deleteAction}>
                         {LanguageTranslations.deleteEvent[language]}
                     </ConfirmButton>
                 </MenuItem>,

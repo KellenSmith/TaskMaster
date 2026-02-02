@@ -5,7 +5,7 @@ import OrderSummary from "./OrderSummary";
 import { use, useEffect, useTransition } from "react";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import { useUserContext } from "../../context/UserContext";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import LanguageTranslations from "./LanguageTranslations";
 
@@ -31,7 +31,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
                 if (!user) throw new Error("User not logged in");
                 await checkPaymentStatus(user.id, order.id);
             } catch {
-                addNotification(LanguageTranslations.failedCheckOrderStatus[language], NotificationSeverity.error);
+                addNotification(LanguageTranslations.failedCheckOrderStatus[language], "error");
             }
         });
         // Check payment status once upon render

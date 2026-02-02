@@ -1,5 +1,4 @@
 "use client";
-import { Location } from "@prisma/client";
 import { LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography } from "@mui/material";
 import { FieldLabels } from "../../ui/form/FieldCfg";

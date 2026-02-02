@@ -27,7 +27,7 @@ import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
-import { NotificationSeverity, useNotificationContext } from "../context/NotificationContext";
+import { useNotificationContext } from "../context/NotificationContext";
 import LanguageMenu from "./LanguageMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
@@ -75,7 +75,7 @@ const NavPanel = () => {
             await logOut();
             // If logout is successful, redirect exception is thrown
             // We do not expect to run this line
-            addNotification(LanguageTranslations.failedToLogOut[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedToLogOut[language], "error");
             setDrawerOpen(false);
         } catch (error) {
             try {
@@ -156,10 +156,10 @@ const NavPanel = () => {
         }
         try {
             await deleteInfoPage(infoPageId);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
         } catch (error) {
             allowRedirectException(error);
-            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
+            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
     };
 
@@ -191,7 +191,7 @@ const NavPanel = () => {
                             {<Edit fontSize="small" />}
                         </Button>
                         <ConfirmButton
-                            sx={{ minWidth: "20px" }}
+                            buttonProps={{ sx: { minWidth: "20px" } }}
                             aria-label="delete info page"
                             onClick={() => deleteInfoPageAction(infoPage.id)}
                         >

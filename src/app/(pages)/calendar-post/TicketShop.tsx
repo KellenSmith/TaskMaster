@@ -11,7 +11,7 @@ import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { allowRedirectException } from "../../ui/utils";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
@@ -58,7 +58,7 @@ const TicketShop = ({
             await createAndRedirectToOrder(user.id, [ticketOrderItems]);
         } catch (error) {
             allowRedirectException(error);
-            addNotification(LanguageTranslations.failedTicketOrder[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedTicketOrder[language], "error");
         }
     };
 
@@ -94,9 +94,9 @@ const TicketShop = ({
     const deleteTicketAction = async (ticketId: string) => {
         try {
             await deleteEventTicket(ticketId);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
         } catch {
-            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
+            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
     };
 
@@ -170,7 +170,7 @@ const TicketShop = ({
                                     </Button>
                                     {allowDeleteTicket(ticket) && (
                                         <ConfirmButton
-                                            color="error"
+                                            buttonProps={{ color: "error" }}
                                             onClick={() => deleteTicketAction(ticket.product_id)}
                                         >
                                             {GlobalLanguageTranslations.delete[language]}

@@ -19,7 +19,7 @@ import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import LanguageTranslations, { menuTabs } from "./LanguageTranslations";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
 import z from "zod";
 import AutocompleteWrapper from "../form/AutocompleteWrapper";
@@ -131,7 +131,7 @@ const KanBanBoardMenu = ({
             const parsedFilterValues = TaskFilterSchema.parse(Object.fromEntries(formData));
             setAppliedFilter(parsedFilterValues);
         } catch {
-            addNotification(LanguageTranslations.filtrationError[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.filtrationError[language], "error");
         }
     };
 

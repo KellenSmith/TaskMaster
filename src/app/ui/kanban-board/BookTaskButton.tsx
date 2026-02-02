@@ -5,7 +5,7 @@ import ConfirmButton from "../ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
 import { CheckCircle, Delete, Warning } from "@mui/icons-material";
 import { assignTaskToUser, unassignTaskFromUser } from "../../lib/task-actions";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { isUserQualifiedForTask } from "../utils";
 import { Stack, Tooltip, Typography } from "@mui/material";
 import {
@@ -35,18 +35,18 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
     const assignTaskToMe = async () => {
         try {
             await assignTaskToUser(user.id, task.id);
-            addNotification(LanguageTranslations.bookedTask[language], NotificationSeverity.success);
+            addNotification(LanguageTranslations.bookedTask[language], "success");
         } catch {
-            addNotification(LanguageTranslations.failedBookTask[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedBookTask[language], "error");
         }
     };
 
     const unassignFromTask = async () => {
         try {
             await unassignTaskFromUser(user.id, task.id);
-            addNotification(LanguageTranslations.unassignedTask[language], NotificationSeverity.success);
+            addNotification(LanguageTranslations.unassignedTask[language], "success");
         } catch {
-            addNotification(LanguageTranslations.failedUnassignTask[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedUnassignTask[language], "error");
         }
     };
 
@@ -54,12 +54,14 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
     if (task.assignee_id)
         return (
             <ConfirmButton
+                buttonProps={{
+                    disabled: task.assignee_id !== user.id,
+                    fullWidth: true,
+                    color: "error",
+                    variant: "outlined",
+                    startIcon: <Delete />
+                }}
                 onClick={unassignFromTask}
-                disabled={task.assignee_id !== user.id}
-                fullWidth
-                color="error"
-                variant="outlined"
-                startIcon={<Delete />}
                 confirmText={LanguageTranslations.areYouSureCancelShiftBooking[language](event)}
             >
                 {task.assignee_id === user.id
@@ -98,11 +100,13 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
     }
     return (
         <ConfirmButton
+            buttonProps={{
+                fullWidth: true,
+                color: "error",
+                variant: "outlined",
+                startIcon: <CheckCircle />
+            }}
             onClick={assignTaskToMe}
-            fullWidth
-            color="success"
-            variant="outlined"
-            startIcon={<CheckCircle />}
             confirmText={confirmText}
         >
             {LanguageTranslations.bookThisShift[language]}

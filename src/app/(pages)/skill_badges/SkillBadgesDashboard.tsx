@@ -12,7 +12,7 @@ import {
     deleteSkillBadge,
     updateSkillBadge,
 } from "../../lib/skill-badge-actions";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -57,9 +57,9 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
         startTransition(async () => {
             try {
                 await deleteSkillBadge(badgeId);
-                addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
             } catch {
-                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };
@@ -83,9 +83,11 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
                                     {GlobalLanguageTranslations.edit[language]}
                                 </Button>
                                 <ConfirmButton
-                                    color="error"
+                                    buttonProps={{
+                                        color: "error",
+                                        disabled: isPending
+                                    }}
                                     onClick={() => deleteBadgeAction(badge.id)}
-                                    disabled={isPending}
                                 >
                                     {GlobalLanguageTranslations.delete[language]}
                                 </ConfirmButton>

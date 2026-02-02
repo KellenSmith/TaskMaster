@@ -1,7 +1,7 @@
 "use client";
 
 import { Autocomplete, createFilterOptions, TextField } from "@mui/material";
-import { FC, SyntheticEvent, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 import { allowSelectMultiple, FieldLabels, allowAddNew, selectFieldOptions } from "./FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 

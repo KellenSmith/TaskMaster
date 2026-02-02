@@ -9,7 +9,7 @@ import {
 import React, { use, useState } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
 import { OrderStatus, Prisma } from "@prisma/client";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { allowRedirectException, getPrivacyPolicyUrl, getTermsOfPurchaseUrl } from "../../ui/utils";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { progressOrder } from "../../lib/order-actions";
@@ -40,7 +40,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!termsAccepted.termsOfPurchase || !termsAccepted.privacyPolicy) {
-            addNotification(LanguageTranslations.termsRequired[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.termsRequired[language], "error");
             return;
         }
         await redirectToPayment();
@@ -52,16 +52,16 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         } catch (error) {
             allowRedirectException(error);
             // Show notification for all other errors
-            addNotification(LanguageTranslations.failedPaymentRedirect[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedPaymentRedirect[language], "error");
         }
     };
 
     const cancelOrder = async () => {
         try {
             await progressOrder(order.id, OrderStatus.cancelled);
-            addNotification(LanguageTranslations.cancelledOrder[language], NotificationSeverity.success);
+            addNotification(LanguageTranslations.cancelledOrder[language], "success");
         } catch {
-            addNotification(LanguageTranslations.cancelledOrder[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.cancelledOrder[language], "error");
         }
     };
 
@@ -211,7 +211,11 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                     >
                         {LanguageTranslations.pay[language](order.total_amount)}
                     </Button>
-                    <ConfirmButton fullWidth color="error" onClick={cancelOrder}>
+                    <ConfirmButton buttonProps={{
+                        fullWidth: true,
+                        color: "error"
+                    }}
+                        onClick={cancelOrder}>
                         {GlobalLanguageTranslations.cancel[language]}
                     </ConfirmButton>
                 </Stack>

@@ -86,7 +86,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
     const customColumns = [
         {
             field: GlobalConstants.RECIPIENTS,
-            valueGetter: (_: any, row: Prisma.NewsletterJobGetPayload<true>) => {
+            valueGetter: (_: string[], row: Prisma.NewsletterJobGetPayload<true>) => {
                 if (row.recipients?.length > 2)
                     return `${row.recipients[0]}... (${row.recipients.length - 1})`;
                 return row.recipients?.join(", ");

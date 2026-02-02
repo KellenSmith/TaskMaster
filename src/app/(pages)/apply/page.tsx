@@ -4,7 +4,7 @@ import { submitMemberApplication } from "../../lib/user-actions";
 import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Checkbox, Link, Stack, Typography } from "@mui/material";
 import LanguageTranslations from "./LanguageTranslations";
 import OrderLanguageTranslations from "../order/LanguageTranslations";
