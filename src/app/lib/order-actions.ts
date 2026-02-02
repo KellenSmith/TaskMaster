@@ -19,8 +19,12 @@ export const createOrder = async (
         const product = await prisma.product.findUniqueOrThrow({
             where: { id: orderItem.product_id },
         });
-        if (!product.unlimited_stock && product.stock < orderItem.quantity) {
-            throw new Error(`Insufficient stock for product ${product.id}`);
+        if (!orderItem.quantity) throw new Error(`Invalid quantity for product ${product.id}`);
+
+        if (!product.unlimited_stock) {
+            if (product.stock == null) throw new Error(`Product ${product.id} has no stock information`);
+            if (product.stock < orderItem.quantity)
+                throw new Error(`Insufficient stock for product ${product.id}`);
         }
     }
 
@@ -34,11 +38,12 @@ export const createOrder = async (
     }
 
     // Create the order with items in a transaction
+    // OrderItem price, vat and quantity have been validated at this point
     const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         return await tx.order.create({
             data: {
-                total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
-                total_vat_amount: orderItems.reduce((acc, item) => item.vat_amount * item.quantity + acc, 0),
+                total_amount: orderItems.reduce((acc, item) => (item.price as number) * (item.quantity as number) + acc, 0),
+                total_vat_amount: orderItems.reduce((acc, item) => (item.vat_amount as number) * (item.quantity as number) + acc, 0),
                 user: {
                     connect: {
                         id: userId,
@@ -83,9 +88,10 @@ const processOrderItems = async (
         },
     });
 
-    if (order.order_items.length === 0) {
-        throw new Error("No items found for this order");
-    }
+    if (order.order_items.length === 0)
+        throw new Error(`No items found for order ${order.id}`);
+    if (!order.user_id)
+        throw new Error(`Order ${order.id} has no associated user`);
 
     // Process each order item
     for (const orderItem of order.order_items) {
@@ -108,8 +114,9 @@ export const progressOrder = async (
         return;
     }
 
-    let order: Prisma.OrderGetPayload<true> = await prisma.order.findUniqueOrThrow({
+    let order = await prisma.order.findUniqueOrThrow({
         where: { id: orderId },
+        select: { status: true },
     });
 
     // If order status is error, allow trying to go through the flow again by setting to pending
@@ -125,6 +132,7 @@ export const progressOrder = async (
         order = await prisma.order.update({
             where: { id: orderId },
             data: { status: OrderStatus.paid },
+            select: { status: true },
         });
         revalidateTag(GlobalConstants.ORDER, "max");
         if (newStatus === OrderStatus.paid) return
@@ -139,6 +147,7 @@ export const progressOrder = async (
                 order = await prisma.order.update({
                     where: { id: orderId },
                     data: { status: OrderStatus.shipped },
+                    select: { status: true },
                 });
                 revalidateTag(GlobalConstants.ORDER, "max");
             },
@@ -160,7 +169,7 @@ export const progressOrder = async (
     // Shipped to completed
     if (order.status === OrderStatus.shipped) {
         if (needsCapture) await capturePaymentFunds(orderId);
-        order = await prisma.order.update({
+        await prisma.order.update({
             where: { id: orderId },
             data: { status: OrderStatus.completed },
         });

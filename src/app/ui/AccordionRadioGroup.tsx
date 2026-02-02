@@ -14,7 +14,7 @@ import { Dispatch, FC, SetStateAction } from "react";
 interface IAccordionRadioGroup {
     title: string;
     value: string;
-    setValue: Dispatch<SetStateAction<unknown>>;
+    setValue: Dispatch<SetStateAction<string>>;
     valueOptions: { [key: string]: string };
 }
 

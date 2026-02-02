@@ -84,7 +84,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                             <strong>{EventLanguageTranslations.end[language]}:</strong>{" "}
                             {formatDate(event.end_time)}
                         </Typography>
-                        {event.location.name && (
+                        {event.location?.name && (
                             <Typography color="text.secondary">
                                 <strong>{LanguageTranslations.location[language]}:</strong>{" "}
                                 {event.location.name}, {event.location.address}

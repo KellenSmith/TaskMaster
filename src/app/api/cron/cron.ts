@@ -26,7 +26,9 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
         });
         console.log(`Purged ${deleteStaleResult.count} stale membership application(s)`);
     } catch (error) {
-        console.error(`Error when purging stale memberships: ${error.message}`);
+        if (error instanceof Error)
+            console.error(`Error when purging stale memberships: ${error.message}`);
+        throw error
     }
 };
 /*
@@ -93,7 +95,9 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
         }
         console.log(`Reminded about ${expiringUsers.length} expiring membership(s)`);
     } catch (error) {
-        console.error(`Error when reminding about expiring memberships: ${error.message}`);
+        if (error instanceof Error)
+            console.error(`Error when reminding about expiring memberships: ${error.message}`);
+        throw error;
     }
 };
 
@@ -139,6 +143,8 @@ export const processNewsletterBacklog = async (): Promise<void> => {
             console.log(`No pending newsletter jobs found`);
         }
     } catch (error) {
-        console.error(`Error in newsletter backlog processing: ${error.message}`);
+        if (error instanceof Error)
+            console.error(`Error in newsletter backlog processing: ${error.message}`);
+        throw error;
     }
 };

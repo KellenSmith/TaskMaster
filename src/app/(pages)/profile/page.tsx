@@ -7,7 +7,7 @@ import { prisma } from "../../../../prisma/prisma-client";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
-    if (!loggedInUser) serverRedirect([GlobalConstants.LOGIN]);
+    if (!loggedInUser) throw new Error("Not authorized to view profile");
 
     const tasksPromise = prisma.task.findMany({
         where: { OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] },

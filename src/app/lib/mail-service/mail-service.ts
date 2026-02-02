@@ -81,7 +81,7 @@ export const getEmailPayload = async (
     receivers: string[],
     subject: string,
     mailContent: ReactElement | string,
-    replyTo?: string,
+    replyTo?: string | null,
 ): Promise<EmailPayload> => {
     // Normalize and validate recipients
     const recipients = (receivers || []).map((s) => z.email().parse((s || "").trim()));
@@ -144,7 +144,7 @@ export const sendMail = async (
         };
     } catch (error) {
         // Check if the error indicates rate limiting
-        if (await isRateLimitError(error)) {
+        if (await isRateLimitError(error as Error)) {
             try {
                 const fallbackJob = await createFallbackNewsletterJob(
                     recipients,
@@ -153,7 +153,7 @@ export const sendMail = async (
                     replyTo,
                 );
                 console.warn(
-                    `Mail rate limiting detected: ${error.message}. Creating newsletter job as fallback. Batch size: ${fallbackJob.batchSize}`,
+                    `Mail rate limiting detected: ${(error as Error).message}. Creating newsletter job as fallback. Batch size: ${fallbackJob.batchSize}`,
                 );
 
                 return {
@@ -163,7 +163,7 @@ export const sendMail = async (
                 };
             } catch (fallbackError) {
                 // If fallback also fails, throw the original error
-                console.error(`Fallback newsletter job creation failed: ${fallbackError.message}`);
+                console.error(`Fallback newsletter job creation failed: ${(fallbackError as Error).message}`);
                 throw error;
             }
         }
@@ -271,7 +271,7 @@ export const sendMassEmail = async (
                 email: true,
             },
         })
-    ).map((user: Prisma.UserGetPayload<true>) => user.email);
+    ).map((user: Prisma.UserGetPayload<{ select: { email: true } }>) => user.email);
 
     const revalidatedContent = EmailSendoutSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -302,6 +302,9 @@ export const sendOrderConfirmation = async (orderId: string): Promise<void> => {
             },
         },
     });
+    if (!order) throw new Error(`Order ${orderId} not found`);
+    if (!order.user) throw new Error(`Order ${orderId} has no associated user`);
+
     const mailContent = createElement(OrderConfirmationTemplate, { order });
     const result = await sendMail(
         [order.user.email],

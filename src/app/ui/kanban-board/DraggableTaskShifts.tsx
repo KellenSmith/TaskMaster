@@ -12,7 +12,6 @@ import {
 import { formatDate } from "../utils";
 import { ExpandMore } from "@mui/icons-material";
 import { getEarliestStartTime, sortTasks } from "../../(pages)/calendar-post/event-utils";
-import GlobalConstants from "../../GlobalConstants";
 import { Prisma } from "@prisma/client";
 import DraggableTask from "./DraggableTask";
 import dayjs from "dayjs";
@@ -68,7 +67,7 @@ const DraggableTaskShifts = ({
         include: { assignee: { select: { id: true; nickname: true } } };
     }> => {
         const newTaskShift = { ...task };
-        newTaskShift.start_time = getLatestEndTime();
+        newTaskShift.start_time = getLatestEndTime() ?? null;
         newTaskShift.end_time = dayjs
             .utc(newTaskShift.start_time)
             .add(organizationSettings.default_task_shift_length, "hour")
@@ -81,7 +80,7 @@ const DraggableTaskShifts = ({
         return (
             <Button
                 fullWidth
-                onClick={() => openCreateTaskDialog(getDefaultValuesForTaskShift(taskList[0]))}
+                onClick={() => openCreateTaskDialog && openCreateTaskDialog(getDefaultValuesForTaskShift(taskList[0]))}
             >
                 {LanguageTranslations.addShift[language]}
             </Button>
@@ -102,6 +101,16 @@ const DraggableTaskShifts = ({
                 {getAddShiftButton()}
             </Card>
         );
+
+    const displayTaskTimeSpan = () => {
+        const earliestStartTime = getEarliestStartTime(taskList);
+        const latestEndTime = getLatestEndTime();
+        return (
+            (earliestStartTime ? formatDate(earliestStartTime) : "Unknown")
+            + " - "
+            + (latestEndTime ? formatDate(latestEndTime) : "Unknown")
+        );
+    }
     return (
         <Card key={taskList[0].id} sx={{ width: "100%" }}>
             <Stack
@@ -112,15 +121,13 @@ const DraggableTaskShifts = ({
                 spacing={{ xs: 0.5, sm: 0 }}
             >
                 <Typography variant="body1" sx={{ wordBreak: "break-word" }} noWrap={false}>
-                    {taskList[0][GlobalConstants.NAME]}
+                    {taskList[0].name}
                 </Typography>
                 <Typography
                     variant="body2"
                     sx={{ mt: { xs: 0.5, sm: 0 }, textAlign: { xs: "left", sm: "right" } }}
                 >
-                    {formatDate(getEarliestStartTime(taskList)) +
-                        " - " +
-                        formatDate(getLatestEndTime())}
+                    {displayTaskTimeSpan()}
                 </Typography>
             </Stack>
             {taskList.length > 1 && (

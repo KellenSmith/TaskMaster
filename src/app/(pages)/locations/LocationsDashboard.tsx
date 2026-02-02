@@ -8,7 +8,7 @@ import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { LocationCreateSchema } from "../../lib/zod-schemas";
 import { createLocation, deleteLocation, updateLocation } from "../../lib/location-actions";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { RenderedFields } from "../../ui/form/FieldCfg";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -40,6 +40,7 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
 
     const updateLocationAction = async (formData: FormData) => {
         try {
+            if (!editLocationId) throw new Error("No location ID to edit");
             await updateLocation(editLocationId, formData);
             setEditLocationId(null);
             return GlobalLanguageTranslations.successfulSave[language];
@@ -52,9 +53,9 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
         startTransition(async () => {
             try {
                 await deleteLocation(locationId);
-                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
             } catch {
-                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
             }
         });
     };

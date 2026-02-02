@@ -29,7 +29,7 @@ import AccordionRadioGroup from "../../ui/AccordionRadioGroup";
 import { pdf } from "@react-pdf/renderer";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { MoreHoriz } from "@mui/icons-material";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { CloneEventSchema, EmailSendoutSchema, EventUpdateSchema } from "../../lib/zod-schemas";
 import { getEventParticipantCount } from "./event-utils";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
@@ -57,8 +57,8 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     const { organizationSettings } = useOrganizationSettingsContext();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
-    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
-    const [dialogOpen, setDialogOpen] = useState(null);
+    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState<EventTarget & HTMLElement | null>(null);
+    const [dialogOpen, setDialogOpen] = useState<"event" | "sendout" | null>(null);
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const event = use(eventPromise);
@@ -83,54 +83,54 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         },
     };
 
-    const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All[language]);
+    const [sendoutTo, setSendoutTo] = useState<string>(sendoutToOptions.All[language]);
 
-    const submitForApproval = () => {
+    const submitForApproval = async () => {
         startTransition(async () => {
             try {
                 const formData = new FormData();
                 formData.append(GlobalConstants.STATUS, EventStatus.pending_approval);
                 await updateEvent(event.id, formData);
-                addNotification(LanguageTranslations.submittedEvent[language], "success");
+                addNotification(LanguageTranslations.submittedEvent[language], NotificationSeverity.success);
                 closeActionMenu();
             } catch {
-                addNotification(LanguageTranslations.failedSubmitEvent[language], "error");
+                addNotification(LanguageTranslations.failedSubmitEvent[language], NotificationSeverity.error);
             }
         });
     };
 
-    const publishEvent = () => {
+    const publishEvent = async () => {
         startTransition(async () => {
             try {
                 const formData = new FormData();
                 formData.append(GlobalConstants.STATUS, EventStatus.published);
                 await updateEvent(event.id, formData);
-                addNotification(LanguageTranslations.publishedEvent[language], "success");
+                addNotification(LanguageTranslations.publishedEvent[language], NotificationSeverity.success);
                 closeActionMenu();
             } catch {
-                addNotification(LanguageTranslations.failedPublishEvent[language], "error");
+                addNotification(LanguageTranslations.failedPublishEvent[language], NotificationSeverity.error);
             }
         });
     };
 
-    const cancelAction = () =>
+    const cancelAction = async () =>
         startTransition(async () => {
             try {
                 await cancelEvent(event.id);
-                addNotification(LanguageTranslations.cancelledEvent[language], "success");
+                addNotification(LanguageTranslations.cancelledEvent[language], NotificationSeverity.success);
                 closeActionMenu();
             } catch {
-                addNotification(LanguageTranslations.failedToCancelEvent[language], "error");
+                addNotification(LanguageTranslations.failedToCancelEvent[language], NotificationSeverity.error);
             }
         });
 
-    const deleteAction = () => {
+    const deleteAction = async () => {
         startTransition(async () => {
             try {
                 await deleteEvent(event.id);
             } catch (error) {
                 allowRedirectException(error);
-                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
             }
         });
     };
@@ -157,7 +157,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
             } catch {
                 addNotification(
                     LanguageTranslations.failedToPrintParticipantList[language],
-                    "error",
+                    NotificationSeverity.error,
                 );
             }
         });
@@ -253,14 +253,16 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
             );
         }
 
-        ActionButtons.unshift(getStatusActionButton());
+        const statusActionButton = getStatusActionButton();
+        if (statusActionButton)
+            ActionButtons.unshift(statusActionButton);
 
         ActionButtons.unshift(
             <MenuItem key="edit">
                 <Button
                     onClick={() => {
                         closeActionMenu();
-                        setDialogOpen(GlobalConstants.EVENT);
+                        setDialogOpen("event");
                     }}
                 >
                     {LanguageTranslations.editEvent[language]}
@@ -270,7 +272,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 <Button
                     onClick={() => {
                         closeActionMenu();
-                        setDialogOpen(GlobalConstants.SENDOUT);
+                        setDialogOpen("sendout");
                     }}
                 >
                     {LanguageTranslations.sendMail[language]}

@@ -29,7 +29,7 @@ import ConfirmButton from "../../ui/ConfirmButton";
 import { LocalPolice, Warning } from "@mui/icons-material";
 import { implementedTabs } from "../profile/LanguageTranslations";
 import { implementedTabs as implementedEventTabs } from "../calendar-post/LanguageTranslations";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
 import RichTextField from "../../ui/form/RichTextField";
 import BookTaskButton from "../../ui/kanban-board/BookTaskButton";
@@ -87,6 +87,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
 
     const contactMemberAction = async (formData: FormData) => {
         try {
+            if (!messageRecipientId) throw new Error("No message recipient specified");
             await contactTaskMember(messageRecipientId, formData, task.id);
             setMessageRecipientId(null);
             return LanguageTranslations.massageSentSuccess[language];
@@ -98,7 +99,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
     const deleteTaskAction = async () => {
         try {
             await deleteTask(task.id);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
             if (task.event_id)
                 clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
                     [GlobalConstants.EVENT_ID]: task.event_id,
@@ -106,7 +107,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                 });
             else clientRedirect(router, [GlobalConstants.TASKS]);
         } catch {
-            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
         }
     };
 
@@ -276,7 +277,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     fullWidth
                                     onClick={() =>
                                         clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
-                                            [GlobalConstants.EVENT_ID]: task.event_id,
+                                            [GlobalConstants.EVENT_ID]: task.event_id as string,
                                         })
                                     }
                                     sx={{ minWidth: 80 }}
@@ -287,14 +288,14 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                             {task.assignee_id && (
                                 <Button
                                     fullWidth
-                                    onClick={() => setMessageRecipientId(task.assignee?.id)}
+                                    onClick={() => setMessageRecipientId(task.assignee_id)}
                                 >
                                     {LanguageTranslations.contactAssignee[language]}
                                 </Button>
                             )}
                             <Button
                                 fullWidth
-                                onClick={() => setMessageRecipientId(task.reviewer?.id)}
+                                onClick={() => setMessageRecipientId(task.reviewer_id)}
                             >
                                 {LanguageTranslations.contactReviewer[language]}
                             </Button>

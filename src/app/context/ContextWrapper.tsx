@@ -11,11 +11,11 @@ import { Prisma } from "@prisma/client";
 
 interface ContextWrapperProps {
     children: ReactNode;
-    organizationSettingsPromise: Promise<Prisma.OrganizationSettingsGetPayload<true> | null>;
+    organizationSettingsPromise: Promise<Prisma.OrganizationSettingsGetPayload<true>>;
     userPromise: Promise<Prisma.UserGetPayload<{
         include: { user_membership: true; skill_badges: true };
     }> | null>;
-    infoPagesPromise?: Promise<
+    infoPagesPromise: Promise<
         Prisma.InfoPageGetPayload<{
             include: { titleText: { include: { translations: true } } };
         }>[]
@@ -36,7 +36,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                     infopagesPromise={infoPagesPromise}
                 >
                     <ThemeContextProvider>
-                        <NotificationContextProvider>
+                        <NotificationContextProvider>null
                             <SessionProvider>
                                 <UserContextProvider userPromise={userPromise}>
                                     {children}

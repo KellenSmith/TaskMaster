@@ -28,11 +28,8 @@ export const updateOrganizationSettings = async (formData: FormData): Promise<vo
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
     // attempt to delete the old blob from Vercel Blob storage.
-    for (const fieldId of fileUploadFields) {
-        if (validatedData[fieldId]) {
-            await deleteOldBlob(settings[fieldId], validatedData[fieldId]);
-        }
-    }
+    await deleteOldBlob(settings.logo_url, validatedData.logo_url);
+
 
     await prisma.organizationSettings.update({
         where: {
@@ -44,10 +41,10 @@ export const updateOrganizationSettings = async (formData: FormData): Promise<vo
 };
 
 export const deleteOldBlob = async (
-    oldBlobUrl: string,
-    updateBlobUrl: string = null,
+    oldBlobUrl: string | null,
+    updateBlobUrl?: string | null,
 ): Promise<void> => {
-    // Only delete if the new url is not equal to the old
+    // Only delete if old blob exists and the new url is not equal to the old
     if (oldBlobUrl && oldBlobUrl !== updateBlobUrl) {
         try {
             // Quick guard: Vercel public blob URLs contain 'blob.vercel-storage.com'

@@ -21,9 +21,9 @@ beforeEach(() => {
         },
     }));
     vi.mock("next/cache", () => ({
-        unstable_cache: (fn) => {
+        unstable_cache: (fn: Function) => {
             // return a wrapper that just calls the original function (no Next caching)
-            return (...args) => fn(...args);
+            return (...args: any[]) => fn(...args);
         },
     }));
 });

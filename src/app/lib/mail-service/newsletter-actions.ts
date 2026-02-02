@@ -111,7 +111,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
         };
     } catch (error) {
         // Don't set to error if it's a rate limit error - keep status as running to retry later
-        if (await isRateLimitError(error)) {
+        if (await isRateLimitError(error as Error)) {
             console.warn("Mail rate limit error detected, will retry later", error);
             return {
                 jobId: job.id,
@@ -125,11 +125,11 @@ export async function processNextNewsletterBatch(jobId?: string) {
             where: { id: job.id },
             data: {
                 status: "failed",
-                error: error?.message || String(error),
+                error: (error as Error)?.message || String(error),
                 lastRunAt: new Date(),
             },
         });
-        return { jobId: job.id, processed: 0, done: false, error: error?.message || String(error) };
+        return { jobId: job.id, processed: 0, done: false, error: (error as Error)?.message || String(error) };
     }
 }
 

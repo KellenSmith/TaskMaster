@@ -9,7 +9,7 @@ import {
 import React, { use, useState } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
 import { OrderStatus, Prisma } from "@prisma/client";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import { allowRedirectException, getPrivacyPolicyUrl, getTermsOfPurchaseUrl } from "../../ui/utils";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { progressOrder } from "../../lib/order-actions";
@@ -40,7 +40,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!termsAccepted.termsOfPurchase || !termsAccepted.privacyPolicy) {
-            addNotification(LanguageTranslations.termsRequired[language], "error");
+            addNotification(LanguageTranslations.termsRequired[language], NotificationSeverity.error);
             return;
         }
         await redirectToPayment();
@@ -52,16 +52,16 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         } catch (error) {
             allowRedirectException(error);
             // Show notification for all other errors
-            addNotification(LanguageTranslations.failedPaymentRedirect[language], "error");
+            addNotification(LanguageTranslations.failedPaymentRedirect[language], NotificationSeverity.error);
         }
     };
 
     const cancelOrder = async () => {
         try {
             await progressOrder(order.id, OrderStatus.cancelled);
-            addNotification(LanguageTranslations.cancelledOrder[language], "success");
+            addNotification(LanguageTranslations.cancelledOrder[language], NotificationSeverity.success);
         } catch {
-            addNotification(LanguageTranslations.cancelledOrder[language], "error");
+            addNotification(LanguageTranslations.cancelledOrder[language], NotificationSeverity.error);
         }
     };
 
@@ -164,7 +164,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                         >
                             {LanguageTranslations.iHaveRead[language]}{" "}
                             <Link
-                                href={getTermsOfPurchaseUrl(organizationSettings, language)}
+                                href={getTermsOfPurchaseUrl(organizationSettings, language) as string}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -194,7 +194,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                         >
                             {LanguageTranslations.iHaveRead[language]}{" "}
                             <Link
-                                href={getPrivacyPolicyUrl(organizationSettings, language)}
+                                href={getPrivacyPolicyUrl(organizationSettings, language) as string}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

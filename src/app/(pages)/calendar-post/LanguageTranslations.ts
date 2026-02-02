@@ -1,6 +1,15 @@
 import { Language } from "@prisma/client";
 
-export const implementedTabs = {
+export type ImplementedTabs = {
+    details: "Details",
+    location: "Location",
+    organize: "Organize",
+    tickets: "Tickets",
+    participants: "Participants",
+    reserveList: "Reserve List",
+};
+
+export const implementedTabs: ImplementedTabs = {
     details: "Details",
     location: "Location",
     organize: "Organize",

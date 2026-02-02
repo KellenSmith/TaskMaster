@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
         const { jobId } = body || {};
         const result = await processNextNewsletterBatch(jobId);
         return NextResponse.json(result);
-    } catch (err) {
-        return new NextResponse(err?.message || "Error", { status: 400 });
+    } catch (error) {
+        return new NextResponse(error instanceof Error ? error.message : String(error), { status: 400 });
     }
 }

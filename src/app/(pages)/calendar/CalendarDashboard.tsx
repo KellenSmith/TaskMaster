@@ -44,8 +44,11 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         const selectedLocation = locations.find(
             (loc) => loc.id === formData.get(GlobalConstants.LOCATION_ID),
         );
+        if (!selectedLocation) throw new Error(LanguageTranslations.locationNotFound[language]);
+        if (!user) throw new Error("You must be logged in to create an event");
+
         if (
-            selectedLocation.capacity <
+            !selectedLocation || selectedLocation.capacity <
             parseInt(formData.get(GlobalConstants.MAX_PARTICIPANTS) as string)
         )
             throw new Error(

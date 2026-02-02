@@ -148,9 +148,11 @@ export const routeTreeConfig: RouteConfigType = {
 };
 
 export const userHasRolePrivileges = (
-    user: Prisma.UserGetPayload<{ select: { role: true } }>,
-    authRole: UserRole,
+    user: Prisma.UserGetPayload<{ select: { role: true } }> | null | undefined,
+    authRole: UserRole | null | undefined,
 ) => {
+    // Allow all users if no role is required
+    if (!authRole) return true;
     // If user is not logged in, only show routes with no role requirement
     if (!user?.role) return !authRole;
     // Privileges defined in order of increasing access in UserRole enum
@@ -161,9 +163,11 @@ export const userHasRolePrivileges = (
 };
 
 const userHasStatusPrivileges = (
-    user: Prisma.UserGetPayload<{ select: { status: true } }>,
-    authStatus: UserStatus,
+    user: Prisma.UserGetPayload<{ select: { status: true } }> | null | undefined,
+    authStatus: UserStatus | null | undefined,
 ) => {
+    // Allow all users if no status is required
+    if (!authStatus) return true;
     // If user is not logged in, only show routes with no status requirement
     if (!user?.status) return !authStatus;
     // Privileges defined in order of increasing access in UserStatus enum
@@ -176,10 +180,10 @@ const userHasStatusPrivileges = (
 export const isUserAuthorized = (
     loggedInUser: Prisma.UserGetPayload<{
         select: { role: true; status: true; user_membership: true };
-    }>,
+    }> | null | undefined,
     pathSegments: string[],
-    routeConfig: RouteConfigType,
-) => {
+    routeConfig: RouteConfigType | undefined,
+): boolean => {
     if (!routeConfig) {
         // Reached the end of the path, user is authorized
         if (pathSegments.length === 0) return true;

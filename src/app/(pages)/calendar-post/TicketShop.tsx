@@ -11,7 +11,7 @@ import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { allowRedirectException } from "../../ui/utils";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
@@ -38,6 +38,8 @@ const TicketShop = ({
     goToOrganizeTab,
 }: TicketShopProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw Error("You must be logged in to view the ticket shop");
+
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -56,7 +58,7 @@ const TicketShop = ({
             await createAndRedirectToOrder(user.id, [ticketOrderItems]);
         } catch (error) {
             allowRedirectException(error);
-            addNotification(LanguageTranslations.failedTicketOrder[language], "error");
+            addNotification(LanguageTranslations.failedTicketOrder[language], NotificationSeverity.error);
         }
     };
 
@@ -72,6 +74,7 @@ const TicketShop = ({
 
     const updateTicketAction = async (formData: FormData) => {
         try {
+            if (!editingTicketId) throw new Error("No ticket selected for editing");
             await updateEventTicket(editingTicketId, formData);
             setDialogOpen(false);
             setEditingTicketId(null);
@@ -91,9 +94,9 @@ const TicketShop = ({
     const deleteTicketAction = async (ticketId: string) => {
         try {
             await deleteEventTicket(ticketId);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
         } catch {
-            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
         }
     };
 
@@ -108,9 +111,9 @@ const TicketShop = ({
     };
 
     const getFormDefaultValues = () => {
-        if (!editingTicketId) return null;
+        if (!editingTicketId) return undefined;
         const ticket = tickets.find((t) => t.product_id === editingTicketId);
-        if (!ticket) return null;
+        if (!ticket) return undefined;
         return { ...ticket, ...ticket.product };
     };
 

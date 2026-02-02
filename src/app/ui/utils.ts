@@ -16,8 +16,9 @@ export const openResourceInNewTab = (resourceUrl: string) => {
     if (newWindow) newWindow.opener = null;
 };
 
-export const allowRedirectException = (error: Error & { digest?: string }) => {
-    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+export const allowRedirectException = (error: unknown) => {
+    const hasDigest = error instanceof Error && error !== null && "digest" in error;
+    if (hasDigest && (error as any).digest.startsWith("NEXT_REDIRECT")) {
         throw error;
     }
 };
@@ -33,9 +34,10 @@ export const getPrivacyPolicyUrl = (
 export const getTermsOfMembershipUrl = (
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
     language: Language,
-) => {
+): string | null => {
     if (language === Language.english) return organizationSettings.terms_of_membership_english_url;
     if (language === Language.swedish) return organizationSettings.terms_of_membership_swedish_url;
+    return null;
 };
 
 export const getTermsOfPurchaseUrl = (
@@ -49,9 +51,10 @@ export const getTermsOfPurchaseUrl = (
 export const userHasSkillBadge = (
     user: Prisma.UserGetPayload<{
         select: { skill_badges: true };
-    }>,
+    }> | null,
     skillBadgeId: string,
 ): boolean => {
+    if (!user) return false;
     return user.skill_badges.some((userBadge) => userBadge.skill_badge_id === skillBadgeId);
 };
 

@@ -11,7 +11,7 @@ import { revalidateTag } from "next/cache";
 export const createInfoPage = async (formData: FormData): Promise<void> => {
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));
 
-    let createdInfoPageId: string;
+    let createdInfoPageId: string = "";
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const title = await createTextContent(tx);
         await tx.textTranslation.updateMany({
@@ -34,6 +34,8 @@ export const createInfoPage = async (formData: FormData): Promise<void> => {
         });
         createdInfoPageId = newInfoPage.id;
     });
+    if (!createdInfoPageId) throw new Error("Failed to create InfoPage");
+
     revalidateTag(GlobalConstants.INFO_PAGE, "max");
     serverRedirect([GlobalConstants.INFO_PAGE], {
         [GlobalConstants.INFO_PAGE_ID]: createdInfoPageId,

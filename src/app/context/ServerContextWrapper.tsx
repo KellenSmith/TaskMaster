@@ -18,7 +18,7 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     ) as UserRole[];
 
     // Pages with no role restrictions are always allowed
-    const lowestAllowedUserRoleCondition: Prisma.InfoPageWhereInput = { OR: [{ lowest_allowed_user_role: { equals: null } }] };
+    const lowestAllowedUserRoleCondition: Prisma.InfoPageWhereInput & { OR: Prisma.InfoPageWhereInput[] } = { OR: [{ lowest_allowed_user_role: { equals: null } }] };
     if (allowedUserRolePrivileges.length > 0) {
         lowestAllowedUserRoleCondition.OR.push({ lowest_allowed_user_role: { in: allowedUserRolePrivileges } });
     }

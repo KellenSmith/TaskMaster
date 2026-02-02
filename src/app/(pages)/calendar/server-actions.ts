@@ -13,6 +13,7 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
     const sanitizedData = sanitizeFormData(validatedData);
 
     const { location_id, ...eventData } = sanitizedData;
+    if (!location_id) throw new Error("Location ID is required");
 
     // Check that the location has capacity for the max_participants
     const location = await prisma.location.findUniqueOrThrow({

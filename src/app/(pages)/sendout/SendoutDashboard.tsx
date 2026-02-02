@@ -20,7 +20,7 @@ import { Language, Prisma, UserStatus } from "@prisma/client";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
-import Datagrid, { RowActionProps } from "../../ui/Datagrid";
+import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/Datagrid";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { deleteNewsletterJob } from "../../lib/mail-service/newsletter-actions";
 
@@ -51,7 +51,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
             status: UserStatus.validated
         };
         if (sendTo === sendToOptions.CONSENTING[language]) {
-            recipientCriteria[GlobalConstants.CONSENT_TO_NEWSLETTERS] = true;
+            recipientCriteria.consent_to_newsletters = true;
         }
         return recipientCriteria;
     }, [sendTo, language]);
@@ -74,9 +74,9 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
         }
     };
 
-    const deleteNewsletterJobAction = async (row: Prisma.NewsletterJobGetPayload<true>) => {
+    const deleteNewsletterJobAction = async (row: ImplementedDatagridEntities) => {
         try {
-            await deleteNewsletterJob(row.id);
+            await deleteNewsletterJob((row as Prisma.NewsletterJobGetPayload<true>).id);
             return GlobalLanguageTranslations.successfulDelete[language];
         } catch {
             throw new Error(GlobalLanguageTranslations.failedDelete[language]);
@@ -86,7 +86,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
     const customColumns = [
         {
             field: GlobalConstants.RECIPIENTS,
-            valueGetter: (_, row: Prisma.NewsletterJobGetPayload<true>) => {
+            valueGetter: (_: any, row: Prisma.NewsletterJobGetPayload<true>) => {
                 if (row.recipients?.length > 2)
                     return `${row.recipients[0]}... (${row.recipients.length - 1})`;
                 return row.recipients?.join(", ");

@@ -5,7 +5,7 @@ import { getAbsoluteUrl } from "../../utils";
 import GlobalConstants from "../../../GlobalConstants";
 import { getOrganizationSettings } from "../../organization-settings-actions";
 
-export const renderHtml = (html: string) => {
+export const renderHtml = (html: string | undefined) => {
     if (!html) return null;
     return <div dangerouslySetInnerHTML={{ __html: html }} />;
 };

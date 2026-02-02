@@ -38,7 +38,7 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
         throw new Error("You are not authorized to view this event");
     }
 
-    const eventTasksPromise = await prisma.task.findMany({
+    const eventTasksPromise = prisma.task.findMany({
         where: { event_id: eventId },
         include: {
             assignee: {

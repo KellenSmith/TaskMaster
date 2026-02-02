@@ -23,7 +23,7 @@ import ReserveDashboard from "./ReserveDashboard";
 import TicketDashboard from "./TicketDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import LocationDashboard from "./LocationDashboard";
-import LanguageTranslations, { implementedTabs } from "./LanguageTranslations";
+import LanguageTranslations, { ImplementedTabs, implementedTabs } from "./LanguageTranslations";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -84,15 +84,15 @@ const EventDashboard = ({
     const event = use(eventPromise);
 
     // Tab is available if it has a label
-    const eventTabs = useMemo(() => {
-        const availableTabs = {
+    const eventTabs = useMemo<Partial<ImplementedTabs>>(() => {
+        const availableTabs: Partial<ImplementedTabs> = {
             details: implementedTabs.details,
             location: implementedTabs.location,
             organize: implementedTabs.organize,
             tickets: implementedTabs.tickets,
-            participants: null,
-            reserveList: null,
-        } as typeof implementedTabs;
+            participants: undefined,
+            reserveList: undefined,
+        }
         if (isUserHost(user, event) || isUserAdmin(user)) {
             availableTabs.participants = implementedTabs.participants;
         }
@@ -114,7 +114,7 @@ const EventDashboard = ({
             [GlobalConstants.EVENT_ID]: event.id,
             tab,
         });
-    const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
+    const goToOrganizeTab = () => eventTabs.organize && setOpenTab(eventTabs.organize);
 
     const getOpenTabComp = () => {
         switch (openTab) {
@@ -229,7 +229,7 @@ const EventDashboard = ({
                     aria-label="event tabs"
                     sx={{ flex: 1, minWidth: 0 }}
                 >
-                    {Object.keys(eventTabs).map((tabKey) => {
+                    {(Object.keys(eventTabs) as (keyof typeof eventTabs)[]).map((tabKey) => {
                         const tabVal = eventTabs[tabKey];
                         if (!tabVal) return null;
                         const label = LanguageTranslations[tabVal][language] as string;

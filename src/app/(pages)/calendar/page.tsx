@@ -13,7 +13,7 @@ const CalendarPage = async () => {
     const eventFilterParams = {} as Prisma.EventWhereInput;
 
     // Non-admins can only see their own event drafts and pending approval events or published events
-    if (!isUserAdmin(loggedInUser)) {
+    if (loggedInUser && !isUserAdmin(loggedInUser)) {
         eventFilterParams.OR = [
             {
                 status: EventStatus.published,

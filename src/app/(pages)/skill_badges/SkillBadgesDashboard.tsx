@@ -12,7 +12,7 @@ import {
     deleteSkillBadge,
     updateSkillBadge,
 } from "../../lib/skill-badge-actions";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -44,6 +44,7 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
 
     const updateBadgeAction = async (formData: FormData) => {
         try {
+            if (!editBadgeId) throw new Error("No badge selected for editing");
             await updateSkillBadge(editBadgeId, formData);
             setEditBadgeId(null);
             return GlobalLanguageTranslations.successfulSave[language];
@@ -56,9 +57,9 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
         startTransition(async () => {
             try {
                 await deleteSkillBadge(badgeId);
-                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
             } catch {
-                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
+                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
             }
         });
     };

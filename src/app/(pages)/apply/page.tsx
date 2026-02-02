@@ -18,10 +18,7 @@ const ApplyPage = () => {
         privacyPolicy: false,
     });
     const { organizationSettings } = useOrganizationSettingsContext();
-    const shouldIncludeApplicationPrompt = useMemo(
-        (): boolean => !!organizationSettings.member_application_prompt,
-        [organizationSettings],
-    );
+    const shouldIncludeApplicationPrompt = !!organizationSettings.member_application_prompt
 
     const submitApplication = async (formData: FormData) => {
         try {
@@ -57,13 +54,14 @@ const ApplyPage = () => {
                 >
                     {OrderLanguageTranslations.iHaveRead[language]}{" "}
                 </Typography>
-                <Link
-                    href={getTermsOfMembershipUrl(organizationSettings, language)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    {LanguageTranslations.termsOfMembership[language]}
-                </Link>
+                {getTermsOfMembershipUrl(organizationSettings, language) &&
+                    <Link
+                        href={getTermsOfMembershipUrl(organizationSettings, language) as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {LanguageTranslations.termsOfMembership[language]}
+                    </Link>}
             </Stack>
 
             <Stack direction="row" alignItems={"center"}>
@@ -88,13 +86,14 @@ const ApplyPage = () => {
                 >
                     {OrderLanguageTranslations.iHaveRead[language]}{" "}
                 </Typography>
-                <Link
-                    href={getPrivacyPolicyUrl(organizationSettings, language)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    {OrderLanguageTranslations.privacyPolicy[language]}
-                </Link>
+                {getPrivacyPolicyUrl(organizationSettings, language) &&
+                    <Link
+                        href={getPrivacyPolicyUrl(organizationSettings, language) as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {OrderLanguageTranslations.privacyPolicy[language]}
+                    </Link>}
             </Stack>
 
             <Form
@@ -116,9 +115,9 @@ const ApplyPage = () => {
                 customInfoTexts={
                     shouldIncludeApplicationPrompt
                         ? {
-                              [GlobalConstants.MEMBER_APPLICATION_PROMPT]:
-                                  organizationSettings.member_application_prompt,
-                          }
+                            [GlobalConstants.MEMBER_APPLICATION_PROMPT as string]:
+                                organizationSettings.member_application_prompt as string,
+                        }
                         : {}
                 }
                 readOnly={!(termsAccepted.termsOfMembership && termsAccepted.privacyPolicy)}

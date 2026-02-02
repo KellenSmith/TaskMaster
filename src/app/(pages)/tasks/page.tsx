@@ -6,7 +6,7 @@ import { prisma } from "../../../../prisma/prisma-client";
 
 const TasksPage = async () => {
     const loggedInUser = await getLoggedInUser();
-    const tasksPromise = await prisma.task.findMany({
+    const tasksPromise = prisma.task.findMany({
         where: {
             event_id: null,
         },

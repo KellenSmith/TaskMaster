@@ -25,12 +25,11 @@ const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchP
             assignee: true,
         }
     })
-    const uniqueVolunteerNicknames = Array.from(new Set(volunteerTasksForYear.map(task => task.assignee.nickname)));
-
+    const uniqueVolunteerNicknames = Array.from(new Set(volunteerTasksForYear.map(task => task.assignee?.nickname))).filter(Boolean) as string[];
     const assigneeVolunteerHours = uniqueVolunteerNicknames.map(assigneeNickname => {
-        const tasksForAssignee = volunteerTasksForYear.filter(task => task.assignee.nickname === assigneeNickname);
+        const tasksForAssignee = volunteerTasksForYear.filter(task => task.assignee && task.assignee.nickname === assigneeNickname);
         const totalHours = tasksForAssignee.reduce((sum, task) => {
-            const hours = (task.end_time.getTime() - task.start_time.getTime()) / (1000 * 60 * 60);
+            const hours = task.start_time ? (task.end_time.getTime() - task.start_time.getTime()) / (1000 * 60 * 60) : 0;
             return sum + hours;
         }, 0);
         return {

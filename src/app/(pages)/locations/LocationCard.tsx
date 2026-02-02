@@ -6,9 +6,10 @@ import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
 import RichTextField from "../../ui/form/RichTextField";
+import { Prisma } from "../../../../prisma/generated/client";
 
 interface LocationDashboardProps {
-    location: Location;
+    location: Prisma.LocationGetPayload<{}>;
     renderedFields: string[];
 }
 
@@ -27,7 +28,7 @@ const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
                         </Stack>
                     </Stack>
 
-                    {renderedFields.map((fieldId) => (
+                    {renderedFields.map((fieldId: string) => (
                         <Stack key={fieldId} spacing={1}>
                             <Typography color="text.secondary">
                                 {FieldLabels[fieldId][language] as string}
@@ -38,7 +39,7 @@ const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
                                     defaultValue={location.description}
                                 />
                             ) : (
-                                <Typography>{location[fieldId]}</Typography>
+                                <Typography>{location[fieldId as keyof Prisma.LocationGetPayload<{}>]}</Typography>
                             )}
                         </Stack>
                     ))}

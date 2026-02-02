@@ -14,7 +14,14 @@ import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
 
-const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) => {
+interface ConfirmButtonProps {
+    onClick: () => Promise<void>;
+    confirmText?: string;
+    children: React.ReactNode;
+    [key: string]: any;
+}
+
+const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }: ConfirmButtonProps) => {
     const { language } = useUserContext();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));

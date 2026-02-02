@@ -150,7 +150,7 @@ export const cancelMembershipSubscription = async (userId: string) => {
 
     await prisma.userMembership.update({
         where: { user_id: validatedUserId },
-        data: { subscription_token: null },
+        data: { subscription_token: undefined },
     });
     revalidateTag(GlobalConstants.USER, "max");
 };
