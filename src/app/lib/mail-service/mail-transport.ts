@@ -2,7 +2,8 @@
 // inside getMailTransport so bundlers don't include Node-only modules in edge
 
 // bundles.
-const globalMailService = global as { mailTransport?: any }; // Transporter type from nodemailer
+import type { Transporter } from "nodemailer";
+const globalMailService = global as { mailTransport?: Transporter }; // Transporter type from nodemailer
 
 export async function getMailTransport() {
     if (globalMailService.mailTransport) return globalMailService.mailTransport;

@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-actions";
 import { use } from "react";
@@ -25,18 +25,18 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
     const joinReserveList = async () => {
         try {
             await addEventReserve(user.id, event.id);
-            addNotification(LanguageTranslations.joinedReserveList[language], NotificationSeverity.success);
+            addNotification(LanguageTranslations.joinedReserveList[language], "success");
         } catch {
-            addNotification(LanguageTranslations.failedToAddReserve[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedToAddReserve[language], "error");
         }
     };
 
     const leaveReserveList = async () => {
         try {
             await deleteEventReserve(user.id, event.id);
-            addNotification(LanguageTranslations.leftReserveList[language], NotificationSeverity.success);
+            addNotification(LanguageTranslations.leftReserveList[language], "success");
         } catch {
-            addNotification(LanguageTranslations.failedToLeaveReserve[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedToLeaveReserve[language], "error");
         }
     };
 
@@ -89,11 +89,13 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                             {LanguageTranslations.joinReserveToBeNotified[language](isReserve)}
                         </Typography>
                         <ConfirmButton
-                            color={isReserve ? "error" : "primary"}
-                            variant="outlined"
-                            fullWidth
+                            buttonProps={{
+                                color: isReserve ? "error" : "primary",
+                                variant: "outlined",
+                                fullWidth: true,
+                                startIcon: isReserve ? <ExitToApp /> : <PersonAdd />
+                            }}
                             onClick={isReserve ? leaveReserveList : joinReserveList}
-                            startIcon={isReserve ? <ExitToApp /> : <PersonAdd />}
                             confirmText={LanguageTranslations.areYouSureYouWannaJoin[language](
                                 isReserve,
                             )}

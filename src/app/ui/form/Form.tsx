@@ -31,10 +31,10 @@ import { Cancel, Edit } from "@mui/icons-material";
 import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
 import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "../LanguageTranslations";
@@ -45,6 +45,9 @@ interface FormProps {
     buttonLabel?: string;
     action?: (formData: FormData) => Promise<string>; // eslint-disable-line no-unused-vars
     validationSchema?: ZodType<object>;
+    // Allowed to be any because FormData can contain different types of values
+    // from any entity which use the Form component
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     defaultValues?: { [key: string]: any };
     customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
@@ -155,7 +158,7 @@ const Form: FC<FormProps> = ({
             return formData;
         } catch (error) {
             if (error instanceof Error)
-                addNotification("File upload failed: " + error.message, NotificationSeverity.error);
+                addNotification("File upload failed: " + error.message, "error");
             throw error;
         }
     };
@@ -187,7 +190,7 @@ const Form: FC<FormProps> = ({
 
         // Ensure action is available before proceeding
         if (!action || typeof action !== "function") {
-            addNotification("Form action is not available. Please try again.", NotificationSeverity.error);
+            addNotification("Form action is not available. Please try again.", "error");
             return;
         }
 
@@ -199,12 +202,12 @@ const Form: FC<FormProps> = ({
             if (!parsedFieldValues) return;
             try {
                 const submitResult = await action(formDataWithFileUrls);
-                addNotification(submitResult, NotificationSeverity.success);
+                addNotification(submitResult, "success");
                 if (!(editable && !readOnly)) setEditMode(false);
             } catch (error) {
                 allowRedirectException(error);
                 if (error instanceof Error)
-                    addNotification(error.message, NotificationSeverity.error);
+                    addNotification(error.message, "error");
                 throw error;
             }
         });
@@ -215,8 +218,8 @@ const Form: FC<FormProps> = ({
 
     const getDefaultValue = (fieldId: string) => {
         if (defaultValues && fieldId in defaultValues) {
-            if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId]);
-            if (datePickerFields.includes(fieldId)) return dayjs.utc(defaultValues[fieldId]);
+            if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId] as number);
+            if (datePickerFields.includes(fieldId)) return dayjs.utc(defaultValues[fieldId] as Dayjs);
             return defaultValues[fieldId];
         }
 
@@ -236,7 +239,7 @@ const Form: FC<FormProps> = ({
                     fieldId={fieldId}
                     label={FieldLabels[fieldId][language] as string}
                     editMode={editMode}
-                    defaultValue={defaultValues?.[fieldId]}
+                    defaultValue={defaultValues?.[fieldId] as string | string[]}
                     customReadOnlyFields={customReadOnlyFields}
                     customOptions={customOptions[fieldId]}
                     required={requiredFields.includes(fieldId)}
@@ -250,7 +253,7 @@ const Form: FC<FormProps> = ({
                     name={fieldId}
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId][language] as string}
-                    defaultValue={getDefaultValue(fieldId)}
+                    defaultValue={getDefaultValue(fieldId) as Dayjs}
                     slotProps={{
                         textField: {
                             name: fieldId,
@@ -271,7 +274,7 @@ const Form: FC<FormProps> = ({
                         <Checkbox
                             name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                            defaultChecked={getDefaultValue(fieldId) || false}
+                            defaultChecked={getDefaultValue(fieldId) as boolean || false}
                         />
                     }
                     label={FieldLabels[fieldId][language] as string}
@@ -283,7 +286,7 @@ const Form: FC<FormProps> = ({
                     key={getFieldCompKey(fieldId)}
                     fieldId={fieldId}
                     editMode={editMode || customReadOnlyFields.includes(fieldId)}
-                    defaultValue={defaultValues?.[fieldId] || ""}
+                    defaultValue={defaultValues?.[fieldId] as string || ""}
                 />
             );
         }

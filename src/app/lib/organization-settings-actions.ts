@@ -6,7 +6,6 @@ import GlobalConstants from "../GlobalConstants";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 import { Prisma } from "@prisma/client";
 import { del } from "@vercel/blob";
-import { fileUploadFields } from "../ui/form/FieldCfg";
 
 export const getOrganizationSettings = async (): Promise<
     Prisma.OrganizationSettingsGetPayload<true>

@@ -1,7 +1,5 @@
 "use server";
 import ProfileDashboard from "./ProfileDashboard";
-import GlobalConstants from "../../GlobalConstants";
-import { serverRedirect } from "../../lib/utils";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { prisma } from "../../../../prisma/prisma-client";
 

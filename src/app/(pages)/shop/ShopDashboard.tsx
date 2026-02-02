@@ -24,7 +24,7 @@ import { isUserAdmin } from "../../lib/utils";
 import ProductCard from "../../ui/shop/ProductCard";
 import Form from "../../ui/form/Form";
 import { allowRedirectException } from "../../ui/utils";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clientRedirect } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
@@ -106,7 +106,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
             await createAndRedirectToOrder(user.id, [productOrderItems]);
         } catch (error) {
             allowRedirectException(error);
-            addNotification("Failed to create order", NotificationSeverity.error);
+            addNotification("Failed to create order", "error");
         }
     };
 
@@ -134,9 +134,9 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     const deleteProductAction = async (productId: string) => {
         try {
             await deleteProduct(productId);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
         } catch {
-            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
+            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
     };
 
@@ -172,7 +172,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
                                     {GlobalLanguageTranslations.edit[language]}
                                 </Button>
                                 <ConfirmButton
-                                    color="error"
+                                    buttonProps={{ color: "error" }}
                                     onClick={() => deleteProductAction(product.id)}
                                 >
                                     {GlobalLanguageTranslations.delete[language]}

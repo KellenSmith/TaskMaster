@@ -2,10 +2,12 @@
 
 import { createContext, FC, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { Portal, Stack, Alert } from "@mui/material";
+import type { AlertColor } from "@mui/material/Alert";
+
 
 interface NotificationContextValue {
     // eslint-disable-next-line no-unused-vars
-    addNotification: (msg: string, severity: NotificationSeverity) => void;
+    addNotification: (msg: string, severity: AlertColor) => void;
 }
 
 export const NotificationContext = createContext<NotificationContextValue | null>(null);
@@ -21,17 +23,10 @@ interface NotificationContextProviderProps {
     children: ReactNode;
 }
 
-export enum NotificationSeverity {
-    success = "success",
-    error = "error",
-    info = "info",
-    warning = "warning",
-}
-
 interface NotificationToastProps {
     id: number;
     msg: string;
-    severity: NotificationSeverity;
+    severity: AlertColor;
     removeNotification: (id: number) => void; // eslint-disable-line no-unused-vars
 }
 
@@ -53,17 +48,17 @@ const NotificationToast: FC<NotificationToastProps> = ({
     }, [deleteThisNotification, msg]);
 
     return (
-        <Alert severity={severity} onClose={deleteThisNotification}>
+        <Alert severity={severity as AlertColor} onClose={deleteThisNotification}>
             {msg}
         </Alert>
     );
 };
 
 const NotificationContextProvider: FC<NotificationContextProviderProps> = ({ children }) => {
-    const [notifications, setNotifications] = useState<{ id: number; msg: string; severity: NotificationSeverity }[]>([]);
+    const [notifications, setNotifications] = useState<{ id: number; msg: string; severity: AlertColor }[]>([]);
 
     const addNotification = useCallback(
-        (msg: string, severity: NotificationSeverity) => {
+        (msg: string, severity: AlertColor) => {
             const newNotificationId =
                 notifications.length > 0 ? Math.max(...notifications.map((n) => n.id)) + 1 : 1;
             setNotifications((prev) => [...prev, { id: newNotificationId, msg, severity }]);

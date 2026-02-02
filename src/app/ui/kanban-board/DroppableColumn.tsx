@@ -19,7 +19,7 @@ import { Prisma, Task, TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import z from "zod";
 import { TaskCreateSchema, TaskFilterSchema } from "../../lib/zod-schemas";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import DraggableTaskShifts from "./DraggableTaskShifts";
 import { CustomOptionProps } from "../form/AutocompleteWrapper";
@@ -102,10 +102,10 @@ const DroppableColumn = ({
                 await updateTaskById(draggedTask.id, statusFormData);
                 addNotification(
                     `${LanguageTranslations.taskSetTo[language]} "${LanguageTranslations[status][language]}"`,
-                    NotificationSeverity.success,
+                    "success",
                 );
             } catch {
-                addNotification(GlobalLanguageTranslations.failedSave[language], NotificationSeverity.error);
+                addNotification(GlobalLanguageTranslations.failedSave[language], "error");
             }
         }
         setDraggedTask(null);

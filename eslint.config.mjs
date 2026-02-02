@@ -6,7 +6,15 @@ import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 export default [
     {
-        ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "dist/**"],
+        ignores: [
+            "node_modules/**",
+            ".next/**",
+            "out/**",
+            "build/**",
+            "next-env.d.ts",
+            "dist/**",
+            "prisma/generated/**",
+        ],
     },
     {
         files: ["**/*.{js,jsx,ts,tsx}"],

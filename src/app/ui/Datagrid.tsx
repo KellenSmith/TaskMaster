@@ -13,7 +13,7 @@ import {
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
 import { formatDate, formatPrice } from "./utils";
-import { NotificationSeverity, useNotificationContext } from "../context/NotificationContext";
+import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
 import { Prisma, Product } from "@prisma/client";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
@@ -256,10 +256,10 @@ const Datagrid: React.FC<DatagridProps> = ({
                 if (!clickedRow) throw new Error("No row selected");
                 const result = await rowAction.serverAction(clickedRow);
                 setClickedRow(null);
-                addNotification(result, NotificationSeverity.success);
+                addNotification(result, "success");
             } catch (error) {
                 if (error instanceof Error)
-                    addNotification(error.message, NotificationSeverity.error);
+                    addNotification(error.message, "error");
                 throw error
             }
         });

@@ -15,7 +15,7 @@ import {
 import { CheckCircle, ExitToApp } from "@mui/icons-material";
 import ProductCard from "../../ui/shop/ProductCard";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { deleteEventParticipant } from "../../lib/event-participant-actions";
 import { useRouter } from "next/navigation";
 import LanguageTranslations from "./LanguageTranslations";
@@ -55,10 +55,10 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
     const leaveParticipantList = async () => {
         try {
             await deleteEventParticipant(event.id, user.id);
-            addNotification(LanguageTranslations.leftEvent[language], NotificationSeverity.success);
+            addNotification(LanguageTranslations.leftEvent[language], "success");
             router.refresh();
         } catch {
-            addNotification(LanguageTranslations.failedToLeaveEvent[language], NotificationSeverity.error);
+            addNotification(LanguageTranslations.failedToLeaveEvent[language], "error");
         }
     };
 
@@ -144,11 +144,13 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                     {LanguageTranslations.leaveToFreeUpSpot[language]}
                                 </Typography>
                                 <ConfirmButton
-                                    color="error"
-                                    variant="outlined"
-                                    fullWidth
+                                    buttonProps={{
+                                        color: "error",
+                                        variant: "outlined",
+                                        fullWidth: true,
+                                        startIcon: <ExitToApp />
+                                    }}
                                     onClick={leaveParticipantList}
-                                    startIcon={<ExitToApp />}
                                     confirmText={LanguageTranslations.sureYouWannaLeave[language]}
                                 >
                                     {LanguageTranslations.leaveParticipantList[language]}

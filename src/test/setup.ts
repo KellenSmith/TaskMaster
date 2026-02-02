@@ -3,6 +3,10 @@ import { expect, afterEach, vi, beforeEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { mockContext } from "./mocks/prismaMock";
+import utc from "dayjs/plugin/utc";
+import dayjs from "dayjs";
+// Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
+dayjs.extend(utc);
 
 // Extend vitest's expect method with testing-library methods
 expect.extend(matchers);
@@ -18,12 +22,6 @@ beforeEach(() => {
     vi.mock("../app/lib/mail-service/mail-transport", () => ({
         mailTransport: {
             sendMail: vi.fn().mockResolvedValue(undefined),
-        },
-    }));
-    vi.mock("next/cache", () => ({
-        unstable_cache: (fn: Function) => {
-            // return a wrapper that just calls the original function (no Next caching)
-            return (...args: any[]) => fn(...args);
         },
     }));
 });

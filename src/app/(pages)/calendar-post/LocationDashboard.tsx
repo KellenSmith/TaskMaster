@@ -17,7 +17,7 @@ import { useUserContext } from "../../context/UserContext";
 import LocationCard from "../locations/LocationCard";
 import { FieldLabels, RenderedFields } from "../../ui/form/FieldCfg";
 import GlobalConstants from "../../GlobalConstants";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { updateEvent } from "../../lib/event-actions";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
@@ -63,15 +63,15 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
         startTransition(async () => {
             try {
                 if (!selectedLocationOption) {
-                    addNotification(GlobalLanguageTranslations.failedSave[language], NotificationSeverity.error);
+                    addNotification(GlobalLanguageTranslations.failedSave[language], "error");
                     return
                 }
                 const formData = new FormData();
                 formData.append(GlobalConstants.LOCATION_ID, selectedLocationOption.id);
                 await updateEvent(event.id, formData);
-                addNotification(GlobalLanguageTranslations.successfulSave[language], NotificationSeverity.success);
+                addNotification(GlobalLanguageTranslations.successfulSave[language], "success");
             } catch {
-                addNotification(GlobalLanguageTranslations.failedSave[language], NotificationSeverity.error);
+                addNotification(GlobalLanguageTranslations.failedSave[language], "error");
             }
         });
     };

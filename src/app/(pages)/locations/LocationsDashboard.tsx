@@ -8,7 +8,7 @@ import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { LocationCreateSchema } from "../../lib/zod-schemas";
 import { createLocation, deleteLocation, updateLocation } from "../../lib/location-actions";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { RenderedFields } from "../../ui/form/FieldCfg";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -53,9 +53,9 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
         startTransition(async () => {
             try {
                 await deleteLocation(locationId);
-                addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
+                addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
             } catch {
-                addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
+                addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
         });
     };

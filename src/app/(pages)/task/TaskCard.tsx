@@ -29,7 +29,7 @@ import ConfirmButton from "../../ui/ConfirmButton";
 import { LocalPolice, Warning } from "@mui/icons-material";
 import { implementedTabs } from "../profile/LanguageTranslations";
 import { implementedTabs as implementedEventTabs } from "../calendar-post/LanguageTranslations";
-import { NotificationSeverity, useNotificationContext } from "../../context/NotificationContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
 import RichTextField from "../../ui/form/RichTextField";
 import BookTaskButton from "../../ui/kanban-board/BookTaskButton";
@@ -99,7 +99,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
     const deleteTaskAction = async () => {
         try {
             await deleteTask(task.id);
-            addNotification(GlobalLanguageTranslations.successfulDelete[language], NotificationSeverity.success);
+            addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
             if (task.event_id)
                 clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
                     [GlobalConstants.EVENT_ID]: task.event_id,
@@ -107,7 +107,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                 });
             else clientRedirect(router, [GlobalConstants.TASKS]);
         } catch {
-            addNotification(GlobalLanguageTranslations.failedDelete[language], NotificationSeverity.error);
+            addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }
     };
 
@@ -305,11 +305,13 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                         {GlobalLanguageTranslations.edit[language]}
                                     </Button>
                                     <ConfirmButton
-                                        fullWidth
+                                        buttonProps={{
+                                            fullWidth: true,
+                                            color: "error",
+                                            variant: "outlined",
+                                            size: "small"
+                                        }}
                                         onClick={deleteTaskAction}
-                                        color="error"
-                                        variant="outlined"
-                                        size="small"
                                     >
                                         {GlobalLanguageTranslations.delete[language]}
                                     </ConfirmButton>
