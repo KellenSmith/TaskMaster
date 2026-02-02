@@ -49,10 +49,10 @@ interface IEventActions {
         }>
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
-    eventTagsPromise: Promise<string[]>;
+    eventTags: string[];
 }
 
-const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, eventTagsPromise }) => {
+const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, eventTags }) => {
     const theme = useTheme();
     const { organizationSettings } = useOrganizationSettingsContext();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
@@ -66,7 +66,6 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     // TODO: It doesn't need to use locations if the user is not host or admin
     // Move host actions to separate component to optimize data fetching
     const locations = use(locationsPromise);
-    const eventTags = use(eventTagsPromise);
 
     const sendoutToOptions = {
         All: {
