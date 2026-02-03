@@ -13,12 +13,16 @@ import { getPrivacyPolicyUrl, getTermsOfMembershipUrl } from "../../ui/utils";
 
 const ApplyPage = () => {
     const { language } = useUserContext();
-    const [termsAccepted, setTermsAccepted] = useState({
-        termsOfMembership: false,
-        privacyPolicy: false,
-    });
     const { organizationSettings } = useOrganizationSettingsContext();
+    const termsOfMembershipUrl = getTermsOfMembershipUrl(organizationSettings, language);
+    const privacyPolicyUrl = getPrivacyPolicyUrl(organizationSettings, language);
+    // If there is no URL, consider the term accepted
+    const [termsAccepted, setTermsAccepted] = useState({
+        termsOfMembership: !termsOfMembershipUrl,
+        privacyPolicy: !privacyPolicyUrl,
+    });
     const shouldIncludeApplicationPrompt = !!organizationSettings.member_application_prompt
+
 
     const submitApplication = async (formData: FormData) => {
         try {
@@ -32,7 +36,7 @@ const ApplyPage = () => {
     return (
         <Stack spacing={1}>
             <Typography variant="h6">{LanguageTranslations.makeSureYouRead[language]}</Typography>
-            <Stack direction="row" alignItems={"center"}>
+            {termsOfMembershipUrl && <Stack direction="row" alignItems={"center"}>
                 <Checkbox
                     checked={termsAccepted.termsOfMembership}
                     onChange={(e) =>
@@ -54,15 +58,15 @@ const ApplyPage = () => {
                 >
                     {OrderLanguageTranslations.iHaveRead[language]}{" "}
                 </Typography>
-                {getTermsOfMembershipUrl(organizationSettings, language) &&
+                {termsOfMembershipUrl &&
                     <Link
-                        href={getTermsOfMembershipUrl(organizationSettings, language) as string}
+                        href={termsOfMembershipUrl as string}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         {LanguageTranslations.termsOfMembership[language]}
                     </Link>}
-            </Stack>
+            </Stack>}
 
             <Stack direction="row" alignItems={"center"}>
                 <Checkbox
@@ -86,9 +90,9 @@ const ApplyPage = () => {
                 >
                     {OrderLanguageTranslations.iHaveRead[language]}{" "}
                 </Typography>
-                {getPrivacyPolicyUrl(organizationSettings, language) &&
+                {privacyPolicyUrl &&
                     <Link
-                        href={getPrivacyPolicyUrl(organizationSettings, language) as string}
+                        href={privacyPolicyUrl as string}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
