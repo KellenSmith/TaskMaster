@@ -25,7 +25,7 @@ export const isRateLimitError = async (error: Error): Promise<boolean> => {
     const rateLimitPatterns = [
         "rate limit",
         "rate exceeded",
-        "throttl",
+        "throttle",
         "too many",
         "quota",
         "limit exceeded",
@@ -78,13 +78,13 @@ interface EmailPayload {
 }
 
 export const getEmailPayload = async (
-    receivers: string[],
+    emailRecipients: string[],
     subject: string,
     mailContent: ReactElement | string,
     replyTo?: string | null,
 ): Promise<EmailPayload> => {
     // Normalize and validate recipients
-    const recipients = (receivers || []).map((s) => z.email().parse((s || "").trim()));
+    const recipients = (emailRecipients || []).map((s) => z.email().parse((s || "").trim()));
     if (recipients.length === 0) {
         throw new Error("Invalid email address(es) provided");
     }
