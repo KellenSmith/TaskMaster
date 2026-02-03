@@ -17,6 +17,7 @@ type prismaOperations = {
 export type MockPrisma = {
     organizationSettings: prismaOperations;
     user: prismaOperations;
+    newsletterJob: prismaOperations;
     event: prismaOperations;
     eventParticipant: prismaOperations;
     eventReserve: prismaOperations;

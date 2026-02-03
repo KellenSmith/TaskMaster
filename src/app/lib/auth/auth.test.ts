@@ -46,16 +46,10 @@ vi.mock("../mail-service/mail-service", () => ({
 }));
 
 describe("auth.ts", () => {
-    const originalEnv = process.env;
 
     beforeEach(() => {
-        process.env = { ...originalEnv };
         nextAuthOptions = undefined;
         sendMailMock.mockClear();
-    });
-
-    afterEach(() => {
-        process.env = originalEnv;
     });
 
     const loadAuthModule = async (): Promise<NextAuthOptions> => {
