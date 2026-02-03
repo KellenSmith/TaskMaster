@@ -5,7 +5,11 @@
 import type { Transporter } from "nodemailer";
 const globalMailService = global as { mailTransport?: Transporter }; // Transporter type from nodemailer
 
-export async function getMailTransport() {
+export async function getMailTransport(): Promise<Transporter> {
+    if (!process.env.SMTP_PORT || !process.env.SMTP_HOST || !process.env.EMAIL || !process.env.EMAIL_PASSWORD) {
+        throw new Error("Mail env var configuration is incomplete. Make sure SMTP_PORT, SMTP_HOST, EMAIL, and EMAIL_PASSWORD are all set.");
+    }
+
     if (globalMailService.mailTransport) return globalMailService.mailTransport;
 
     // dynamic import so nodemailer is only required at runtime on a Node server
