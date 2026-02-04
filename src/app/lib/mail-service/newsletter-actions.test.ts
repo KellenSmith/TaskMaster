@@ -2,27 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockContext } from "../../../test/mocks/prismaMock";
 import GlobalConstants from "../../GlobalConstants";
 import { createNewsletterJob, deleteNewsletterJob, processNextNewsletterBatch } from "./newsletter-actions";
-import { getEmailPayload, isRateLimitError } from "./mail-service";
+import * as mailService from "./mail-service";
 import { getMailTransport } from "./mail-transport";
 import { revalidateTag } from "next/cache";
 import type { Transporter } from "nodemailer";
 
-vi.mock("next/cache", () => ({
-    revalidateTag: vi.fn(),
-}));
-
-vi.mock("../../../../prisma/prisma-client", () => ({
-    prisma: mockContext.prisma,
-}));
-
-vi.mock("./mail-service", () => ({
-    getEmailPayload: vi.fn(),
-    isRateLimitError: vi.fn(),
-}));
-
-vi.mock("./mail-transport", () => ({
-    getMailTransport: vi.fn(),
-}));
 
 const buildJob = (overrides: Partial<Record<string, any>> = {}) => ({
     id: "job-1",
@@ -40,11 +24,13 @@ const buildJob = (overrides: Partial<Record<string, any>> = {}) => ({
 
 describe("newsletter-actions", () => {
     const transportSendMail = vi.fn();
+    let getEmailPayloadSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
         vi.mocked(getMailTransport).mockResolvedValue({
             sendMail: transportSendMail,
         } as unknown as Transporter);
+        getEmailPayloadSpy = vi.spyOn(mailService, "getEmailPayload");
     });
 
     it("creates a newsletter job with sanitized recipients and batch size", async () => {
@@ -149,7 +135,7 @@ describe("newsletter-actions", () => {
 
         const result = await processNextNewsletterBatch();
 
-        expect(getEmailPayload).toHaveBeenCalledWith(
+        expect(getEmailPayloadSpy).toHaveBeenCalledWith(
             ["a@example.com", "b@example.com"],
             "Subject",
             "<p>Hi</p>",
@@ -209,7 +195,7 @@ describe("newsletter-actions", () => {
     it("handles rate limit errors without failing the job", async () => {
         mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(buildJob());
         transportSendMail.mockRejectedValue(new Error("Rate limit exceeded"));
-        vi.mocked(isRateLimitError).mockResolvedValue(true);
+        vi.spyOn(mailService, "isRateLimitError").mockResolvedValue(true);
 
         const result = await processNextNewsletterBatch();
 

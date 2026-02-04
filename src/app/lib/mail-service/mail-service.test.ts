@@ -20,7 +20,7 @@ vi.mock("./newsletter-actions", () => ({
     createNewsletterJob: vi.fn(),
 }));
 
-vi.mock("../../../../prisma/prisma-client", () => ({
+vi.mock("../../../prisma/prisma-client", () => ({
     prisma: mockContext.prisma,
 }));
 

@@ -62,7 +62,7 @@ describe("auth.ts", () => {
     };
 
     it("throws when EMAIL is not set", async () => {
-        delete process.env.EMAIL;
+        process.env.EMAIL = undefined
         await expect(import("./auth")).rejects.toThrowError(/EMAIL is not set/);
     });
 

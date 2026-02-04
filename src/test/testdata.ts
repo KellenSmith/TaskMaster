@@ -1,7 +1,35 @@
 import { Prisma, UserRole } from "@/prisma/generated/client";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
+
 
 const testdata = {
+    env: {
+        AUTH_SECRET: "test-auth-secret",
+        BLOB_HOSTNAME: "test-blob-hostname",
+        CRON_SECRET: "test-cron-secret",
+        DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+        BLOB_READ_WRITE_TOKEN: "test-blob-token",
+        EMAIL: "test@example.com",
+        EMAIL_PASSWORD: "test-password",
+        GOOGLE_SITE_VERIFICATION: "test-google-verification",
+        NEXT_PUBLIC_BASE_URL: "http://localhost:3000",
+        NEXT_PUBLIC_OFFER_MEMBERSHIP_SUBSCRIPTION: "true",
+        NEXT_PUBLIC_ORG_DESCRIPTION: "Test org",
+        NEXT_PUBLIC_ORG_NAME: "TaskMaster",
+        NEXT_PUBLIC_SEO_DESCRIPTION: "Test SEO",
+        NEXT_PUBLIC_SEO_KEYWORDS: "test,seo",
+        NEXT_PUBLIC_SEO_TITLE: "TaskMaster",
+        SMTP_HOST: "smtp.test",
+        SMTP_PORT: "587",
+        SWEDBANK_BASE_URL: "https://api.example.com",
+        SWEDBANK_PAY_ACCESS_TOKEN: "test-access-token",
+        SWEDBANK_PAY_PAYEE_ID: "00000000-0000-0000-0000-000000000000",
+        VERCEL_OIDC_TOKEN: "test-oidc",
+        VERCEL_PROJECT_PRODUCTION_URL: "localhost:3000",
+    },
     // Mock user data for testing
     user: {
         id: "test-user-id",
@@ -126,6 +154,7 @@ const testdata = {
         "prod-1234-5678": 2,
         "prod-5678-9abc": 1,
     },
+
 };
 
 export default testdata;
