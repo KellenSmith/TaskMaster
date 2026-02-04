@@ -50,11 +50,12 @@ const createFallbackNewsletterJob = async (
 ): Promise<{ id: string; total: number; batchSize: number }> => {
     const recipientCount = recipients.length;
     let batchSize = 250;
-    if (recipientCount <= 250)
-        batchSize = 50; // Medium batches for medium groups
+    if (recipientCount <= 10)
+        batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
     else if (recipientCount <= 100)
         batchSize = Math.min(recipientCount, 25); // Small batches for small groups
-    else if (recipientCount <= 10) batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
+    else if (recipientCount <= 250)
+        batchSize = 50; // Medium batches for medium groups
 
     return await createNewsletterJob({
         subject,
