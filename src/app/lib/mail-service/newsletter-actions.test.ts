@@ -58,9 +58,32 @@ describe("newsletter-actions", () => {
         expect(result).toEqual({ id: "job-123", total: 2, batchSize: 250 });
     });
 
+    it("deduplicates and filters recipients before creation", async () => {
+        mockContext.prisma.newsletterJob.create.mockResolvedValue({ id: "job-dup" });
+
+        await createNewsletterJob({
+            subject: "Hello",
+            html: "<p>Content</p>",
+            recipients: ["", "a@example.com", "a@example.com", "b@example.com"],
+            batchSize: 10,
+        });
+
+        expect(mockContext.prisma.newsletterJob.create).toHaveBeenCalledWith({
+            data: expect.objectContaining({
+                recipients: ["a@example.com", "b@example.com"],
+            }),
+        });
+    });
+
     it("throws when creating a job with no recipients", async () => {
         await expect(
             createNewsletterJob({ subject: "Hi", html: "<p>Content</p>", recipients: [] }),
+        ).rejects.toThrow("No recipients provided");
+    });
+
+    it("throws when recipients are undefined", async () => {
+        await expect(
+            createNewsletterJob({ subject: "Hi", html: "<p>Content</p>", recipients: undefined as any }),
         ).rejects.toThrow("No recipients provided");
     });
 
@@ -127,6 +150,20 @@ describe("newsletter-actions", () => {
         expect(transportSendMail).not.toHaveBeenCalled();
     });
 
+    it("treats missing recipients as empty and deletes the job", async () => {
+        mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(
+            buildJob({ recipients: undefined, cursor: 0 }),
+        );
+        mockContext.prisma.newsletterJob.delete.mockResolvedValue({ id: "job-1" });
+
+        const result = await processNextNewsletterBatch();
+
+        expect(mockContext.prisma.newsletterJob.delete).toHaveBeenCalledWith({
+            where: { id: "job-1" },
+        });
+        expect(result).toEqual({ processed: 0, done: true, message: "Already complete" });
+    });
+
     it("processes a batch and updates cursor for ongoing jobs", async () => {
         mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(
             buildJob({ recipients: ["a@example.com", "b@example.com", "c@example.com"] }),
@@ -180,6 +217,17 @@ describe("newsletter-actions", () => {
         });
     });
 
+    it("counts accepted as zero when transport response omits accepted", async () => {
+        mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(buildJob());
+        mockContext.prisma.newsletterJob.delete.mockResolvedValue({ id: "job-1" });
+        transportSendMail.mockResolvedValue({});
+
+        const result = await processNextNewsletterBatch();
+
+        expect(result.processed).toBe(0);
+        expect(mockContext.prisma.newsletterJob.delete).toHaveBeenCalled();
+    });
+
     it("retrieves job by id when provided", async () => {
         mockContext.prisma.newsletterJob.findUnique.mockResolvedValue(buildJob());
         transportSendMail.mockResolvedValue({ accepted: 2 });
@@ -211,6 +259,27 @@ describe("newsletter-actions", () => {
     it("marks job failed on non-rate-limit errors", async () => {
         mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(buildJob());
         transportSendMail.mockRejectedValue(new Error("SMTP down"));
+
+        const result = await processNextNewsletterBatch();
+
+        expect(mockContext.prisma.newsletterJob.update).toHaveBeenCalledWith({
+            where: { id: "job-1" },
+            data: expect.objectContaining({
+                status: "failed",
+                error: "SMTP down",
+            }),
+        });
+        expect(result).toEqual({
+            jobId: "job-1",
+            processed: 0,
+            done: false,
+            error: "SMTP down",
+        });
+    });
+
+    it("stores string errors when mail transport rejects with a string", async () => {
+        mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(buildJob());
+        transportSendMail.mockRejectedValue("SMTP down");
 
         const result = await processNextNewsletterBatch();
 
