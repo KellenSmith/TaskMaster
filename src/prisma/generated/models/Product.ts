@@ -45,7 +45,6 @@ export type ProductMinAggregateOutputType = {
   price: number | null
   vat_percentage: number | null
   stock: number | null
-  unlimited_stock: boolean | null
   image_url: string | null
 }
 
@@ -56,7 +55,6 @@ export type ProductMaxAggregateOutputType = {
   price: number | null
   vat_percentage: number | null
   stock: number | null
-  unlimited_stock: boolean | null
   image_url: string | null
 }
 
@@ -67,7 +65,6 @@ export type ProductCountAggregateOutputType = {
   price: number
   vat_percentage: number
   stock: number
-  unlimited_stock: number
   image_url: number
   _all: number
 }
@@ -92,7 +89,6 @@ export type ProductMinAggregateInputType = {
   price?: true
   vat_percentage?: true
   stock?: true
-  unlimited_stock?: true
   image_url?: true
 }
 
@@ -103,7 +99,6 @@ export type ProductMaxAggregateInputType = {
   price?: true
   vat_percentage?: true
   stock?: true
-  unlimited_stock?: true
   image_url?: true
 }
 
@@ -114,7 +109,6 @@ export type ProductCountAggregateInputType = {
   price?: true
   vat_percentage?: true
   stock?: true
-  unlimited_stock?: true
   image_url?: true
   _all?: true
 }
@@ -212,7 +206,6 @@ export type ProductGroupByOutputType = {
   price: number
   vat_percentage: number
   stock: number | null
-  unlimited_stock: boolean
   image_url: string | null
   _count: ProductCountAggregateOutputType | null
   _avg: ProductAvgAggregateOutputType | null
@@ -246,7 +239,6 @@ export type ProductWhereInput = {
   price?: Prisma.FloatFilter<"Product"> | number
   vat_percentage?: Prisma.IntFilter<"Product"> | number
   stock?: Prisma.IntNullableFilter<"Product"> | number | null
-  unlimited_stock?: Prisma.BoolFilter<"Product"> | boolean
   image_url?: Prisma.StringNullableFilter<"Product"> | string | null
   membership?: Prisma.XOR<Prisma.MembershipNullableScalarRelationFilter, Prisma.MembershipWhereInput> | null
   ticket?: Prisma.XOR<Prisma.TicketNullableScalarRelationFilter, Prisma.TicketWhereInput> | null
@@ -260,7 +252,6 @@ export type ProductOrderByWithRelationInput = {
   price?: Prisma.SortOrder
   vat_percentage?: Prisma.SortOrder
   stock?: Prisma.SortOrderInput | Prisma.SortOrder
-  unlimited_stock?: Prisma.SortOrder
   image_url?: Prisma.SortOrderInput | Prisma.SortOrder
   membership?: Prisma.MembershipOrderByWithRelationInput
   ticket?: Prisma.TicketOrderByWithRelationInput
@@ -277,7 +268,6 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   price?: Prisma.FloatFilter<"Product"> | number
   vat_percentage?: Prisma.IntFilter<"Product"> | number
   stock?: Prisma.IntNullableFilter<"Product"> | number | null
-  unlimited_stock?: Prisma.BoolFilter<"Product"> | boolean
   image_url?: Prisma.StringNullableFilter<"Product"> | string | null
   membership?: Prisma.XOR<Prisma.MembershipNullableScalarRelationFilter, Prisma.MembershipWhereInput> | null
   ticket?: Prisma.XOR<Prisma.TicketNullableScalarRelationFilter, Prisma.TicketWhereInput> | null
@@ -291,7 +281,6 @@ export type ProductOrderByWithAggregationInput = {
   price?: Prisma.SortOrder
   vat_percentage?: Prisma.SortOrder
   stock?: Prisma.SortOrderInput | Prisma.SortOrder
-  unlimited_stock?: Prisma.SortOrder
   image_url?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProductCountOrderByAggregateInput
   _avg?: Prisma.ProductAvgOrderByAggregateInput
@@ -310,7 +299,6 @@ export type ProductScalarWhereWithAggregatesInput = {
   price?: Prisma.FloatWithAggregatesFilter<"Product"> | number
   vat_percentage?: Prisma.IntWithAggregatesFilter<"Product"> | number
   stock?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
-  unlimited_stock?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   image_url?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
 }
 
@@ -321,7 +309,6 @@ export type ProductCreateInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   membership?: Prisma.MembershipCreateNestedOneWithoutProductInput
   ticket?: Prisma.TicketCreateNestedOneWithoutProductInput
@@ -335,7 +322,6 @@ export type ProductUncheckedCreateInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   membership?: Prisma.MembershipUncheckedCreateNestedOneWithoutProductInput
   ticket?: Prisma.TicketUncheckedCreateNestedOneWithoutProductInput
@@ -349,7 +335,6 @@ export type ProductUpdateInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   membership?: Prisma.MembershipUpdateOneWithoutProductNestedInput
   ticket?: Prisma.TicketUpdateOneWithoutProductNestedInput
@@ -363,7 +348,6 @@ export type ProductUncheckedUpdateInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   membership?: Prisma.MembershipUncheckedUpdateOneWithoutProductNestedInput
   ticket?: Prisma.TicketUncheckedUpdateOneWithoutProductNestedInput
@@ -377,7 +361,6 @@ export type ProductCreateManyInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
 }
 
@@ -388,7 +371,6 @@ export type ProductUpdateManyMutationInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -399,7 +381,6 @@ export type ProductUncheckedUpdateManyInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -410,7 +391,6 @@ export type ProductCountOrderByAggregateInput = {
   price?: Prisma.SortOrder
   vat_percentage?: Prisma.SortOrder
   stock?: Prisma.SortOrder
-  unlimited_stock?: Prisma.SortOrder
   image_url?: Prisma.SortOrder
 }
 
@@ -427,7 +407,6 @@ export type ProductMaxOrderByAggregateInput = {
   price?: Prisma.SortOrder
   vat_percentage?: Prisma.SortOrder
   stock?: Prisma.SortOrder
-  unlimited_stock?: Prisma.SortOrder
   image_url?: Prisma.SortOrder
 }
 
@@ -438,7 +417,6 @@ export type ProductMinOrderByAggregateInput = {
   price?: Prisma.SortOrder
   vat_percentage?: Prisma.SortOrder
   stock?: Prisma.SortOrder
-  unlimited_stock?: Prisma.SortOrder
   image_url?: Prisma.SortOrder
 }
 
@@ -510,7 +488,6 @@ export type ProductCreateWithoutMembershipInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   ticket?: Prisma.TicketCreateNestedOneWithoutProductInput
   order_items?: Prisma.OrderItemCreateNestedManyWithoutProductInput
@@ -523,7 +500,6 @@ export type ProductUncheckedCreateWithoutMembershipInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   ticket?: Prisma.TicketUncheckedCreateNestedOneWithoutProductInput
   order_items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
@@ -552,7 +528,6 @@ export type ProductUpdateWithoutMembershipInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ticket?: Prisma.TicketUpdateOneWithoutProductNestedInput
   order_items?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
@@ -565,7 +540,6 @@ export type ProductUncheckedUpdateWithoutMembershipInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ticket?: Prisma.TicketUncheckedUpdateOneWithoutProductNestedInput
   order_items?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
@@ -578,7 +552,6 @@ export type ProductCreateWithoutTicketInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   membership?: Prisma.MembershipCreateNestedOneWithoutProductInput
   order_items?: Prisma.OrderItemCreateNestedManyWithoutProductInput
@@ -591,7 +564,6 @@ export type ProductUncheckedCreateWithoutTicketInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   membership?: Prisma.MembershipUncheckedCreateNestedOneWithoutProductInput
   order_items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
@@ -620,7 +592,6 @@ export type ProductUpdateWithoutTicketInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   membership?: Prisma.MembershipUpdateOneWithoutProductNestedInput
   order_items?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
@@ -633,7 +604,6 @@ export type ProductUncheckedUpdateWithoutTicketInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   membership?: Prisma.MembershipUncheckedUpdateOneWithoutProductNestedInput
   order_items?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
@@ -646,7 +616,6 @@ export type ProductCreateWithoutOrder_itemsInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   membership?: Prisma.MembershipCreateNestedOneWithoutProductInput
   ticket?: Prisma.TicketCreateNestedOneWithoutProductInput
@@ -659,7 +628,6 @@ export type ProductUncheckedCreateWithoutOrder_itemsInput = {
   price?: number
   vat_percentage?: number
   stock?: number | null
-  unlimited_stock?: boolean
   image_url?: string | null
   membership?: Prisma.MembershipUncheckedCreateNestedOneWithoutProductInput
   ticket?: Prisma.TicketUncheckedCreateNestedOneWithoutProductInput
@@ -688,7 +656,6 @@ export type ProductUpdateWithoutOrder_itemsInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   membership?: Prisma.MembershipUpdateOneWithoutProductNestedInput
   ticket?: Prisma.TicketUpdateOneWithoutProductNestedInput
@@ -701,7 +668,6 @@ export type ProductUncheckedUpdateWithoutOrder_itemsInput = {
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   vat_percentage?: Prisma.IntFieldUpdateOperationsInput | number
   stock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unlimited_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   membership?: Prisma.MembershipUncheckedUpdateOneWithoutProductNestedInput
   ticket?: Prisma.TicketUncheckedUpdateOneWithoutProductNestedInput
@@ -745,7 +711,6 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   price?: boolean
   vat_percentage?: boolean
   stock?: boolean
-  unlimited_stock?: boolean
   image_url?: boolean
   membership?: boolean | Prisma.Product$membershipArgs<ExtArgs>
   ticket?: boolean | Prisma.Product$ticketArgs<ExtArgs>
@@ -760,7 +725,6 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   price?: boolean
   vat_percentage?: boolean
   stock?: boolean
-  unlimited_stock?: boolean
   image_url?: boolean
 }, ExtArgs["result"]["product"]>
 
@@ -771,7 +735,6 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   price?: boolean
   vat_percentage?: boolean
   stock?: boolean
-  unlimited_stock?: boolean
   image_url?: boolean
 }, ExtArgs["result"]["product"]>
 
@@ -782,11 +745,10 @@ export type ProductSelectScalar = {
   price?: boolean
   vat_percentage?: boolean
   stock?: boolean
-  unlimited_stock?: boolean
   image_url?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "price" | "vat_percentage" | "stock" | "unlimited_stock" | "image_url", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "price" | "vat_percentage" | "stock" | "image_url", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   membership?: boolean | Prisma.Product$membershipArgs<ExtArgs>
   ticket?: boolean | Prisma.Product$ticketArgs<ExtArgs>
@@ -810,7 +772,6 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     price: number
     vat_percentage: number
     stock: number | null
-    unlimited_stock: boolean
     image_url: string | null
   }, ExtArgs["result"]["product"]>
   composites: {}
@@ -1244,7 +1205,6 @@ export interface ProductFieldRefs {
   readonly price: Prisma.FieldRef<"Product", 'Float'>
   readonly vat_percentage: Prisma.FieldRef<"Product", 'Int'>
   readonly stock: Prisma.FieldRef<"Product", 'Int'>
-  readonly unlimited_stock: Prisma.FieldRef<"Product", 'Boolean'>
   readonly image_url: Prisma.FieldRef<"Product", 'String'>
 }
     
