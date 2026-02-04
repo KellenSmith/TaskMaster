@@ -205,10 +205,12 @@ const Form: FC<FormProps> = ({
                 addNotification(submitResult, "success");
                 if (!(editable && !readOnly)) setEditMode(false);
             } catch (error) {
+                console.log("Error caught in Form submitForm:");
                 allowRedirectException(error);
-                if (error instanceof Error)
-                    addNotification(error.message, "error");
-                throw error;
+                if (error && typeof error === "object" && "message" in error)
+                    addNotification(error.message as string, "error");
+                else
+                    throw error;
             }
         });
     };

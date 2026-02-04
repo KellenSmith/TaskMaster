@@ -6,7 +6,7 @@ import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../../ui/utils";
 import { useRouter } from "next/navigation";
-import { EventStatus, Prisma } from "@prisma/client";
+import { EventStatus, Prisma } from "@/prisma/generated/browser";
 import { clientRedirect } from "../../lib/utils";
 
 export interface CalendarEventProps {

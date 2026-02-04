@@ -12,7 +12,7 @@ import {
     TableHead,
     TableRow,
 } from "@mui/material";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import { formatPrice } from "../../ui/utils";
 import { useUserContext } from "../../context/UserContext";
 import ProductLanguageTranslations from "../products/LanguageTranslations";

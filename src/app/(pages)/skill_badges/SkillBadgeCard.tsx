@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { SkillBadge } from "@prisma/client";
+import { SkillBadge } from "@/prisma/generated/browser";
 import Image from "next/image";
 import {
     Card,

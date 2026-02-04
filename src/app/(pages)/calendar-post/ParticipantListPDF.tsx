@@ -5,7 +5,7 @@ import { formatDate } from "../../ui/utils";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useMemo } from "react";
 import dayjs from "dayjs";
-import { Language, Prisma } from "@prisma/client";
+import { Language, Prisma } from "@/prisma/generated/client";
 
 interface ParticipantListPDFProps {
     event: Prisma.EventGetPayload<true>;

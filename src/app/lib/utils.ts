@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { Prisma, UserRole } from "@prisma/client";
+import { Prisma, UserRole } from "@/prisma/generated/browser";
 import { redirect } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 

@@ -2,7 +2,7 @@
 
 import MembersDashboard from "./MembersDashboard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const MembersPage = async () => {
 

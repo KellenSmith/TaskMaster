@@ -14,7 +14,7 @@ import {
     useMediaQuery,
     Button,
 } from "@mui/material";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { use, useState, useTransition } from "react";
 import { isUserHost } from "../../lib/utils";
 import { Add, Delete, Person } from "@mui/icons-material";

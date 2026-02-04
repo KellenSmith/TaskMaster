@@ -1,8 +1,8 @@
 "use server";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import { getLoggedInUser } from "./user-actions";
 import { InfoPageCreateSchema, UuidSchema } from "./zod-schemas";
-import { Language, Prisma, UserRole } from "@prisma/client";
+import { Language, Prisma, UserRole } from "@/prisma/generated/client";
 import { serverRedirect } from "./utils";
 import GlobalConstants from "../GlobalConstants";
 import { createTextContent } from "./text-content-actions";

@@ -2,7 +2,7 @@ import { Text, Button } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import mailTheme from "../mail-theme";
 import { FC } from "react";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 import GlobalConstants from "../../../GlobalConstants";
 import { getAbsoluteUrl } from "../../utils";
 

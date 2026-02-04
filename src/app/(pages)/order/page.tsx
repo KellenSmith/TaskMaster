@@ -3,7 +3,7 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import GlobalConstants from "../../GlobalConstants";
 import OrderDashboard from "./OrderDashboard";
 import { getLoggedInUser } from "../../lib/user-actions";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import { isUserAdmin } from "../../lib/utils";
 
 interface OrderPageProps {

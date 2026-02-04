@@ -3,7 +3,7 @@ import { Stack } from "@mui/material";
 import React from "react";
 import GlobalConstants from "../../GlobalConstants";
 import TextContent from "../../ui/TextContent";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 
 interface ContactDashboardProps {
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;

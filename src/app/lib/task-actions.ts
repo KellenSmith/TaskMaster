@@ -1,7 +1,7 @@
 "use server";
 
-import { Prisma, TaskStatus, TicketType } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { Prisma, TaskStatus, TicketType } from "@/prisma/generated/client";
+import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema, UuidSchema } from "./zod-schemas";

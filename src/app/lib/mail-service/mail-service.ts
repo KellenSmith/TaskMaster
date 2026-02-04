@@ -3,8 +3,8 @@
 import { getMailTransport } from "./mail-transport";
 import { createElement, ReactElement } from "react";
 import { render } from "@react-email/components";
-import { prisma } from "../../../../prisma/prisma-client";
-import { Prisma } from "@prisma/client";
+import { prisma } from "../../../prisma/prisma-client";
+import { Prisma } from "@/prisma/generated/client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { EmailSendoutSchema } from "../zod-schemas";

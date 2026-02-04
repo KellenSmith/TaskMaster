@@ -1,7 +1,7 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { Prisma } from "@/prisma/generated/client";
+import { prisma } from "../../prisma/prisma-client";
 import {
     MembershipWithoutProductSchema,
     ProductCreateSchema,
@@ -119,7 +119,7 @@ export const processOrderedProduct = async (
         include: { product: { include: { membership: true; ticket: true } } };
     }>,
 ) => {
-    if (!orderItem.product.unlimited_stock && (orderItem.product.stock && orderItem.quantity > orderItem.product.stock))
+    if (orderItem.product.stock !== null && orderItem.quantity > orderItem.product.stock)
         throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
     for (let i = 0; i < orderItem.quantity; i++) {
         if (orderItem.product.membership) {

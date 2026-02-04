@@ -4,7 +4,7 @@ import Datagrid, { ImplementedDatagridEntities } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { OrderUpdateSchema } from "../../lib/zod-schemas";
 import { GridColDef, GridRowParams } from "@mui/x-data-grid";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import { FieldLabels } from "../../ui/form/FieldCfg";

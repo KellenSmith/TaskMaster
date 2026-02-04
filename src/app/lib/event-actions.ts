@@ -1,7 +1,7 @@
 "use server";
 
-import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { EventStatus, Prisma, TaskStatus, TicketType } from "@/prisma/generated/client";
+import { prisma } from "../../prisma/prisma-client";
 import { CloneEventSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";

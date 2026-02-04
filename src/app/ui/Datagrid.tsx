@@ -15,7 +15,7 @@ import ConfirmButton from "./ConfirmButton";
 import { formatDate, formatPrice } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
-import { Prisma, Product } from "@prisma/client";
+import { Prisma, Product } from "@/prisma/generated/browser";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
@@ -258,8 +258,8 @@ const Datagrid: React.FC<DatagridProps> = ({
                 setClickedRow(null);
                 addNotification(result, "success");
             } catch (error) {
-                if (error instanceof Error)
-                    addNotification(error.message, "error");
+                if (error && typeof error === "object" && "message" in error)
+                    addNotification(error.message as string, "error");
                 throw error
             }
         });

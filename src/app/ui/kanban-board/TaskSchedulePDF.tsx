@@ -3,7 +3,7 @@ import { formatDate } from "../utils";
 import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-utils";
 import dayjs from "dayjs";
 import { styles } from "../pdf-styles";
-import { Prisma } from "../../../../prisma/generated/browser";
+import { Prisma } from "../../../prisma/generated/browser";
 
 const customStyles = {
     // Add new column-specific styles

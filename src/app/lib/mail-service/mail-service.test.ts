@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 import { mockContext } from "../../../test/mocks/prismaMock";
 import { getMailTransport } from "./mail-transport";
 import { createNewsletterJob } from "./newsletter-actions";

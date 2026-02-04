@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { UserRole, UserStatus } from "@prisma/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session, User } from "next-auth";
 import type { JWT } from "@auth/core/jwt";
 import dayjs from "dayjs";
+import { UserRole, UserStatus } from "../../../prisma/generated/enums";
 
 type NextAuthOptions = {
     session: { strategy: string };

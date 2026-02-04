@@ -13,7 +13,7 @@ import {
     Fab,
     Box,
 } from "@mui/material";
-import { Prisma, TaskStatus } from "@prisma/client";
+import { Prisma, TaskStatus } from "@/prisma/generated/client";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";

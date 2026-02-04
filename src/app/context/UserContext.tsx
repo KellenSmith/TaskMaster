@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, FC, ReactNode, useContext, useState, useEffect, use } from "react";
-import { Language, Prisma } from "@prisma/client";
+import { Language, Prisma } from "@/prisma/generated/browser";
 import GlobalConstants from "../GlobalConstants";
 
 interface UserContextValue {

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { EventStatus, Prisma, Task } from "@prisma/client";
+import { EventStatus, Prisma, Task } from "@/prisma/generated/client";
 
 export const isEventPublished = (event: Prisma.EventGetPayload<true>) =>
     event.status === EventStatus.published;

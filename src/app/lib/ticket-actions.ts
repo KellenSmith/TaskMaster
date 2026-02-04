@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { ProductCreateSchema, TicketWithoutRelationsSchema, UuidSchema } from "./zod-schemas";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 
 export const createEventTicket = async (eventId: string, formData: FormData) => {
     // Validate event ID format

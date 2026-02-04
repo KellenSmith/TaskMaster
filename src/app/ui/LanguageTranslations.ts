@@ -1,4 +1,4 @@
-import { Language, UserRole } from "@prisma/client";
+import { Language, UserRole } from "@/prisma/generated/browser";
 import GlobalConstants from "../GlobalConstants";
 
 const LanguageTranslations = {

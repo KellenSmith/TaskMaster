@@ -1,4 +1,4 @@
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@/prisma/generated/client";
 
 export enum PaymentState {
     Paid = "Paid", // eslint-disable-line no-unused-vars

@@ -6,7 +6,7 @@ import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
 import { isMembershipExpired, clientRedirect } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import GlobalConstants from "../../GlobalConstants";

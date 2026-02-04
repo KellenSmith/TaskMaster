@@ -1,4 +1,4 @@
-import { Language } from "@prisma/client";
+import { Language } from "@/prisma/generated/browser";
 import dayjs from "dayjs";
 import localeData from "dayjs/plugin/localeData";
 

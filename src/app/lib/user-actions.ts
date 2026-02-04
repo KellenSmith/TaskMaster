@@ -1,7 +1,7 @@
 "use server";
 
-import { Language, Prisma, UserRole, UserStatus } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { Language, Prisma, UserRole, UserStatus } from "@/prisma/generated/client";
+import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { revalidateTag } from "next/cache";

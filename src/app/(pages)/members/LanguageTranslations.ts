@@ -1,4 +1,4 @@
-import { Language } from "@prisma/client";
+import { Language } from "@/prisma/generated/browser";
 
 const LanguageTranslations = {
     validateMembership: {

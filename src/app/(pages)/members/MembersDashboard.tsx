@@ -15,7 +15,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { isMembershipExpired } from "../../lib/utils";
-import { Prisma, UserStatus } from "@prisma/client";
+import { Prisma, UserStatus } from "@/prisma/generated/browser";
 import { AddMembershipSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import {

@@ -1,7 +1,7 @@
 "use server";
 import OrdersDashboard from "./OrdersDashboard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const OrdersPage = () => {
     const ordersPromise = prisma.order.findMany({

@@ -1,5 +1,5 @@
 "use client";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import PaymentHandler from "./PaymentHandler";
 import OrderSummary from "./OrderSummary";
 import { use, useEffect, useTransition } from "react";

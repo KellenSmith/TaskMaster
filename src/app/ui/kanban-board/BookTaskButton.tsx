@@ -1,5 +1,5 @@
 "use client";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import ConfirmButton from "../ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";

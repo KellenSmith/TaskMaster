@@ -1,7 +1,7 @@
 "use server";
 
 import { SkillBadgeCreateSchema, UuidSchema } from "./zod-schemas";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { deleteOldBlob } from "./organization-settings-actions";

@@ -1,6 +1,6 @@
 import { SyntheticEvent } from "react";
 
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 import { use, useState, useTransition } from "react";
 import {
     Autocomplete,

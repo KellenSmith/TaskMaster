@@ -1,4 +1,4 @@
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import SkillBadgesDashboard from "./SkillBadgesDashboard";
 

@@ -2,7 +2,7 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import { isUserAdmin } from "../../lib/utils";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const TasksPage = async () => {
     const loggedInUser = await getLoggedInUser();

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, FC, ReactNode, use, useContext } from "react";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { CircularProgress } from "@mui/material";
 
 interface OrganizationSettingsContextValue {
