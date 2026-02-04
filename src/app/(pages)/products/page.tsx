@@ -1,6 +1,6 @@
 import ProductsDashboard from "./ProductsDashboard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const ProductsPage = () => {
     const productsPromise = prisma.product.findMany({

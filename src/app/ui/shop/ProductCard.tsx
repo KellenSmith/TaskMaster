@@ -22,7 +22,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { Lock } from "@mui/icons-material";
 import { formatPrice } from "../utils";
 import RichTextField from "../form/RichTextField";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
@@ -49,15 +49,15 @@ export default function ProductCard({
     const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
 
     const getStockChipLabel = () => {
-        if (product.unlimited_stock || (product.stock && product.stock > 5)) {
+        if (product.stock == 0) return ProductLanguageTranslations.outOfStock[language];
+        if (product.stock === null || (product.stock && product.stock > 5)) {
             return ProductLanguageTranslations.inStock[language];
         }
-        if (!product.stock) return ProductLanguageTranslations.outOfStock[language];
         return `${product.stock} ${ProductLanguageTranslations.left[language]}`;
     };
 
     const getStockChipColor = () => {
-        if (product.unlimited_stock || (product.stock && product.stock > 5)) {
+        if (!product.stock || (product.stock && product.stock > 5)) {
             return "success";
         }
         if (!product.stock) return "error";
@@ -225,10 +225,7 @@ export default function ProductCard({
                         {onAddToCart && (
                             <Button
                                 onClick={() => onAddToCart(product.id)}
-                                disabled={
-                                    !isAvailable ||
-                                    (!product.unlimited_stock && product.stock === 0)
-                                }
+                                disabled={!isAvailable || product.stock === 0}
                                 fullWidth={isSmDown}
                                 variant="contained"
                             >

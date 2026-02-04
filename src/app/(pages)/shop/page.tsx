@@ -1,6 +1,6 @@
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import ShopDashboard from "./ShopDashboard";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const ShopPage = () => {
     const productsPromise = prisma.product.findMany({

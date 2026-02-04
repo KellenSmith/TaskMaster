@@ -16,7 +16,7 @@ import { FC, useCallback, useEffect, useState } from "react";
 import GlobalConstants from "../../GlobalConstants";
 import { sendMassEmail, getEmailRecipientCount } from "../../lib/mail-service/mail-service";
 import Form from "../../ui/form/Form";
-import { Language, Prisma, UserStatus } from "@prisma/client";
+import { Language, Prisma, UserStatus } from "@/prisma/generated/browser";
 import { ExpandMore } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";

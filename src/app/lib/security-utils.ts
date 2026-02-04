@@ -98,7 +98,7 @@ export interface EnvCheck {
 export function validateEnvironmentVariables(): EnvCheck[] {
     const requiredVars: Array<{ name: string; isPublic: boolean; recommendation?: string }> = [
         {
-            name: "PRISMA_DATABASE_URL",
+            name: "DATABASE_URL",
             isPublic: false,
             recommendation: "Database connection string is required",
         },

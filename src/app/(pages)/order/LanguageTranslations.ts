@@ -1,4 +1,4 @@
-import { Language, OrderStatus, Prisma } from "@prisma/client";
+import { Language, OrderStatus, Prisma } from "@/prisma/generated/browser";
 
 const LanguageTranslations = {
     failedCheckOrderStatus: {

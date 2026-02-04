@@ -1,7 +1,7 @@
 "use server";
 import ProfileDashboard from "./ProfileDashboard";
 import { getLoggedInUser } from "../../lib/user-actions";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();

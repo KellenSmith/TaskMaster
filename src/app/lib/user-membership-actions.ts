@@ -2,8 +2,8 @@
 
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { prisma } from "../../../prisma/prisma-client";
-import { Language, Prisma } from "@prisma/client";
+import { prisma } from "../../prisma/prisma-client";
+import { Language, Prisma } from "@/prisma/generated/client";
 import { createAndRedirectToOrder } from "./order-actions";
 import { getAbsoluteUrl, isMembershipExpired, isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
@@ -175,8 +175,7 @@ export const getMembershipProduct = async (): Promise<
             name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,
             description: "Annual membership",
             price: 0,
-            unlimited_stock: true,
-
+            stock: null,
             membership: {
                 create: {
                     duration: 365,

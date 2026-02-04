@@ -3,7 +3,7 @@ import MailTemplate from "./MailTemplate";
 import { FC } from "react";
 import GlobalConstants from "../../../GlobalConstants";
 import { getAbsoluteUrl } from "../../utils";
-import { Prisma } from "../../../../../prisma/generated/client";
+import { Prisma } from "../../../../prisma/generated/client";
 
 interface EventCancelledTemplateProps {
     event: Prisma.EventGetPayload<{ select: { id: true; title: true } }>;

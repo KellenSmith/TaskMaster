@@ -5,7 +5,7 @@ import { FC } from "react";
 import { getLoggedInUser } from "../../lib/user-actions";
 import { userHasRolePrivileges } from "../../lib/auth/auth-utils";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 interface InfoPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;

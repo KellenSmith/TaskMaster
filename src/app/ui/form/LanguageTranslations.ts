@@ -1,4 +1,4 @@
-import { Language, OrderStatus, TaskStatus, TicketType, UserRole } from "@prisma/client";
+import { Language, OrderStatus, TaskStatus, TicketType, UserRole } from "@/prisma/generated/browser";
 import GlobalConstants from "../../GlobalConstants";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 import LanguageTranslations from "../../(pages)/profile/LanguageTranslations";
@@ -299,7 +299,6 @@ export const productFieldLabels = {
     [GlobalConstants.PRICE]: ProductLanguageTranslations.price,
     [GlobalConstants.VAT_PERCENTAGE]: ProductLanguageTranslations.vat_percentage,
     [GlobalConstants.STOCK]: ProductLanguageTranslations.stock,
-    [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations[GlobalConstants.UNLIMITED_STOCK],
     [GlobalConstants.IMAGE_URL]: {
         [Language.english]: "Image",
         [Language.swedish]: "Bild",

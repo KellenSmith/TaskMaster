@@ -5,7 +5,7 @@ import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
 import RichTextField from "../../ui/form/RichTextField";
-import { Prisma } from "../../../../prisma/generated/client";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface LocationDashboardProps {
     location: Prisma.LocationGetPayload<{}>;

@@ -1,4 +1,4 @@
-import { EventStatus, Language, Prisma, UserRole } from "@prisma/client";
+import { EventStatus, Language, Prisma, UserRole } from "@/prisma/generated/browser";
 import { isMembershipExpired } from "../../lib/utils";
 import UILanguageTranslations from "../../ui/LanguageTranslations";
 import GlobalConstants from "../../GlobalConstants";

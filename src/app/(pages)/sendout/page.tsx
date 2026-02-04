@@ -1,6 +1,6 @@
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import SendoutDashboard from "./SendoutDashboard";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const SendoutPage = () => {
     const newsLetterJobsPromise = prisma.newsletterJob.findMany({

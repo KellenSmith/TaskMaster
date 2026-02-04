@@ -1,9 +1,9 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
 
@@ -53,7 +53,7 @@ export const addEventParticipantWithTx = async (
                 event_id: ticket.event_id,
             },
             NOT: {
-                unlimited_stock: true,
+                stock: null,
             },
         },
         data: {
@@ -120,7 +120,7 @@ export const deleteEventParticipantWithTx = async (
                 event_id: eventId,
             },
             NOT: {
-                unlimited_stock: true,
+                stock: null,
             },
         },
         data: {

@@ -1,6 +1,6 @@
 "use client";
 import { Divider, Stack } from "@mui/material";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { use } from "react";
 import { userHasSkillBadge } from "../../ui/utils";
 import { useUserContext } from "../../context/UserContext";

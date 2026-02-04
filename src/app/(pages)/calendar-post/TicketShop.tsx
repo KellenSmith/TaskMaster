@@ -1,7 +1,7 @@
 "use client";
 import { use, useState } from "react";
 import { Stack, Typography, useTheme, Button, Dialog, useMediaQuery } from "@mui/material";
-import { Prisma, TicketType } from "@prisma/client";
+import { Prisma, TicketType } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import { createAndRedirectToOrder } from "../../lib/order-actions";
 import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";

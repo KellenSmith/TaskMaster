@@ -3,7 +3,7 @@
 import { Button, Dialog, Divider, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { use, useState, useTransition } from "react";
 import LocationCard from "./LocationCard";
-import { Location } from "@prisma/client";
+import { Location } from "@/prisma/generated/browser";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { LocationCreateSchema } from "../../lib/zod-schemas";

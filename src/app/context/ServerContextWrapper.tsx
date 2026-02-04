@@ -2,8 +2,8 @@ import { ReactNode, FC } from "react";
 import ContextWrapper from "./ContextWrapper";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
 import { getLoggedInUser } from "../lib/user-actions";
-import { prisma } from "../../../prisma/prisma-client";
-import { Prisma, UserRole } from "@prisma/client";
+import { prisma } from "../../prisma/prisma-client";
+import { Prisma, UserRole } from "@/prisma/generated/client";
 import { userHasRolePrivileges } from "../lib/auth/auth-utils";
 
 interface ServerContextWrapperProps {

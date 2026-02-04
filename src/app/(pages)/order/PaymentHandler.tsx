@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import React, { use, useState } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { allowRedirectException, getPrivacyPolicyUrl, getTermsOfPurchaseUrl } from "../../ui/utils";
 import ConfirmButton from "../../ui/ConfirmButton";

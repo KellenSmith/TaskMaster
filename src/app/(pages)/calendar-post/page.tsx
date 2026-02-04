@@ -3,8 +3,8 @@ import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { prisma } from "../../../../prisma/prisma-client";
-import { EventStatus } from "@prisma/client";
+import { prisma } from "../../../prisma/prisma-client";
+import { EventStatus } from "@/prisma/generated/client";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
 
 interface EventPageProps {

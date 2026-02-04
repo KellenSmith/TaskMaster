@@ -1,8 +1,8 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { Language, Prisma } from "@prisma/client";
+import { Language, Prisma } from "@/prisma/generated/client";
 import { sanitizeRichText } from "./html-sanitizer";
 
 export const createTextContent = async (

@@ -1,4 +1,4 @@
-import { Prisma, UserRole } from "@prisma/client";
+import { Prisma, UserRole } from "@/prisma/generated/client";
 import dayjs from "dayjs";
 
 const testdata = {
@@ -79,7 +79,6 @@ const testdata = {
         price: 99.99,
         created_at: new Date("2024-01-01T00:00:00Z"),
         updated_at: new Date("2024-01-01T00:00:00Z"),
-        unlimited_stock: false,
         stock: 0,
         image_url: "",
     },

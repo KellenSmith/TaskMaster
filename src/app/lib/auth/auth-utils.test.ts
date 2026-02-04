@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Prisma, UserRole, UserStatus } from "@prisma/client";
+import { Prisma, UserRole, UserStatus } from "@/prisma/generated/client";
 import GlobalConstants from "../../GlobalConstants";
 import testdata from "../../../test/testdata";
 import { isUserAuthorized, routeTreeConfig, userHasRolePrivileges } from "./auth-utils";

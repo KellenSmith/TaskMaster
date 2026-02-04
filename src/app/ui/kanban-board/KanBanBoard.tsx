@@ -3,7 +3,7 @@
 import { use, useState } from "react";
 import { Grid, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DroppableColumn from "./DroppableColumn";
-import { Prisma, TaskStatus } from "@prisma/client";
+import { Prisma, TaskStatus } from "@/prisma/generated/browser";
 import KanBanBoardMenu from "./KanBanBoardMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";

@@ -10,7 +10,7 @@ import {
     Button,
     Dialog,
 } from "@mui/material";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import { createAndRedirectToOrder } from "../../lib/order-actions";
 import {

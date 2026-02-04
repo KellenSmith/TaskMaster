@@ -1,4 +1,4 @@
-import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
+import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@/prisma/generated/browser";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import {

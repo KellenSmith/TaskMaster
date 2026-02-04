@@ -1,5 +1,5 @@
 import * as colors from "@mui/material/colors";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 import dayjs from "dayjs";
 import { getSortedEvents, getTasksSortedByTime } from "../calendar-post/event-utils";
 import CircleSector from "./CircleSector";

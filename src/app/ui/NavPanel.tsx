@@ -46,7 +46,7 @@ import {
     getTermsOfMembershipUrl,
     getTermsOfPurchaseUrl,
 } from "./utils";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import ConfirmButton from "./ConfirmButton";
 
 const NavPanel = () => {

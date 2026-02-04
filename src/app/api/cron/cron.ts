@@ -1,4 +1,4 @@
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import { getOrganizationSettings } from "../../lib/organization-settings-actions";

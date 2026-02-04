@@ -18,7 +18,7 @@ import { clientRedirect, isUserAdmin } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC, use, useState } from "react";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { ContactMemberSchema, TaskUpdateSchema } from "../../lib/zod-schemas";

@@ -1,5 +1,5 @@
-import { Prisma, TicketType } from "@prisma/client";
-import { prisma } from "../../../../prisma/prisma-client";
+import { Prisma, TicketType } from "@/prisma/generated/client";
+import { prisma } from "../../../prisma/prisma-client";
 import { sanitizeFormData } from "../../lib/html-sanitizer";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import GlobalConstants from "../../GlobalConstants";

@@ -15,7 +15,7 @@ import Form from "../form/Form";
 import { Dispatch, SetStateAction, use, useMemo, useState } from "react";
 import { Add } from "@mui/icons-material";
 import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
-import { Prisma, Task, TaskStatus } from "@prisma/client";
+import { Prisma, Task, TaskStatus } from "@/prisma/generated/client";
 import dayjs from "dayjs";
 import z from "zod";
 import { TaskCreateSchema, TaskFilterSchema } from "../../lib/zod-schemas";

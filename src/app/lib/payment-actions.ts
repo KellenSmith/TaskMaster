@@ -2,8 +2,8 @@
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
 import { progressOrder } from "./order-actions";
-import { Language, OrderStatus, Prisma } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { Language, OrderStatus, Prisma } from "@/prisma/generated/client";
+import { prisma } from "../../prisma/prisma-client";
 import {
     getNewOrderStatus,
     PaymentOrderResponse,

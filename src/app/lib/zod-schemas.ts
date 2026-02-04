@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserRole, EventStatus, TaskStatus, TicketType, OrderStatus, Prisma } from "@prisma/client";
+import { UserRole, EventStatus, TaskStatus, TicketType, OrderStatus, Prisma } from "@/prisma/generated/browser";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
@@ -199,7 +199,6 @@ export const ProductCreateSchema = z
         price: priceSchema.optional(),
         vat_percentage: z.coerce.number().min(0).max(100),
         stock: z.coerce.number().int().nonnegative().nullable().optional(),
-        unlimited_stock: z.coerce.boolean().optional(),
         image_url: z.string().optional(),
     })
     .omit({ id: true });

@@ -2,7 +2,7 @@ import { CalendarMonth, LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography, Box, Chip, useTheme, useMediaQuery } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import RichTextField from "../../ui/form/RichTextField";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 import { use } from "react";
 import LanguageTranslations from "./LanguageTranslations";
 import { taskFieldLabels } from "../../ui/form/LanguageTranslations";

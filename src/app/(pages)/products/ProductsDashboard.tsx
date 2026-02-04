@@ -6,7 +6,7 @@ import { deleteProduct, updateProduct } from "../../lib/product-actions";
 import { ProductUpdateSchema } from "../../lib/zod-schemas";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
-import { Prisma } from "../../../../prisma/generated/client";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface ProductsDashboardProps {
     productsPromise: Promise<Prisma.ProductGetPayload<true>[]>;

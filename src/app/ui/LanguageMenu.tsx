@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Menu, MenuItem } from "@mui/material";
 import { useMemo, useState } from "react";
-import { Language } from "@prisma/client";
+import { Language } from "@/prisma/generated/browser";
 import { useUserContext } from "../context/UserContext";
 
 const LanguageMenu = () => {

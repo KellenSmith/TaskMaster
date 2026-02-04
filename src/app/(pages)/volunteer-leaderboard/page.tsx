@@ -1,7 +1,7 @@
 import { FC } from "react";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { prisma } from "../../../../prisma/prisma-client";
-import { Prisma } from "@prisma/client";
+import { prisma } from "../../../prisma/prisma-client";
+import { Prisma } from "@/prisma/generated/client";
 import VolunteerLeaderboardClient from "./VolunteerLeaderboardClient";
 
 interface VolunteerLeaderboardProps {

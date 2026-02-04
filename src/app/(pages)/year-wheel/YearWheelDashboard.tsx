@@ -9,7 +9,7 @@ import {
     Button,
 } from "@mui/material";
 
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import dayjs from "dayjs";
 import { use, useState, useRef, PointerEvent } from "react";
 import YearWheelEvent from "./YearWheelEvent";

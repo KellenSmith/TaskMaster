@@ -1,7 +1,7 @@
 "use server";
 
-import { OrderStatus, Prisma } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { OrderStatus, Prisma } from "@/prisma/generated/client";
+import { prisma } from "../../prisma/prisma-client";
 import { processOrderedProduct } from "./product-actions";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
@@ -20,12 +20,9 @@ export const createOrder = async (
             where: { id: orderItem.product_id },
         });
         if (!orderItem.quantity) throw new Error(`Invalid quantity for product ${product.id}`);
+        if (product.stock && product.stock < orderItem.quantity)
+            throw new Error(`Insufficient stock for product ${product.id}`);
 
-        if (!product.unlimited_stock) {
-            if (product.stock == null) throw new Error(`Product ${product.id} has no stock information`);
-            if (product.stock < orderItem.quantity)
-                throw new Error(`Insufficient stock for product ${product.id}`);
-        }
     }
 
     // Calculate the price of each order item

@@ -7,7 +7,7 @@ import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
 import ErrorBoundarySuspense from "../ui/ErrorBoundarySuspense";
 import { SessionProvider } from "next-auth/react";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 
 interface ContextWrapperProps {
     children: ReactNode;
@@ -36,7 +36,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                     infopagesPromise={infoPagesPromise}
                 >
                     <ThemeContextProvider>
-                        <NotificationContextProvider>null
+                        <NotificationContextProvider>
                             <SessionProvider>
                                 <UserContextProvider userPromise={userPromise}>
                                     {children}

@@ -1,5 +1,5 @@
 "use client";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { use, useMemo } from "react";
 import { useUserContext } from "../../context/UserContext";
 import {

@@ -1,6 +1,6 @@
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import YearWheelDashboard from "./YearWheelDashboard";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const YearWheelPage = () => {
     const eventsPromise = prisma.event.findMany({

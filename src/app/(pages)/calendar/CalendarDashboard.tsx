@@ -17,7 +17,7 @@ import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/browser";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
