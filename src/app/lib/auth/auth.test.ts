@@ -144,6 +144,26 @@ describe("auth.ts", () => {
         expect(result).toEqual({ existing: "value" });
     });
 
+    it("jwt callback does not set id when missing", async () => {
+        process.env.EMAIL = "test@example.com";
+        const options = await loadAuthModule();
+
+        const token: JWT = {} as JWT;
+        const user = {
+            id: undefined,
+            status: UserStatus.validated,
+            role: UserRole.member,
+            user_membership: null,
+        } as unknown as User;
+
+        const result = await options.callbacks.jwt({ token, user });
+
+        expect((result as JWT & { id?: string }).id).toBeUndefined();
+        expect(result.status).toBe(UserStatus.validated);
+        expect(result.role).toBe(UserRole.member);
+        expect(result.user_membership).toBeNull();
+    });
+
     it("session callback maps token fields onto session.user", async () => {
         process.env.EMAIL = "test@example.com";
         const options = await loadAuthModule();
@@ -166,5 +186,17 @@ describe("auth.ts", () => {
         const result = await options.callbacks.session({ session, token });
 
         expect(result.user).toEqual(token);
+    });
+
+    it("session callback leaves fields unset when token has none", async () => {
+        process.env.EMAIL = "test@example.com";
+        const options = await loadAuthModule();
+
+        const session = { user: {} } as Session;
+        const token = {} as JWT;
+
+        const result = await options.callbacks.session({ session, token });
+
+        expect(result.user).toEqual({});
     });
 });

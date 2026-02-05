@@ -64,6 +64,13 @@ describe("isUserAuthorized", () => {
         ).toBe(false);
     });
 
+    it("denies access when user has no status but route requires one", () => {
+        const userWithoutStatus = makeUser({ status: undefined as unknown as UserStatus });
+        expect(
+            isUserAuthorized(userWithoutStatus, ["", GlobalConstants.PROFILE], routeTreeConfig),
+        ).toBe(false);
+    });
+
     it("allows members with membership for membership-required routes", () => {
         const member = makeUser({ status: UserStatus.validated });
         expect(
