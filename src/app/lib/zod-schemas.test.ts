@@ -8,6 +8,14 @@ import {
     ContactMemberSchema,
     EmailSendoutSchema,
     EventCreateSchema,
+    EventUpdateSchema,
+    LocationCreateSchema,
+    LocationUpdateSchema,
+    MembershipUpdateSchema,
+    ProductUpdateSchema,
+    SkillBadgeCreateSchema,
+    TaskUpdateSchema,
+    TicketUpdateSchema,
     EventStatusSchema,
     InfoPageCreateSchema,
     InfoPageUpdateSchema,
@@ -53,15 +61,18 @@ describe("enum schemas", () => {
 });
 
 describe("OrganizationSettingsUpdateSchema", () => {
-    it("accepts empty email and strips id", () => {
+    it("accepts empty event_manager_email, strips id and unexpected fields", () => {
         const result = OrganizationSettingsUpdateSchema.parse({
             id: "should-be-removed",
             event_manager_email: "",
             primary_color: "#fff",
+            is_admin: true,
         });
 
-        expect(result.event_manager_email).toBe("");
-        expect("id" in result).toBe(false);
+        expect(result).toEqual({
+            event_manager_email: "",
+            primary_color: "#fff",
+        });
     });
 
     it("rejects invalid hex color", () => {
@@ -74,13 +85,17 @@ describe("OrganizationSettingsUpdateSchema", () => {
 });
 
 describe("InfoPage schemas", () => {
-    it("enforces title length and accepts empty role", () => {
+    it("enforces title length, accepts empty role and strips unexpected fields", () => {
         const result = InfoPageCreateSchema.parse({
             title: "About",
             lowest_allowed_user_role: "",
+            injected: "<script />",
         });
 
-        expect(result.title).toBe("About");
+        expect(result).toEqual({
+            title: "About",
+            lowest_allowed_user_role: "",
+        });
     });
 
     it("allows partial updates", () => {
@@ -89,20 +104,37 @@ describe("InfoPage schemas", () => {
 });
 
 describe("User schemas", () => {
-    it("lowercases email and parses skill badges", () => {
+    it("lowercases email, parses skill badges and strips unexpected fields", () => {
         const result = UserCreateSchema.parse({
             email: "TEST@Example.com",
             role: UserRole.member,
             consent_to_newsletters: "true",
             skill_badges: "alpha,beta",
+            is_admin: true,
         });
 
-        expect(result.email).toBe("test@example.com");
-        expect(result.consent_to_newsletters).toBe(true);
-        expect(result.skill_badges).toEqual(["alpha", "beta"]);
+        expect(result).toEqual({
+            email: "test@example.com",
+            role: UserRole.member,
+            consent_to_newsletters: true,
+            skill_badges: ["alpha", "beta"],
+        });
     });
 
-    it("accepts base user values from testdata", () => {
+    it("parses empty skill badges as empty array and strips unexpected fields", () => {
+        const result = UserCreateSchema.parse({
+            email: "user@example.com",
+            skill_badges: "",
+            sql_injection: "DROP TABLE users;",
+        });
+
+        expect(result).toEqual({
+            email: "user@example.com",
+            skill_badges: [],
+        });
+    });
+
+    it("accepts base user values from testdata and strips unexpected fields", () => {
         const result = UserCreateSchema.parse({
             email: testdata.user.email,
             nickname: testdata.user.nickname,
@@ -110,14 +142,22 @@ describe("User schemas", () => {
             sur_name: testdata.user.sur_name,
             pronoun: testdata.user.pronoun,
             phone: testdata.user.phone,
+            malicious: "<script>alert(1)</script>",
         });
 
-        expect(result.email).toBe(testdata.user.email);
+        expect(result).toEqual({
+            email: testdata.user.email,
+            nickname: testdata.user.nickname,
+            first_name: testdata.user.first_name,
+            sur_name: testdata.user.sur_name,
+            pronoun: testdata.user.pronoun,
+            phone: testdata.user.phone,
+        });
     });
 });
 
 describe("EventCreateSchema", () => {
-    it("transforms dates to ISO strings", () => {
+    it("transforms dates to ISO strings and strips unexpected fields", () => {
         const result = EventCreateSchema.parse({
             title: "Planning Meeting",
             location_id: null,
@@ -125,11 +165,17 @@ describe("EventCreateSchema", () => {
             end_time: validDate,
             max_participants: "20",
             tags: "planning,team",
+            injected: "<img src=x onerror=alert(1) />",
         });
 
-        expect(result.start_time).toBe(expectedDate);
-        expect(result.tags).toEqual(["planning", "team"]);
-        expect(result.max_participants).toBe(20);
+        expect(result).toEqual({
+            title: "Planning Meeting",
+            location_id: null,
+            start_time: expectedDate,
+            end_time: expectedDate,
+            max_participants: 20,
+            tags: ["planning", "team"],
+        });
     });
 
     it("rejects invalid date strings", () => {
@@ -145,8 +191,15 @@ describe("EventCreateSchema", () => {
     });
 });
 
+describe("EventUpdateSchema", () => {
+    it("accepts status updates", () => {
+        const result = EventUpdateSchema.parse({ status: EventStatus.published });
+        expect(result).toEqual({ status: EventStatus.published });
+    });
+});
+
 describe("Task schemas", () => {
-    it("parses select-multiple inputs and optional status", () => {
+    it("parses select-multiple inputs and optional status and strips unexpected fields", () => {
         const result = TaskCreateSchema.parse({
             name: "Test task",
             status: TaskStatus.toDo,
@@ -158,72 +211,179 @@ describe("Task schemas", () => {
             reviewer_id: "reviewer",
             skill_badges: "badge-a,badge-b",
             event_id: "00000000-0000-0000-0000-000000000000",
+            unauthorized: true,
         });
 
-        expect(result.tags).toEqual(["alpha", "beta"]);
-        expect(result.skill_badges).toEqual(["badge-a", "badge-b"]);
-        expect(result.start_time).toBe(expectedDate);
+        expect(result).toEqual({
+            name: "Test task",
+            status: TaskStatus.toDo,
+            start_time: expectedDate,
+            end_time: expectedDate,
+            description: "Do the thing",
+            tags: ["alpha", "beta"],
+            assignee_id: null,
+            reviewer_id: "reviewer",
+            skill_badges: ["badge-a", "badge-b"],
+            event_id: "00000000-0000-0000-0000-000000000000",
+        });
+    });
+
+    it("allows partial task updates", () => {
+        const result = TaskUpdateSchema.parse({ description: "Updated" });
+        expect(result).toEqual({ description: "Updated" });
+    });
+});
+
+describe("Location schemas", () => {
+    it("creates and updates locations and strips unexpected fields", () => {
+        const created = LocationCreateSchema.parse({
+            name: "Main Hall",
+            address: "123 Street",
+            capacity: 50,
+            injected: "<svg onload=alert(1)>",
+        });
+        const updated = LocationUpdateSchema.parse({ description: "Updated" });
+
+        expect(created).toEqual({
+            name: "Main Hall",
+            address: "123 Street",
+            capacity: 50,
+        });
+        expect(updated).toEqual({ description: "Updated" });
+    });
+});
+
+describe("Skill badge schema", () => {
+    it("creates a skill badge and strips unexpected fields  ", () => {
+        const result = SkillBadgeCreateSchema.parse({ name: "Helper", injected: "<script />" });
+        expect(result).toEqual({ name: "Helper" });
     });
 });
 
 describe("Product and membership schemas", () => {
-    it("coerces and rounds price to cents", () => {
+    it("coerces and rounds price to cents and strips unexpected fields", () => {
         const result = ProductCreateSchema.parse({
             ...baseProduct,
             price: "10.255",
             stock: "3",
+            injected: "<script />",
         });
 
-        expect(result.price).toBe(1026);
-        expect(result.stock).toBe(3);
+        expect(result).toEqual({
+            name: baseProduct.name,
+            vat_percentage: baseProduct.vat_percentage,
+            price: 1026,
+            stock: 3,
+        });
     });
 
-    it("requires duration for memberships", () => {
+    it("requires duration for memberships and strips unexpected fields", () => {
         expect(MembershipWithoutProductSchema.safeParse({}).success).toBe(false);
-        expect(
-            MembershipCreateSchema.safeParse({
-                ...baseProduct,
-                duration: 365,
-            }).success,
-        ).toBe(true);
+        const result = MembershipCreateSchema.parse({
+            ...baseProduct,
+            duration: 365,
+            injected: "<script />",
+        });
+
+        expect(result).toEqual({
+            name: baseProduct.name,
+            vat_percentage: baseProduct.vat_percentage,
+            duration: 365,
+        });
+    });
+
+    it("updates membership with product data and strips unexpected fields", () => {
+        const result = MembershipUpdateSchema.parse({
+            ...baseProduct,
+            duration: 365,
+            injected: "<script />",
+        });
+
+        expect(result).toEqual({
+            name: baseProduct.name,
+            vat_percentage: baseProduct.vat_percentage,
+            duration: 365,
+        });
+    });
+
+    it("updates product data and strips unexpected fields", () => {
+        const result = ProductUpdateSchema.parse({
+            ...baseProduct,
+            price: 10,
+            injected: "<script />",
+        });
+
+        expect(result).toEqual({
+            name: baseProduct.name,
+            vat_percentage: baseProduct.vat_percentage,
+            price: 1000,
+        });
     });
 });
 
 describe("Ticket schemas", () => {
-    it("creates tickets with product data", () => {
+    it("creates tickets with product data and strips unexpected fields", () => {
         const result = TicketCreateSchema.parse({
             type: TicketType.standard,
             name: "Ticketed Product",
             vat_percentage: 25,
             price: 50,
+            injected: "<script />",
         });
 
-        expect(result.type).toBe(TicketType.standard);
-        expect(result.price).toBe(5000);
+        expect(result).toEqual({
+            type: TicketType.standard,
+            name: "Ticketed Product",
+            vat_percentage: 25,
+            price: 5000,
+        });
     });
 
-    it("accepts ticket without relations", () => {
+    it("accepts ticket without relations and strips unexpected fields", () => {
         const result = TicketWithoutRelationsSchema.parse({
             type: TicketType.volunteer,
+            injected: "<script />",
         });
 
-        expect(result.type).toBe(TicketType.volunteer);
+        expect(result).toEqual({ type: TicketType.volunteer });
+    });
+
+    it("updates ticket with product data and strips unexpected fields", () => {
+        const result = TicketUpdateSchema.parse({
+            type: TicketType.volunteer,
+            ...baseProduct,
+            price: 10,
+            injected: "<script />",
+        });
+
+        expect(result).toEqual({
+            type: TicketType.volunteer,
+            name: baseProduct.name,
+            vat_percentage: baseProduct.vat_percentage,
+            price: 1000,
+        });
     });
 });
 
 describe("Text content schemas", () => {
-    it("accepts full text content payload", () => {
+    it("accepts full text content payload and strips unexpected fields", () => {
         const result = TextContentCreateSchema.parse({
             id: "text-id",
             language: "en",
             content: "Hello",
             category: null,
+            injected: "<script />",
         });
 
-        expect(result.content).toBe("Hello");
+        expect(result).toEqual({
+            id: "text-id",
+            language: "en",
+            content: "Hello",
+            category: null,
+        });
     });
 
-    it("requires composite keys on update", () => {
+    it("requires composite keys on update and strips unexpected fields", () => {
         const missingLanguage = TextContentUpdateSchema.safeParse({
             id: "text-id",
             content: "Updated",
@@ -234,19 +394,22 @@ describe("Text content schemas", () => {
 });
 
 describe("Custom schemas", () => {
-    it("extends membership application with prompt", () => {
+    it("extends membership application with prompt and strips unexpected fields", () => {
         const result = MembershipApplicationSchema.parse({
             email: "member@example.com",
             member_application_prompt: "Tell us about you",
+            injected: "<script />",
         });
 
-        expect(result.email).toBe("member@example.com");
-        expect(result.member_application_prompt).toBe("Tell us about you");
+        expect(result).toEqual({
+            email: "member@example.com",
+            member_application_prompt: "Tell us about you",
+        });
     });
 
-    it("lowercases login email", () => {
-        const result = LoginSchema.parse({ email: "ADMIN@Example.com" });
-        expect(result.email).toBe("admin@example.com");
+    it("lowercases login email and strips unexpected fields", () => {
+        const result = LoginSchema.parse({ email: "ADMIN@Example.com", injected: "<script />" });
+        expect(result).toEqual({ email: "admin@example.com" });
     });
 
     it("validates UUID-based payloads", () => {
@@ -264,7 +427,7 @@ describe("Custom schemas", () => {
         expect(UuidSchema.safeParse("not-a-uuid").success).toBe(false);
     });
 
-    it("parses task filter toggles", () => {
+    it("parses task filter toggles and strips unexpected fields", () => {
         const result = TaskFilterSchema.parse({
             unassigned: "on",
             assigned_to_me: "off",
@@ -272,24 +435,49 @@ describe("Custom schemas", () => {
             ends_before: "",
             has_tag: "alpha,beta",
             status: "open,done",
+            injected: "<script />",
         });
 
-        expect(result.unassigned).toBe(true);
-        expect(result.assigned_to_me).toBe(false);
-        expect(result.begins_after).toBe(expectedDate);
-        expect(result.ends_before).toBe("");
-        expect(result.has_tag).toEqual(["alpha", "beta"]);
-        expect(result.status).toEqual(["open", "done"]);
+        expect(result).toEqual({
+            unassigned: true,
+            assigned_to_me: false,
+            begins_after: expectedDate,
+            ends_before: "",
+            has_tag: ["alpha", "beta"],
+            status: ["open", "done"],
+        });
     });
 
-    it("validates auxiliary schemas", () => {
-        expect(EmailSendoutSchema.safeParse({ subject: "Hi", content: "Body" }).success).toBe(
-            true,
-        );
-        expect(UpdateTextContentSchema.safeParse({ text: "Updated" }).success).toBe(true);
-        expect(CloneEventSchema.safeParse({ start_time: validDate }).success).toBe(true);
-        expect(AddMembershipSchema.safeParse({ expires_at: validDate }).success).toBe(true);
-        expect(ContactMemberSchema.safeParse({ content: "Hi" }).success).toBe(true);
+    it("parses empty filter values and strips unexpected fields", () => {
+        const result = TaskFilterSchema.parse({
+            begins_after: "",
+            ends_before: "",
+            has_tag: "",
+            status: "",
+            injected: "<script />",
+        });
+
+        expect(result).toEqual({
+            begins_after: "",
+            ends_before: "",
+            has_tag: [],
+            status: [],
+        });
+    });
+
+    it("validates auxiliary schemas and strips unexpected fields", () => {
+        expect(EmailSendoutSchema.parse({ subject: "Hi", content: "Body", injected: "<script />" })).toEqual({
+            subject: "Hi",
+            content: "Body",
+        });
+        expect(UpdateTextContentSchema.parse({ text: "Updated", injected: "<script />" })).toEqual({ text: "Updated" });
+        expect(CloneEventSchema.parse({ start_time: validDate, injected: "<script />" })).toEqual({
+            start_time: expectedDate,
+        });
+        expect(AddMembershipSchema.parse({ expires_at: validDate, injected: "<script />" })).toEqual({
+            expires_at: expectedDate,
+        });
+        expect(ContactMemberSchema.parse({ content: "Hi", injected: "<script />" })).toEqual({ content: "Hi" });
     });
 
     it("rejects short contact content", () => {
@@ -300,8 +488,8 @@ describe("Custom schemas", () => {
 describe("Order schemas", () => {
     it("accepts valid order statuses", () => {
         expect(OrderStatusSchema.parse(OrderStatus.pending)).toBe(OrderStatus.pending);
-        expect(
-            OrderUpdateSchema.parse({ status: OrderStatus.completed }).status,
-        ).toBe(OrderStatus.completed);
+        expect(OrderUpdateSchema.parse({ status: OrderStatus.completed })).toEqual({
+            status: OrderStatus.completed,
+        });
     });
 });
