@@ -1,7 +1,37 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import SignInEmailTemplate from "./mail-templates/SignInEmailTemplate";
+import MailTemplate from "./mail-templates/MailTemplate";
+import { Img, Heading } from "@react-email/components";
+
+// vi.mock is hoisted; if the factory runs before this mock is initialized it throws.
+// We import MailTemplate at the top, which immediately pulls in getOrganizationSettings,
+// so we must create the mock during the hoisting phase which happens before imports.
+const getOrganizationSettingsMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../organization-settings-actions", () => ({
+    getOrganizationSettings: getOrganizationSettingsMock,
+}));
+
+// We traverse the raw React element tree here because these templates are not rendered
+// into a DOM in these tests; Testing Library selectors like getByText require a DOM.
+// This helper lets us locate elements (e.g., Img/Heading) directly in the element tree.
+const findNode = (node: any, predicate: (value: any) => boolean): any => {
+    if (!node) return undefined;
+    if (predicate(node)) return node;
+    const children = node.props?.children;
+    if (!children) return undefined;
+    if (Array.isArray(children)) {
+        for (const child of children) {
+            const result = findNode(child, predicate);
+            if (result) return result;
+        }
+    } else {
+        return findNode(children, predicate);
+    }
+    return undefined;
+};
 
 describe("mail templates", () => {
     it("throws when OpenEventSpotTemplate receives no event", () => {
@@ -46,5 +76,30 @@ describe("mail templates", () => {
         });
 
         expect(element).toBeTruthy();
+    });
+
+    it("renders logo image when organizationSettings.logo_url is present", async () => {
+        getOrganizationSettingsMock.mockResolvedValueOnce({
+            logo_url: "https://example.com/logo.png",
+        });
+
+        const element = await MailTemplate({
+            children: "content",
+        });
+
+        const imgNode = findNode(element, (node) => node.type === Img);
+        expect(imgNode).toBeTruthy();
+        expect(imgNode.props.src).toBe("https://example.com/logo.png");
+    });
+
+    it("renders heading when no logo_url is present", async () => {
+        getOrganizationSettingsMock.mockResolvedValueOnce(null);
+
+        const element = await MailTemplate({
+            children: "content",
+        });
+
+        const headingNode = findNode(element, (node) => node.type === Heading);
+        expect(headingNode).toBeTruthy();
     });
 });
