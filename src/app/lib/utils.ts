@@ -34,7 +34,8 @@ export const getAbsoluteUrl = (
     return baseUrl + getRelativeUrl(pathSegments, searchParams);
 };
 
-export const pathToRoutes = (path: string) => (path ? path.split("/").slice(1) : []);
+export const pathToRoutes = (path: string) => (path ? path.split("?")[0].split("/").slice(1) : []);
+
 export const serverRedirect = (
     pathSegments: string[],
     searchParams: { [key: string]: string } = {},
