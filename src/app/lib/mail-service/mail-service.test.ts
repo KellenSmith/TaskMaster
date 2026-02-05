@@ -15,6 +15,7 @@ import {
     sendOrderConfirmation,
 } from "./mail-service";
 import { createElement } from "react";
+import testdata from "../../../test/testdata";
 
 vi.mock("./newsletter-actions", () => ({
     createNewsletterJob: vi.fn(),
@@ -74,6 +75,9 @@ describe("mail-service", () => {
             getEmailPayload(undefined as unknown as string[], "Subject", "<p>Hi</p>"),
         ).rejects.toThrow("Invalid email address(es) provided");
         await expect(
+            getEmailPayload([undefined as unknown as string], "Subject", "<p>Hi</p>"),
+        ).rejects.toBeInstanceOf(Error);
+        await expect(
             getEmailPayload(["invalid"], "Subject", "<p>Hi</p>"),
         ).rejects.toBeInstanceOf(Error);
     });
@@ -107,6 +111,28 @@ describe("mail-service", () => {
         );
 
         expect(payload.html).toContain("<div");
+    });
+
+    it("trims recipient emails and uses fallback domain when EMAIL is unset", async () => {
+        const payload = await getEmailPayload(
+            ["  user@example.com  "],
+            "Subject",
+            "<p>Hi</p>",
+        );
+
+        expect(payload.to).toBe("user@example.com");
+        expect(payload.headers?.["Message-ID"]).toEqual(
+            expect.stringContaining(testdata.env.EMAIL.split("@")[1] + ">"),
+        );
+    });
+
+    it("throws when EMAIL env is malformed", async () => {
+        process.env.EMAIL = "malformed-email";
+        await expect(getEmailPayload(
+            ["user@example.com"],
+            "Subject",
+            "<p>Hi</p>",
+        )).rejects.toThrow("Sender email is not configured");
     });
 
     it("sends mail directly for small recipient lists", async () => {

@@ -91,14 +91,19 @@ export const getEmailPayload = async (
     }
 
     // Base payload
-    const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
+    const senderEmail = process.env.EMAIL?.trim();
+    if (!senderEmail || !z.email().safeParse(senderEmail).success) {
+        throw new Error("Sender email is not configured");
+    }
+
+    const domain = senderEmail.split("@")[1];
     const htmlContent = typeof mailContent === "string" ? mailContent : await render(mailContent);
     const strippedTextContent = htmlContent
         .replace(/<[^>]*>/g, "")
         .replace(/\s+/g, " ")
         .trim();
     const payload: EmailPayload = {
-        from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
+        from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${senderEmail}>`,
         subject,
         html: htmlContent,
         // Add plain text version by stripping HTML
@@ -106,7 +111,7 @@ export const getEmailPayload = async (
         headers: {
             "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
             "X-Priority": "3",
-            "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
+            "List-Unsubscribe": `<mailto:${senderEmail}?subject=Unsubscribe>`,
             "Auto-Submitted": "auto-generated",
             "Message-ID": `<${Date.now()}-${Math.random().toString(36).slice(2, 11)}@${domain}>`,
         },
