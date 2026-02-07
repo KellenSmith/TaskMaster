@@ -19,6 +19,9 @@ export default async function proxy(req: NextRequest) {
     // Skip middleware for Next.js Server Actions and related special POSTs
     // Next adds special headers like Next-Action/RSC and often uses text/plain bodies
     // Be generous so we never block/redirect action requests by mistake.
+    if (req.nextUrl.pathname.startsWith("/api/ticket-qrcode")) {
+        return NextResponse.next();
+    }
     if (req.method === "POST") {
         const headers = req.headers;
         const contentType = headers.get("content-type") || "";
