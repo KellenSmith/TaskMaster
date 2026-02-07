@@ -25,16 +25,19 @@ export type AggregateEventParticipant = {
 }
 
 export type EventParticipantMinAggregateOutputType = {
+  id: string | null
   user_id: string | null
   ticket_id: string | null
 }
 
 export type EventParticipantMaxAggregateOutputType = {
+  id: string | null
   user_id: string | null
   ticket_id: string | null
 }
 
 export type EventParticipantCountAggregateOutputType = {
+  id: number
   user_id: number
   ticket_id: number
   _all: number
@@ -42,16 +45,19 @@ export type EventParticipantCountAggregateOutputType = {
 
 
 export type EventParticipantMinAggregateInputType = {
+  id?: true
   user_id?: true
   ticket_id?: true
 }
 
 export type EventParticipantMaxAggregateInputType = {
+  id?: true
   user_id?: true
   ticket_id?: true
 }
 
 export type EventParticipantCountAggregateInputType = {
+  id?: true
   user_id?: true
   ticket_id?: true
   _all?: true
@@ -130,6 +136,7 @@ export type EventParticipantGroupByArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 export type EventParticipantGroupByOutputType = {
+  id: string
   user_id: string
   ticket_id: string
   _count: EventParticipantCountAggregateOutputType | null
@@ -156,6 +163,7 @@ export type EventParticipantWhereInput = {
   AND?: Prisma.EventParticipantWhereInput | Prisma.EventParticipantWhereInput[]
   OR?: Prisma.EventParticipantWhereInput[]
   NOT?: Prisma.EventParticipantWhereInput | Prisma.EventParticipantWhereInput[]
+  id?: Prisma.StringFilter<"EventParticipant"> | string
   user_id?: Prisma.StringFilter<"EventParticipant"> | string
   ticket_id?: Prisma.StringFilter<"EventParticipant"> | string
   ticket?: Prisma.XOR<Prisma.TicketScalarRelationFilter, Prisma.TicketWhereInput>
@@ -163,6 +171,7 @@ export type EventParticipantWhereInput = {
 }
 
 export type EventParticipantOrderByWithRelationInput = {
+  id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   ticket_id?: Prisma.SortOrder
   ticket?: Prisma.TicketOrderByWithRelationInput
@@ -170,7 +179,7 @@ export type EventParticipantOrderByWithRelationInput = {
 }
 
 export type EventParticipantWhereUniqueInput = Prisma.AtLeast<{
-  user_id_ticket_id?: Prisma.EventParticipantUser_idTicket_idCompoundUniqueInput
+  id?: string
   AND?: Prisma.EventParticipantWhereInput | Prisma.EventParticipantWhereInput[]
   OR?: Prisma.EventParticipantWhereInput[]
   NOT?: Prisma.EventParticipantWhereInput | Prisma.EventParticipantWhereInput[]
@@ -178,9 +187,10 @@ export type EventParticipantWhereUniqueInput = Prisma.AtLeast<{
   ticket_id?: Prisma.StringFilter<"EventParticipant"> | string
   ticket?: Prisma.XOR<Prisma.TicketScalarRelationFilter, Prisma.TicketWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "user_id_ticket_id">
+}, "id">
 
 export type EventParticipantOrderByWithAggregationInput = {
+  id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   ticket_id?: Prisma.SortOrder
   _count?: Prisma.EventParticipantCountOrderByAggregateInput
@@ -192,40 +202,47 @@ export type EventParticipantScalarWhereWithAggregatesInput = {
   AND?: Prisma.EventParticipantScalarWhereWithAggregatesInput | Prisma.EventParticipantScalarWhereWithAggregatesInput[]
   OR?: Prisma.EventParticipantScalarWhereWithAggregatesInput[]
   NOT?: Prisma.EventParticipantScalarWhereWithAggregatesInput | Prisma.EventParticipantScalarWhereWithAggregatesInput[]
+  id?: Prisma.StringWithAggregatesFilter<"EventParticipant"> | string
   user_id?: Prisma.StringWithAggregatesFilter<"EventParticipant"> | string
   ticket_id?: Prisma.StringWithAggregatesFilter<"EventParticipant"> | string
 }
 
 export type EventParticipantCreateInput = {
+  id?: string
   ticket: Prisma.TicketCreateNestedOneWithoutEvent_participantsInput
   user: Prisma.UserCreateNestedOneWithoutParticipant_eventsInput
 }
 
 export type EventParticipantUncheckedCreateInput = {
+  id?: string
   user_id: string
   ticket_id: string
 }
 
 export type EventParticipantUpdateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket?: Prisma.TicketUpdateOneRequiredWithoutEvent_participantsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutParticipant_eventsNestedInput
 }
 
 export type EventParticipantUncheckedUpdateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   user_id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type EventParticipantCreateManyInput = {
+  id?: string
   user_id: string
   ticket_id: string
 }
 
 export type EventParticipantUpdateManyMutationInput = {
-
+  id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type EventParticipantUncheckedUpdateManyInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   user_id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -240,22 +257,20 @@ export type EventParticipantOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type EventParticipantUser_idTicket_idCompoundUniqueInput = {
-  user_id: string
-  ticket_id: string
-}
-
 export type EventParticipantCountOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   ticket_id?: Prisma.SortOrder
 }
 
 export type EventParticipantMaxOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   ticket_id?: Prisma.SortOrder
 }
 
 export type EventParticipantMinOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   ticket_id?: Prisma.SortOrder
 }
@@ -345,10 +360,12 @@ export type EventParticipantUncheckedUpdateManyWithoutTicketNestedInput = {
 }
 
 export type EventParticipantCreateWithoutUserInput = {
+  id?: string
   ticket: Prisma.TicketCreateNestedOneWithoutEvent_participantsInput
 }
 
 export type EventParticipantUncheckedCreateWithoutUserInput = {
+  id?: string
   ticket_id: string
 }
 
@@ -382,15 +399,18 @@ export type EventParticipantScalarWhereInput = {
   AND?: Prisma.EventParticipantScalarWhereInput | Prisma.EventParticipantScalarWhereInput[]
   OR?: Prisma.EventParticipantScalarWhereInput[]
   NOT?: Prisma.EventParticipantScalarWhereInput | Prisma.EventParticipantScalarWhereInput[]
+  id?: Prisma.StringFilter<"EventParticipant"> | string
   user_id?: Prisma.StringFilter<"EventParticipant"> | string
   ticket_id?: Prisma.StringFilter<"EventParticipant"> | string
 }
 
 export type EventParticipantCreateWithoutTicketInput = {
+  id?: string
   user: Prisma.UserCreateNestedOneWithoutParticipant_eventsInput
 }
 
 export type EventParticipantUncheckedCreateWithoutTicketInput = {
+  id?: string
   user_id: string
 }
 
@@ -421,40 +441,49 @@ export type EventParticipantUpdateManyWithWhereWithoutTicketInput = {
 }
 
 export type EventParticipantCreateManyUserInput = {
+  id?: string
   ticket_id: string
 }
 
 export type EventParticipantUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket?: Prisma.TicketUpdateOneRequiredWithoutEvent_participantsNestedInput
 }
 
 export type EventParticipantUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type EventParticipantUncheckedUpdateManyWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type EventParticipantCreateManyTicketInput = {
+  id?: string
   user_id: string
 }
 
 export type EventParticipantUpdateWithoutTicketInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   user?: Prisma.UserUpdateOneRequiredWithoutParticipant_eventsNestedInput
 }
 
 export type EventParticipantUncheckedUpdateWithoutTicketInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   user_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type EventParticipantUncheckedUpdateManyWithoutTicketInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   user_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
 
 export type EventParticipantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
   user_id?: boolean
   ticket_id?: boolean
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
@@ -462,6 +491,7 @@ export type EventParticipantSelect<ExtArgs extends runtime.Types.Extensions.Inte
 }, ExtArgs["result"]["eventParticipant"]>
 
 export type EventParticipantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
   user_id?: boolean
   ticket_id?: boolean
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
@@ -469,6 +499,7 @@ export type EventParticipantSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
 }, ExtArgs["result"]["eventParticipant"]>
 
 export type EventParticipantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
   user_id?: boolean
   ticket_id?: boolean
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
@@ -476,11 +507,12 @@ export type EventParticipantSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
 }, ExtArgs["result"]["eventParticipant"]>
 
 export type EventParticipantSelectScalar = {
+  id?: boolean
   user_id?: boolean
   ticket_id?: boolean
 }
 
-export type EventParticipantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"user_id" | "ticket_id", ExtArgs["result"]["eventParticipant"]>
+export type EventParticipantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "ticket_id", ExtArgs["result"]["eventParticipant"]>
 export type EventParticipantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -501,6 +533,7 @@ export type $EventParticipantPayload<ExtArgs extends runtime.Types.Extensions.In
     user: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
+    id: string
     user_id: string
     ticket_id: string
   }, ExtArgs["result"]["eventParticipant"]>
@@ -586,8 +619,8 @@ export interface EventParticipantDelegate<ExtArgs extends runtime.Types.Extensio
    * // Get first 10 EventParticipants
    * const eventParticipants = await prisma.eventParticipant.findMany({ take: 10 })
    * 
-   * // Only select the `user_id`
-   * const eventParticipantWithUser_idOnly = await prisma.eventParticipant.findMany({ select: { user_id: true } })
+   * // Only select the `id`
+   * const eventParticipantWithIdOnly = await prisma.eventParticipant.findMany({ select: { id: true } })
    * 
    */
   findMany<T extends EventParticipantFindManyArgs>(args?: Prisma.SelectSubset<T, EventParticipantFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -631,9 +664,9 @@ export interface EventParticipantDelegate<ExtArgs extends runtime.Types.Extensio
    *   ]
    * })
    * 
-   * // Create many EventParticipants and only return the `user_id`
-   * const eventParticipantWithUser_idOnly = await prisma.eventParticipant.createManyAndReturn({
-   *   select: { user_id: true },
+   * // Create many EventParticipants and only return the `id`
+   * const eventParticipantWithIdOnly = await prisma.eventParticipant.createManyAndReturn({
+   *   select: { id: true },
    *   data: [
    *     // ... provide data here
    *   ]
@@ -722,9 +755,9 @@ export interface EventParticipantDelegate<ExtArgs extends runtime.Types.Extensio
    *   ]
    * })
    * 
-   * // Update zero or more EventParticipants and only return the `user_id`
-   * const eventParticipantWithUser_idOnly = await prisma.eventParticipant.updateManyAndReturn({
-   *   select: { user_id: true },
+   * // Update zero or more EventParticipants and only return the `id`
+   * const eventParticipantWithIdOnly = await prisma.eventParticipant.updateManyAndReturn({
+   *   select: { id: true },
    *   where: {
    *     // ... provide filter here
    *   },
@@ -928,6 +961,7 @@ export interface Prisma__EventParticipantClient<T, Null = never, ExtArgs extends
  * Fields of the EventParticipant model
  */
 export interface EventParticipantFieldRefs {
+  readonly id: Prisma.FieldRef<"EventParticipant", 'String'>
   readonly user_id: Prisma.FieldRef<"EventParticipant", 'String'>
   readonly ticket_id: Prisma.FieldRef<"EventParticipant", 'String'>
 }
