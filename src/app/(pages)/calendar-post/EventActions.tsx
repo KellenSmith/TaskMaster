@@ -20,6 +20,7 @@ import {
     cloneEvent,
     deleteEvent,
     getEventParticipants,
+    publishEvent,
     updateEvent,
 } from "../../lib/event-actions";
 import ConfirmButton from "../../ui/ConfirmButton";
@@ -98,12 +99,12 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         });
     };
 
-    const publishEvent = async () => {
+    const publishAction = async () => {
         startTransition(async () => {
             try {
                 const formData = new FormData();
                 formData.append(GlobalConstants.STATUS, EventStatus.published);
-                await updateEvent(event.id, formData);
+                await publishEvent(event.id);
                 addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
             } catch {
@@ -184,7 +185,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                         <ConfirmButton
                             buttonProps={{ color: "success" }}
                             confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
-                            onClick={publishEvent}
+                            onClick={publishAction}
                         >
                             {LanguageTranslations.publishEvent[language]}
                         </ConfirmButton>
@@ -198,7 +199,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                             <ConfirmButton
                                 buttonProps={{ color: "success" }}
                                 confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
-                                onClick={publishEvent}
+                                onClick={publishAction}
                             >
                                 {LanguageTranslations.publishEvent[language]}
                             </ConfirmButton>
