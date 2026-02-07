@@ -24,7 +24,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { allowRedirectException } from "../../ui/utils";
 import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
-import { createEvent } from "./server-actions";
+import { createEvent } from "../../lib/event-actions";
 
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
