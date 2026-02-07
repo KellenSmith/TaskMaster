@@ -104,12 +104,11 @@ export const deleteEventParticipantWithTx = async (
             },
         },
     });
-    await tx.eventParticipant.delete({
+    await tx.eventParticipant.deleteMany({
         where: {
-            user_id_ticket_id: {
-                user_id: userId,
-                ticket_id: ticket.product_id,
-            },
+            user_id: userId,
+            ticket_id: ticket.product_id,
+
         },
     });
     // Increment the product stock of all tickets with limited stock belonging to the same event

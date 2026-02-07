@@ -7,28 +7,36 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
+        dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production", // Allow loading images from local IPs (e.g. for development and internal services)
         remotePatterns: [
+            // Allow images form the own server ( e.g. for generated qr codes)
+            {
+                protocol: "https",
+                hostname: process.env.VERCEL_PROJECT_PRODUCTION_URL.split(":")[0],
+                port: process.env.VERCEL_PROJECT_PRODUCTION_URL.split(":")[1] || "",
+                pathname: "/**",
+            },
             // Allow images from Vercel Blob storage
             ...(process.env.BLOB_HOSTNAME
                 ? [
-                      {
-                          protocol: "https",
-                          hostname: process.env.BLOB_HOSTNAME,
-                          port: "",
-                          pathname: "/**",
-                      },
-                  ]
+                    {
+                        protocol: "https",
+                        hostname: process.env.BLOB_HOSTNAME,
+                        port: "",
+                        pathname: "/**",
+                    },
+                ]
                 : []),
             // Fallback: allow all Vercel Blob storage subdomains if no specific hostname is set
             ...(!process.env.BLOB_HOSTNAME
                 ? [
-                      {
-                          protocol: "https",
-                          hostname: "*.public.blob.vercel-storage.com",
-                          port: "",
-                          pathname: "/**",
-                      },
-                  ]
+                    {
+                        protocol: "https",
+                        hostname: "*.public.blob.vercel-storage.com",
+                        port: "",
+                        pathname: "/**",
+                    },
+                ]
                 : []),
         ],
     },
