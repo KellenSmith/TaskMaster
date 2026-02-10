@@ -163,11 +163,12 @@ model Event {
 }
 
 model EventParticipant {
-  id        String @id @default(uuid())
-  user_id   String
-  ticket_id String
-  ticket    Ticket @relation(fields: [ticket_id], references: [product_id])
-  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id            String    @id @default(uuid())
+  checked_in_at DateTime?
+  user_id       String
+  ticket_id     String
+  ticket        Ticket    @relation(fields: [ticket_id], references: [product_id])
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("event_participants")
 }
