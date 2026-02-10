@@ -101,7 +101,11 @@ export const submitMemberApplication = async (formData: FormData) => {
 
 export const getUserLanguage = async () => {
     const cookieStore = await cookies();
-    return cookieStore.get(GlobalConstants.LANGUAGE)?.value || Language.english;
+    const languageValue = cookieStore.get(GlobalConstants.LANGUAGE)?.value;
+    if (languageValue && Object.values(Language).includes(languageValue as Language)) {
+        return languageValue as Language;
+    }
+    return Language.english;
 };
 
 export const updateUser = async (userId: string, formData: FormData): Promise<void> => {

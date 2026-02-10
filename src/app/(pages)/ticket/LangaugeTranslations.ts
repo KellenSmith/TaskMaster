@@ -57,6 +57,10 @@ const LanguageTranslations = {
         [Language.english]: "Ticket type",
         [Language.swedish]: "Biljettyp",
     },
+    checkInFailed: {
+        [Language.english]: "Check-in failed",
+        [Language.swedish]: "Incheckning misslyckades",
+    },
 }
 
 export default LanguageTranslations
