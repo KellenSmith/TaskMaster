@@ -3,9 +3,11 @@ import { Box, Chip, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
-import { use } from "react";
+import { use, useEffect } from "react";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
+import { checkInEventParticipant } from "../../lib/event-participant-actions";
+import { useNotificationContext } from "../../context/NotificationContext";
 
 interface TicketDashboardProps {
     eventParticipantPromise: Promise<Prisma.EventParticipantGetPayload<{ include: { ticket: { include: { event: true } }, user: { select: { id: true, nickname: true } } } }> | null>;
@@ -47,10 +49,33 @@ const NoTicketFound = () => {
 
 const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
     const { language } = useUserContext()
+    const { addNotification } = useNotificationContext();
     const eventParticipant = use(eventParticipantPromise);
 
     if (!eventParticipant)
         return <NoTicketFound />;
+
+    const checkInEventParticipantAction = async () => {
+        try {
+            // Dont check in if not within one hour of event opening hours
+            const now = dayjs()
+            const eventStart = dayjs(eventParticipant.ticket.event.start_time);
+            const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
+            if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {
+                return
+            }
+
+            const result = await checkInEventParticipant(eventParticipant.id);
+            if (!result) return
+            addNotification(result, "error");
+        } catch (error) {
+            addNotification(LanguageTranslations.checkInFailed[language], "error");
+        }
+    }
+
+    useEffect(() => {
+        checkInEventParticipantAction();
+    }, [])
 
     const ticket = eventParticipant.ticket;
     const event = eventParticipant.ticket.event;

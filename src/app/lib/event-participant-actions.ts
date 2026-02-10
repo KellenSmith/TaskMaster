@@ -6,6 +6,9 @@ import GlobalConstants from "../GlobalConstants";
 import { Prisma } from "@/prisma/generated/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
+import { getUserLanguage } from "./user-actions";
+import LanguageTranslations from "./LanguageTranslations";
+import dayjs from "dayjs";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,
@@ -179,3 +182,48 @@ export const unassignUserFromEventTasks = async (
         },
     });
 };
+
+export const checkInEventParticipant = async (eventParticipantId: string): Promise<void | string> => {
+    const validatedEventParticipantId = UuidSchema.parse(eventParticipantId);
+    const language = await getUserLanguage()
+    try {
+        const eventParticipant = await prisma.eventParticipant.findUniqueOrThrow({
+            where: {
+                id: validatedEventParticipantId,
+            },
+            include: {
+                ticket: {
+                    include: {
+                        event: true,
+                    }
+                }
+            }
+        })
+        if (eventParticipant.checked_in_at) {
+            return LanguageTranslations.alreadyCheckedIn[language];
+        }
+
+        // Dont check in if not within one hour of event opening hours
+        const now = dayjs()
+        const eventStart = dayjs(eventParticipant.ticket.event.start_time);
+        const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
+        if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {
+            return
+        }
+
+        await prisma.eventParticipant.update({
+            where: {
+                id: validatedEventParticipantId,
+            },
+            data: {
+                checked_in_at: new Date(),
+            },
+        });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === PrismaErrorCodes.resultNotFound) {
+            return LanguageTranslations.eventParticipantNotFound[language];
+        }
+        console.error("Unknown Prisma error during check-in:", error);
+
+    }
+}

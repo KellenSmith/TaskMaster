@@ -20,7 +20,9 @@ const TicketPage = async ({ searchParams }: TicketPageProps) => {
     });
 
     return (
-        <ErrorBoundarySuspense><TicketDashboard eventParticipantPromise={eventParticipantPromise} /></ErrorBoundarySuspense>
+        <ErrorBoundarySuspense>
+            <TicketDashboard eventParticipantPromise={eventParticipantPromise} />
+        </ErrorBoundarySuspense>
     );
 }
 
