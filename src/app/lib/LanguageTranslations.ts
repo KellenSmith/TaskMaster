@@ -6,8 +6,8 @@ const LanguageTranslations = {
         [Language.swedish]: "Evenemangsdeltagare hittades inte",
     },
     alreadyCheckedIn: {
-        [Language.english]: "Already checked in",
-        [Language.swedish]: "Du har redan checkat in",
+        [Language.english]: "Already checked in at",
+        [Language.swedish]: "Redan checkat in vid",
     },
 }
 

@@ -22,8 +22,8 @@ const LanguageTranslations = {
         [Language.swedish]: "Pågår ej",
     },
     thisIsATicket: {
-        [Language.english]: `This is a ${process.env.NEXT_PUBLIC_ORG_NAME} ticket! Below are the details we have on record for this ticket.`,
-        [Language.swedish]: `Detta är en biljett från ${process.env.NEXT_PUBLIC_ORG_NAME}! Nedan finns de uppgifter vi har registrerade för denna biljett.`,
+        [Language.english]: `This is a valid ${process.env.NEXT_PUBLIC_ORG_NAME} ticket!`,
+        [Language.swedish]: `Detta är en giltig biljett till ${process.env.NEXT_PUBLIC_ORG_NAME}!`,
     },
     eventTitleMissing: {
         [Language.english]: "Event title missing",
@@ -60,6 +60,10 @@ const LanguageTranslations = {
     checkInFailed: {
         [Language.english]: "Check-in failed",
         [Language.swedish]: "Incheckning misslyckades",
+    },
+    alreadyCheckedIn: {
+        [Language.english]: "Already checked in at",
+        [Language.swedish]: "Redan checkat in vid",
     },
 }
 
