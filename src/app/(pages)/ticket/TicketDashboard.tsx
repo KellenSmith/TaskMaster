@@ -3,7 +3,7 @@ import { Box, Chip, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
@@ -29,9 +29,7 @@ const NoTicketFound = () => {
         >
             <Stack spacing={{ xs: 1.5, sm: 2 }}>
                 <Stack
-                    direction={{ xs: "column", sm: "row" }}
                     spacing={{ xs: 1, sm: 2 }}
-                    alignItems={{ xs: "flex-start", sm: "center" }}
                     justifyContent="space-between"
                 >
                     <Chip label={LanguageTranslations.missingData[language]} color="error" />
@@ -48,12 +46,14 @@ const NoTicketFound = () => {
 }
 
 const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
-    const { language } = useUserContext()
-    const { addNotification } = useNotificationContext();
     const eventParticipant = use(eventParticipantPromise);
 
     if (!eventParticipant)
         return <NoTicketFound />;
+
+    const { language } = useUserContext()
+    const { addNotification } = useNotificationContext();
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const checkInEventParticipantAction = async () => {
         try {
@@ -66,8 +66,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
             }
 
             const result = await checkInEventParticipant(eventParticipant.id);
-            if (!result) return
-            addNotification(result, "error");
+            if (result) addNotification(result, "error");
         } catch (error) {
             addNotification(LanguageTranslations.checkInFailed[language], "error");
         }
@@ -89,14 +88,34 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
 
     const hasAllProperties = Boolean(eventTitle && eventStart && eventEnd && ticketType && userNickname);
 
-    const startWindow = eventStart ? dayjs(eventStart).subtract(1, "hour") : null;
-    const endWindow = eventEnd ? dayjs(eventEnd).add(1, "hour") : null;
-    const now = dayjs();
-    const isWithinWindow = Boolean(startWindow && endWindow && now.isAfter(startWindow) && now.isBefore(endWindow));
+    const startWindow = eventStart ? dayjs.utc(eventStart).subtract(1, "hour") : null;
+    const endWindow = eventEnd ? dayjs.utc(eventEnd).add(1, "hour") : null;
+    const now = dayjs.utc();
 
-    const statusColor: "success" | "warning" | "error" = hasAllProperties
-        ? (isWithinWindow ? "success" : "warning")
-        : "error";
+    const isWithinWindow = Boolean(startWindow && endWindow && now.isAfter(startWindow) && now.isBefore(endWindow));
+    // Consider already checked in if checked_in_at is set and is before now minus 10 seconds (to account for small delays)
+    const alreadyCheckedIn = !!eventParticipant.checked_in_at && dayjs.utc(eventParticipant.checked_in_at).isBefore(now.subtract(10, "seconds"));
+    let statusColor: "success" | "warning" | "error";
+    let statusText: string;
+    let title: string;
+    console.log(errorMsg)
+    if (errorMsg) {
+        statusColor = "error";
+        statusText = errorMsg;
+        title = "Error"
+    } else if (!hasAllProperties) {
+        statusColor = "error";
+        statusText = LanguageTranslations.missingData[language];
+        title = "Error"
+    } else if (!isWithinWindow) {
+        statusColor = "warning";
+        statusText = LanguageTranslations.eventNotOngoing[language];
+        title = "Not ongoing"
+    } else {
+        statusColor = "success";
+        statusText = LanguageTranslations.valid[language];
+        title = "Valid"
+    }
 
     return <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 2, sm: 3 } }}>
         <Paper
@@ -112,13 +131,12 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
         >
             <Stack spacing={{ xs: 1.5, sm: 2 }}>
                 <Chip
-                    label={hasAllProperties ? (isWithinWindow ? LanguageTranslations.valid[language] : LanguageTranslations.eventNotOngoing[language]) : LanguageTranslations.missingData[language]}
+                    label={title}
                     color={statusColor}
                 />
-                <Typography>
-                    {LanguageTranslations.thisIsATicket[language]}
-                </Typography>
-                <Typography>{LanguageTranslations.ticketScanInfo[language]}</Typography>
+                {hasAllProperties && <Typography>{LanguageTranslations.thisIsATicket[language]}</Typography>}
+                {!alreadyCheckedIn && <Typography>{LanguageTranslations.ticketScanInfo[language]}</Typography>}
+                <Typography>{statusText}</Typography>
                 <Stack spacing={{ xs: 1, sm: 1.25 }}>
                     <Typography variant="h5">
                         {eventTitle ?? LanguageTranslations.eventTitleMissing[language]}
@@ -137,7 +155,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
                 </Stack>
             </Stack>
         </Paper>
-    </Box>
+    </Box >
 }
 
 export default TicketDashboard

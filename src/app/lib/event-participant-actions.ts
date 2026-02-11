@@ -9,6 +9,7 @@ import { UuidSchema } from "./zod-schemas";
 import { getUserLanguage } from "./user-actions";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
+import { formatDate } from "../ui/utils";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,
@@ -200,7 +201,10 @@ export const checkInEventParticipant = async (eventParticipantId: string): Promi
             }
         })
         if (eventParticipant.checked_in_at) {
-            return LanguageTranslations.alreadyCheckedIn[language];
+            // Consider already checked in if checked_in_at is set and is before now minus 10 seconds (to account for small delays)
+            if (dayjs.utc(eventParticipant.checked_in_at).isBefore(dayjs.utc().subtract(10, "seconds")))
+                return LanguageTranslations.alreadyCheckedIn[language] + " " + formatDate(eventParticipant.checked_in_at);
+            return
         }
 
         // Dont check in if not within one hour of event opening hours
