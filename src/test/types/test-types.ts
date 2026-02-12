@@ -5,6 +5,7 @@ type prismaOperations = {
     findUniqueOrThrow: MockedFunction<() => Promise<any>>;
     findUnique: MockedFunction<() => Promise<any>>;
     findFirst: MockedFunction<() => Promise<any>>;
+    findFirstOrThrow: MockedFunction<() => Promise<any>>;
     create: MockedFunction<() => Promise<any>>;
     createMany: MockedFunction<() => Promise<any>>;
     upsert: MockedFunction<() => Promise<any>>;
