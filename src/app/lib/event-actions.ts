@@ -139,10 +139,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
         const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
-        if (!sanitizedData.max_participants) {
-            throw new Error("Maximum participants must be specified");
-        }
-        if (eventParticipantsCount > sanitizedData.max_participants) {
+        if (sanitizedData.max_participants && eventParticipantsCount > sanitizedData.max_participants) {
             throw new Error(
                 `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
             );
@@ -151,7 +148,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
         // Add or remove the new number of available tickets to product stock
         // deltaMaxParticipants might be negative
         const deltaMaxParticipants =
-            sanitizedData.max_participants - eventToUpdate.max_participants;
+            sanitizedData.max_participants ? sanitizedData.max_participants - eventToUpdate.max_participants : 0;
         if (Math.abs(deltaMaxParticipants)) {
             const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
             await tx.product.updateMany({
@@ -415,7 +412,7 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                         reviewer_id: loggedInUser.id,
                         // Create tasks as "To Do"
                         status: TaskStatus.toDo,
-                        start_time: task.start_time ? moveTaskTimeForward(task.start_time) : eventClone.start_time,
+                        start_time: task.start_time ? moveTaskTimeForward(task.start_time) : createdEvent.start_time,
                         end_time: moveTaskTimeForward(task.end_time),
                         skill_badges: { createMany: { data: skillBadgesWithoutTaskId } },
                     },
