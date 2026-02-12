@@ -34,6 +34,7 @@ export type MockPrisma = {
     order: prismaOperations;
     orderItem: prismaOperations;
     textContent: prismaOperations;
+    textTranslation: prismaOperations;
     $transaction: MockedFunction<(callback: TransactionCallback) => Promise<unknown>>;
 };
 
