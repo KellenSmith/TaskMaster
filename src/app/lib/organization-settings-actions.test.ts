@@ -46,10 +46,7 @@ describe("organization-settings-actions", () => {
                 id: "org-1",
                 logo_url: "https://blob.vercel-storage.com/old.png",
             } as any;
-            const getSettingsSpy = vi
-                .spyOn(orgActions, "getOrganizationSettings")
-                .mockResolvedValue(settings);
-            const deleteSpy = vi.spyOn(orgActions, "deleteOldBlob").mockResolvedValue();
+            mockContext.prisma.organizationSettings.findFirst.mockResolvedValue(settings);
 
             const formData = new FormData();
             formData.set("event_manager_email", "");
@@ -58,11 +55,7 @@ describe("organization-settings-actions", () => {
 
             await orgActions.updateOrganizationSettings(formData);
 
-            expect(getSettingsSpy).toHaveBeenCalledTimes(1);
-            expect(deleteSpy).toHaveBeenCalledWith(
-                settings.logo_url,
-                "https://blob.vercel-storage.com/new.png",
-            );
+            expect(mockContext.prisma.organizationSettings.findFirst).toHaveBeenCalledTimes(1);
             expect(mockContext.prisma.organizationSettings.update).toHaveBeenCalledWith({
                 where: { id: "org-1" },
                 data: {
@@ -71,6 +64,9 @@ describe("organization-settings-actions", () => {
                     logo_url: "https://blob.vercel-storage.com/new.png",
                 },
             });
+            expect(vi.mocked(del)).toHaveBeenCalledWith(
+                "https://blob.vercel-storage.com/old.png",
+            );
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
                 GlobalConstants.ORGANIZATION_SETTINGS,
                 "max",
