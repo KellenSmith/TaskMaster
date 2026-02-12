@@ -6,6 +6,7 @@ type prismaOperations = {
     findUnique: MockedFunction<() => Promise<any>>;
     findFirst: MockedFunction<() => Promise<any>>;
     create: MockedFunction<() => Promise<any>>;
+    createMany: MockedFunction<() => Promise<any>>;
     findMany: MockedFunction<() => Promise<any>>;
     update: MockedFunction<() => Promise<any>>;
     count: MockedFunction<() => Promise<any>>;
@@ -17,6 +18,7 @@ type prismaOperations = {
 export type MockPrisma = {
     organizationSettings: prismaOperations;
     user: prismaOperations;
+    userSkillBadge: prismaOperations;
     newsletterJob: prismaOperations;
     event: prismaOperations;
     eventParticipant: prismaOperations;
@@ -29,8 +31,11 @@ export type MockPrisma = {
     order: prismaOperations;
     orderItem: prismaOperations;
     textContent: prismaOperations;
-    $transaction: Function;
+    $transaction: MockedFunction<(callback: TransactionCallback) => Promise<unknown>>;
 };
+
+export type TransactionClient = Omit<MockPrisma, "$transaction">;
+export type TransactionCallback = (client: TransactionClient) => Promise<unknown>;
 
 export type TestContext = {
     prisma: DeepMockProxy<MockPrisma>;

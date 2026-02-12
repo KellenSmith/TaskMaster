@@ -154,7 +154,7 @@ model Event {
   tags             String[]       @default([])
   host_id          String?
   event_reserves   EventReserve[]
-  host             User?          @relation(fields: [host_id], references: [id])
+  host             User?          @relation(fields: [host_id], references: [id], onDelete: SetNull)
   location         Location?      @relation(fields: [location_id], references: [id])
   tasks            Task[]
   tickets          Ticket[]
@@ -196,9 +196,9 @@ model Task {
   reviewer_id  String?
   event_id     String?
   skill_badges TaskSkillBadge[]
-  assignee     User?            @relation("assignee", fields: [assignee_id], references: [id])
+  assignee     User?            @relation("assignee", fields: [assignee_id], references: [id], onDelete: SetNull)
   event        Event?           @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  reviewer     User?            @relation("reviewer", fields: [reviewer_id], references: [id])
+  reviewer     User?            @relation("reviewer", fields: [reviewer_id], references: [id], onDelete: SetNull)
 
   @@map("tasks")
 }
@@ -295,7 +295,7 @@ model Order {
   updated_at         DateTime    @updatedAt
   user_id            String?
   order_items        OrderItem[]
-  user               User?       @relation(fields: [user_id], references: [id])
+  user               User?       @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@map("orders")
 }
