@@ -5,6 +5,10 @@ import { mockContext } from "../../test/mocks/prismaMock";
 import { buildFormData } from "../../test/test-helpers";
 import * as ticketActions from "./ticket-actions";
 
+vi.mock("./organization-settings-actions", () => ({
+    deleteOldBlob: vi.fn(),
+}));
+
 const eventId = "550e8400-e29b-41d4-a716-446655440000";
 const ticketId = "550e8400-e29b-41d4-a716-446655440001";
 
@@ -82,6 +86,10 @@ describe("ticket-actions", () => {
                 stock: "5",
             });
 
+            mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue({
+                id: ticketId,
+                image_url: "https://example.com/ticket.png",
+            } as any);
             mockContext.prisma.ticket.update.mockResolvedValue({ product_id: ticketId } as any);
 
             await ticketActions.updateEventTicket(ticketId, formData);
@@ -101,6 +109,73 @@ describe("ticket-actions", () => {
                 GlobalConstants.TICKET,
                 "max",
             );
+        });
+
+        it("deletes old blob when updating image URL", async () => {
+            const { deleteOldBlob } = await import("./organization-settings-actions");
+            const oldImageUrl = "https://example.com/old-ticket.png";
+            const newImageUrl = "https://example.com/new-ticket.png";
+
+            const formData = buildFormData({
+                ...baseTicketForm,
+                image_url: newImageUrl,
+            });
+
+            mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue({
+                id: ticketId,
+                image_url: oldImageUrl,
+            } as any);
+
+            mockContext.prisma.ticket.update.mockResolvedValue({ product_id: ticketId } as any);
+
+            await ticketActions.updateEventTicket(ticketId, formData);
+
+            expect(deleteOldBlob).toHaveBeenCalledWith(oldImageUrl, newImageUrl);
+        });
+
+        it("deletes old blob when removing image URL", async () => {
+            const { deleteOldBlob } = await import("./organization-settings-actions");
+            const oldImageUrl = "https://example.com/old-ticket.png";
+
+            const formData = buildFormData({
+                ...baseTicketForm,
+                image_url: "",
+            });
+
+            mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue({
+                id: ticketId,
+                image_url: oldImageUrl,
+            } as any);
+
+            mockContext.prisma.ticket.update.mockResolvedValue({ product_id: ticketId } as any);
+
+            await ticketActions.updateEventTicket(ticketId, formData);
+
+            expect(deleteOldBlob).toHaveBeenCalledWith(oldImageUrl, "");
+        });
+
+        it("does not delete blob when image_url not in update", async () => {
+            const { deleteOldBlob } = await import("./organization-settings-actions");
+            const oldImageUrl = "https://example.com/old-ticket.png";
+
+            const formDataObject: Partial<typeof baseTicketForm> = {
+                ...baseTicketForm,
+                vat_percentage: "6",
+            };
+            delete formDataObject.image_url;
+
+            const formData = buildFormData(formDataObject);
+
+            mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue({
+                id: ticketId,
+                image_url: oldImageUrl,
+            } as any);
+
+            mockContext.prisma.ticket.update.mockResolvedValue({ product_id: ticketId } as any);
+
+            await ticketActions.updateEventTicket(ticketId, formData);
+
+            expect(deleteOldBlob).not.toHaveBeenCalled();
         });
 
         it("rejects invalid ticket id", async () => {
