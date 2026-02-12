@@ -7,6 +7,7 @@ type prismaOperations = {
     findFirst: MockedFunction<() => Promise<any>>;
     create: MockedFunction<() => Promise<any>>;
     createMany: MockedFunction<() => Promise<any>>;
+    upsert: MockedFunction<() => Promise<any>>;
     findMany: MockedFunction<() => Promise<any>>;
     update: MockedFunction<() => Promise<any>>;
     count: MockedFunction<() => Promise<any>>;
