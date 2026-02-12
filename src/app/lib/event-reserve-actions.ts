@@ -11,16 +11,12 @@ export const addEventReserveWithTx = async (
     userId: string,
     eventId: string,
 ) => {
-    // Validate ID formats
-    const validatedUserId = UuidSchema.parse(userId);
-    const validatedEventId = UuidSchema.parse(eventId);
-
     // Check that the user is not on the participant list
     const eventParticipant = await tx.eventParticipant.findFirst({
         where: {
-            user_id: validatedUserId,
+            user_id: userId,
             ticket: {
-                event_id: validatedEventId,
+                event_id: eventId,
             },
         },
     });
@@ -29,19 +25,19 @@ export const addEventReserveWithTx = async (
     await tx.eventReserve.upsert({
         where: {
             user_id_event_id: {
-                user_id: validatedUserId,
-                event_id: validatedEventId,
+                user_id: userId,
+                event_id: eventId,
             },
         },
         create: {
             user: {
                 connect: {
-                    id: validatedUserId,
+                    id: userId,
                 },
             },
             event: {
                 connect: {
-                    id: validatedEventId,
+                    id: eventId,
                 },
             },
         },
@@ -67,15 +63,11 @@ export const deleteEventReserveWithTx = async (
     userId: string,
     eventId: string,
 ) => {
-    // Validate ID formats
-    const validatedUserId = UuidSchema.parse(userId);
-    const validatedEventId = UuidSchema.parse(eventId);
-
     // Delete the event reserve entry if it exists (use deleteMany to avoid error)
     await tx.eventReserve.deleteMany({
         where: {
-            user_id: validatedUserId,
-            event_id: validatedEventId,
+            user_id: userId,
+            event_id: eventId,
         },
     });
     revalidateTag(GlobalConstants.RESERVE_USERS, "max");
