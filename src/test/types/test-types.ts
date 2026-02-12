@@ -24,6 +24,7 @@ export type MockPrisma = {
     event: prismaOperations;
     eventParticipant: prismaOperations;
     eventReserve: prismaOperations;
+    skillBadge: prismaOperations;
     task: prismaOperations;
     product: prismaOperations;
     membership: prismaOperations;
