@@ -71,12 +71,12 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         if (newSkillBadges) {
             await prisma.taskSkillBadge.deleteMany({
                 where: {
-                    task_id: taskId,
+                    task_id: validatedTaskId,
                 },
             });
             await prisma.taskSkillBadge.createMany({
                 data: newSkillBadges.map((badgeId) => ({
-                    task_id: taskId,
+                    task_id: validatedTaskId,
                     skill_badge_id: badgeId,
                 })),
             });
@@ -332,11 +332,11 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
 export const contactTaskMember = async (
     recipientId: string,
     formData: FormData,
-    taskId: string | null,
+    taskId: string,
 ): Promise<void> => {
     // Validate recipient and task ID formats
     const validatedRecipientId = UuidSchema.parse(recipientId);
-    const validatedTaskId = taskId ? UuidSchema.parse(taskId) : undefined;
+    const validatedTaskId = UuidSchema.parse(taskId);
 
     const recipient = await prisma.user.findUniqueOrThrow({
         where: {
@@ -344,13 +344,13 @@ export const contactTaskMember = async (
         },
     });
     const sender = await getLoggedInUser();
-    const task = validatedTaskId ? await prisma.task.findUniqueOrThrow({
+    if (!sender) throw new Error("User must be logged in to contact members");
+
+    const task = await prisma.task.findUniqueOrThrow({
         where: {
             id: validatedTaskId,
         },
-    }) : null;
-    if (!task) throw new Error("Task not found");
-    if (!sender) throw new Error("User must be logged in to contact members");
+    });
 
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ContactMemberSchema.parse(Object.fromEntries(formData.entries()));
