@@ -10,6 +10,7 @@ import { getUserLanguage } from "./user-actions";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { formatDate } from "../ui/utils";
+import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,
@@ -20,14 +21,14 @@ export const addEventParticipantWithTx = async (
     const validatedTicketId = UuidSchema.parse(ticketId);
     const validatedUserId = UuidSchema.parse(userId);
 
-    const ticket = await prisma.ticket.findUniqueOrThrow({
+    const ticket = await tx.ticket.findUniqueOrThrow({
         where: {
             product_id: validatedTicketId,
         },
     });
 
     // Check that the event isn't sold out
-    const event = await prisma.event.findUniqueOrThrow({
+    const event = await tx.event.findUniqueOrThrow({
         where: {
             id: ticket.event_id,
         },
@@ -224,7 +225,7 @@ export const checkInEventParticipant = async (eventParticipantId: string): Promi
             },
         });
     } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === PrismaErrorCodes.resultNotFound) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === prismaErrorCodes.resultNotFound) {
             return LanguageTranslations.eventParticipantNotFound[language];
         }
         console.error("Unknown Prisma error during check-in:", error);
