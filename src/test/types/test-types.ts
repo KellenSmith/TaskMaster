@@ -11,6 +11,7 @@ type prismaOperations = {
     upsert: MockedFunction<() => Promise<any>>;
     findMany: MockedFunction<() => Promise<any>>;
     update: MockedFunction<() => Promise<any>>;
+    updateMany: MockedFunction<() => Promise<any>>;
     count: MockedFunction<() => Promise<any>>;
     delete: MockedFunction<() => Promise<any>>;
     deleteMany: MockedFunction<() => Promise<any>>;
@@ -36,6 +37,7 @@ export type MockPrisma = {
     orderItem: prismaOperations;
     textContent: prismaOperations;
     textTranslation: prismaOperations;
+    infoPage: prismaOperations;
     $transaction: MockedFunction<(callback: TransactionCallback) => Promise<unknown>>;
 };
 
