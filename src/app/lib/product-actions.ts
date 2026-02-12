@@ -105,7 +105,7 @@ export const updateProduct = async (productId: string, formData: FormData): Prom
     });
 
     // Delete old blob if image_url was provided in the update and differs from the old one
-    if (sanitizedData.image_url)
+    if ("image_url" in sanitizedData)
         await deleteOldBlob(oldProduct.image_url, sanitizedData.image_url);
 
 

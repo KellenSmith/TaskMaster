@@ -29,6 +29,7 @@ export type MockPrisma = {
     skillBadge: prismaOperations;
     location: prismaOperations;
     task: prismaOperations;
+    taskSkillBadge: prismaOperations;
     product: prismaOperations;
     membership: prismaOperations;
     userMembership: prismaOperations;

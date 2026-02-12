@@ -282,6 +282,22 @@ describe("user-actions", () => {
             );
         });
 
+        it("allows deleting a non-admin when there is only one admin", async () => {
+            const adminId = "admin-id-12345-67890";
+            mockContext.prisma.user.findMany.mockResolvedValue([
+                { id: adminId, role: UserRole.admin },
+            ] as any);
+            mockContext.prisma.user.delete.mockResolvedValue({ id: userId } as any);
+            vi.mocked(mockContext.prisma.$transaction).mockResolvedValue(undefined);
+
+            await userActions.deleteUser(userId);
+
+            expect(mockContext.prisma.user.delete).toHaveBeenCalledWith({
+                where: { id: userId },
+            });
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.USER, "max");
+        });
+
         it("deletes user and revalidates related tags", async () => {
             mockContext.prisma.user.findMany.mockResolvedValue([
                 { id: userId, role: UserRole.admin },
