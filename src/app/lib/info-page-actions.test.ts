@@ -166,6 +166,32 @@ describe("info-page-actions", () => {
             );
         });
 
+        it("sets lowest_allowed_user_role to null when empty string provided", async () => {
+            const tx = mockContext.prisma as TransactionClient;
+            const updatedInfoPage = {
+                id: infoPageId,
+                titleText: { id: titleTextId },
+            };
+
+            vi.mocked(tx.infoPage.update).mockResolvedValue(updatedInfoPage as any);
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
+                async (callback) => callback(tx),
+            );
+
+            const formData = buildFormData({
+                title: "Updated Title",
+                lowest_allowed_user_role: "",
+            });
+
+            await infoPageActions.updateInfoPage(formData, infoPageId, Language.english);
+
+            expect(tx.infoPage.update).toHaveBeenCalledWith({
+                where: { id: infoPageId },
+                data: { lowest_allowed_user_role: null },
+                include: { titleText: true },
+            });
+        });
+
         it("skips title translation update when titleText is null", async () => {
             const tx = mockContext.prisma as TransactionClient;
             const updatedInfoPage = {

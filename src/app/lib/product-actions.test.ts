@@ -297,6 +297,30 @@ describe("product-actions", () => {
             );
         });
 
+        it("does not delete blob when image_url not in update", async () => {
+            const sanitized = {
+                name: "Updated T-Shirt",
+                price: 3000,
+            };
+
+            vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
+            mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue({
+                id: productId,
+                image_url: "https://blob.vercel-storage.com/old.png",
+            } as any);
+            mockContext.prisma.product.update.mockResolvedValue({ id: productId } as any);
+
+            const formData = buildFormData({
+                name: "Updated T-Shirt",
+                price: "30",
+                vat_percentage: "6",
+            });
+
+            await productActions.updateProduct(productId, formData);
+
+            expect(vi.mocked(deleteOldBlob)).not.toHaveBeenCalled();
+        });
+
         it("rejects invalid product id", async () => {
             const formData = buildFormData(baseProductForm);
 
