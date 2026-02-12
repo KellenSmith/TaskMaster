@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@auth/core': 0.41.0
   prettier: 3.6.2
   vite@>=7.1.0 <=7.1.4: '>=7.1.5'
   axios@<1.12.0: '>=1.12.0'
@@ -31,8 +32,8 @@ importers:
   .:
     dependencies:
       '@auth/core':
-        specifier: ^0.40.0
-        version: 0.40.0(nodemailer@8.0.1)
+        specifier: 0.41.0
+        version: 0.41.0(nodemailer@8.0.1)
       '@auth/prisma-adapter':
         specifier: ^2.10.0
         version: 2.10.0(@prisma/client@6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3))(nodemailer@8.0.1)
@@ -283,20 +284,6 @@ packages:
 
   '@asamuzakjp/css-color@3.2.0':
     resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
-
-  '@auth/core@0.40.0':
-    resolution: {integrity: sha512-n53uJE0RH5SqZ7N1xZoMKekbHfQgjd0sAEyUbE+IYJnmuQkbvuZnXItCU7d+i7Fj8VGOgqvNO7Mw4YfBTlZeQw==}
-    peerDependencies:
-      '@simplewebauthn/browser': ^9.0.1
-      '@simplewebauthn/server': ^9.0.2
-      nodemailer: '>=7.0.11'
-    peerDependenciesMeta:
-      '@simplewebauthn/browser':
-        optional: true
-      '@simplewebauthn/server':
-        optional: true
-      nodemailer:
-        optional: true
 
   '@auth/core@0.41.0':
     resolution: {integrity: sha512-Wd7mHPQ/8zy6Qj7f4T46vg3aoor8fskJm6g2Zyj064oQ3+p0xNZXAV60ww0hY+MbTesfu29kK14Zk5d5JTazXQ==}
@@ -5184,16 +5171,6 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.4
       lru-cache: 10.4.3
 
-  '@auth/core@0.40.0(nodemailer@8.0.1)':
-    dependencies:
-      '@panva/hkdf': 1.2.1
-      jose: 6.0.13
-      oauth4webapi: 3.7.0
-      preact: 10.24.3
-      preact-render-to-string: 6.5.11(preact@10.24.3)
-    optionalDependencies:
-      nodemailer: 8.0.1
-
   '@auth/core@0.41.0(nodemailer@8.0.1)':
     dependencies:
       '@panva/hkdf': 1.2.1
@@ -5206,7 +5183,7 @@ snapshots:
 
   '@auth/prisma-adapter@2.10.0(@prisma/client@6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3))(nodemailer@8.0.1)':
     dependencies:
-      '@auth/core': 0.40.0(nodemailer@8.0.1)
+      '@auth/core': 0.41.0(nodemailer@8.0.1)
       '@prisma/client': 6.14.0(prisma@6.14.0(magicast@0.3.5)(typescript@5.7.3))(typescript@5.7.3)
     transitivePeerDependencies:
       - '@simplewebauthn/browser'

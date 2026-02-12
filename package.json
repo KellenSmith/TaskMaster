@@ -24,7 +24,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@auth/core": "^0.40.0",
+    "@auth/core": "^0.41.0",
     "@auth/prisma-adapter": "^2.10.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -109,6 +109,7 @@
   },
   "pnpm": {
     "overrides": {
+      "@auth/core": "0.41.0",
       "prettier": "3.6.2",
       "vite@>=7.1.0 <=7.1.4": ">=7.1.5",
       "axios@<1.12.0": ">=1.12.0",
