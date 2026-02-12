@@ -39,10 +39,21 @@ export type MockPrisma = {
     textContent: prismaOperations;
     textTranslation: prismaOperations;
     infoPage: prismaOperations;
+    verificationToken: prismaOperations;
+    account: prismaOperations;
+    session: prismaOperations;
     $transaction: MockedFunction<(callback: TransactionCallback) => Promise<unknown>>;
 };
 
-export type TransactionClient = Omit<MockPrisma, "$transaction">;
+export type TransactionClient = Omit<MockPrisma, "$transaction"> & {
+    $executeRaw: MockedFunction<() => Promise<any>>;
+    $executeRawUnsafe: MockedFunction<() => Promise<any>>;
+    $queryRaw: MockedFunction<() => Promise<any>>;
+    $queryRawUnsafe: MockedFunction<() => Promise<any>>;
+    $connect: MockedFunction<() => Promise<void>>;
+    $disconnect: MockedFunction<() => Promise<void>>;
+    $on: MockedFunction<() => void>;
+};
 export type TransactionCallback = (client: TransactionClient) => Promise<unknown>;
 
 export type TestContext = {
