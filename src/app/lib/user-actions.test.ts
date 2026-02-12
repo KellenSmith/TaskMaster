@@ -10,7 +10,7 @@ import { auth, signIn, signOut } from "./auth/auth";
 import { sendMail } from "./mail-service/mail-service";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
-import { getRelativeUrl } from "./utils";
+import { buildFormData } from "../../test/test-helpers";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -34,14 +34,6 @@ vi.mock("./user-membership-actions", () => ({
     getMembershipProduct: vi.fn(),
     renewUserMembership: vi.fn(),
 }));
-
-const buildFormData = (entries: Record<string, string>) => {
-    const formData = new FormData();
-    Object.entries(entries).forEach(([key, value]) => {
-        formData.set(key, value);
-    });
-    return formData;
-};
 
 describe("user-actions", () => {
     describe("createUser", () => {
