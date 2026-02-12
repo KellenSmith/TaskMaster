@@ -63,6 +63,10 @@ export const updateMembershipProduct = async (
     // Sanitize rich text fields (description)before saving to database
     const sanitizedProductData = sanitizeFormData(productValues);
 
+    const oldProduct = await prisma.product.findUniqueOrThrow({
+        where: { id: validatedProductId },
+    });
+
     await prisma.membership.update({
         where: {
             product_id: validatedProductId,
@@ -74,6 +78,12 @@ export const updateMembershipProduct = async (
             },
         },
     });
+
+    // Delete old blob if image_url was provided in the update and differs from the old one
+    if ("image_url" in sanitizedProductData)
+        await deleteOldBlob(oldProduct.image_url, sanitizedProductData.image_url);
+
+
     revalidateTag(GlobalConstants.PRODUCT, "max");
     revalidateTag(GlobalConstants.MEMBERSHIP, "max");
 };
@@ -93,7 +103,12 @@ export const updateProduct = async (productId: string, formData: FormData): Prom
         where: { id: validatedProductId },
         data: sanitizedData,
     });
-    await deleteOldBlob(oldProduct.image_url, sanitizedData.image_url);
+
+    // Delete old blob if image_url was provided in the update and differs from the old one
+    if (sanitizedData.image_url)
+        await deleteOldBlob(oldProduct.image_url, sanitizedData.image_url);
+
+
     revalidateTag(GlobalConstants.PRODUCT, "max");
 };
 
