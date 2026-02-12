@@ -160,18 +160,6 @@ describe("event-participant-actions", () => {
             ).rejects.toThrow("Event is already sold out");
         });
 
-        it("throws error on invalid ticket ID format", async () => {
-            await expect(
-                eventParticipantActions.addEventParticipantWithTx(tx as any, "invalid-id", userId),
-            ).rejects.toThrow();
-        });
-
-        it("throws error on invalid user ID format", async () => {
-            await expect(
-                eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, "invalid-id"),
-            ).rejects.toThrow();
-        });
-
         it("handles event with no existing participants", async () => {
             const emptyEvent = {
                 ...mockEvent,

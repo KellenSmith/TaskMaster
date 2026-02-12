@@ -17,13 +17,9 @@ export const addEventParticipantWithTx = async (
     ticketId: string,
     userId: string,
 ) => {
-    // Validate ID formats
-    const validatedTicketId = UuidSchema.parse(ticketId);
-    const validatedUserId = UuidSchema.parse(userId);
-
     const ticket = await tx.ticket.findUniqueOrThrow({
         where: {
-            product_id: validatedTicketId,
+            product_id: ticketId,
         },
     });
 
@@ -41,13 +37,13 @@ export const addEventParticipantWithTx = async (
         },
     });
     const participantIds = event.tickets.flatMap((t) => t.event_participants.map((p) => p.user_id));
-    if (participantIds.includes(validatedUserId))
+    if (participantIds.includes(userId))
         throw new Error("Member is already a participant");
     if (participantIds.length >= event.max_participants) {
         throw new Error("Event is already sold out");
     }
 
-    await deleteEventReserveWithTx(tx, validatedUserId, ticket.event_id);
+    await deleteEventReserveWithTx(tx, userId, ticket.event_id);
     revalidateTag(GlobalConstants.RESERVE_USERS, "max");
 
     // Decrement the product stock of all tickets with limited stock belonging to the same event
@@ -88,8 +84,11 @@ export const addEventParticipantWithTx = async (
 };
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
+    const validatedUserId = UuidSchema.parse(userId);
+    const validatedTicketId = UuidSchema.parse(ticketId);
+
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await addEventParticipantWithTx(tx, ticketId, userId);
+        await addEventParticipantWithTx(tx, validatedTicketId, validatedUserId);
     });
 };
 
@@ -141,9 +140,12 @@ export const deleteEventParticipantWithTx = async (
 };
 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
+    const validatedEventId = UuidSchema.parse(eventId);
+    const validatedUserId = UuidSchema.parse(userId);
+
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await deleteEventParticipantWithTx(tx, eventId, userId);
-        await unassignUserFromEventTasks(tx, eventId, userId);
+        await deleteEventParticipantWithTx(tx, validatedEventId, validatedUserId);
+        await unassignUserFromEventTasks(tx, validatedEventId, validatedUserId);
     });
 };
 
