@@ -36,7 +36,7 @@ describe("event-participant-actions", () => {
     });
 
     describe("addEventParticipantWithTx", () => {
-        const tx = mockContext.prisma as TransactionClient;
+        const tx = mockContext.prisma as any as TransactionClient;
 
         const mockTicket = {
             product_id: ticketId,
@@ -64,7 +64,7 @@ describe("event-participant-actions", () => {
         });
 
         it("adds event participant successfully", async () => {
-            await eventParticipantActions.addEventParticipantWithTx(tx, ticketId, userId);
+            await eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId);
 
             expect(mockContext.prisma.ticket.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { product_id: ticketId },
@@ -135,7 +135,7 @@ describe("event-participant-actions", () => {
             );
 
             await expect(
-                eventParticipantActions.addEventParticipantWithTx(tx, ticketId, userId),
+                eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId),
             ).rejects.toThrow("Member is already a participant");
         });
 
@@ -156,19 +156,19 @@ describe("event-participant-actions", () => {
             mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(soldOutEvent as any);
 
             await expect(
-                eventParticipantActions.addEventParticipantWithTx(tx, ticketId, userId),
+                eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId),
             ).rejects.toThrow("Event is already sold out");
         });
 
         it("throws error on invalid ticket ID format", async () => {
             await expect(
-                eventParticipantActions.addEventParticipantWithTx(tx, "invalid-id", userId),
+                eventParticipantActions.addEventParticipantWithTx(tx as any, "invalid-id", userId),
             ).rejects.toThrow();
         });
 
         it("throws error on invalid user ID format", async () => {
             await expect(
-                eventParticipantActions.addEventParticipantWithTx(tx, ticketId, "invalid-id"),
+                eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, "invalid-id"),
             ).rejects.toThrow();
         });
 
@@ -184,7 +184,7 @@ describe("event-participant-actions", () => {
             };
             mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(emptyEvent as any);
 
-            await eventParticipantActions.addEventParticipantWithTx(tx, ticketId, userId);
+            await eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId);
 
             expect(tx.eventParticipant.create).toHaveBeenCalled();
         });
@@ -196,13 +196,13 @@ describe("event-participant-actions", () => {
             };
             mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(unlimitedEvent as any);
 
-            await eventParticipantActions.addEventParticipantWithTx(tx, ticketId, userId);
+            await eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId);
 
             expect(tx.eventParticipant.create).toHaveBeenCalled();
         });
 
         it("does not decrement stock for tickets with null stock", async () => {
-            await eventParticipantActions.addEventParticipantWithTx(tx, ticketId, userId);
+            await eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId);
 
             expect(tx.product.updateMany).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -216,7 +216,7 @@ describe("event-participant-actions", () => {
 
     describe("addEventParticipant", () => {
         it("calls transaction wrapper with addEventParticipantWithTx", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             mockContext.prisma.$transaction.mockImplementation(async (callback) => callback(tx));
 
             const mockTicket = {
@@ -240,7 +240,7 @@ describe("event-participant-actions", () => {
     });
 
     describe("deleteEventParticipantWithTx", () => {
-        const tx = mockContext.prisma as TransactionClient;
+        const tx = mockContext.prisma as any as TransactionClient;
 
         const mockTicket = {
             product_id: ticketId,
@@ -253,7 +253,7 @@ describe("event-participant-actions", () => {
         });
 
         it("deletes event participant and notifies reserves", async () => {
-            await eventParticipantActions.deleteEventParticipantWithTx(tx, eventId, userId);
+            await eventParticipantActions.deleteEventParticipantWithTx(tx as any, eventId, userId);
 
             expect(tx.ticket.findFirstOrThrow).toHaveBeenCalledWith({
                 where: {
@@ -297,12 +297,12 @@ describe("event-participant-actions", () => {
             tx.ticket.findFirstOrThrow.mockRejectedValue(new Error("Ticket not found"));
 
             await expect(
-                eventParticipantActions.deleteEventParticipantWithTx(tx, eventId, userId),
+                eventParticipantActions.deleteEventParticipantWithTx(tx as any, eventId, userId),
             ).rejects.toThrow("Ticket not found");
         });
 
         it("increments stock only for tickets with limited stock", async () => {
-            await eventParticipantActions.deleteEventParticipantWithTx(tx, eventId, userId);
+            await eventParticipantActions.deleteEventParticipantWithTx(tx as any, eventId, userId);
 
             expect(tx.product.updateMany).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -315,7 +315,7 @@ describe("event-participant-actions", () => {
     });
 
     describe("deleteEventParticipant", () => {
-        const tx = mockContext.prisma as TransactionClient;
+        const tx = mockContext.prisma as any as TransactionClient;
 
         beforeEach(() => {
             mockContext.prisma.$transaction.mockImplementation(async (callback) => callback(tx));
@@ -344,7 +344,7 @@ describe("event-participant-actions", () => {
     });
 
     describe("unassignUserFromEventTasks", () => {
-        const tx = mockContext.prisma as TransactionClient;
+        const tx = mockContext.prisma as any as TransactionClient;
 
         const mockEvent = {
             id: eventId,
@@ -357,7 +357,7 @@ describe("event-participant-actions", () => {
         });
 
         it("unassigns tasks that start within event time", async () => {
-            await eventParticipantActions.unassignUserFromEventTasks(tx, eventId, userId);
+            await eventParticipantActions.unassignUserFromEventTasks(tx as any, eventId, userId);
 
             expect(tx.event.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: eventId },
@@ -395,14 +395,14 @@ describe("event-participant-actions", () => {
             tx.event.findUniqueOrThrow.mockRejectedValue(new Error("Event not found"));
 
             await expect(
-                eventParticipantActions.unassignUserFromEventTasks(tx, eventId, userId),
+                eventParticipantActions.unassignUserFromEventTasks(tx as any, eventId, userId),
             ).rejects.toThrow("Event not found");
         });
 
         it("handles event with no tasks", async () => {
             tx.task.updateMany.mockResolvedValue({ count: 0 } as any);
 
-            await eventParticipantActions.unassignUserFromEventTasks(tx, eventId, userId);
+            await eventParticipantActions.unassignUserFromEventTasks(tx as any, eventId, userId);
 
             expect(tx.task.updateMany).toHaveBeenCalled();
         });
