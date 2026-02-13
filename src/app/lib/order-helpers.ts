@@ -34,7 +34,7 @@ export const progressOrder = async (
     revalidateTag(GlobalConstants.ORDER, "max");
 };
 
-export const pendingOrderToPaid = async (
+const pendingOrderToPaid = async (
     order: Prisma.OrderGetPayload<{
         include: {
             user: true;
@@ -43,18 +43,19 @@ export const pendingOrderToPaid = async (
     }>,
     needsCapture: boolean,
 ): Promise<void> => {
-    if (order.status !== OrderStatus.pending)
-        throw new Error(`An order with status ${order.status} cannot be marked as paid`);
-
-    await prisma.order.update({
+    const updatedOrder = await prisma.order.update({
         where: { id: order.id },
         data: { status: OrderStatus.paid },
+        include: {
+            user: true,
+            order_items: { include: { product: { include: { membership: true, ticket: true } } } },
+        },
     });
 
-    await paidOrderToShipped(order, needsCapture);
+    await paidOrderToShipped(updatedOrder, needsCapture);
 };
 
-export const paidOrderToShipped = async (
+const paidOrderToShipped = async (
     order: Prisma.OrderGetPayload<{
         include: {
             user: true;
@@ -63,38 +64,53 @@ export const paidOrderToShipped = async (
     }>,
     needsCapture: boolean,
 ): Promise<void> => {
-    if (order.status !== OrderStatus.paid)
-        throw new Error(`An order with status ${order.status} cannot be marked as shipped`);
-
     // This transaction may perform multiple updates and external work; increase timeout locally.
-    await prisma.$transaction(
+    const updatedOrder = await prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
             await processOrderItems(tx, order);
-            await tx.order.update({
+            return await tx.order.update({
                 where: { id: order.id },
                 data: { status: OrderStatus.shipped },
-                select: { id: true, status: true },
+                select: {
+                    id: true,
+                    status: true,
+                    total_amount: true,
+                    payment_request_id: true,
+                    payee_ref: true,
+                    user: { select: { email: true } },
+                    order_items: {
+                        include: { product: { select: { name: true, description: true } } },
+                    },
+                },
             });
         },
         {
-            // timeout in ms for this interactive transaction; set to 30s for safety
+            // timeout in ms for this interactive transaction; set to 10s for safety
             timeout: 10000,
             // max wait to acquire a connection for transaction
             maxWait: 5000,
         },
     );
     try {
-        await sendOrderConfirmation(order);
+        await sendOrderConfirmation(updatedOrder);
     } catch (error) {
         // Allow progressing order despite failed confirmation
         console.error("Failed to send order confirmation:", error);
     }
 
-    await shippedOrderToCompleted(order, needsCapture);
+    await shippedOrderToCompleted(updatedOrder, needsCapture);
 };
 
-export const shippedOrderToCompleted = async (
-    order: Prisma.OrderGetPayload<true>,
+const shippedOrderToCompleted = async (
+    order: Prisma.OrderGetPayload<{
+        select: {
+            status: true;
+            payee_ref: true;
+            id: true;
+            payment_request_id: true;
+            total_amount: true;
+        };
+    }>,
     needsCapture: boolean,
 ) => {
     if (needsCapture) await capturePaymentFunds(order);
