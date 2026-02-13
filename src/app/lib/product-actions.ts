@@ -1,6 +1,5 @@
 "use server";
 
-import { Prisma } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import {
     MembershipWithoutProductSchema,
@@ -8,16 +7,10 @@ import {
     ProductUpdateSchema,
     UuidSchema,
 } from "./zod-schemas";
-import { renewUserMembership } from "./user-membership-actions";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { addEventParticipantWithTx } from "./event-participant-actions";
 import { deleteOldBlob } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
-import { sendMail } from "./mail-service/mail-service";
-import { getAbsoluteUrl } from "./utils";
-import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
-import { createElement } from "react";
 
 export const createProduct = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -83,7 +76,6 @@ export const updateMembershipProduct = async (
     if ("image_url" in sanitizedProductData)
         await deleteOldBlob(oldProduct.image_url, sanitizedProductData.image_url);
 
-
     revalidateTag(GlobalConstants.PRODUCT, "max");
     revalidateTag(GlobalConstants.MEMBERSHIP, "max");
 };
@@ -97,7 +89,9 @@ export const updateProduct = async (productId: string, formData: FormData): Prom
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
 
-    const oldProduct = await prisma.product.findUniqueOrThrow({ where: { id: validatedProductId } });
+    const oldProduct = await prisma.product.findUniqueOrThrow({
+        where: { id: validatedProductId },
+    });
 
     await prisma.product.update({
         where: { id: validatedProductId },
@@ -107,7 +101,6 @@ export const updateProduct = async (productId: string, formData: FormData): Prom
     // Delete old blob if image_url was provided in the update and differs from the old one
     if ("image_url" in sanitizedData)
         await deleteOldBlob(oldProduct.image_url, sanitizedData.image_url);
-
 
     revalidateTag(GlobalConstants.PRODUCT, "max");
 };
@@ -125,44 +118,4 @@ export const deleteProduct = async (productId: string): Promise<void> => {
     if (deletedProduct.membership) revalidateTag(GlobalConstants.MEMBERSHIP, "max");
     if (deletedProduct.ticket) revalidateTag(GlobalConstants.TICKET, "max");
     revalidateTag(GlobalConstants.PRODUCT, "max");
-};
-
-export const processOrderedProduct = async (
-    tx: Prisma.TransactionClient,
-    userId: string,
-    orderItem: Prisma.OrderItemGetPayload<{
-        include: { product: { include: { membership: true; ticket: true } } };
-    }>,
-) => {
-    if (orderItem.product.stock !== null && orderItem.quantity > orderItem.product.stock)
-        throw new Error(`Insufficient stock for: ${orderItem.product.name}`);
-    for (let i = 0; i < orderItem.quantity; i++) {
-        if (orderItem.product.membership) {
-            await renewUserMembership(
-                tx,
-                userId,
-                orderItem.product.membership.product_id,
-            );
-        } else if (orderItem.product.ticket) {
-            await addEventParticipantWithTx(tx, orderItem.product.ticket.product_id, userId);
-        } else {
-            // TODO: replace with real fulfillment process
-            const mailContent = createElement(EmailNotificationTemplate, {
-                message: `User ID: ${userId}\nProduct: ${orderItem.product.name}\nQuantity: ${orderItem.quantity}`,
-                linkButtons: [
-                    {
-                        buttonName: "View Order",
-                        url: getAbsoluteUrl([GlobalConstants.ORDER], {
-                            [GlobalConstants.ORDER_ID]: orderItem.order_id,
-                        }),
-                    },
-                ],
-            });
-            await sendMail(
-                [process.env.EMAIL as string],
-                `Product purchased: ${orderItem.product.name}`,
-                mailContent,
-            );
-        }
-    }
 };
