@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { EventStatus, TaskStatus, TicketType } from "@/prisma/generated/client";
-import { mockContext } from "../../test/mocks/prismaMock";
-import type { TransactionClient } from "../../test/types/test-types";
 import { buildFormData } from "../../test/test-helpers";
 import * as eventActions from "./event-actions";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
@@ -11,6 +9,7 @@ import { getLoggedInUser } from "./user-actions";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
+import { prisma } from "../../prisma/prisma-client";
 
 vi.mock("./mail-service/mail-service", () => ({
     sendMail: vi.fn(),
@@ -65,11 +64,11 @@ describe("event-actions", () => {
                     user: { id: "user-2", nickname: "AnotherUser" },
                 },
             ];
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue(mockParticipants as any);
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue(mockParticipants as any);
 
             const result = await eventActions.getEventParticipants(eventId);
 
-            expect(mockContext.prisma.eventParticipant.findMany).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.eventParticipant.findMany)).toHaveBeenCalledWith({
                 where: {
                     ticket: {
                         event_id: eventId,
@@ -88,7 +87,7 @@ describe("event-actions", () => {
         });
 
         it("returns empty array when no participants exist", async () => {
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue([]);
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([]);
 
             const result = await eventActions.getEventParticipants(eventId);
 
@@ -97,15 +96,12 @@ describe("event-actions", () => {
     });
 
     describe("createEvent", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
-
         beforeEach(() => {
-            mockContext.prisma.$transaction.mockImplementation(async (callback) => callback(tx));
-            mockContext.prisma.location.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.location.findUniqueOrThrow).mockResolvedValue({
                 id: locationId,
                 capacity: 50,
             } as any);
-            tx.event.create.mockResolvedValue({
+            vi.mocked(prisma.event.create).mockResolvedValue({
                 id: eventId,
                 tickets: [{ product_id: ticketId, type: TicketType.volunteer }],
             } as any);
@@ -125,10 +121,10 @@ describe("event-actions", () => {
 
             await eventActions.createEvent(userId, formData);
 
-            expect(mockContext.prisma.location.findUniqueOrThrow).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.location.findUniqueOrThrow)).toHaveBeenCalledWith({
                 where: { id: locationId },
             });
-            expect(tx.event.create).toHaveBeenCalledWith(
+            expect(vi.mocked(prisma.event.create)).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: expect.objectContaining({
                         title: "Summer Festival",
@@ -147,7 +143,7 @@ describe("event-actions", () => {
                     }),
                 }),
             );
-            expect(tx.eventParticipant.create).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.eventParticipant.create)).toHaveBeenCalledWith({
                 data: {
                     user_id: userId,
                     ticket_id: ticketId,
@@ -160,7 +156,7 @@ describe("event-actions", () => {
         });
 
         it("throws error when location capacity is too small", async () => {
-            mockContext.prisma.location.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.location.findUniqueOrThrow).mockResolvedValue({
                 id: locationId,
                 capacity: 10,
             } as any);
@@ -209,7 +205,7 @@ describe("event-actions", () => {
 
             await eventActions.createEvent(userId, formData);
 
-            expect(tx.event.create).toHaveBeenCalledWith(
+            expect(vi.mocked(prisma.event.create)).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: expect.objectContaining({
                         description: expect.not.stringContaining("<script>"),
@@ -220,7 +216,6 @@ describe("event-actions", () => {
     });
 
     describe("updateEvent", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
         const mockEvent = {
             id: eventId,
             host_id: userId,
@@ -238,9 +233,8 @@ describe("event-actions", () => {
         };
 
         beforeEach(() => {
-            mockContext.prisma.$transaction.mockImplementation(async (callback) => callback(tx));
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(mockEvent as any);
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue([
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(mockEvent as any);
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
                 { user_id: userId },
             ] as any);
         });
@@ -254,7 +248,7 @@ describe("event-actions", () => {
 
             await eventActions.updateEvent(eventId, formData);
 
-            expect(mockContext.prisma.event.update).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.event.update)).toHaveBeenCalledWith({
                 where: { id: eventId },
                 data: expect.objectContaining({
                     title: "Updated Event",
@@ -273,7 +267,7 @@ describe("event-actions", () => {
 
             await eventActions.updateEvent(eventId, formData);
 
-            expect(tx.product.updateMany).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.product.updateMany)).toHaveBeenCalledWith({
                 where: { id: { in: [ticketId] } },
                 data: {
                     stock: {
@@ -293,7 +287,7 @@ describe("event-actions", () => {
 
             await eventActions.updateEvent(eventId, formData);
 
-            expect(tx.product.updateMany).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.product.updateMany)).toHaveBeenCalledWith({
                 where: { id: { in: [ticketId] } },
                 data: {
                     stock: {
@@ -305,7 +299,7 @@ describe("event-actions", () => {
         });
 
         it("throws error when reducing max_participants below current participant count", async () => {
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue([
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
                 { user_id: userId },
                 { user_id: "user-2" },
                 { user_id: "user-3" },
@@ -329,7 +323,7 @@ describe("event-actions", () => {
 
             await eventActions.updateEvent(eventId, formData);
 
-            expect(tx.event.update).toHaveBeenCalledWith(
+            expect(vi.mocked(prisma.event.update)).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: { id: eventId },
                     data: expect.objectContaining({
@@ -403,7 +397,7 @@ describe("event-actions", () => {
 
             await eventActions.updateEvent(eventId, formData);
 
-            expect(mockContext.prisma.event.update).toHaveBeenCalled();
+            expect(vi.mocked(prisma.event.update)).toHaveBeenCalled();
         });
 
         it("handles failed notification to reserves gracefully", async () => {
@@ -416,14 +410,14 @@ describe("event-actions", () => {
 
             await eventActions.updateEvent(eventId, formData);
 
-            expect(mockContext.prisma.event.update).toHaveBeenCalled();
+            expect(vi.mocked(prisma.event.update)).toHaveBeenCalled();
         });
 
         it("throws error when event host is missing on pending approval notification", async () => {
             vi.mocked(getOrganizationSettings).mockResolvedValue({
                 event_manager_email: "manager@example.com",
             } as any);
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue({
                 ...mockEvent,
                 host: null,
             } as any);
@@ -439,7 +433,7 @@ describe("event-actions", () => {
         });
 
         it("throws error when event host is missing on published notification", async () => {
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue({
                 ...mockEvent,
                 host: null,
             } as any);
@@ -459,7 +453,7 @@ describe("event-actions", () => {
         it("publishes event and revalidates cache", async () => {
             await eventActions.publishEvent(eventId);
 
-            expect(mockContext.prisma.event.update).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.event.update)).toHaveBeenCalledWith({
                 where: { id: eventId },
                 data: { status: EventStatus.published },
             });
@@ -472,14 +466,8 @@ describe("event-actions", () => {
     });
 
     describe("cancelEvent", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
-
-        beforeEach(() => {
-            mockContext.prisma.$transaction.mockImplementation(async (callback) => callback(tx));
-        });
-
         it("cancels event and informs participants", async () => {
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue({
                 id: eventId,
                 status: EventStatus.published,
                 max_participants: 20,
@@ -487,14 +475,14 @@ describe("event-actions", () => {
                 host: { email: "host@example.com" },
                 tickets: [{ product: { id: ticketId } }],
             } as any);
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue([
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
                 { user_id: userId },
             ] as any);
-            tx.event.update.mockResolvedValue({} as any);
+            vi.mocked(prisma.event.update).mockResolvedValue({} as any);
 
             await eventActions.cancelEvent(eventId);
 
-            expect(tx.event.update).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.event.update)).toHaveBeenCalledWith({
                 where: { id: eventId },
                 data: expect.objectContaining({
                     status: EventStatus.cancelled,
@@ -506,7 +494,7 @@ describe("event-actions", () => {
 
         it("handles failed cancellation notification gracefully", async () => {
             vi.mocked(informOfCancelledEvent).mockRejectedValue(new Error("Mail error"));
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue({
                 id: eventId,
                 status: EventStatus.published,
                 max_participants: 20,
@@ -514,14 +502,14 @@ describe("event-actions", () => {
                 host: { email: "host@example.com" },
                 tickets: [{ product: { id: ticketId } }],
             } as any);
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue([
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
                 { user_id: userId },
             ] as any);
-            tx.event.update.mockResolvedValue({} as any);
+            vi.mocked(prisma.event.update).mockResolvedValue({} as any);
 
             await eventActions.cancelEvent(eventId);
 
-            expect(tx.event.update).toHaveBeenCalled();
+            expect(vi.mocked(prisma.event.update)).toHaveBeenCalled();
         });
 
         it("throws error on invalid event ID format", async () => {
@@ -531,7 +519,7 @@ describe("event-actions", () => {
 
     describe("deleteEvent", () => {
         it("deletes event with only host as participant", async () => {
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue({
                 id: eventId,
                 host_id: userId,
                 tickets: [
@@ -540,27 +528,27 @@ describe("event-actions", () => {
                     },
                 ],
             } as any);
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue([
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
                 { user_id: userId },
             ] as any);
-            mockContext.prisma.eventReserve.deleteMany.mockResolvedValue({ count: 0 } as any);
-            mockContext.prisma.eventParticipant.deleteMany.mockResolvedValue({ count: 1 } as any);
-            mockContext.prisma.product.deleteMany.mockResolvedValue({ count: 1 } as any);
-            mockContext.prisma.event.delete.mockResolvedValue({} as any);
-            mockContext.prisma.$transaction.mockResolvedValue(undefined);
+            vi.mocked(prisma.eventReserve.deleteMany).mockResolvedValue({ count: 0 } as any);
+            vi.mocked(prisma.eventParticipant.deleteMany).mockResolvedValue({ count: 1 } as any);
+            vi.mocked(prisma.product.deleteMany).mockResolvedValue({ count: 1 } as any);
+            vi.mocked(prisma.event.delete).mockResolvedValue({} as any);
+            vi.mocked(prisma.$transaction).mockResolvedValue(undefined);
 
             await eventActions.deleteEvent(eventId);
 
-            expect(mockContext.prisma.eventReserve.deleteMany).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.eventReserve.deleteMany)).toHaveBeenCalledWith({
                 where: { event_id: eventId },
             });
-            expect(mockContext.prisma.eventParticipant.deleteMany).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.eventParticipant.deleteMany)).toHaveBeenCalledWith({
                 where: { ticket: { event_id: eventId } },
             });
-            expect(mockContext.prisma.product.deleteMany).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.product.deleteMany)).toHaveBeenCalledWith({
                 where: { ticket: { event_id: eventId } },
             });
-            expect(mockContext.prisma.event.delete).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.event.delete)).toHaveBeenCalledWith({
                 where: { id: eventId },
             });
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
@@ -568,12 +556,12 @@ describe("event-actions", () => {
         });
 
         it("throws error when event has participants other than host", async () => {
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue({
                 id: eventId,
                 host_id: userId,
                 tickets: [{ event_participants: [] }],
             } as any);
-            mockContext.prisma.eventParticipant.findMany.mockResolvedValue([
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
                 { user_id: userId },
                 { user_id: "other-user" },
             ] as any);
@@ -589,7 +577,6 @@ describe("event-actions", () => {
     });
 
     describe("cloneEvent", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
         const mockEvent = {
             id: eventId,
             title: "Original Event",
@@ -628,26 +615,21 @@ describe("event-actions", () => {
                 assignee_id: null,
                 reviewer_id: "original-host",
                 status: TaskStatus.toDo,
-                skill_badges: [
-                    { id: "badge-1", skill_badge_id: "skill-1", task_id: taskId },
-                ],
+                skill_badges: [{ id: "badge-1", skill_badge_id: "skill-1", task_id: taskId }],
             },
         ];
 
         beforeEach(() => {
-            mockContext.prisma.$transaction.mockImplementation(async (callback) => {
-                return await callback(tx);
-            });
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(mockEvent as any);
-            mockContext.prisma.ticket.findMany.mockResolvedValue(mockTickets as any);
-            mockContext.prisma.task.findMany.mockResolvedValue(mockTasks as any);
-            tx.event.create.mockResolvedValue({
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(mockEvent as any);
+            vi.mocked(prisma.ticket.findMany).mockResolvedValue(mockTickets as any);
+            vi.mocked(prisma.task.findMany).mockResolvedValue(mockTasks as any);
+            vi.mocked(prisma.event.create).mockResolvedValue({
                 ...mockEvent,
                 id: "cloned-event-id",
                 title: "Original Event (Clone)",
                 status: EventStatus.draft,
             } as any);
-            tx.ticket.create.mockResolvedValue({
+            vi.mocked(prisma.ticket.create).mockResolvedValue({
                 product_id: "cloned-ticket-id",
                 type: TicketType.volunteer,
             } as any);
@@ -660,7 +642,7 @@ describe("event-actions", () => {
 
             await eventActions.cloneEvent(eventId, formData);
 
-            expect(tx.event.create).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.event.create)).toHaveBeenCalledWith({
                 data: expect.objectContaining({
                     title: "Original Event (Clone)",
                     status: EventStatus.draft,
@@ -687,7 +669,7 @@ describe("event-actions", () => {
 
             await eventActions.cloneEvent(eventId, formData);
 
-            expect(tx.event.create).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.event.create)).toHaveBeenCalledWith({
                 data: expect.objectContaining({
                     end_time: expectedEndTime,
                 }),
@@ -701,7 +683,7 @@ describe("event-actions", () => {
 
             await eventActions.cloneEvent(eventId, formData);
 
-            expect(tx.ticket.create).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.ticket.create)).toHaveBeenCalledWith({
                 data: expect.objectContaining({
                     type: TicketType.volunteer,
                     product: {
@@ -712,7 +694,7 @@ describe("event-actions", () => {
                     event: { connect: { id: "cloned-event-id" } },
                 }),
             });
-            expect(tx.eventParticipant.create).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.eventParticipant.create)).toHaveBeenCalledWith({
                 data: {
                     user: { connect: { id: userId } },
                     ticket: { connect: { product_id: "cloned-ticket-id" } },
@@ -727,7 +709,7 @@ describe("event-actions", () => {
 
             await eventActions.cloneEvent(eventId, formData);
 
-            expect(tx.task.create).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.task.create)).toHaveBeenCalledWith({
                 data: expect.objectContaining({
                     name: "Setup",
                     assignee_id: null,
@@ -761,7 +743,7 @@ describe("event-actions", () => {
         });
 
         it("throws error when volunteer ticket not found in cloned event", async () => {
-            tx.ticket.create.mockResolvedValue({
+            vi.mocked(prisma.ticket.create).mockResolvedValue({
                 product_id: "cloned-ticket-id",
                 type: TicketType.standard, // Not volunteer
             } as any);
@@ -780,7 +762,7 @@ describe("event-actions", () => {
                 ...mockTasks[0],
                 start_time: null,
             };
-            mockContext.prisma.task.findMany.mockResolvedValue([taskWithoutStartTime] as any);
+            vi.mocked(prisma.task.findMany).mockResolvedValue([taskWithoutStartTime] as any);
 
             const formData = buildFormData({
                 start_time: "15/07/2024 09:00",
@@ -788,7 +770,7 @@ describe("event-actions", () => {
 
             await eventActions.cloneEvent(eventId, formData);
 
-            expect(tx.task.create).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.task.create)).toHaveBeenCalledWith({
                 data: expect.objectContaining({
                     start_time: expect.any(Date), // Uses createdEvent.start_time when task.start_time is null
                 }),

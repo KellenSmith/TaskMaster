@@ -1,7 +1,11 @@
 import { Prisma } from "../../prisma/generated/client";
 import { makeSwedbankApiRequest } from "./payment-actions";
 
-export const capturePaymentFunds = async (order: Prisma.OrderGetPayload<true>) => {
+export const capturePaymentFunds = async (
+    order: Prisma.OrderGetPayload<{
+        select: { payee_ref: true; id: true; payment_request_id: true; total_amount: true };
+    }>,
+) => {
     // Use the same payeeReference that was used for the original authorization
     // This maintains the connection between authorization and capture operations
 
