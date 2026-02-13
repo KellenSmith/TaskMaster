@@ -2,14 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
-import type { TransactionClient } from "../../test/types/test-types";
 import { buildFormData } from "../../test/test-helpers";
 import * as productActions from "./product-actions";
 import { sanitizeFormData } from "./html-sanitizer";
 import { deleteOldBlob } from "./organization-settings-actions";
-import { renewUserMembership } from "./user-membership-actions";
-import { addEventParticipantWithTx } from "./event-participant-actions";
-import { sendMail } from "./mail-service/mail-service";
 
 vi.mock("./html-sanitizer", () => ({
     sanitizeFormData: vi.fn(),
@@ -17,18 +13,6 @@ vi.mock("./html-sanitizer", () => ({
 
 vi.mock("./organization-settings-actions", () => ({
     deleteOldBlob: vi.fn(),
-}));
-
-vi.mock("./user-membership-actions", () => ({
-    renewUserMembership: vi.fn(),
-}));
-
-vi.mock("./event-participant-actions", () => ({
-    addEventParticipantWithTx: vi.fn(),
-}));
-
-vi.mock("./mail-service/mail-service", () => ({
-    sendMail: vi.fn(),
 }));
 
 vi.mock("./utils", () => ({
@@ -378,107 +362,6 @@ describe("product-actions", () => {
 
         it("rejects invalid product id", async () => {
             await expect(productActions.deleteProduct("not-a-uuid")).rejects.toThrow();
-        });
-    });
-
-    describe("processOrderedProduct", () => {
-        it("renews membership when product is membership", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
-            const orderItem = {
-                order_id: "order-1",
-                quantity: 1,
-                product: {
-                    name: "Annual Membership",
-                    stock: null,
-                    membership: { product_id: productId },
-                    ticket: null,
-                },
-            } as any;
-
-            await productActions.processOrderedProduct(tx as any, userId, orderItem);
-
-            expect(vi.mocked(renewUserMembership)).toHaveBeenCalledWith(tx, userId, productId);
-        });
-
-        it("adds event participant when product is ticket", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
-            const orderItem = {
-                order_id: "order-1",
-                quantity: 2,
-                product: {
-                    name: "Event Ticket",
-                    stock: 10,
-                    membership: null,
-                    ticket: { product_id: productId },
-                },
-            } as any;
-
-            await productActions.processOrderedProduct(tx as any, userId, orderItem);
-
-            expect(vi.mocked(addEventParticipantWithTx)).toHaveBeenCalledTimes(2);
-            expect(vi.mocked(addEventParticipantWithTx)).toHaveBeenCalledWith(
-                tx,
-                productId,
-                userId,
-            );
-        });
-
-        it("sends email notification for generic product", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
-            const orderItem = {
-                order_id: "order-1",
-                quantity: 1,
-                product: {
-                    name: "T-Shirt",
-                    stock: 50,
-                    membership: null,
-                    ticket: null,
-                },
-            } as any;
-
-            await productActions.processOrderedProduct(tx as any, userId, orderItem);
-
-            expect(vi.mocked(sendMail)).toHaveBeenCalledWith(
-                [process.env.EMAIL],
-                "Product purchased: T-Shirt",
-                expect.anything(),
-            );
-        });
-
-        it("throws error when insufficient stock", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
-            const orderItem = {
-                order_id: "order-1",
-                quantity: 10,
-                product: {
-                    name: "T-Shirt",
-                    stock: 5,
-                    membership: null,
-                    ticket: null,
-                },
-            } as any;
-
-            await expect(
-                productActions.processOrderedProduct(tx as any, userId, orderItem),
-            ).rejects.toThrow("Insufficient stock for: T-Shirt");
-        });
-
-        it("processes multiple quantities correctly", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
-            const orderItem = {
-                order_id: "order-1",
-                quantity: 3,
-                product: {
-                    name: "Ticket",
-                    stock: 10,
-                    membership: null,
-                    ticket: { product_id: productId },
-                },
-            } as any;
-
-            await productActions.processOrderedProduct(tx as any, userId, orderItem);
-
-            expect(vi.mocked(addEventParticipantWithTx)).toHaveBeenCalledTimes(3);
         });
     });
 });

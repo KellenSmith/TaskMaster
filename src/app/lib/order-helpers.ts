@@ -5,8 +5,8 @@ import { OrderStatus, Prisma } from "../../prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
 import { capturePaymentFunds } from "./payment-helpers";
-import { processOrderedProduct } from "./product-actions";
 import GlobalConstants from "../GlobalConstants";
+import { processOrderedProduct } from "./product-helpers";
 
 export const progressOrder = async (
     order: Prisma.OrderGetPayload<{
