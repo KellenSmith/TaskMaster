@@ -1,4 +1,10 @@
-import { Language, OrderStatus, TaskStatus, TicketType, UserRole } from "@/prisma/generated/browser";
+import {
+    Language,
+    OrderStatus,
+    TaskStatus,
+    TicketType,
+    UserRole,
+} from "@/prisma/generated/browser";
 import GlobalConstants from "../../GlobalConstants";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 import LanguageTranslations from "../../(pages)/profile/LanguageTranslations";
@@ -367,9 +373,5 @@ export const orderFieldLabels = {
     [OrderStatus.cancelled]: {
         [Language.english]: "Cancelled",
         [Language.swedish]: "Avbruten",
-    },
-    [OrderStatus.error]: {
-        [Language.english]: "Error",
-        [Language.swedish]: "Error",
     },
 };
