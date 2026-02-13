@@ -176,6 +176,24 @@ describe("order-helpers", () => {
             );
         });
 
+        it("does not progress cancelled order", async () => {
+            await orderHelpers.progressOrder({ ...baseOrder, status: OrderStatus.cancelled }, true);
+
+            expect(vi.mocked(processOrderItems)).not.toHaveBeenCalled();
+            expect(vi.mocked(sendOrderConfirmation)).not.toHaveBeenCalled();
+            expect(vi.mocked(capturePaymentFunds)).not.toHaveBeenCalled();
+            expect(prisma.order.update).not.toHaveBeenCalled();
+        });
+
+        it("does not progress completed order", async () => {
+            await orderHelpers.progressOrder({ ...baseOrder, status: OrderStatus.completed }, true);
+
+            expect(vi.mocked(processOrderItems)).not.toHaveBeenCalled();
+            expect(vi.mocked(sendOrderConfirmation)).not.toHaveBeenCalled();
+            expect(vi.mocked(capturePaymentFunds)).not.toHaveBeenCalled();
+            expect(prisma.order.update).not.toHaveBeenCalled();
+        });
+
         it("logs error if sendOrderConfirmation fails but still progresses", async () => {
             vi.mocked(prisma.order.update)
                 .mockResolvedValueOnce({

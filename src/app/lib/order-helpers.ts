@@ -28,7 +28,8 @@ export const progressOrder = async (
             await shippedOrderToCompleted(order, needsCapture);
             break;
         default:
-            throw new Error(`Cannot progress order with status ${order.status}`);
+            // Do nothing for cancelled or completed orders
+            break;
     }
 
     revalidateTag(GlobalConstants.ORDER, "max");
