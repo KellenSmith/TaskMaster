@@ -1,7 +1,7 @@
 "use client";
 import { Button, Stack, Checkbox, Typography, Link } from "@mui/material";
 import React, { use, useState } from "react";
-import { redirectToSwedbankPayment } from "../../lib/payment-actions";
+import { redirectToOrderPayment } from "../../lib/payment-actions";
 import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { allowRedirectException, getPrivacyPolicyUrl, getTermsOfPurchaseUrl } from "../../ui/utils";
@@ -29,20 +29,15 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         termsOfPurchase: false,
         privacyPolicy: false,
     });
-    // const [subscribeToMembership, setSubscribeToMembership] = useState(false);
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const redirectToOrderPaymentAction = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!termsAccepted.termsOfPurchase || !termsAccepted.privacyPolicy) {
             addNotification(LanguageTranslations.termsRequired[language], "error");
             return;
         }
-        await redirectToPayment();
-    };
-
-    const redirectToPayment = async () => {
         try {
-            await redirectToSwedbankPayment(order.id, false); // TODO: false = do not create subscription
+            await redirectToOrderPayment(order.id);
         } catch (error) {
             allowRedirectException(error);
             // Show notification for all other errors
@@ -59,83 +54,10 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         }
     };
 
-    /*     const subscribeableProducts = order
-            ? order.order_items
-                  .map((orderItem) => orderItem.product)
-                  .filter((product) => product.membership)
-            : []; */
-
     return (
         order?.status === OrderStatus.pending && (
-            <Stack component="form" onSubmit={handleSubmit}>
+            <Stack component="form" onSubmit={redirectToOrderPaymentAction}>
                 <Stack alignItems="center" width="100%">
-                    {/* {subscribeableProducts.length > 0 && (
-                        <Card
-                            sx={{ width: "100%", my: 2 }}
-                            aria-label="Membership subscription offer"
-                        >
-                            <CardHeader title={LanguageTranslations.subscribe[language]} />
-                            <CardContent>
-                                <Stack spacing={2}>
-                                    <Typography component="div">
-                                        {LanguageTranslations.subscribeToMembership[language](
-                                            organizationSettings,
-                                        )}
-                                    </Typography>
-
-                                    <Stack spacing={1} sx={{ pl: 2 }}>
-                                        {subscribeableProducts.map((product) => (
-                                            <Stack
-                                                key={product.id}
-                                                direction="row"
-                                                spacing={1}
-                                                alignItems="center"
-                                                aria-label={`Membership product: ${product.name}`}
-                                            >
-                                                <Circle fontSize={"inherit"} />
-                                                <Typography>{product.name}</Typography>
-                                            </Stack>
-                                        ))}
-                                    </Stack>
-                                    <Typography variant="body2">
-                                        {
-                                            LanguageTranslations.ifYouDontWantToSubscribeAtAll[
-                                            language
-                                            ]
-                                        }
-                                    </Typography>
-                                    <FormControlLabel
-                                        key="subscribe"
-                                        control={
-                                            <Checkbox
-                                                name="subscribe"
-                                                checked={!!subscribeToMembership}
-                                                slotProps={{
-                                                    input: {
-                                                        "aria-label":
-                                                            "Subscribe to membership renewal",
-                                                    },
-                                                }}
-                                                onChange={(e) =>
-                                                    setSubscribeToMembership(e.target.checked)
-                                                }
-                                            />
-                                        }
-                                        label={
-                                            <Typography>
-                                                {LanguageTranslations.yesSubscribe[language]}
-                                            </Typography>
-                                        }
-                                    />
-                                    {!!subscribeToMembership && (
-                                        <Typography variant="body2" sx={{ mt: 1 }}>
-                                            <b>{LanguageTranslations.greatChoice[language]}</b>
-                                        </Typography>
-                                    )}
-                                </Stack>
-                            </CardContent>
-                        </Card>
-                    )} */}
                     <Stack direction="row" alignItems={"center"} width={"100%"}>
                         <Checkbox
                             checked={termsAccepted.termsOfPurchase}
