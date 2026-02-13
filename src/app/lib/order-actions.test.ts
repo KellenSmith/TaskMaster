@@ -445,14 +445,74 @@ describe("order-actions", () => {
         });
 
         describe("deleteOrder", () => {
-            it("deletes order with valid UUID", async () => {
-                mockContext.prisma.order.delete.mockResolvedValue({ id: orderId } as any);
+            it("allows admin to delete all orders", async () => {
+                vi.mocked(getLoggedInUser).mockResolvedValue({
+                    id: adminUserId,
+                    role: UserRole.admin,
+                } as any);
+                const testOrder = {
+                    id: orderId,
+                    user_id: userId,
+                } as any;
+                mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testOrder);
+                mockContext.prisma.order.delete.mockResolvedValue(testOrder);
 
                 await orderActions.deleteOrder(orderId);
 
-                expect(mockContext.prisma.order.delete).toHaveBeenCalledWith({
-                    where: { id: orderId },
-                });
+                expect(mockContext.prisma.order.delete).toHaveBeenCalled();
+            });
+
+            it("allows users to delete their own orders", async () => {
+                vi.mocked(getLoggedInUser).mockResolvedValue({
+                    id: userId,
+                    role: UserRole.member,
+                } as any);
+                const testOrder = {
+                    id: orderId,
+                    user_id: userId,
+                } as any;
+                mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testOrder);
+                mockContext.prisma.order.delete.mockResolvedValue(testOrder);
+
+                await orderActions.deleteOrder(orderId);
+
+                expect(mockContext.prisma.order.delete).toHaveBeenCalled();
+            });
+
+            it("prevents users from deleting others' orders", async () => {
+                const otherUserId = "550e8400-e29b-41d4-a716-446655440099";
+                vi.mocked(getLoggedInUser).mockResolvedValue({
+                    id: otherUserId,
+                    role: UserRole.member,
+                } as any);
+                const testOrder = {
+                    id: orderId,
+                    user_id: userId,
+                } as any;
+                mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testOrder);
+                mockContext.prisma.order.delete.mockResolvedValue(testOrder);
+
+                await expect(orderActions.deleteOrder(orderId)).rejects.toThrow(
+                    "User does not have permission to delete this order",
+                );
+
+                expect(mockContext.prisma.order.delete).not.toHaveBeenCalled();
+            });
+
+            it("throws error when user is not logged in", async () => {
+                vi.mocked(getLoggedInUser).mockResolvedValue(null);
+                const testOrder = {
+                    id: orderId,
+                    user_id: userId,
+                } as any;
+                mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testOrder);
+                mockContext.prisma.order.delete.mockResolvedValue(testOrder);
+
+                await expect(orderActions.deleteOrder(orderId)).rejects.toThrow(
+                    "User must be logged in to delete an order",
+                );
+
+                expect(mockContext.prisma.order.delete).not.toHaveBeenCalled();
             });
 
             it("throws error with invalid UUID format", async () => {
@@ -464,40 +524,18 @@ describe("order-actions", () => {
             });
 
             it("handles database errors during deletion", async () => {
+                vi.mocked(getLoggedInUser).mockResolvedValue({
+                    id: userId,
+                    role: UserRole.member,
+                } as any);
+                const testOrder = {
+                    id: orderId,
+                    user_id: userId,
+                } as any;
+                mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(testOrder);
                 mockContext.prisma.order.delete.mockRejectedValue(new Error("Database error"));
 
                 await expect(orderActions.deleteOrder(orderId)).rejects.toThrow("Database error");
-            });
-
-            it("BUG: does not check user permissions before deletion", async () => {
-                // SECURITY BUG: Any user can delete any order without permission check
-                // The function doesn't call getLoggedInUser or check if the user owns the order
-                mockContext.prisma.order.delete.mockResolvedValue({ id: orderId } as any);
-
-                await orderActions.deleteOrder(orderId);
-
-                expect(mockContext.prisma.order.delete).toHaveBeenCalled();
-                // No permission check was performed!
-            });
-
-            it("BUG: does not revalidate cache after deletion", async () => {
-                mockContext.prisma.order.delete.mockResolvedValue({ id: orderId } as any);
-
-                await orderActions.deleteOrder(orderId);
-
-                expect(mockContext.prisma.order.delete).toHaveBeenCalled();
-                // Cache is not revalidated, which could lead to stale data in UI
-                expect(vi.mocked(revalidateTag)).not.toHaveBeenCalled();
-            });
-
-            it("BUG: does not restore stock when deleting order", async () => {
-                // Similar to cancel, delete doesn't restore stock
-                mockContext.prisma.order.delete.mockResolvedValue({ id: orderId } as any);
-
-                await orderActions.deleteOrder(orderId);
-
-                expect(mockContext.prisma.order.delete).toHaveBeenCalled();
-                expect(mockContext.prisma.product.update).not.toHaveBeenCalled();
             });
         });
     });

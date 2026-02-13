@@ -6,7 +6,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
 import { capturePaymentFunds } from "./payment-helpers";
 import GlobalConstants from "../GlobalConstants";
-import { processOrderedProduct } from "./product-helpers";
+import { processOrderItems } from "./order-item-helpers";
 
 export const progressOrder = async (
     order: Prisma.OrderGetPayload<{
@@ -52,26 +52,6 @@ export const pendingOrderToPaid = async (
     });
 
     await paidOrderToShipped(order, needsCapture);
-};
-
-const processOrderItems = async (
-    tx: Prisma.TransactionClient,
-    order: Prisma.OrderGetPayload<{
-        select: {
-            id: true;
-            status: true;
-            user_id: true;
-            order_items: { include: { product: { include: { membership: true; ticket: true } } } };
-        };
-    }>,
-): Promise<void> => {
-    if (order.order_items.length === 0) throw new Error(`No items found for order ${order.id}`);
-    if (!order.user_id) throw new Error(`Order ${order.id} has no associated user`);
-
-    // Process each order item
-    for (const orderItem of order.order_items) {
-        await processOrderedProduct(tx, order.user_id, orderItem);
-    }
 };
 
 export const paidOrderToShipped = async (

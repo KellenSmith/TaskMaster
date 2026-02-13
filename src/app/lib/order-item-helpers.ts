@@ -1,7 +1,7 @@
 "use server";
 
 import { Prisma } from "../../prisma/generated/client";
-import { getAvailableProductStock } from "./product-helpers";
+import { getAvailableProductStock, processOrderedProduct } from "./product-helpers";
 import { UuidSchema } from "./zod-schemas";
 
 export const validateAndBuildOrderItems = async (
@@ -51,4 +51,24 @@ export const validateAndBuildOrderItems = async (
         validatedOrderItems.push(orderItem);
     }
     return validatedOrderItems;
+};
+
+export const processOrderItems = async (
+    tx: Prisma.TransactionClient,
+    order: Prisma.OrderGetPayload<{
+        select: {
+            id: true;
+            status: true;
+            user_id: true;
+            order_items: { include: { product: { include: { membership: true; ticket: true } } } };
+        };
+    }>,
+): Promise<void> => {
+    if (order.order_items.length === 0) throw new Error(`No items found for order ${order.id}`);
+    if (!order.user_id) throw new Error(`Order ${order.id} has no associated user`);
+
+    // Process each order item
+    for (const orderItem of order.order_items) {
+        await processOrderedProduct(tx, order.user_id, orderItem);
+    }
 };

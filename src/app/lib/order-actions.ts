@@ -77,8 +77,18 @@ export const cancelOrder = async (orderId: string): Promise<void> => {
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
     const validatedOrderId = UuidSchema.parse(orderId);
+    const loggedInUser = await getLoggedInUser();
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: validatedOrderId },
+        select: { user_id: true },
+    });
+    if (!loggedInUser) throw new Error("User must be logged in to delete an order");
+    if (!(loggedInUser.role === UserRole.admin || loggedInUser.id === order.user_id))
+        throw new Error("User does not have permission to delete this order");
 
     await prisma.order.delete({
         where: { id: validatedOrderId },
     });
+
+    revalidateTag(GlobalConstants.ORDER, "max");
 };

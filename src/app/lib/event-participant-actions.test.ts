@@ -49,15 +49,12 @@ describe("event-participant-actions", () => {
             tickets: [
                 {
                     product_id: ticketId,
-                    event_participants: [
-                        { user_id: otherUserId },
-                    ],
+                    event_participants: [{ user_id: otherUserId }],
                 },
             ],
         };
 
         beforeEach(() => {
-            // Note: BUG - the implementation uses prisma instead of tx for these calls
             mockContext.prisma.ticket.findUniqueOrThrow.mockResolvedValue(mockTicket as any);
             mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(mockEvent as any);
             vi.mocked(deleteEventReserveWithTx).mockResolvedValue();
@@ -79,11 +76,7 @@ describe("event-participant-actions", () => {
                     },
                 },
             });
-            expect(vi.mocked(deleteEventReserveWithTx)).toHaveBeenCalledWith(
-                tx,
-                userId,
-                eventId,
-            );
+            expect(vi.mocked(deleteEventReserveWithTx)).toHaveBeenCalledWith(tx, userId, eventId);
             expect(tx.product.updateMany).toHaveBeenCalledWith({
                 where: {
                     ticket: { event_id: eventId },
@@ -103,18 +96,12 @@ describe("event-participant-actions", () => {
                 GlobalConstants.RESERVE_USERS,
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TICKET,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
                 GlobalConstants.PARTICIPANT_USERS,
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
         });
 
         it("throws error when user is already a participant", async () => {
@@ -123,10 +110,7 @@ describe("event-participant-actions", () => {
                 tickets: [
                     {
                         product_id: ticketId,
-                        event_participants: [
-                            { user_id: userId },
-                            { user_id: otherUserId },
-                        ],
+                        event_participants: [{ user_id: userId }, { user_id: otherUserId }],
                     },
                 ],
             };
@@ -270,14 +254,8 @@ describe("event-participant-actions", () => {
                 GlobalConstants.PARTICIPANT_USERS,
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TICKET,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
             expect(vi.mocked(notifyEventReserves)).toHaveBeenCalledWith(eventId);
         });
 
@@ -420,9 +398,8 @@ describe("event-participant-actions", () => {
         });
 
         it("checks in participant successfully during valid time window", async () => {
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(mockContext.prisma.eventParticipant.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: eventParticipantId },
@@ -448,9 +425,8 @@ describe("event-participant-actions", () => {
                 checked_in_at: checkedInAt,
             } as any);
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toContain(LanguageTranslations.alreadyCheckedIn.english);
             expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
@@ -463,9 +439,8 @@ describe("event-participant-actions", () => {
                 checked_in_at: recentCheckIn,
             } as any);
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBeUndefined();
             expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
@@ -486,9 +461,8 @@ describe("event-participant-actions", () => {
                 futureEvent as any,
             );
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBeUndefined();
             expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
@@ -509,9 +483,8 @@ describe("event-participant-actions", () => {
                 pastEvent as any,
             );
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBeUndefined();
             expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
@@ -532,9 +505,8 @@ describe("event-participant-actions", () => {
                 eventInOneHour as any,
             );
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(mockContext.prisma.eventParticipant.update).toHaveBeenCalled();
             expect(result).toBeUndefined();
@@ -555,27 +527,22 @@ describe("event-participant-actions", () => {
                 eventEndedOneHourAgo as any,
             );
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
             expect(result).toBeUndefined();
         });
 
         it("returns error message when participant not found", async () => {
-            const error = new Prisma.PrismaClientKnownRequestError(
-                "Record not found",
-                {
-                    code: prismaErrorCodes.resultNotFound,
-                    clientVersion: "5.0.0",
-                },
-            );
+            const error = new Prisma.PrismaClientKnownRequestError("Record not found", {
+                code: prismaErrorCodes.resultNotFound,
+                clientVersion: "5.0.0",
+            });
             mockContext.prisma.eventParticipant.findUniqueOrThrow.mockRejectedValue(error);
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBe(LanguageTranslations.eventParticipantNotFound.english);
         });
@@ -588,31 +555,24 @@ describe("event-participant-actions", () => {
 
         it("handles unknown errors gracefully", async () => {
             const unknownError = new Error("Unknown database error");
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockRejectedValue(
-                unknownError,
-            );
+            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockRejectedValue(unknownError);
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBeUndefined();
         });
 
         it("uses correct user language for error messages", async () => {
             vi.mocked(getUserLanguage).mockResolvedValue("swedish");
-            const error = new Prisma.PrismaClientKnownRequestError(
-                "Record not found",
-                {
-                    code: prismaErrorCodes.resultNotFound,
-                    clientVersion: "5.0.0",
-                },
-            );
+            const error = new Prisma.PrismaClientKnownRequestError("Record not found", {
+                code: prismaErrorCodes.resultNotFound,
+                clientVersion: "5.0.0",
+            });
             mockContext.prisma.eventParticipant.findUniqueOrThrow.mockRejectedValue(error);
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBe(LanguageTranslations.eventParticipantNotFound.swedish);
         });
@@ -632,9 +592,8 @@ describe("event-participant-actions", () => {
                 duringEvent as any,
             );
 
-            const result = await eventParticipantActions.checkInEventParticipant(
-                eventParticipantId,
-            );
+            const result =
+                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(mockContext.prisma.eventParticipant.update).toHaveBeenCalled();
             expect(result).toBeUndefined();
