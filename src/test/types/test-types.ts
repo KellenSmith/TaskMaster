@@ -1,5 +1,5 @@
 import { DeepMockProxy } from "vitest-mock-extended";
-import { MockedFunction } from "vitest"
+import { MockedFunction } from "vitest";
 
 type prismaOperations = {
     findUniqueOrThrow: MockedFunction<() => Promise<any>>;

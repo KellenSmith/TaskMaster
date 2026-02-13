@@ -51,9 +51,7 @@ describe("mail-service", () => {
         expect(payload.subject).toBe("Subject");
         expect(payload.text).toBe("Hello world");
         expect(payload.headers?.["X-Mailer"]).toBe("TaskMaster Task Master");
-        expect(payload.headers?.["Message-ID"]).toEqual(
-            expect.stringContaining("@example.com>"),
-        );
+        expect(payload.headers?.["Message-ID"]).toEqual(expect.stringContaining("@example.com>"));
     });
 
     it("builds an email payload for multiple recipients", async () => {
@@ -77,9 +75,9 @@ describe("mail-service", () => {
         await expect(
             getEmailPayload([undefined as unknown as string], "Subject", "<p>Hi</p>"),
         ).rejects.toBeInstanceOf(Error);
-        await expect(
-            getEmailPayload(["invalid"], "Subject", "<p>Hi</p>"),
-        ).rejects.toBeInstanceOf(Error);
+        await expect(getEmailPayload(["invalid"], "Subject", "<p>Hi</p>")).rejects.toBeInstanceOf(
+            Error,
+        );
     });
 
     it("adds reply-to when provided", async () => {
@@ -94,11 +92,7 @@ describe("mail-service", () => {
     });
 
     it("uses raw html when mail content is a string", async () => {
-        const payload = await getEmailPayload(
-            ["user@example.com"],
-            "Subject",
-            "<p>Raw</p>",
-        );
+        const payload = await getEmailPayload(["user@example.com"], "Subject", "<p>Raw</p>");
 
         expect(payload.html).toBe("<p>Raw</p>");
     });
@@ -114,11 +108,7 @@ describe("mail-service", () => {
     });
 
     it("trims recipient emails and uses fallback domain when EMAIL is unset", async () => {
-        const payload = await getEmailPayload(
-            ["  user@example.com  "],
-            "Subject",
-            "<p>Hi</p>",
-        );
+        const payload = await getEmailPayload(["  user@example.com  "], "Subject", "<p>Hi</p>");
 
         expect(payload.to).toBe("user@example.com");
         expect(payload.headers?.["Message-ID"]).toEqual(
@@ -128,16 +118,17 @@ describe("mail-service", () => {
 
     it("throws when EMAIL env is malformed", async () => {
         process.env.EMAIL = "malformed-email";
-        await expect(getEmailPayload(
-            ["user@example.com"],
-            "Subject",
-            "<p>Hi</p>",
-        )).rejects.toThrow("Sender email is not configured");
+        await expect(getEmailPayload(["user@example.com"], "Subject", "<p>Hi</p>")).rejects.toThrow(
+            "Sender email is not configured",
+        );
     });
 
     it("sends mail directly for small recipient lists", async () => {
         const transport = await getMailTransport();
-        vi.mocked(transport.sendMail).mockResolvedValue({ accepted: ["user@example.com"], rejected: [] });
+        vi.mocked(transport.sendMail).mockResolvedValue({
+            accepted: ["user@example.com"],
+            rejected: [],
+        });
 
         const result = await sendMail(["user@example.com"], "Subject", createElement("div"));
 
@@ -149,7 +140,10 @@ describe("mail-service", () => {
 
     it("counts rejected recipients when mail transport returns rejections", async () => {
         const transport = await getMailTransport();
-        vi.mocked(transport.sendMail).mockResolvedValue({ accepted: [], rejected: ["user@example.com"] });
+        vi.mocked(transport.sendMail).mockResolvedValue({
+            accepted: [],
+            rejected: ["user@example.com"],
+        });
 
         const result = await sendMail(["user@example.com"], "Subject", createElement("div"));
 
@@ -159,9 +153,9 @@ describe("mail-service", () => {
     it("rethrows non-rate-limit errors", async () => {
         const transport = await getMailTransport();
         vi.mocked(transport.sendMail).mockResolvedValue({ error: { message: "SMTP down" } });
-        await expect(sendMail(["user@example.com"], "Subject", createElement("div"))).rejects.toThrow(
-            "SMTP down",
-        );
+        await expect(
+            sendMail(["user@example.com"], "Subject", createElement("div")),
+        ).rejects.toThrow("SMTP down");
     });
 
     it("creates a fallback newsletter job on rate limit error", async () => {
@@ -266,9 +260,9 @@ describe("mail-service", () => {
         vi.mocked(createNewsletterJob).mockRejectedValueOnce(new Error("db down"));
         const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-        await expect(sendMail(["user@example.com"], "Subject", createElement("div"))).rejects.toThrow(
-            "Rate limit exceeded",
-        );
+        await expect(
+            sendMail(["user@example.com"], "Subject", createElement("div")),
+        ).rejects.toThrow("Rate limit exceeded");
 
         expect(errorSpy).toHaveBeenCalledWith(
             expect.stringContaining("Fallback newsletter job creation failed"),
@@ -285,7 +279,10 @@ describe("mail-service", () => {
             id: "event-1",
             title: "Event Title",
         });
-        vi.mocked(transport.sendMail).mockResolvedValue({ accepted: ["reserve@example.com"], rejected: [] });
+        vi.mocked(transport.sendMail).mockResolvedValue({
+            accepted: ["reserve@example.com"],
+            rejected: [],
+        });
 
         await notifyEventReserves("event-1");
 
@@ -313,9 +310,7 @@ describe("mail-service", () => {
 
         await notifyEventReserves("event-1");
 
-        expect(logSpy).toHaveBeenCalledWith(
-            expect.stringContaining("newsletter job job-10"),
-        );
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("newsletter job job-10"));
         logSpy.mockRestore();
     });
 
@@ -374,9 +369,7 @@ describe("mail-service", () => {
 
         await informOfCancelledEvent("event-1");
 
-        expect(logSpy).toHaveBeenCalledWith(
-            expect.stringContaining("newsletter job job-11"),
-        );
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("newsletter job job-11"));
         logSpy.mockRestore();
     });
 
@@ -424,45 +417,45 @@ describe("mail-service", () => {
 
     it("sends order confirmation email", async () => {
         const transport = await getMailTransport();
-        mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue({
+        const testOrder = {
             id: "order-1",
+            total_amount: 1000,
             user: { email: "buyer@example.com" },
             order_items: [],
+        };
+        vi.mocked(transport.sendMail).mockResolvedValue({
+            accepted: ["buyer@example.com"],
+            rejected: [],
         });
-        vi.mocked(transport.sendMail).mockResolvedValue({ accepted: ["buyer@example.com"], rejected: [] });
 
-        await sendOrderConfirmation("order-1");
+        await sendOrderConfirmation(testOrder);
 
         expect(transport.sendMail).toHaveBeenCalledTimes(1);
         const [payload] = vi.mocked(transport.sendMail).mock.calls[0];
         expect(payload.subject).toBe("Receipt - TaskMaster");
     });
 
-    it("throws when order cannot be found", async () => {
-        mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue(null);
-
-        await expect(sendOrderConfirmation("order-3")).rejects.toThrow("Order order-3 not found");
-    });
-
     it("throws when order has no associated user", async () => {
-        mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue({
+        const testOrder = {
             id: "order-4",
+            total_amount: 500,
             user: null,
             order_items: [],
-        });
+        };
 
-        await expect(sendOrderConfirmation("order-4")).rejects.toThrow(
+        await expect(sendOrderConfirmation(testOrder)).rejects.toThrow(
             "Order order-4 has no associated user",
         );
     });
 
     it("logs when order confirmation is queued as fallback job", async () => {
         const transport = await getMailTransport();
-        mockContext.prisma.order.findUniqueOrThrow.mockResolvedValue({
+        const testOrder = {
             id: "order-2",
+            total_amount: 1000,
             user: { email: "buyer@example.com" },
             order_items: [],
-        });
+        };
         vi.mocked(transport.sendMail).mockRejectedValueOnce(new Error("Rate limit exceeded"));
         vi.mocked(createNewsletterJob).mockResolvedValue({
             id: "job-12",
@@ -471,11 +464,9 @@ describe("mail-service", () => {
         });
         const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
 
-        await sendOrderConfirmation("order-2");
+        await sendOrderConfirmation(testOrder);
 
-        expect(logSpy).toHaveBeenCalledWith(
-            expect.stringContaining("newsletter job job-12"),
-        );
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("newsletter job job-12"));
         logSpy.mockRestore();
     });
 });

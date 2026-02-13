@@ -40,7 +40,9 @@ beforeEach(() => {
     vi.mocked(getMailTransport).mockResolvedValue({
         sendMail: vi.fn().mockResolvedValue({ accepted: [], rejected: [] }),
     } as unknown as Transporter);
-
+    mockContext.prisma.$transaction.mockImplementation(async (callback) => {
+        return await callback(mockContext.prisma as any);
+    });
 });
 
 // Clear up after each test

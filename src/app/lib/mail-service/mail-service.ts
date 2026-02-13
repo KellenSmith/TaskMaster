@@ -54,8 +54,7 @@ const createFallbackNewsletterJob = async (
         batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
     else if (recipientCount <= 100)
         batchSize = Math.min(recipientCount, 25); // Small batches for small groups
-    else if (recipientCount <= 250)
-        batchSize = 50; // Medium batches for medium groups
+    else if (recipientCount <= 250) batchSize = 50; // Medium batches for medium groups
 
     return await createNewsletterJob({
         subject,
@@ -169,7 +168,9 @@ export const sendMail = async (
                 };
             } catch (fallbackError) {
                 // If fallback also fails, throw the original error
-                console.error(`Fallback newsletter job creation failed: ${(fallbackError as Error).message}`);
+                console.error(
+                    `Fallback newsletter job creation failed: ${(fallbackError as Error).message}`,
+                );
                 throw error;
             }
         }
@@ -287,29 +288,20 @@ export const sendMassEmail = async (
     return await sendMail(recipients, sanitizedContent.subject, mailContent);
 };
 
-export const sendOrderConfirmation = async (orderId: string): Promise<void> => {
-    const order = await prisma.order.findUniqueOrThrow({
-        where: { id: orderId },
-        include: {
-            user: {
-                select: {
-                    email: true,
-                },
-            },
-            order_items: {
-                include: {
-                    product: {
-                        select: {
-                            name: true,
-                            description: true,
-                        },
-                    },
-                },
-            },
-        },
-    });
-    if (!order) throw new Error(`Order ${orderId} not found`);
-    if (!order.user) throw new Error(`Order ${orderId} has no associated user`);
+export const sendOrderConfirmation = async (
+    order: Prisma.OrderGetPayload<{
+        select: {
+            id: true;
+            total_amount: true;
+            user: { select: { email: true } };
+            order_items: { include: { product: { select: { name: true; description: true } } } };
+        };
+    }>,
+): Promise<void> => {
+    if (!order.user?.email)
+        throw new Error(
+            `Cannot send order confirmation: Order ${order.id} has no associated user email`,
+        );
 
     const mailContent = createElement(OrderConfirmationTemplate, { order });
     const result = await sendMail(

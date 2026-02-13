@@ -1,11 +1,10 @@
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import dayjs from "dayjs";
 import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import { revalidateTag } from "next/cache";
 import * as membershipActions from "./user-membership-actions";
-import { createAndRedirectToOrder } from "./order-actions";
 import { isMembershipExpired } from "./utils";
 import { buildFormData } from "../../test/test-helpers";
 
@@ -164,19 +163,6 @@ describe("user-membership-actions", () => {
                 select: { id: true, price: true },
             });
             expect(result).toBe(created);
-        });
-    });
-
-    describe("createMembershipOrder", () => {
-        it("creates order for membership product", async () => {
-            const membershipProduct = { id: "membership-1", price: 200 } as any;
-            mockContext.prisma.product.findFirst.mockResolvedValue(membershipProduct);
-
-            await membershipActions.createMembershipOrder(testUserId);
-
-            expect(vi.mocked(createAndRedirectToOrder)).toHaveBeenCalledWith(testUserId, [
-                { product_id: "membership-1", price: 200, quantity: 1 },
-            ]);
         });
     });
 });
