@@ -50,10 +50,7 @@ describe("user-membership-actions", () => {
                 },
                 update: { expires_at: expectedExpiresAt },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.USER,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.USER, "max");
         });
     });
 
@@ -62,7 +59,7 @@ describe("user-membership-actions", () => {
             vi.useFakeTimers();
             vi.setSystemTime(new Date("2026-02-12T00:00:00Z"));
 
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.membership.findUniqueOrThrow).mockResolvedValue({
                 duration: 365,
             } as any);
@@ -78,10 +75,7 @@ describe("user-membership-actions", () => {
 
             await membershipActions.renewUserMembership(tx as any, testUserId, "membership-1");
 
-            const expectedExpiresAt = dayjs
-                .utc("2026-02-12T00:00:00Z")
-                .add(365, "d")
-                .toISOString();
+            const expectedExpiresAt = dayjs.utc("2026-02-12T00:00:00Z").add(365, "d").toISOString();
 
             expect(tx.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId },
@@ -95,16 +89,13 @@ describe("user-membership-actions", () => {
                     expires_at: expectedExpiresAt,
                 },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.USER,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.USER, "max");
 
             vi.useRealTimers();
         });
 
         it("extends expiry when membership is active and unchanged", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.membership.findUniqueOrThrow).mockResolvedValue({
                 duration: 365,
             } as any);
