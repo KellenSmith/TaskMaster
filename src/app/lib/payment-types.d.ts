@@ -1,5 +1,3 @@
-import { OrderStatus } from "@/prisma/generated/client";
-
 export enum PaymentState {
     Paid = "Paid", // eslint-disable-line no-unused-vars
     Failed = "Failed", // eslint-disable-line no-unused-vars
@@ -26,6 +24,51 @@ export type SubscriptionToken = {
     token: string;
     name: string;
     expiryDate: string; // format: MM/YYYY
+};
+
+export type SwedbankPaymentRequestOrderItem = {
+    reference: string;
+    name: string;
+    type: string;
+    class: string;
+    itemUrl?: string;
+    imageUrl?: string;
+    description: string;
+    discountDescription?: string;
+    quantity: number;
+    quantityUnit: string;
+    unitPrice: number;
+    discountPrice: number;
+    vatPercent: number;
+    amount: number;
+    vatAmount: number;
+};
+
+export type SwedbankPaymentRequestBody = {
+    paymentorder: {
+        operation: "Purchase";
+        currency: "SEK";
+        amount: number;
+        vatAmount: number;
+        description: string;
+        userAgent: string;
+        language: string;
+        urls: {
+            hostUrls: string[];
+            completeUrl: string;
+            cancelUrl: string;
+            callbackUrl: string;
+            logoUrl: string | undefined;
+            termsOfServiceUrl?: string | null;
+        };
+        payeeInfo: {
+            payeeId: string;
+            payeeReference: string; // Compliant: alphanumeric, max 30 chars, unique
+            payeeName: string;
+            orderReference: string; // Internal order reference (can contain hyphens)
+        };
+        orderItems: SwedbankPaymentRequestOrderItem[];
+    };
 };
 
 export type PaymentOrderResponse = {
@@ -65,17 +108,4 @@ export type PaymentOrderResponse = {
         metadata: { id: string };
     };
     operations: PaymentOperation[];
-};
-
-export const getNewOrderStatus = (paymentState: PaymentStateType): OrderStatus => {
-    switch (paymentState) {
-        case PaymentState.Paid:
-            return OrderStatus.completed;
-        case PaymentState.Failed:
-        case PaymentState.Cancelled:
-        case PaymentState.Aborted:
-            return OrderStatus.cancelled;
-        default:
-            return OrderStatus.pending;
-    }
 };
