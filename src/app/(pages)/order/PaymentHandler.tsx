@@ -1,18 +1,12 @@
 "use client";
-import {
-    Button,
-    Stack,
-    Checkbox,
-    Typography,
-    Link,
-} from "@mui/material";
+import { Button, Stack, Checkbox, Typography, Link } from "@mui/material";
 import React, { use, useState } from "react";
 import { redirectToSwedbankPayment } from "../../lib/payment-actions";
 import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { allowRedirectException, getPrivacyPolicyUrl, getTermsOfPurchaseUrl } from "../../ui/utils";
 import ConfirmButton from "../../ui/ConfirmButton";
-import { progressOrder } from "../../lib/order-actions";
+import { cancelOrder } from "../../lib/order-actions";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
@@ -56,9 +50,9 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         }
     };
 
-    const cancelOrder = async () => {
+    const cancelOrderAction = async () => {
         try {
-            await progressOrder(order.id, OrderStatus.cancelled);
+            await cancelOrder(order.id);
             addNotification(LanguageTranslations.cancelledOrder[language], "success");
         } catch {
             addNotification(LanguageTranslations.cancelledOrder[language], "error");
@@ -164,7 +158,9 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                         >
                             {LanguageTranslations.iHaveRead[language]}{" "}
                             <Link
-                                href={getTermsOfPurchaseUrl(organizationSettings, language) as string}
+                                href={
+                                    getTermsOfPurchaseUrl(organizationSettings, language) as string
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -211,11 +207,13 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                     >
                         {LanguageTranslations.pay[language](order.total_amount)}
                     </Button>
-                    <ConfirmButton buttonProps={{
-                        fullWidth: true,
-                        color: "error"
-                    }}
-                        onClick={cancelOrder}>
+                    <ConfirmButton
+                        buttonProps={{
+                            fullWidth: true,
+                            color: "error",
+                        }}
+                        onClick={cancelOrderAction}
+                    >
                         {GlobalLanguageTranslations.cancel[language]}
                     </ConfirmButton>
                 </Stack>
