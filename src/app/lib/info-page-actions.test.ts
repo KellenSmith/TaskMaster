@@ -29,7 +29,7 @@ const contentTextId = "550e8400-e29b-41d4-a716-446655440002";
 describe("info-page-actions", () => {
     describe("createInfoPage", () => {
         it("creates info page with text content and redirects", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const titleContent = { id: titleTextId, translations: [] };
             const contentContent = { id: contentTextId, translations: [] };
 
@@ -38,8 +38,8 @@ describe("info-page-actions", () => {
                 .mockResolvedValueOnce(contentContent as any);
 
             vi.mocked(tx.infoPage.create).mockResolvedValue({ id: infoPageId } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -61,18 +61,14 @@ describe("info-page-actions", () => {
                     content: { connect: { id: contentTextId } },
                 },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.INFO_PAGE,
-                "max",
-            );
-            expect(vi.mocked(serverRedirect)).toHaveBeenCalledWith(
-                [GlobalConstants.INFO_PAGE],
-                { [GlobalConstants.INFO_PAGE_ID]: infoPageId },
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.INFO_PAGE, "max");
+            expect(vi.mocked(serverRedirect)).toHaveBeenCalledWith([GlobalConstants.INFO_PAGE], {
+                [GlobalConstants.INFO_PAGE_ID]: infoPageId,
+            });
         });
 
         it("creates info page with null role when empty string provided", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const titleContent = { id: titleTextId, translations: [] };
             const contentContent = { id: contentTextId, translations: [] };
 
@@ -81,8 +77,8 @@ describe("info-page-actions", () => {
                 .mockResolvedValueOnce(contentContent as any);
 
             vi.mocked(tx.infoPage.create).mockResolvedValue({ id: infoPageId } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -102,11 +98,11 @@ describe("info-page-actions", () => {
         });
 
         it("throws error when creation fails", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(createTextContent).mockResolvedValue({ id: titleTextId } as any);
             vi.mocked(tx.infoPage.create).mockResolvedValue({ id: "" } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -128,15 +124,15 @@ describe("info-page-actions", () => {
 
     describe("updateInfoPage", () => {
         it("updates info page and title translation", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const updatedInfoPage = {
                 id: infoPageId,
                 titleText: { id: titleTextId },
             };
 
             vi.mocked(tx.infoPage.update).mockResolvedValue(updatedInfoPage as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -160,22 +156,19 @@ describe("info-page-actions", () => {
                 },
                 data: { text: "Updated Title" },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.INFO_PAGE,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.INFO_PAGE, "max");
         });
 
         it("sets lowest_allowed_user_role to null when empty string provided", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const updatedInfoPage = {
                 id: infoPageId,
                 titleText: { id: titleTextId },
             };
 
             vi.mocked(tx.infoPage.update).mockResolvedValue(updatedInfoPage as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -193,15 +186,15 @@ describe("info-page-actions", () => {
         });
 
         it("skips title translation update when titleText is null", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const updatedInfoPage = {
                 id: infoPageId,
                 titleText: null,
             };
 
             vi.mocked(tx.infoPage.update).mockResolvedValue(updatedInfoPage as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -247,10 +240,7 @@ describe("info-page-actions", () => {
             expect(mockContext.prisma.infoPage.delete).toHaveBeenCalledWith({
                 where: { id: infoPageId },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.INFO_PAGE,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.INFO_PAGE, "max");
         });
 
         it("throws error when user is not admin", async () => {

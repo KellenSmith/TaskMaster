@@ -56,10 +56,7 @@ describe("task-actions", () => {
             expect(mockContext.prisma.task.delete).toHaveBeenCalledWith({
                 where: { id: taskId },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TASK,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TASK, "max");
         });
 
         it("throws error on invalid UUID", async () => {
@@ -99,10 +96,10 @@ describe("task-actions", () => {
         });
 
         it("updates task with basic fields", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(updatedTask as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -123,17 +120,14 @@ describe("task-actions", () => {
                     include: { reviewer: true },
                 }),
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TASK,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TASK, "max");
         });
 
         it("updates assignee and reviewer", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(updatedTask as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -157,10 +151,10 @@ describe("task-actions", () => {
         });
 
         it("updates skill badges by deleting old and creating new", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(updatedTask as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -187,10 +181,10 @@ describe("task-actions", () => {
             const oldTaskToDo = { ...oldTask, status: TaskStatus.toDo };
             mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(oldTaskToDo as any);
 
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(updatedTask as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -211,15 +205,13 @@ describe("task-actions", () => {
 
         it("sends email to reviewer when assignee removed and status is not toDo", async () => {
             const oldTaskWithAssignee = { ...oldTask, assignee_id: userId };
-            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(
-                oldTaskWithAssignee as any,
-            );
+            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(oldTaskWithAssignee as any);
 
             const updatedTaskNoAssignee = { ...updatedTask, assignee_id: null };
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(updatedTaskNoAssignee as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -240,19 +232,17 @@ describe("task-actions", () => {
 
         it("does not send email to reviewer when assignee removed but status is toDo", async () => {
             const oldTaskWithAssignee = { ...oldTask, assignee_id: userId };
-            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(
-                oldTaskWithAssignee as any,
-            );
+            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(oldTaskWithAssignee as any);
 
             const updatedTaskNoAssignee = {
                 ...updatedTask,
                 assignee_id: null,
                 status: TaskStatus.toDo,
             };
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(updatedTaskNoAssignee as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -269,10 +259,10 @@ describe("task-actions", () => {
 
         it("does not send email when no reviewer", async () => {
             const updatedTaskNoReviewer = { ...updatedTask, reviewer: null };
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(updatedTaskNoReviewer as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -329,10 +319,7 @@ describe("task-actions", () => {
                     include: { reviewer: true },
                 }),
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TASK,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TASK, "max");
         });
 
         it("creates task with assignee and reviewer", async () => {
@@ -400,10 +387,7 @@ describe("task-actions", () => {
                     data: expect.objectContaining({
                         skill_badges: {
                             createMany: {
-                                data: [
-                                    { skill_badge_id: badgeId1 },
-                                    { skill_badge_id: badgeId2 },
-                                ],
+                                data: [{ skill_badge_id: badgeId1 }, { skill_badge_id: badgeId2 }],
                             },
                         },
                     }),
@@ -494,13 +478,13 @@ describe("task-actions", () => {
         });
 
         it("assigns task to user and adds volunteer ticket", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: eventId } as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(null);
             vi.mocked(tx.ticket.findFirst).mockResolvedValue(volunteerTicket as any);
             vi.mocked(addEventParticipantWithTx).mockResolvedValue(undefined);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.assignTaskToUser(userId, taskId);
@@ -516,23 +500,17 @@ describe("task-actions", () => {
                 productId,
                 userId,
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TASK,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TASK, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
         });
 
         it("does not add volunteer ticket if user already has non-volunteer ticket", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const existingParticipant = { user_id: userId, event_id: eventId };
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: eventId } as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(existingParticipant as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.assignTaskToUser(userId, taskId);
@@ -541,16 +519,14 @@ describe("task-actions", () => {
         });
 
         it("adds to reserve list if event is sold out", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: eventId } as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(null);
             vi.mocked(tx.ticket.findFirst).mockResolvedValue(volunteerTicket as any);
-            vi.mocked(addEventParticipantWithTx).mockRejectedValue(
-                new Error("Event sold out"),
-            );
+            vi.mocked(addEventParticipantWithTx).mockRejectedValue(new Error("Event sold out"));
             vi.mocked(addEventReserveWithTx).mockResolvedValue(undefined);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.assignTaskToUser(userId, taskId);
@@ -559,18 +535,16 @@ describe("task-actions", () => {
         });
 
         it("continues even if adding to reserve list fails", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: eventId } as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(null);
             vi.mocked(tx.ticket.findFirst).mockResolvedValue(volunteerTicket as any);
-            vi.mocked(addEventParticipantWithTx).mockRejectedValue(
-                new Error("Event sold out"),
-            );
+            vi.mocked(addEventParticipantWithTx).mockRejectedValue(new Error("Event sold out"));
             vi.mocked(addEventReserveWithTx).mockRejectedValue(
                 new Error("Already on reserve list"),
             );
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await expect(taskActions.assignTaskToUser(userId, taskId)).resolves.not.toThrow();
@@ -580,10 +554,10 @@ describe("task-actions", () => {
             const taskWithNoAssignee = { ...existingTask, assignee_id: null };
             mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(taskWithNoAssignee as any);
 
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: null } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.assignTaskToUser(userId, taskId);
@@ -598,15 +572,13 @@ describe("task-actions", () => {
 
         it("allows admin to reassign task to different user", async () => {
             const taskAssignedToOther = { ...existingTask, assignee_id: "other-user-id" };
-            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(
-                taskAssignedToOther as any,
-            );
+            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(taskAssignedToOther as any);
             vi.mocked(isUserAdmin).mockReturnValue(true);
 
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: null } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.assignTaskToUser(userId, taskId);
@@ -616,16 +588,14 @@ describe("task-actions", () => {
 
         it("allows event host to reassign task to different user", async () => {
             const taskAssignedToOther = { ...existingTask, assignee_id: "other-user-id" };
-            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(
-                taskAssignedToOther as any,
-            );
+            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(taskAssignedToOther as any);
             vi.mocked(isUserAdmin).mockReturnValue(false);
             vi.mocked(isUserHost).mockReturnValue(true);
 
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: null } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.assignTaskToUser(userId, taskId);
@@ -635,9 +605,7 @@ describe("task-actions", () => {
 
         it("throws error when non-admin/non-host tries to reassign task", async () => {
             const taskAssignedToOther = { ...existingTask, assignee_id: "other-user-id" };
-            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(
-                taskAssignedToOther as any,
-            );
+            mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(taskAssignedToOther as any);
             vi.mocked(isUserAdmin).mockReturnValue(false);
             vi.mocked(isUserHost).mockReturnValue(false);
 
@@ -672,12 +640,12 @@ describe("task-actions", () => {
         });
 
         it("throws error when volunteer ticket not found", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: eventId } as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(null);
             vi.mocked(tx.ticket.findFirst).mockResolvedValue(null);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await expect(taskActions.assignTaskToUser(userId, taskId)).rejects.toThrow(
@@ -697,10 +665,10 @@ describe("task-actions", () => {
             const taskNoEvent = { ...existingTask, event_id: null, event: null };
             mockContext.prisma.task.findUniqueOrThrow.mockResolvedValue(taskNoEvent as any);
 
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: null } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.assignTaskToUser(userId, taskId);
@@ -736,10 +704,10 @@ describe("task-actions", () => {
         };
 
         it("unassigns task and revalidates cache", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: null } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -751,21 +719,18 @@ describe("task-actions", () => {
                 },
                 include: { reviewer: true },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TASK,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TASK, "max");
         });
 
         it("removes volunteer ticket when user has no other tasks in event", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(taskWithEvent as any);
             vi.mocked(tx.event.findUniqueOrThrow).mockResolvedValue(event as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(volunteerParticipant as any);
             vi.mocked(tx.task.count).mockResolvedValue(0);
             vi.mocked(deleteEventParticipantWithTx).mockResolvedValue(undefined);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -778,13 +743,13 @@ describe("task-actions", () => {
         });
 
         it("keeps volunteer ticket when user has other tasks in event", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(taskWithEvent as any);
             vi.mocked(tx.event.findUniqueOrThrow).mockResolvedValue(event as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(volunteerParticipant as any);
             vi.mocked(tx.task.count).mockResolvedValue(2); // User still has 2 other tasks
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -794,11 +759,11 @@ describe("task-actions", () => {
 
         it("keeps volunteer ticket when user is event host", async () => {
             const eventWithUserAsHost = { ...event, host_id: userId };
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(taskWithEvent as any);
             vi.mocked(tx.event.findUniqueOrThrow).mockResolvedValue(eventWithUserAsHost as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -808,12 +773,12 @@ describe("task-actions", () => {
         });
 
         it("does not remove ticket if user does not have volunteer ticket", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(taskWithEvent as any);
             vi.mocked(tx.event.findUniqueOrThrow).mockResolvedValue(event as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(null); // No volunteer ticket
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -822,15 +787,15 @@ describe("task-actions", () => {
         });
 
         it("sends email to reviewer when assignee cancels", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(taskWithEvent as any);
             vi.mocked(tx.event.findUniqueOrThrow).mockResolvedValue(event as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(volunteerParticipant as any);
             vi.mocked(tx.task.count).mockResolvedValue(0);
             vi.mocked(deleteEventParticipantWithTx).mockResolvedValue(undefined);
             vi.mocked(sendMail).mockResolvedValue({ accepted: 1, rejected: 1 });
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -843,32 +808,30 @@ describe("task-actions", () => {
         });
 
         it("continues even if email fails", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(taskWithEvent as any);
             vi.mocked(tx.event.findUniqueOrThrow).mockResolvedValue(event as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(volunteerParticipant as any);
             vi.mocked(tx.task.count).mockResolvedValue(0);
             vi.mocked(deleteEventParticipantWithTx).mockResolvedValue(undefined);
             vi.mocked(sendMail).mockRejectedValue(new Error("Email service down"));
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
-            await expect(
-                taskActions.unassignTaskFromUser(userId, taskId),
-            ).resolves.not.toThrow();
+            await expect(taskActions.unassignTaskFromUser(userId, taskId)).resolves.not.toThrow();
         });
 
         it("does not send email when task has no reviewer", async () => {
             const taskNoReviewer = { ...taskWithEvent, reviewer: null };
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue(taskNoReviewer as any);
             vi.mocked(tx.event.findUniqueOrThrow).mockResolvedValue(event as any);
             vi.mocked(tx.eventParticipant.findFirst).mockResolvedValue(volunteerParticipant as any);
             vi.mocked(tx.task.count).mockResolvedValue(0);
             vi.mocked(deleteEventParticipantWithTx).mockResolvedValue(undefined);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -877,10 +840,10 @@ describe("task-actions", () => {
         });
 
         it("does not process event logic when task has no event", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.task.update).mockResolvedValue({ event_id: null } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await taskActions.unassignTaskFromUser(userId, taskId);
@@ -980,8 +943,6 @@ describe("task-actions", () => {
 
             await expect(taskActions.contactTaskMember(userId, formData, taskId)).rejects.toThrow();
         });
-
-
 
         it("throws error on invalid recipient UUID", async () => {
             const formData = buildFormData({

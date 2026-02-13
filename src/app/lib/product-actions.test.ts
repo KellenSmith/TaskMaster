@@ -70,10 +70,7 @@ describe("product-actions", () => {
             expect(mockContext.prisma.product.create).toHaveBeenCalledWith({
                 data: sanitized,
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.PRODUCT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.PRODUCT, "max");
         });
 
         it("rejects invalid input", async () => {
@@ -93,7 +90,9 @@ describe("product-actions", () => {
             };
 
             vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
-            mockContext.prisma.membership.create.mockResolvedValue({ product_id: productId } as any);
+            mockContext.prisma.membership.create.mockResolvedValue({
+                product_id: productId,
+            } as any);
 
             const formData = buildFormData({
                 ...baseProductForm,
@@ -110,10 +109,7 @@ describe("product-actions", () => {
                     },
                 },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.PRODUCT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.PRODUCT, "max");
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
                 GlobalConstants.MEMBERSHIP,
                 "max",
@@ -135,7 +131,9 @@ describe("product-actions", () => {
             };
 
             vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
-            mockContext.prisma.membership.update.mockResolvedValue({ product_id: productId } as any);
+            mockContext.prisma.membership.update.mockResolvedValue({
+                product_id: productId,
+            } as any);
 
             const formData = buildFormData({
                 name: "Updated Membership",
@@ -155,10 +153,7 @@ describe("product-actions", () => {
                     },
                 },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.PRODUCT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.PRODUCT, "max");
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
                 GlobalConstants.MEMBERSHIP,
                 "max",
@@ -179,7 +174,9 @@ describe("product-actions", () => {
                 id: productId,
                 image_url: oldImageUrl,
             } as any);
-            mockContext.prisma.membership.update.mockResolvedValue({ product_id: productId } as any);
+            mockContext.prisma.membership.update.mockResolvedValue({
+                product_id: productId,
+            } as any);
 
             const formData = buildFormData({
                 name: "Updated Membership",
@@ -207,7 +204,9 @@ describe("product-actions", () => {
                 id: productId,
                 image_url: oldImageUrl,
             } as any);
-            mockContext.prisma.membership.update.mockResolvedValue({ product_id: productId } as any);
+            mockContext.prisma.membership.update.mockResolvedValue({
+                product_id: productId,
+            } as any);
 
             const formData = buildFormData({
                 name: "Updated Membership",
@@ -235,7 +234,9 @@ describe("product-actions", () => {
                 id: productId,
                 image_url: oldImageUrl,
             } as any);
-            mockContext.prisma.membership.update.mockResolvedValue({ product_id: productId } as any);
+            mockContext.prisma.membership.update.mockResolvedValue({
+                product_id: productId,
+            } as any);
 
             const formData = buildFormData({
                 name: "Updated Membership",
@@ -291,10 +292,7 @@ describe("product-actions", () => {
                 "https://blob.vercel-storage.com/old.png",
                 "https://blob.vercel-storage.com/new.png",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.PRODUCT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.PRODUCT, "max");
         });
 
         it("does not delete blob when image_url not in update", async () => {
@@ -346,10 +344,7 @@ describe("product-actions", () => {
             expect(vi.mocked(deleteOldBlob)).toHaveBeenCalledWith(
                 "https://blob.vercel-storage.com/old.png",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.PRODUCT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.PRODUCT, "max");
         });
 
         it("revalidates membership cache when deleting membership product", async () => {
@@ -378,10 +373,7 @@ describe("product-actions", () => {
 
             await productActions.deleteProduct(productId);
 
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TICKET,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
         });
 
         it("rejects invalid product id", async () => {
@@ -391,7 +383,7 @@ describe("product-actions", () => {
 
     describe("processOrderedProduct", () => {
         it("renews membership when product is membership", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const orderItem = {
                 order_id: "order-1",
                 quantity: 1,
@@ -409,7 +401,7 @@ describe("product-actions", () => {
         });
 
         it("adds event participant when product is ticket", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const orderItem = {
                 order_id: "order-1",
                 quantity: 2,
@@ -432,7 +424,7 @@ describe("product-actions", () => {
         });
 
         it("sends email notification for generic product", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const orderItem = {
                 order_id: "order-1",
                 quantity: 1,
@@ -454,7 +446,7 @@ describe("product-actions", () => {
         });
 
         it("throws error when insufficient stock", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const orderItem = {
                 order_id: "order-1",
                 quantity: 10,
@@ -472,7 +464,7 @@ describe("product-actions", () => {
         });
 
         it("processes multiple quantities correctly", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const orderItem = {
                 order_id: "order-1",
                 quantity: 3,

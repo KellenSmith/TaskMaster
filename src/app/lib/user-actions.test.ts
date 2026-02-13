@@ -38,14 +38,17 @@ vi.mock("./user-membership-actions", () => ({
 describe("user-actions", () => {
     describe("createUser", () => {
         it("creates the first user as validated admin and renews membership", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.user.create).mockResolvedValue({ id: "user-1" } as any);
             vi.mocked(tx.user.update).mockResolvedValue({ id: "user-1" } as any);
 
             vi.mocked(mockContext.prisma.user.count).mockResolvedValue(0);
-            vi.mocked(getMembershipProduct).mockResolvedValue({ id: "membership-1", price: 0 } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(getMembershipProduct).mockResolvedValue({
+                id: "membership-1",
+                price: 0,
+            } as any);
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -62,10 +65,7 @@ describe("user-actions", () => {
                     nickname: "first",
                     skill_badges: {
                         createMany: {
-                            data: [
-                                { skill_badge_id: "badge-1" },
-                                { skill_badge_id: "badge-2" },
-                            ],
+                            data: [{ skill_badge_id: "badge-1" }, { skill_badge_id: "badge-2" }],
                         },
                     },
                 }),
@@ -86,12 +86,12 @@ describe("user-actions", () => {
         });
 
         it("creates a non-first user without admin role", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.user.create).mockResolvedValue({ id: "user-2" } as any);
 
             vi.mocked(mockContext.prisma.user.count).mockResolvedValue(2);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -137,11 +137,11 @@ describe("user-actions", () => {
                 member_application_prompt: null,
             } as any);
 
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(mockContext.prisma.user.count).mockResolvedValue(1);
             vi.mocked(tx.user.create).mockResolvedValue({ id: "user-1" } as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -218,10 +218,10 @@ describe("user-actions", () => {
         const userId = "550e8400-e29b-41d4-a716-446655440000";
 
         it("updates user and replaces skill badges", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
 
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({
@@ -248,10 +248,10 @@ describe("user-actions", () => {
         });
 
         it("skips skill badge updates when none are provided", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
 
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const formData = buildFormData({ email: "updated@example.com" });
@@ -330,9 +330,7 @@ describe("user-actions", () => {
 
     describe("getActiveMembers", () => {
         it("returns active members with select fields", async () => {
-            const activeMembers = [
-                { id: "user-1", nickname: "A", skill_badges: [] },
-            ] as any;
+            const activeMembers = [{ id: "user-1", nickname: "A", skill_badges: [] }] as any;
             mockContext.prisma.user.findMany.mockResolvedValue(activeMembers);
 
             const result = await userActions.getActiveMembers();
@@ -407,13 +405,14 @@ describe("user-actions", () => {
         const userId = "550e8400-e29b-41d4-a716-446655440000";
 
         it("updates user status, sends mail, and revalidates", async () => {
-            const tx = mockContext.prisma as TransactionClient;
-            vi.mocked(tx.user.update).mockResolvedValue(
-                { id: userId, email: "member@example.com" } as any,
-            );
+            const tx = mockContext.prisma as any as TransactionClient;
+            vi.mocked(tx.user.update).mockResolvedValue({
+                id: userId,
+                email: "member@example.com",
+            } as any);
 
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await userActions.validateUserMembership(userId);

@@ -16,7 +16,7 @@ describe("text-content-actions", () => {
 
     describe("createTextContent", () => {
         it("creates text content with default translations", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const created = {
                 id: textContentId,
                 translations: [
@@ -58,7 +58,7 @@ describe("text-content-actions", () => {
         });
 
         it("creates text content without id when null provided", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const created = {
                 id: "auto-generated-id",
                 translations: [],
@@ -79,7 +79,7 @@ describe("text-content-actions", () => {
 
     describe("getTextContent", () => {
         it("returns existing text content when found", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const existing = {
                 id: textContentId,
                 translations: [
@@ -89,8 +89,8 @@ describe("text-content-actions", () => {
             };
 
             vi.mocked(tx.textContent.findUnique).mockResolvedValue(existing as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const result = await textContentActions.getTextContent(textContentId);
@@ -103,7 +103,7 @@ describe("text-content-actions", () => {
         });
 
         it("creates text content when not found", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const created = {
                 id: textContentId,
                 translations: [
@@ -114,8 +114,8 @@ describe("text-content-actions", () => {
 
             vi.mocked(tx.textContent.findUnique).mockResolvedValue(null);
             vi.mocked(tx.textContent.create).mockResolvedValue(created as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const result = await textContentActions.getTextContent(textContentId);
@@ -126,15 +126,15 @@ describe("text-content-actions", () => {
         });
 
         it("creates new text content when id is null", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const created = {
                 id: "new-id",
                 translations: [],
             };
 
             vi.mocked(tx.textContent.create).mockResolvedValue(created as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             const result = await textContentActions.getTextContent(null);
@@ -147,13 +147,13 @@ describe("text-content-actions", () => {
 
     describe("updateTextContent", () => {
         it("updates text content, sanitizes, and revalidates", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const rawText = "<p>Hello <script>alert('xss')</script></p>";
             const sanitized = "<p>Hello </p>";
 
             vi.mocked(sanitizeRichText).mockReturnValue(sanitized);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await textContentActions.updateTextContent(
@@ -204,12 +204,12 @@ describe("text-content-actions", () => {
         });
 
         it("updates text content without category when omitted", async () => {
-            const tx = mockContext.prisma as TransactionClient;
+            const tx = mockContext.prisma as any as TransactionClient;
             const sanitized = "<p>Hello</p>";
 
             vi.mocked(sanitizeRichText).mockReturnValue(sanitized);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(
-                async (callback) => callback(tx),
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
             );
 
             await textContentActions.updateTextContent(
