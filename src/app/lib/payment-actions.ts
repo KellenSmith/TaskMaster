@@ -1,12 +1,12 @@
 "use server";
 import GlobalConstants from "../GlobalConstants";
 import { headers } from "next/headers";
-import { progressOrder } from "./order-actions";
 import { Language, OrderStatus, Prisma } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import {
     getNewOrderStatus,
     PaymentOrderResponse,
+    PaymentState,
     SubscriptionToken,
     TransactionType,
 } from "./payment-utils";
@@ -16,6 +16,7 @@ import { getLoggedInUser, getUserLanguage } from "./user-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import z from "zod";
+import { progressOrder } from "./order-helpers";
 
 export const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
     return await fetch(url, {
@@ -227,7 +228,13 @@ export const redirectToSwedbankPayment = async (
 ): Promise<void> => {
     const validatedOrderId = UuidSchema.parse(orderId);
 
-    const order = await prisma.order.findUniqueOrThrow({ where: { id: validatedOrderId } });
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: validatedOrderId },
+        include: {
+            user: true,
+            order_items: { include: { product: { include: { membership: true } } } },
+        },
+    });
     if (order?.status !== OrderStatus.pending) {
         throw new Error("Order is not in a pending state");
     }
@@ -251,7 +258,7 @@ export const redirectToSwedbankPayment = async (
     if (order.total_amount < 1) {
         // Free order - no payment needed
         // Directly progress to completed
-        await progressOrder(order.id, OrderStatus.paid, false);
+        await progressOrder(order, false);
         return;
     }
     const requestBody = await getSwedbankPaymentRequestPurchasePayload(
@@ -272,52 +279,6 @@ export const redirectToSwedbankPayment = async (
     redirect(redirectUrl);
 };
 
-export const capturePaymentFunds = async (orderId: string) => {
-    const validatedOrderId = UuidSchema.parse(orderId);
-
-    const order = await prisma.order.findUniqueOrThrow({
-        where: { id: validatedOrderId },
-    });
-    // Use the same payeeReference that was used for the original authorization
-    // This maintains the connection between authorization and capture operations
-
-    if (!order.payee_ref) {
-        throw new Error(`Order ${order.id} is missing payeeRef - cannot capture payment safely`);
-    }
-
-    // Create a unique capture reference by appending "CAPTURE" to the original payeeRef
-    // This ensures each capture attempt has a unique reference while maintaining traceability
-    const capturePayeeRef = `${order.payee_ref}CAP`.substring(0, 30);
-
-    const capturePaymentResponse = await makeSwedbankApiRequest(
-        `${process.env.SWEDBANK_BASE_URL}${order.payment_request_id}/captures`,
-        {
-            transaction: {
-                description: "Capturing authorized payment",
-                amount: order.total_amount, // Convert to smallest currency unit
-                vatAmount: 0,
-                payeeReference: capturePayeeRef, // Unique reference for capture operation
-            },
-        },
-    );
-
-    if (!capturePaymentResponse.ok) {
-        const errorText = await capturePaymentResponse.text();
-        console.error(
-            `Failed to capture payment funds for order ${order.id}:`,
-            capturePaymentResponse.status,
-            capturePaymentResponse.statusText,
-            errorText,
-        );
-        throw new Error(
-            `Payment capture failed: ${capturePaymentResponse.status} ${capturePaymentResponse.statusText}`,
-        );
-    }
-
-    const responseText = await capturePaymentResponse.text();
-    return responseText;
-};
-
 export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedOrderId = UuidSchema.parse(orderId);
@@ -325,9 +286,10 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
     const order = await prisma.order.findUniqueOrThrow({
         where: { id: validatedOrderId },
         include: {
+            user: true,
             order_items: {
                 include: {
-                    product: { include: { membership: true } },
+                    product: { include: { membership: true, ticket: true } },
                 },
             },
         },
@@ -345,7 +307,7 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
 
     // If the order is free, complete it immediately.
     if (order.total_amount === 0) {
-        await progressOrder(orderId, OrderStatus.completed);
+        await progressOrder(order, false);
         return;
     }
 
@@ -363,11 +325,14 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
             throw new Error("Failed to check payment status");
         }
         const paymentStatusData: PaymentOrderResponse = await paymentStatusResponse.json();
-        console.log(paymentStatusData);
         const paymentStatus = paymentStatusData.paymentOrder.status;
-        const newOrderStatus = getNewOrderStatus(paymentStatus);
-        const needsCapture =
-            paymentStatusData.paymentOrder.paid.transactionType === TransactionType.Authorization;
-        await progressOrder(orderId, newOrderStatus, needsCapture);
+        if (paymentStatus === PaymentState.Paid) {
+            const needsCapture =
+                paymentStatusData.paymentOrder.paid.transactionType ===
+                TransactionType.Authorization;
+            await progressOrder(order, needsCapture);
+        } else {
+            throw new Error(`Payment not completed. Current status: ${paymentStatus}`);
+        }
     }
 };

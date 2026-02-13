@@ -103,7 +103,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
             quantity: 1,
         };
         try {
-            await createAndRedirectToOrder(user.id, [productOrderItems]);
+            await createAndRedirectToOrder([productOrderItems]);
         } catch (error) {
             allowRedirectException(error);
             addNotification("Failed to create order", "error");

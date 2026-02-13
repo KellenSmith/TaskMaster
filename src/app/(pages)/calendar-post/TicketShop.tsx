@@ -55,7 +55,7 @@ const TicketShop = ({
             quantity: 1,
         };
         try {
-            await createAndRedirectToOrder(user.id, [ticketOrderItems]);
+            await createAndRedirectToOrder([ticketOrderItems]);
         } catch (error) {
             allowRedirectException(error);
             addNotification(LanguageTranslations.failedTicketOrder[language], "error");
