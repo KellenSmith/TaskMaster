@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import type { Transporter } from "nodemailer";
 import { getMailTransport } from "../app/lib/mail-service/mail-transport";
 import testdata from "./testdata";
+import { prisma } from "../prisma/prisma-client";
 // Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
 dayjs.extend(utc);
 
@@ -40,7 +41,7 @@ beforeEach(() => {
     vi.mocked(getMailTransport).mockResolvedValue({
         sendMail: vi.fn().mockResolvedValue({ accepted: [], rejected: [] }),
     } as unknown as Transporter);
-    mockContext.prisma.$transaction.mockImplementation(async (callback) => {
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         return await callback(mockContext.prisma as any);
     });
 });

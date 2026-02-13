@@ -6,6 +6,7 @@ import { buildFormData } from "../../test/test-helpers";
 import * as productActions from "./product-actions";
 import { sanitizeFormData } from "./html-sanitizer";
 import { deleteOldBlob } from "./organization-settings-actions";
+import { Prisma } from "../../prisma/generated/client";
 
 vi.mock("./html-sanitizer", () => ({
     sanitizeFormData: vi.fn(),
@@ -20,7 +21,6 @@ vi.mock("./utils", () => ({
 }));
 
 const productId = "550e8400-e29b-41d4-a716-446655440000";
-const userId = "550e8400-e29b-41d4-a716-446655440001";
 
 const baseProductForm = {
     name: "T-Shirt",
