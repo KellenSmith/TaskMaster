@@ -20,7 +20,12 @@ export default defineConfig({
         coverage: {
             provider: "v8",
             reporter: ["text"],
-            exclude: ["node_modules/**", "src/test/**"],
+            exclude: [
+                "node_modules/**",
+                "src/test/**",
+                "src/prisma/generated/**",
+                "src/app/lib/auth/auth-types.ts"
+            ],
         },
         // Improve test collection performance
         include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
