@@ -1,14 +1,12 @@
 "use server";
 
-import GlobalConstants from "../GlobalConstants";
 import { OrderStatus } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
-import { PaymentOrderResponse, PaymentState, TransactionType } from "./payment-types";
-import { isUserAdmin, serverRedirect } from "./utils";
+import { isUserAdmin } from "./utils";
 import { getLoggedInUser } from "./user-actions";
 import { UuidSchema } from "./zod-schemas";
 import { progressOrder } from "./order-helpers";
-import { isOrderpaid, makeSwedbankApiRequest, redirectToSwedbankPayment } from "./payment-helpers";
+import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";
 
 export const redirectToOrderPayment = async (orderId: string): Promise<void> => {
     const validatedOrderId = UuidSchema.parse(orderId);
