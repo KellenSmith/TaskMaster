@@ -36,20 +36,6 @@ const generatePayeeReference = async (
     const baseRef = `${prefix}${cleanOrderId.slice(0, 13)}${timestamp}${random}`; // 3+13+10+3=29 chars max
     let payeeRef = baseRef.substring(0, 30); // Ensure max length compliance
 
-    // Check if this payeeRef is already used by another order
-    const existingOrder = await prisma.order.findFirst({
-        where: {
-            payee_ref: payeeRef,
-            id: { not: order.id }, // Exclude the current order
-        },
-    });
-
-    if (existingOrder) {
-        // Generate a new one with additional entropy
-        const fallbackPayeeRef = `${payeeRef}${Math.random().toString(36).substring(2, 5)}`;
-        payeeRef = fallbackPayeeRef.substring(0, 30); // Ensure max length
-    }
-
     return payeeRef;
 };
 
