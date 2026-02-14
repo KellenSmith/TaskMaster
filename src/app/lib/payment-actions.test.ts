@@ -6,6 +6,7 @@ import { progressOrder } from "./order-helpers";
 import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";
 import { getLoggedInUser } from "./user-actions";
 import { isUserAdmin } from "./utils";
+import { revalidateTag } from "next/cache";
 
 vi.mock("./order-helpers", () => ({
     progressOrder: vi.fn(),
@@ -22,7 +23,6 @@ vi.mock("./utils", () => ({
 }));
 
 const userId = "550e8400-e29b-41d4-a716-446655440001";
-const adminUserId = "550e8400-e29b-41d4-a716-446655440004";
 const otherUserId = "550e8400-e29b-41d4-a716-446655440002";
 
 const orderId = "550e8400-e29b-41d4-a716-446655440003";
@@ -68,6 +68,7 @@ describe("redirectToOrderPayment", () => {
         await redirectToOrderPayment(baseOrder.id);
         expect(progressOrder).toHaveBeenCalledWith(expect.anything(), false);
         expect(redirectToSwedbankPayment).not.toHaveBeenCalled();
+        expect(revalidateTag).toHaveBeenCalledTimes(1);
     });
 
     it("calls redirectToSwedbankPayment for paid order", async () => {

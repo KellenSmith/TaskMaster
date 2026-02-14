@@ -7,6 +7,8 @@ import { getLoggedInUser } from "./user-actions";
 import { UuidSchema } from "./zod-schemas";
 import { progressOrder } from "./order-helpers";
 import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";
+import { revalidateTag } from "next/cache";
+import GlobalConstants from "../GlobalConstants";
 
 export const redirectToOrderPayment = async (orderId: string): Promise<void> => {
     const validatedOrderId = UuidSchema.parse(orderId);
@@ -31,10 +33,11 @@ export const redirectToOrderPayment = async (orderId: string): Promise<void> => 
     // Free order - no payment needed - process immediately
     if (order.total_amount === 0) {
         await progressOrder(order, false);
+        revalidateTag(GlobalConstants.ORDER, "max");
         return;
     }
 
-    redirectToSwedbankPayment(order);
+    await redirectToSwedbankPayment(order);
 };
 
 export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {
@@ -65,6 +68,7 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
     // If the order is free, complete it immediately.
     if (order.total_amount === 0) {
         await progressOrder(order, false);
+        revalidateTag(GlobalConstants.ORDER, "max");
         return;
     }
     if (!order.payment_request_id) {
@@ -79,4 +83,5 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
     const { isPaid, needsCapture } = await isOrderpaid(order);
 
     if (isPaid) await progressOrder(order, needsCapture);
+    revalidateTag(GlobalConstants.ORDER, "max");
 };
