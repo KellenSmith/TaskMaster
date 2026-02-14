@@ -130,7 +130,6 @@ const createSwedbankPaymentRequest = async (
     }>,
 ) => {
     const requestBody = await getCreateSwedbankPaymentRequestPayload(order);
-    if (!requestBody) throw new Error("Failed to create payment request");
 
     const response = await makeSwedbankApiRequest(
         `${process.env.SWEDBANK_BASE_URL}/psp/paymentorders`,
