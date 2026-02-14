@@ -13,7 +13,7 @@ import { getOrganizationSettings } from "./organization-settings-actions";
 import { getUserLanguage } from "./user-actions";
 import { redirect } from "next/navigation";
 
-export const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
+const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
     return await fetch(url, {
         method: body ? "POST" : "GET",
         headers: {
@@ -87,7 +87,14 @@ const getCreateSwedbankPaymentRequestPayload = async (
                     [GlobalConstants.ORDER_ID]: order.id,
                 }),
                 logoUrl: organizationSettings?.logo_url || undefined,
-                termsOfServiceUrl: organizationSettings.terms_of_purchase_english_url,
+                termsOfServiceUrl:
+                    userLanguage === Language.swedish
+                        ? organizationSettings?.terms_of_purchase_swedish_url ||
+                          organizationSettings?.terms_of_purchase_english_url ||
+                          undefined
+                        : organizationSettings?.terms_of_purchase_english_url ||
+                          organizationSettings?.terms_of_purchase_swedish_url ||
+                          undefined,
             },
             payeeInfo: {
                 payeeId: process.env.SWEDBANK_PAY_PAYEE_ID as string,
