@@ -20,6 +20,8 @@ vi.mock("./organization-settings-actions", () => ({
 vi.mock("./user-actions", () => ({ getUserLanguage: vi.fn().mockResolvedValue(Language.english) }));
 
 import { redirectToSwedbankPayment, isOrderpaid, capturePaymentFunds } from "./payment-helpers";
+import { getUserLanguage } from "./user-actions";
+import { getOrganizationSettings } from "./organization-settings-actions";
 
 const baseOrder = {
     id: "order-uuid",
@@ -154,5 +156,149 @@ describe("capturePaymentFunds", () => {
         (global.fetch as any).mockResolvedValue({ ok: true });
 
         await expect(capturePaymentFunds(baseOrder as any)).resolves.toBeUndefined();
+    });
+});
+
+describe("redirectToSwedbankPayment (payload edge cases)", () => {
+    afterEach(() => {
+        vi.resetAllMocks();
+    });
+
+    it("uses Swedish termsOfServiceUrl fallback if swedish url missing", async () => {
+        vi.mocked(prisma.order.findFirst).mockResolvedValueOnce(undefined as any);
+        vi.mocked(getUserLanguage).mockResolvedValueOnce(Language.swedish);
+        vi.mocked(getOrganizationSettings).mockResolvedValueOnce({
+            logo_url: "logo",
+            terms_of_purchase_english_url: "terms-en",
+            terms_of_purchase_swedish_url: null,
+        } as any);
+        (global.fetch as any).mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                operations: [{ rel: "redirect-checkout", href: "https://redirect" }],
+                paymentOrder: { id: "poid" },
+            }),
+        });
+        (prisma.order.update as any).mockResolvedValue({});
+        await redirectToSwedbankPayment({ ...baseOrder, order_items: [] } as any);
+        const fetchCall = (global.fetch as any).mock.calls[0];
+        const body = JSON.parse(fetchCall[1].body);
+        expect(body.paymentorder.urls.termsOfServiceUrl).toBe("terms-en");
+    });
+
+    it("orderItem class/description: membership", async () => {
+        (global.fetch as any).mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                operations: [{ rel: "redirect-checkout", href: "https://redirect" }],
+                paymentOrder: { id: "poid" },
+            }),
+        });
+        (prisma.order.update as any).mockResolvedValue({});
+        const order = {
+            ...baseOrder,
+            order_items: [
+                {
+                    product: {
+                        id: "id1",
+                        name: "n",
+                        price: 1,
+                        vat_percentage: 1,
+                        membership: true,
+                    },
+                    quantity: 1,
+                    price: 1,
+                    vat_amount: 1,
+                },
+            ],
+        };
+        await redirectToSwedbankPayment(order as any);
+        const fetchCall = (global.fetch as any).mock.calls[0];
+        const item = JSON.parse(fetchCall[1].body).paymentorder.orderItems[0];
+        expect(item.class).toBe("Membership");
+        expect(item.description).toBe("Membership");
+    });
+    it("orderItem class/description: ticket", async () => {
+        (global.fetch as any).mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                operations: [{ rel: "redirect-checkout", href: "https://redirect" }],
+                paymentOrder: { id: "poid" },
+            }),
+        });
+        (prisma.order.update as any).mockResolvedValue({});
+        const order = {
+            ...baseOrder,
+            order_items: [
+                {
+                    product: { id: "id2", name: "n", price: 1, vat_percentage: 1, ticket: true },
+                    quantity: 1,
+                    price: 1,
+                    vat_amount: 1,
+                },
+            ],
+        };
+        await redirectToSwedbankPayment(order as any);
+        const fetchCall = (global.fetch as any).mock.calls[0];
+        const item = JSON.parse(fetchCall[1].body).paymentorder.orderItems[0];
+        expect(item.class).toBe("Ticket");
+        expect(item.description).toBe("Ticket");
+    });
+    it("orderItem class/description: product fallback", async () => {
+        (global.fetch as any).mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                operations: [{ rel: "redirect-checkout", href: "https://redirect" }],
+                paymentOrder: { id: "poid" },
+            }),
+        });
+        (prisma.order.update as any).mockResolvedValue({});
+        const order = {
+            ...baseOrder,
+            order_items: [
+                {
+                    product: { id: "id3", name: "n", price: 1, vat_percentage: 1 },
+                    quantity: 1,
+                    price: 1,
+                    vat_amount: 1,
+                },
+            ],
+        };
+        await redirectToSwedbankPayment(order as any);
+        const fetchCall = (global.fetch as any).mock.calls[0];
+        const item = JSON.parse(fetchCall[1].body).paymentorder.orderItems[0];
+        expect(item.class).toBe("Product");
+        expect(item.description).toBe("Product");
+    });
+    it("orderItem description: uses product.description if present", async () => {
+        (global.fetch as any).mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                operations: [{ rel: "redirect-checkout", href: "https://redirect" }],
+                paymentOrder: { id: "poid" },
+            }),
+        });
+        (prisma.order.update as any).mockResolvedValue({});
+        const order = {
+            ...baseOrder,
+            order_items: [
+                {
+                    product: {
+                        id: "id4",
+                        name: "n",
+                        price: 1,
+                        vat_percentage: 1,
+                        description: "desc",
+                    },
+                    quantity: 1,
+                    price: 1,
+                    vat_amount: 1,
+                },
+            ],
+        };
+        await redirectToSwedbankPayment(order as any);
+        const fetchCall = (global.fetch as any).mock.calls[0];
+        const item = JSON.parse(fetchCall[1].body).paymentorder.orderItems[0];
+        expect(item.description).toBe("desc");
     });
 });
