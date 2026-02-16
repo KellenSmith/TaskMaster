@@ -10,7 +10,7 @@ import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplat
 import { EmailSendoutSchema } from "../zod-schemas";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
 import { sanitizeFormData } from "../html-sanitizer";
-import { createNewsletterJob } from "./newsletter-actions";
+import { createNewsletterJob } from "./newsletter-helpers";
 import z from "zod";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { MailResult } from "../../ui/utils";

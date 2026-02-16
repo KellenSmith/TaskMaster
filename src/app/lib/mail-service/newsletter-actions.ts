@@ -6,48 +6,30 @@ import GlobalConstants from "../../GlobalConstants";
 import { UuidSchema } from "../zod-schemas";
 import { getEmailPayload, isRateLimitError } from "./mail-service";
 import { getMailTransport } from "./mail-transport";
+import { NEWSLETTER_PROCESS_INTERVAL } from "../../NewsletterTrigger";
 
-type CreateJobInput = {
-    subject: string;
-    html: string; // rich HTML content to embed in MailTemplate
-    recipients: string[]; // snapshot of recipients
-    batchSize?: number; // defaults to 250 per provider limit
-    replyTo?: string; // optional reply-to address
+type ProcessBatchResult = {
+    processed: number;
+    done: boolean;
 };
 
-export async function createNewsletterJob(input: CreateJobInput) {
-    const batchSize = Math.max(1, Math.min(input.batchSize ?? 250, 250));
-    const recipients = [...new Set((input.recipients || []).filter(Boolean))];
-    if (recipients.length === 0) throw new Error("No recipients provided");
-
-    const job = await prisma.newsletterJob.create({
-        data: {
-            subject: input.subject,
-            html: input.html,
-            recipients,
-            batchSize,
-            replyTo: input.replyTo,
-            status: "pending",
-        },
-    });
-    revalidateTag(GlobalConstants.SENDOUT, "max");
-    // Batched are sent when nextauth route is accessed.
-
-    return { id: job.id, total: recipients.length, batchSize };
-}
-
 // Processes a single batch for the oldest pending/running job or a specific jobId
-export async function processNextNewsletterBatch(jobId?: string) {
+export async function processNextNewsletterBatch(jobId?: string): Promise<ProcessBatchResult> {
     const job = jobId
         ? await prisma.newsletterJob.findUnique({ where: { id: jobId } })
         : await prisma.newsletterJob.findFirst({
-            where: { status: { in: ["pending", "running"] } },
-            orderBy: { created_at: "asc" },
-        });
+              where: { status: { in: ["pending", "running"] } },
+              orderBy: { created_at: "asc" },
+          });
 
-    if (!job) return { processed: 0, done: true, message: "No pending jobs" };
+    if (!job) return { processed: 0, done: true };
+    if (job.lastRunAt && job.lastRunAt.getTime() - Date.now() < NEWSLETTER_PROCESS_INTERVAL)
+        return {
+            processed: 0,
+            done: false,
+        };
     if (job.status === "completed" || job.status === "cancelled")
-        return { processed: 0, done: true, message: `Job ${job.status}` };
+        return { processed: 0, done: true };
 
     const recipients = job.recipients || [];
     const total = recipients.length;
@@ -55,7 +37,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
         await prisma.newsletterJob.delete({
             where: { id: job.id },
         });
-        return { processed: 0, done: true, message: "Already complete" };
+        return { processed: 0, done: true };
     }
 
     const start = job.cursor;
@@ -102,11 +84,7 @@ export async function processNextNewsletterBatch(jobId?: string) {
         );
         revalidateTag(GlobalConstants.SENDOUT, "max");
         return {
-            jobId: job.id,
             processed: acceptedTotal,
-            start,
-            end: newCursor,
-            total,
             done,
         };
     } catch (error) {
@@ -114,10 +92,8 @@ export async function processNextNewsletterBatch(jobId?: string) {
         if (await isRateLimitError(error as Error)) {
             console.warn("Mail rate limit error detected, will retry later", error);
             return {
-                jobId: job.id,
                 processed: 0,
                 done: false,
-                error: "Rate limit error, will retry",
             };
         }
         console.error("Error sending newsletter batch", error);
@@ -129,7 +105,10 @@ export async function processNextNewsletterBatch(jobId?: string) {
                 lastRunAt: new Date(),
             },
         });
-        return { jobId: job.id, processed: 0, done: false, error: (error as Error)?.message || String(error) };
+        return {
+            processed: 0,
+            done: false,
+        };
     }
 }
 

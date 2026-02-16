@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Prisma } from "@/prisma/generated/client";
 import { mockContext } from "../../../test/mocks/prismaMock";
 import { getMailTransport } from "./mail-transport";
-import { createNewsletterJob } from "./newsletter-actions";
+import { createNewsletterJob } from "./newsletter-helpers";
 import * as htmlSanitizer from "../html-sanitizer";
 import {
     getEmailPayload,
@@ -17,7 +17,7 @@ import {
 import { createElement } from "react";
 import testdata from "../../../test/testdata";
 
-vi.mock("./newsletter-actions", () => ({
+vi.mock("./newsletter-helpers", () => ({
     createNewsletterJob: vi.fn(),
 }));
 
