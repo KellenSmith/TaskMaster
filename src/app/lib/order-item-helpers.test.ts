@@ -38,7 +38,7 @@ describe("order-item-helpers", () => {
 
         it("validates and builds order items with correct price and vat", async () => {
             (mockTx.product.findMany as any).mockResolvedValue([baseProduct]);
-            (getAvailableProductStock as any).mockReturnValue(10);
+            (getAvailableProductStock as any).mockResolvedValue(10);
             const items = [{ ...baseOrderItem }];
             const result = await validateAndBuildOrderItems(mockTx, items);
             expect(result[0].price).toBe(baseProduct.price);
@@ -56,7 +56,7 @@ describe("order-item-helpers", () => {
 
         it("throws if quantity is invalid", async () => {
             (mockTx.product.findMany as any).mockResolvedValue([baseProduct]);
-            (getAvailableProductStock as any).mockReturnValue(10);
+            (getAvailableProductStock as any).mockResolvedValue(10);
             await expect(
                 validateAndBuildOrderItems(mockTx, [{ ...baseOrderItem, quantity: 0 }]),
             ).rejects.toThrow("Invalid quantity for product prod-1");
@@ -70,7 +70,7 @@ describe("order-item-helpers", () => {
 
         it("throws if insufficient stock", async () => {
             (mockTx.product.findMany as any).mockResolvedValue([baseProduct]);
-            (getAvailableProductStock as any).mockReturnValue(1);
+            (getAvailableProductStock as any).mockResolvedValue(1);
             await expect(validateAndBuildOrderItems(mockTx, [baseOrderItem])).rejects.toThrow(
                 "Insufficient stock for product prod-1",
             );
@@ -78,7 +78,7 @@ describe("order-item-helpers", () => {
 
         it("allows null stock (unlimited)", async () => {
             (mockTx.product.findMany as any).mockResolvedValue([baseProduct]);
-            (getAvailableProductStock as any).mockReturnValue(null);
+            (getAvailableProductStock as any).mockResolvedValue(null);
             const items = [{ ...baseOrderItem }];
             const result = await validateAndBuildOrderItems(mockTx, items);
             expect(result[0].price).toBe(baseProduct.price);

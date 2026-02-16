@@ -10,7 +10,7 @@ import { getAbsoluteUrl } from "./utils";
 import GlobalConstants from "../GlobalConstants";
 import { sendMail } from "./mail-service/mail-service";
 
-export const getAvailableProductStock = (
+export const getAvailableProductStock = async (
     product: Prisma.ProductGetPayload<{
         select: {
             stock: true;
@@ -19,7 +19,7 @@ export const getAvailableProductStock = (
             };
         };
     }>,
-): number | null => {
+): Promise<number | null> => {
     if (product.stock === null) return null; // Infinite stock
 
     const reservedStock = product.order_items.reduce((acc, item) => {

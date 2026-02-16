@@ -35,7 +35,7 @@ export const validateAndBuildOrderItems = async (
         if (!product) throw new Error(`Product with id ${orderItem.product_id} not found`);
 
         // Check that the stock of each product in the orderItems is valid and sufficient
-        const availableStock = getAvailableProductStock(product);
+        const availableStock = await getAvailableProductStock(product);
         if (
             !orderItem.quantity ||
             typeof orderItem.quantity !== "number" ||

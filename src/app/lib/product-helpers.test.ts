@@ -123,15 +123,15 @@ describe("product-helpers", () => {
     });
 
     describe("getAvailableProductStock", () => {
-        it("returns null for unlimited stock", () => {
+        it("returns null for unlimited stock", async () => {
             const product = {
                 stock: null,
                 order_items: [],
             };
-            expect(productHelpers.getAvailableProductStock(product as any)).toBeNull();
+            expect(await productHelpers.getAvailableProductStock(product as any)).toBeNull();
         });
 
-        it("returns correct available stock when some is reserved", () => {
+        it("returns correct available stock when some is reserved", async () => {
             const now = new Date();
             const product = {
                 stock: 10,
@@ -153,10 +153,10 @@ describe("product-helpers", () => {
                 ],
             };
             // Only the pending order counts as reserved
-            expect(productHelpers.getAvailableProductStock(product as any)).toBe(7);
+            expect(await productHelpers.getAvailableProductStock(product as any)).toBe(7);
         });
 
-        it("returns 0 if reserved stock >= total stock", () => {
+        it("returns 0 if reserved stock >= total stock", async () => {
             const now = new Date();
             const product = {
                 stock: 5,
@@ -177,10 +177,10 @@ describe("product-helpers", () => {
                     },
                 ],
             };
-            expect(productHelpers.getAvailableProductStock(product as any)).toBe(0);
+            expect(await productHelpers.getAvailableProductStock(product as any)).toBe(0);
         });
 
-        it("ignores expired pending orders for reservation", () => {
+        it("ignores expired pending orders for reservation", async () => {
             const now = new Date();
             const oldDate = new Date(Date.now() - 31 * 60 * 1000); // 31 minutes ago
             const product = {
@@ -203,7 +203,7 @@ describe("product-helpers", () => {
                 ],
             };
             // Only the recent pending order counts
-            expect(productHelpers.getAvailableProductStock(product as any)).toBe(8);
+            expect(await productHelpers.getAvailableProductStock(product as any)).toBe(8);
         });
     });
 });
