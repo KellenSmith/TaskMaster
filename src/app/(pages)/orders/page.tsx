@@ -3,7 +3,7 @@ import OrdersDashboard from "./OrdersDashboard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { prisma } from "../../../prisma/prisma-client";
 
-const OrdersPage = () => {
+const OrdersPage = async () => {
     const ordersPromise = prisma.order.findMany({
         include: {
 
