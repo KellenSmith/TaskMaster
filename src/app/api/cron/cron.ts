@@ -20,7 +20,7 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
                     lt: dayjs
                         .utc()
                         .subtract(orgSettings?.purge_members_after_days_unvalidated || 7, "d")
-                        .toISOString(),
+                        .toDate(),
                 },
             },
         });
@@ -28,34 +28,13 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
     } catch (error) {
         if (error instanceof Error)
             console.error(`Error when purging stale memberships: ${error.message}`);
-        throw error
+        throw error;
     }
 };
-/*
-const chargeMembershipWithActiveSubscriptions = async (
-    user: Prisma.UserGetPayload<{
-        include: { user_membership: { include: { membership: { include: { product: true } } } } };
-    }>,
-): Promise<void> => {
-    const subscriptionToken = user.user_membership?.subscription_token;
-    const membershipOrderItem = {
-        quantity: 1,
-        product_id: user.user_membership.membership.product_id,
-        price: user.user_membership.membership.product.price,
-    } as Prisma.OrderItemCreateManyOrderInput;
-    const membershipOrder = await createOrder(user.id, [membershipOrderItem]);
-    const paymentRequestPayload = await getSwedbankPaymentRequestPurchasePayload(
-        membershipOrder.id,
-    );
-    paymentRequestPayload.paymentorder.unscheduledToken = subscriptionToken as SubscriptionToken;
-    const { paymentOrderId } = await createSwedbankPaymentRequest(paymentRequestPayload);
-    if (paymentOrderId) await checkPaymentStatus(user.id, membershipOrder.id, paymentOrderId);
-}; */
 
 export const expiringMembershipMaintenance = async (): Promise<void> => {
     /**
-     * 1. Send reminders to members whose membership expires in X days from now
-     * 2. Auto-renew memberships for members with active subscriptions
+     * Send reminders to members whose membership expires in "reminderDays" days from now
      */
     const orgSettings = await getOrganizationSettings();
     const reminderDays = orgSettings?.remind_membership_expires_in_days || 7;
@@ -65,17 +44,12 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
 
     const expiringUsers = await prisma.user.findMany({
         where: {
-            OR: [
-                { email: "gustaf.lawergren@swedbankpay.se" },
-                {
-                    user_membership: {
-                        expires_at: {
-                            gte: earliestExpirationDate.toISOString(),
-                            lt: latestExpirationDate.toISOString(),
-                        },
-                    },
+            user_membership: {
+                expires_at: {
+                    gte: earliestExpirationDate.toISOString(),
+                    lt: latestExpirationDate.toISOString(),
                 },
-            ],
+            },
         },
         select: {
             id: true,
@@ -109,38 +83,36 @@ export const processNewsletterBacklog = async (): Promise<void> => {
     try {
         let processed = 0;
         let attempts = 0;
-        const maxAttempts = 5; // Reduced for 1-minute limit
         const startTime = Date.now();
         const maxDuration = 45 * 1000; // 45 seconds max to stay well under 1-minute limit
 
         // Keep processing until no more jobs, we hit limits, or run out of time
-        while (attempts < maxAttempts) {
+        while (true) {
             // Check if we're approaching time limit
             if (Date.now() - startTime > maxDuration) {
                 console.log(
-                    `Newsletter cron stopping due to time limit after ${attempts} attempts`,
+                    `Newsletter cron stopping due to time limit after processing ${processed} recipients across ${attempts} batches`,
                 );
                 break;
             }
 
             const result = await processNextNewsletterBatch();
 
+            processed += result.processed;
+            attempts += 1;
+
             if (result.processed === 0 || result.done) {
                 break; // No more work to do
             }
 
-            processed += result.processed;
-            attempts++;
-
             // No delays between batches to maximize processing within time limit
         }
-
-        if (processed > 0) {
+        if (processed === 0) {
+            console.log(`No pending newsletter jobs found`);
+        } else if (processed > 0) {
             console.log(
                 `Cron job processed ${processed} newsletter recipients across ${attempts} batches in ${Date.now() - startTime}ms`,
             );
-        } else if (attempts === 0) {
-            console.log(`No pending newsletter jobs found`);
         }
     } catch (error) {
         if (error instanceof Error)

@@ -1,8 +1,7 @@
 {
     "crons": [
-
         {
-            "path": "/api/newsletter/process",
+            "path": "/api/cron",
             "schedule": "0 4 * * *"
         }
     ]
