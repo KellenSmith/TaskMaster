@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { processNextNewsletterBatch } from "./lib/mail-service/newsletter-actions";
 
@@ -15,7 +17,7 @@ const NewsletterTrigger: React.FC = () => {
         } catch {
             // Ignore errors - this is a best-effort trigger and will retry on next activity
         }
-    }); // No dependency array - runs on every render to maximize chances of triggering during user activity
+    }, [lastCheck]); // No dependency array - runs on every render to maximize chances of triggering during user activity
 
     return null; // This component doesn't render anything
 };

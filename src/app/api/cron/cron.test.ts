@@ -158,7 +158,6 @@ describe("cron jobs", () => {
 
     describe("processNewsletterBacklog", () => {
         it("processes newsletter batches until done", async () => {
-            console.warn("starting test");
             vi.mocked(processNextNewsletterBatch)
                 .mockResolvedValueOnce({
                     processed: 2,
@@ -181,8 +180,6 @@ describe("cron jobs", () => {
                     "Cron job processed 5 newsletter recipients across 2 batches",
                 ),
             );
-
-            console.warn("finished test");
         });
         it("logs if no jobs found", async () => {
             vi.mocked(processNextNewsletterBatch).mockResolvedValue({ processed: 0, done: true });

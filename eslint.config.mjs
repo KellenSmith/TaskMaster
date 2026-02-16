@@ -3,6 +3,7 @@ import tsPlugin from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import nextPlugin from "@next/eslint-plugin-next";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
+import vitest from "@vitest/eslint-plugin";
 
 export default [
     {
@@ -13,7 +14,7 @@ export default [
             "build/**",
             "next-env.d.ts",
             "dist/**",
-            "prisma/generated/**",
+            "src/prisma/generated/**",
         ],
     },
     {
@@ -64,12 +65,23 @@ export default [
                 __filename: "readonly",
                 __dirname: "readonly",
                 Buffer: "readonly",
+                // Vitest globals
+                describe: "readonly",
+                it: "readonly",
+                test: "readonly",
+                expect: "readonly",
+                vi: "readonly",
+                beforeAll: "readonly",
+                afterAll: "readonly",
+                beforeEach: "readonly",
+                afterEach: "readonly",
             },
         },
         plugins: {
             "@typescript-eslint": tsPlugin,
             "@next/next": nextPlugin,
             "react-hooks": reactHooksPlugin,
+            vitest
         },
         rules: {
             ...js.configs.recommended.rules,
@@ -80,4 +92,10 @@ export default [
             "no-redeclare": "warn",
         },
     },
+    {
+        files: ["**/*.test.ts", "src/test/*.ts"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
+        },
+    }
 ];

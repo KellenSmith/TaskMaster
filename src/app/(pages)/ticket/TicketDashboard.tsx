@@ -1,9 +1,9 @@
 "use client";
-import { Box, Chip, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
-import { use, useEffect, useState } from "react";
+import { use, useEffect } from "react";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
@@ -57,7 +57,6 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
 
     const { language } = useUserContext();
     const { addNotification } = useNotificationContext();
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const checkInEventParticipantAction = async () => {
         try {
@@ -74,13 +73,15 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
 
             const result = await checkInEventParticipant(eventParticipant.id);
             if (result) addNotification(result, "error");
-        } catch (error) {
+        } catch {
             addNotification(LanguageTranslations.checkInFailed[language], "error");
         }
     };
 
     useEffect(() => {
         checkInEventParticipantAction();
+        // Check in the participant once on mount.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const ticket = eventParticipant.ticket;
@@ -111,12 +112,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
     let statusColor: "success" | "warning" | "error";
     let statusText: string;
     let title: string;
-    console.log(errorMsg);
-    if (errorMsg) {
-        statusColor = "error";
-        statusText = errorMsg;
-        title = "Error";
-    } else if (!hasAllProperties) {
+    if (!hasAllProperties) {
         statusColor = "error";
         statusText = LanguageTranslations.missingData[language];
         title = "Error";

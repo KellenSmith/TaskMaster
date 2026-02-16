@@ -1,3 +1,10 @@
+// This file defines TypeScript types for testing, particularly for mocking Prisma client operations
+// in a way that avoids circular reference issues.
+// It includes types for a mock Prisma client and a transaction client,
+// as well as a test context type that includes the mocked Prisma client.
+
+/* eslint-disable @typescript-eslint/no-explicit-any, no-unused-vars */
+
 import { DeepMockProxy } from "vitest-mock-extended";
 import { MockedFunction } from "vitest";
 
