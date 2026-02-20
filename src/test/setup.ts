@@ -28,6 +28,9 @@ vi.mock("@/app/lib/mail-service/mail-transport", () => ({
 vi.mock("next/cache", () => ({
     revalidateTag: vi.fn(),
 }));
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ push: vi.fn() }),
+}));
 
 afterAll(() => {
     process.env = originalEnv;
@@ -49,4 +52,5 @@ beforeEach(() => {
 // Clear up after each test
 afterEach(() => {
     cleanup();
+    vi.useRealTimers();
 });

@@ -1,4 +1,4 @@
-import { render, waitFor } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import NewsletterTrigger, { NEWSLETTER_PROCESS_INTERVAL } from "./NewsletterTrigger";
 import * as newsletterActions from "./lib/mail-service/newsletter-actions";
 import { vi } from "vitest";
@@ -13,9 +13,6 @@ describe("NewsletterTrigger", () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         vi.setSystemTime(1000000); // Arbitrary fixed time
-    });
-    afterEach(() => {
-        vi.useRealTimers();
     });
 
     it("should call processNextNewsletterBatch on mount", () => {
