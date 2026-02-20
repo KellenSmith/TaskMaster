@@ -80,4 +80,10 @@ export default [
             "no-redeclare": "warn",
         },
     },
+    {
+        files: ["**/*.test.ts", "**/**/*.test.tsx", "src/test/*.ts"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
+        },
+    }
 ];
