@@ -7,12 +7,29 @@ import { prisma } from "../prisma/prisma-client";
 import dayjs from "dayjs";
 import { Prisma } from "../prisma/generated/client";
 
-export type TicketInfoType = Promise<Prisma.EventParticipantGetPayload<{ include: { ticket: { include: { event: { select: { title: true, start_time: true, end_time: true, location: { select: { name: true } } } } }, user: { select: { id: true, nickname: true } } } } }>[]>
+export type TicketInfoType = Promise<
+    Prisma.EventParticipantGetPayload<{
+        include: {
+            ticket: {
+                include: {
+                    event: {
+                        select: {
+                            title: true;
+                            start_time: true;
+                            end_time: true;
+                            location: { select: { name: true } };
+                        };
+                    };
+                };
+                user: { select: { id: true; nickname: true } };
+            };
+        };
+    }>[]
+>;
 
 const HomePage: React.FC = async () => {
     const textContentPromise = getTextContent("home");
-    const loggedInUser = await getLoggedInUser()
-
+    const loggedInUser = await getLoggedInUser();
 
     let ticketInfoPromise: null | TicketInfoType = null;
     if (loggedInUser)
@@ -22,16 +39,21 @@ const HomePage: React.FC = async () => {
                 ticket: {
                     event: {
                         end_time: {
-                            lt: dayjs().add(1, "day").toDate(), // Only get tickets for events that haven't ended yet
-                        }
-                    }
-                }
+                            lt: dayjs.utc().add(1, "day").toDate(), // Only get tickets for events that haven't ended yet
+                        },
+                    },
+                },
             },
             include: {
                 ticket: {
                     include: {
                         event: {
-                            select: { title: true, start_time: true, end_time: true, location: { select: { name: true } } },
+                            select: {
+                                title: true,
+                                start_time: true,
+                                end_time: true,
+                                location: { select: { name: true } },
+                            },
                         },
                     },
                 },
@@ -40,14 +62,17 @@ const HomePage: React.FC = async () => {
                 ticket: {
                     event: {
                         start_time: "asc",
-                    }
-                }
-            }
-        })
+                    },
+                },
+            },
+        });
 
     return (
         <ErrorBoundarySuspense>
-            <HomeDashboard textContentPromise={textContentPromise} ticketInfoPromise={ticketInfoPromise} />
+            <HomeDashboard
+                textContentPromise={textContentPromise}
+                ticketInfoPromise={ticketInfoPromise}
+            />
         </ErrorBoundarySuspense>
     );
 };

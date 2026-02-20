@@ -11,9 +11,9 @@ import { Prisma } from "../prisma/generated/client";
 const mockUserContextValue = {
     user: testdata.user,
     language: Language.english,
-    setLanguage: () => { },
+    setLanguage: () => {},
     editMode: false,
-    setEditMode: () => { },
+    setEditMode: () => {},
 };
 
 // Mock OrganizationSettingsContext value
@@ -27,7 +27,7 @@ const mockOrganizationSettingsContextValue = {
         ticket_instructions:
             "Please include any relevant information or questions you have about the event.",
     } as Prisma.OrganizationSettingsGetPayload<true>,
-    infopagesPromise: Promise.resolve([])
+    infopagesPromise: Promise.resolve([]),
 };
 
 interface WrapperProps {
@@ -35,11 +35,16 @@ interface WrapperProps {
     user?: Prisma.UserGetPayload<{
         include: { user_membership: true; skill_badges: true };
     }>;
+    language?: Language;
 }
 
 // Create wrapper with mocked contexts
-const AllTheProviders = ({ children, user = testdata.user }: WrapperProps) => {
-    const contextValue = { ...mockUserContextValue, user };
+const AllTheProviders = ({
+    children,
+    user = testdata.user,
+    language = Language.english,
+}: WrapperProps) => {
+    const contextValue = { ...mockUserContextValue, user, language };
 
     return (
         <OrganizationSettingsContext.Provider value={mockOrganizationSettingsContextValue}>
@@ -50,11 +55,11 @@ const AllTheProviders = ({ children, user = testdata.user }: WrapperProps) => {
     );
 };
 
-const customRender = (
+export const customRender = (
     ui: ReactElement,
-    { user, ...options }: { user?: typeof testdata.user } = {},
-) => render(ui, { wrapper: (props) => <AllTheProviders {...props} user={user} />, ...options });
-
-// re-export everything
-export * from "@testing-library/react";
-export { customRender as render };
+    { user, language, ...options }: { user?: typeof testdata.user; language?: Language } = {},
+) =>
+    render(ui, {
+        wrapper: (props) => <AllTheProviders {...props} user={user} language={language} />,
+        ...options,
+    });
