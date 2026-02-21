@@ -58,7 +58,13 @@ export const filterOptions = {
         ),
     has_tag: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
-    [GlobalConstants.STATUS]: ({ tasks, value }: { tasks: Prisma.TaskGetPayload<true>[], value: FilterValueType }) =>
+    [GlobalConstants.STATUS]: ({
+        tasks,
+        value,
+    }: {
+        tasks: Prisma.TaskGetPayload<true>[];
+        value: FilterValueType;
+    }) =>
         tasks?.filter((task: Prisma.TaskGetPayload<true>) =>
             (value as TaskStatus[]).includes(task.status),
         ),
@@ -79,7 +85,8 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
         const tasksFitInFilter = filterOptions[key as FilterNameType]({ tasks, value, userId });
         filteredTasks.push(...(tasksFitInFilter as T[]));
     }
-    return filteredTasks;
+    // Bug fix: Avoid tasks showing twice
+    return [...new Set(filteredTasks)];
 };
 
 interface KanBanBoardFilterProps {
@@ -139,15 +146,15 @@ const KanBanBoardMenu = ({
         const label = LanguageTranslations[fieldId][language] as string;
 
         if (dateKeys.includes(fieldId)) {
-            const filterValue = appliedFilter?.[fieldId] as FilterSchema["begins_after"] | FilterSchema["ends_before"];
+            const filterValue = appliedFilter?.[fieldId] as
+                | FilterSchema["begins_after"]
+                | FilterSchema["ends_before"];
             return (
                 <DateTimePicker
                     key={fieldId}
                     name={fieldId}
                     label={label}
-                    defaultValue={
-                        filterValue ? dayjs.utc(filterValue) : null
-                    }
+                    defaultValue={filterValue ? dayjs.utc(filterValue) : null}
                     slotProps={{
                         textField: {
                             name: fieldId,
@@ -173,7 +180,9 @@ const KanBanBoardMenu = ({
                     key={fieldId}
                     fieldId={fieldId}
                     label={label}
-                    defaultValue={(appliedFilter?.[fieldId] as FilterSchema["has_tag"]) || undefined}
+                    defaultValue={
+                        (appliedFilter?.[fieldId] as FilterSchema["has_tag"]) || undefined
+                    }
                     customOptions={tagsOptions}
                     customMultiple={true}
                     editMode={true}
