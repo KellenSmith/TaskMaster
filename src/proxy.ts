@@ -2,10 +2,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { getAbsoluteUrl, pathToRoutes } from "./app/lib/utils";
-import NextAuth from "next-auth";
-import { isUserAuthorized, routeTreeConfig } from "./app/lib/auth/auth-utils";
+import { getAbsoluteUrl } from "./app/lib/utils";
+import { isUserAuthorized } from "./app/lib/auth/auth-utils";
 import "./app/lib/auth/auth-types";
+import { auth } from "./app/lib/auth/auth";
 
 export const config = {
     // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
@@ -21,6 +21,7 @@ export default async function proxy(req: NextRequest) {
     if (req.nextUrl.pathname.startsWith("/api/ticket-qrcode")) {
         return NextResponse.next();
     }
+
     if (req.method === "POST") {
         const headers = req.headers;
         const contentType = headers.get("content-type") || "";
@@ -42,17 +43,12 @@ export default async function proxy(req: NextRequest) {
         }
     }
 
-    // Initialize NextAuth with empty providers to access the auth function
-    // in edge runtime without node-specific nodemailer provider and prisma adapter
-    const { auth } = NextAuth({ providers: [] });
     const loggedInUser = (await auth())?.user;
-
-    if (!req?.nextUrl?.pathname) return NextResponse.next();
 
     // Create response based on authorization
     let response: NextResponse;
 
-    if (isUserAuthorized(loggedInUser, pathToRoutes(req.nextUrl.pathname), routeTreeConfig)) {
+    if (isUserAuthorized(loggedInUser, req.nextUrl.pathname)) {
         response = NextResponse.next();
     } else if (loggedInUser) {
         // Redirect authenticated but unauthorized users to home

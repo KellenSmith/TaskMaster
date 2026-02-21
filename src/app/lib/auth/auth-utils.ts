@@ -6,146 +6,122 @@ export type RouteConfigType = {
     status: UserStatus | null;
     role: UserRole | null;
     membershipRequired?: boolean;
-    children: RouteConfigType[];
 };
 
-export const routeTreeConfig: RouteConfigType = {
-    name: GlobalConstants.HOME,
-    status: null,
-    role: null,
-    children: [
-        {
-            name: GlobalConstants.APPLY,
-            status: null,
-            role: null,
-            children: [],
-        },
-        {
-            name: GlobalConstants.LOGIN,
-            status: null,
-            role: null,
-            children: [],
-        },
-        {
-            name: GlobalConstants.CONTACT,
-            status: null,
-            role: null,
-            children: [],
-        },
-        {
-            name: GlobalConstants.PROFILE,
-            status: UserStatus.pending,
-            role: UserRole.member,
-            children: [],
-        },
-        {
-            name: GlobalConstants.EVENT,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.CALENDAR,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.TASK,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.TASKS,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.SHOP,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: false,
-            children: [],
-        },
-        {
-            name: GlobalConstants.LOCATIONS,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.SKILL_BADGES,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.MEMBERS,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.VOLUNTEER_LEADERBOARD,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.ORDER,
-            status: UserStatus.validated,
-            role: UserRole.member,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.ORDERS,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
-        {
-            name: GlobalConstants.PRODUCTS,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
+export const routeTreeConfig: RouteConfigType[] = [
+    { name: GlobalConstants.HOME, status: null, role: null },
+    {
+        name: GlobalConstants.APPLY,
+        status: null,
+        role: null,
+    },
+    {
+        name: GlobalConstants.LOGIN,
+        status: null,
+        role: null,
+    },
+    {
+        name: GlobalConstants.CONTACT,
+        status: null,
+        role: null,
+    },
+    {
+        name: GlobalConstants.PROFILE,
+        status: UserStatus.pending,
+        role: UserRole.member,
+    },
+    {
+        name: GlobalConstants.EVENT,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.CALENDAR,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.TASK,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.TASKS,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.SHOP,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: false,
+    },
+    {
+        name: GlobalConstants.LOCATIONS,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.SKILL_BADGES,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.MEMBERS,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.VOLUNTEER_LEADERBOARD,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.ORDER,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.ORDERS,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
+    {
+        name: GlobalConstants.PRODUCTS,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
 
-        {
-            name: GlobalConstants.SENDOUT,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
+    {
+        name: GlobalConstants.SENDOUT,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
 
-        {
-            name: GlobalConstants.ORGANIZATION_SETTINGS,
-            status: UserStatus.validated,
-            role: UserRole.admin,
-            membershipRequired: true,
-            children: [],
-        },
-        // {
-        //     name: GlobalConstants.YEAR_WHEEL,
-        //     status: UserStatus.validated,
-        //     role: UserRole.admin,
-        //     children: [],
-        // },
-    ],
-};
+    {
+        name: GlobalConstants.ORGANIZATION_SETTINGS,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+        membershipRequired: true,
+    },
+    // {
+    //     name: GlobalConstants.YEAR_WHEEL,
+    //     status: UserStatus.validated,
+    //     role: UserRole.admin,
+    // },
+];
 
 export const userHasRolePrivileges = (
     user: Prisma.UserGetPayload<{ select: { role: true } }> | null | undefined,
@@ -178,17 +154,22 @@ const userHasStatusPrivileges = (
 };
 
 export const isUserAuthorized = (
-    loggedInUser: Prisma.UserGetPayload<{
-        select: { role: true; status: true; user_membership: true };
-    }> | null | undefined,
-    pathSegments: string[],
-    routeConfig: RouteConfigType | undefined,
+    loggedInUser:
+        | Prisma.UserGetPayload<{
+              select: { role: true; status: true; user_membership: true };
+          }>
+        | null
+        | undefined,
+    pathname: string,
 ): boolean => {
-    if (!routeConfig) {
-        // Reached the end of the path, user is authorized
-        if (pathSegments.length === 0) return true;
-        throw new Error(`Route configuration for "${pathSegments}" not found`);
-    }
+    // Always allow access to root path - can be used for public landing page or redirect to login
+    if (!pathname) return true;
+    const parsedPathname = pathname.split("/")[pathname[0] === "/" ? 1 : 0]; // Only consider first segment after leading "/" for route config matching
+
+    const routeConfig = routeTreeConfig.find((route) => route.name === parsedPathname);
+    // Disallow access if route is not explicitly configured
+    if (!routeConfig) return false;
+
     if (
         !userHasRolePrivileges(loggedInUser, routeConfig.role) ||
         !userHasStatusPrivileges(loggedInUser, routeConfig.status)
@@ -197,9 +178,5 @@ export const isUserAuthorized = (
     // If route requires auth (role or status) but user has no membership, not authorized
     if (routeConfig.membershipRequired && !loggedInUser?.user_membership) return false;
 
-    const followingPath = pathSegments.slice(1);
-    const followingRouteConfig = routeConfig.children.find(
-        (childRoute) => childRoute.name === followingPath[0],
-    );
-    return isUserAuthorized(loggedInUser, followingPath, followingRouteConfig);
+    return true;
 };

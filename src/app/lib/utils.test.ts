@@ -8,7 +8,6 @@ import {
     isMembershipExpired,
     isUserAdmin,
     isUserHost,
-    pathToRoutes,
     serverRedirect,
 } from "./utils";
 import { redirect } from "next/navigation";
@@ -34,7 +33,9 @@ describe("utils", () => {
     describe("getAbsoluteUrl", () => {
         it("builds absolute urls using VERCEL_PROJECT_PRODUCTION_URL", () => {
             const result = getAbsoluteUrl(["calendar"], { view: "month" });
-            expect(result).toBe(`https://${testdata.env.VERCEL_PROJECT_PRODUCTION_URL}/calendar?view=month`);
+            expect(result).toBe(
+                `https://${testdata.env.VERCEL_PROJECT_PRODUCTION_URL}/calendar?view=month`,
+            );
         });
 
         it("builds absolute urls using window origin when VERCEL_PROJECT_PRODUCTION_URL is not set", () => {
@@ -52,14 +53,6 @@ describe("utils", () => {
             expect(() => getAbsoluteUrl(["tasks"])).toThrow("Base URL not found");
 
             vi.unstubAllGlobals();
-        });
-    });
-
-    describe("pathToRoutes", () => {
-        it("splits path into routes", () => {
-            expect(pathToRoutes("/a/b/c")).toEqual(["a", "b", "c"]);
-            expect(pathToRoutes("/a/b/c?param=testparam")).toEqual(["a", "b", "c"]);
-            expect(pathToRoutes("")).toEqual([]);
         });
     });
 
@@ -134,4 +127,4 @@ describe("utils", () => {
             expect(isUserHost(user, null)).toBe(false);
         });
     });
-})
+});

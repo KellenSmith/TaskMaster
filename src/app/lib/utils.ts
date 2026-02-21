@@ -34,8 +34,6 @@ export const getAbsoluteUrl = (
     return baseUrl + getRelativeUrl(pathSegments, searchParams);
 };
 
-export const pathToRoutes = (path: string) => (path ? path.split("?")[0].split("/").slice(1) : []);
-
 export const serverRedirect = (
     pathSegments: string[],
     searchParams: { [key: string]: string } = {},
@@ -61,12 +59,12 @@ export const isMembershipExpired = (
 };
 
 export const isUserAdmin = (
-    user: Prisma.UserGetPayload<{ select: { role: true, user_membership: true } }> | null,
+    user: Prisma.UserGetPayload<{ select: { role: true; user_membership: true } }> | null,
 ): boolean => {
     if (!user || isMembershipExpired(user)) return false;
     if (user.role === UserRole.admin) return true;
     return false;
-}
+};
 
 export const isUserHost = (
     user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
