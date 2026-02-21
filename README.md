@@ -14,6 +14,7 @@ For payments, use the following test data:
 - Swish: any phone number, e.g. +46 739000001
 - Visa card number: 4761739001010416, expiry after the following month (today is 2025/08/25 so 09/25 for me), any 3-digit security code
 - Mastercard: 5226612199533406, same as above
+- More at [Swedbank Pay Test Data](https://developer.swedbankpay.com/checkout-v3/test-data/)
 
 <mark>**Keep in mind that this is a test version open to the internet and everyone i ask to help me test this. Don't input any data you don't want to share with random people.**</mark>
 
@@ -35,10 +36,10 @@ For payments, use the following test data:
 - ~~Move task shift start and end time when cloning an event~~
 - ~~Event tags (munch/playparty/section etc...)~~
 - ~~Buttons to message the assignee and reviewer of a task~~
-- Implement membership subscription
+- QR code scanner usable from any mobile device to check in event participants along with qr codes for tickets. Currently tickets are checked manually by crossing off nicknames on the participant list. The QR code scanner should be reachable through a link on a task if configured by the event host.
+- Make error messages from the server more detailed.
 - Fine tune filtering of tasks in the task board and events
 - Add age check for purchases
-- QR code scanner usable from any mobile device to check in event participants along with qr codes for tickets. Currently tickets are checked manually by crossing off nicknames on the participant list. The QR code scanner should be reachable through a link on a task if configured by the event host.
 - Implement checklists for tasks.
 - Add automatic notification to event participants if there are unbooked tasks remaining a configurable time before the event starts.
 - Enable different membership types.
