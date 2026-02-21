@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import {
     AppBar,
     Toolbar,
@@ -23,7 +23,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/utils";
+import { isUserAdmin, clientRedirect } from "../lib/utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
@@ -34,7 +34,7 @@ import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
 import OrderLanguageTranslations from "../(pages)/order/LanguageTranslations";
 import ApplyLanguageTranslations from "../(pages)/apply/LanguageTranslations";
 import Image from "next/image";
-import { isUserAuthorized, RouteConfigType, routeTreeConfig } from "../lib/auth/auth-utils";
+import { isUserAuthorized, routeTreeConfig } from "../lib/auth/auth-utils";
 import { logOut } from "../lib/user-actions";
 import Form from "./form/Form";
 import { InfoPageCreateSchema } from "../lib/zod-schemas";
@@ -98,32 +98,6 @@ const NavPanel = () => {
         GlobalConstants.APPLY,
         GlobalConstants.EVENT,
     ];
-
-    const getRouteNavButton = (routeConfig: RouteConfigType, currentPathSegments: string[]) => {
-        if (hiddenRoutes.includes(routeConfig.name)) return null;
-        if (!isUserAuthorized(user, [routeConfig.name], routeConfig)) return null;
-        return (
-            <ListItem key={routeConfig.name} dense>
-                <Button
-                    fullWidth
-                    sx={{ justifyContent: "flex-start" }}
-                    onClick={() => {
-                        setDrawerOpen(false);
-                        clientRedirect(router, [routeConfig.name]);
-                    }}
-                >
-                    {LanguageTranslations.routeLabel[routeConfig.name][language]}
-                </Button>
-                {routeConfig.children.length > 0 && (
-                    <List>
-                        {routeConfig.children.map((child) =>
-                            getRouteNavButton(child, currentPathSegments.slice(1)),
-                        )}
-                    </List>
-                )}
-            </ListItem>
-        );
-    };
 
     const createInfoPageAction = async (formData: FormData) => {
         try {
@@ -203,7 +177,11 @@ const NavPanel = () => {
         );
     };
 
-    const getInfoPageTitle = (infoPage: Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>) => {
+    const getInfoPageTitle = (
+        infoPage: Prisma.InfoPageGetPayload<{
+            include: { titleText: { include: { translations: true } } };
+        }>,
+    ) => {
         const titleTextContent = infoPage?.titleText;
         if (!titleTextContent) return "No title";
         const titleInLanguage = titleTextContent.translations.find((t) => t.language === language);
@@ -308,18 +286,16 @@ const NavPanel = () => {
                         </Button>
                     )}
                     <Stack sx={{ flexShrink: 1 }}>
-                        {[
-                            ...new Set(
-                                routeTreeConfig.children.map((childRoute) => childRoute.role),
-                            ),
-                        ].map((role) => {
-                            const routesForRole = routeTreeConfig.children.filter(
-                                (childRoute) => childRoute.role === role,
+                        {/* Group routes by role and render sections with headers for each role */}
+                        {[...new Set(routeTreeConfig.map((route) => route.role))].map((role) => {
+                            // Get routes for this role, then filter to only those the user is authorized to see
+                            const routesToShow = routeTreeConfig.filter(
+                                (route) =>
+                                    !hiddenRoutes.includes(route.name) &&
+                                    route.role === role &&
+                                    isUserAuthorized(user, `/${route.name}`),
                             );
-                            const authorizedRoutes = routesForRole.filter((route) =>
-                                isUserAuthorized(user, [route.name], route),
-                            );
-                            if (authorizedRoutes.length === 0) return null;
+                            if (routesToShow.length === 0) return null;
                             return (
                                 <Stack key={role} spacing={1} sx={{ mb: 2, height: "100%" }}>
                                     {role && (
@@ -327,9 +303,25 @@ const NavPanel = () => {
                                             {LanguageTranslations.roleLabels[role][language]}
                                         </ListSubheader>
                                     )}
-                                    {routesForRole.map((route) =>
-                                        getRouteNavButton(route, pathToRoutes(pathname)),
-                                    )}
+                                    {routesToShow.map((route) => (
+                                        <ListItem key={route.name} dense>
+                                            <Button
+                                                fullWidth
+                                                sx={{ justifyContent: "flex-start" }}
+                                                onClick={() => {
+                                                    setDrawerOpen(false);
+                                                    clientRedirect(router, [route.name]);
+                                                }}
+                                                disabled={pathname === `/${route.name}`} // Disable button for current route
+                                            >
+                                                {
+                                                    LanguageTranslations.routeLabel[route.name][
+                                                        language
+                                                    ]
+                                                }
+                                            </Button>
+                                        </ListItem>
+                                    ))}
                                     {infoPages
                                         .filter(
                                             (infoPage) =>
@@ -367,7 +359,10 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
-                                href={getTermsOfMembershipUrl(organizationSettings, language) ?? undefined}
+                                href={
+                                    getTermsOfMembershipUrl(organizationSettings, language) ??
+                                    undefined
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -377,7 +372,9 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
-                                href={getPrivacyPolicyUrl(organizationSettings, language) ?? undefined}
+                                href={
+                                    getPrivacyPolicyUrl(organizationSettings, language) ?? undefined
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -387,7 +384,10 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
-                                href={getTermsOfPurchaseUrl(organizationSettings, language) ?? undefined}
+                                href={
+                                    getTermsOfPurchaseUrl(organizationSettings, language) ??
+                                    undefined
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

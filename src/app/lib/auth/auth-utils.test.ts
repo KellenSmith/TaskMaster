@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Prisma, UserRole, UserStatus } from "@/prisma/generated/client";
 import GlobalConstants from "../../GlobalConstants";
 import testdata from "../../../test/testdata";
-import { isUserAuthorized, routeTreeConfig, userHasRolePrivileges } from "./auth-utils";
+import { isUserAuthorized, userHasRolePrivileges } from "./auth-utils";
 
 type AuthUser = Prisma.UserGetPayload<{
     select: { role: true; status: true; user_membership: true };
@@ -44,38 +44,27 @@ describe("userHasRolePrivileges", () => {
 });
 
 describe("isUserAuthorized", () => {
-    it("returns true when route config is missing and path ends", () => {
-        const user = makeUser();
-        expect(isUserAuthorized(user, [], undefined)).toBe(true);
-    });
-
     it("allows public routes for unauthenticated users", () => {
-        expect(
-            isUserAuthorized(null, ["", GlobalConstants.LOGIN], routeTreeConfig),
-        ).toBe(true);
-        expect(
-            isUserAuthorized(undefined, ["", GlobalConstants.APPLY], routeTreeConfig),
-        ).toBe(true);
+        expect(isUserAuthorized(null, GlobalConstants.LOGIN)).toBe(true);
+        expect(isUserAuthorized(undefined, GlobalConstants.APPLY)).toBe(true);
     });
 
-    it("denies restricted routes for unauthenticated users", () => {
-        expect(
-            isUserAuthorized(null, ["", GlobalConstants.PROFILE], routeTreeConfig),
-        ).toBe(false);
+    it("denies restricted routes for unauthenticated null users", () => {
+        expect(isUserAuthorized(null, GlobalConstants.PROFILE)).toBe(false);
+    });
+
+    it("denies restricted routes for unauthenticated undefined users", () => {
+        expect(isUserAuthorized(undefined, GlobalConstants.PROFILE)).toBe(false);
     });
 
     it("denies access when user has no status but route requires one", () => {
         const userWithoutStatus = makeUser({ status: undefined as unknown as UserStatus });
-        expect(
-            isUserAuthorized(userWithoutStatus, ["", GlobalConstants.PROFILE], routeTreeConfig),
-        ).toBe(false);
+        expect(isUserAuthorized(userWithoutStatus, GlobalConstants.PROFILE)).toBe(false);
     });
 
     it("allows members with membership for membership-required routes", () => {
         const member = makeUser({ status: UserStatus.validated });
-        expect(
-            isUserAuthorized(member, ["", GlobalConstants.TASK], routeTreeConfig),
-        ).toBe(true);
+        expect(isUserAuthorized(member, GlobalConstants.TASK)).toBe(true);
     });
 
     it("denies members without membership for membership-required routes", () => {
@@ -83,13 +72,7 @@ describe("isUserAuthorized", () => {
             status: UserStatus.validated,
             user_membership: null,
         });
-        expect(
-            isUserAuthorized(
-                memberWithoutMembership,
-                ["", GlobalConstants.TASK],
-                routeTreeConfig,
-            ),
-        ).toBe(false);
+        expect(isUserAuthorized(memberWithoutMembership, GlobalConstants.TASK)).toBe(false);
     });
 
     it("allows routes that do not require membership", () => {
@@ -97,44 +80,26 @@ describe("isUserAuthorized", () => {
             status: UserStatus.validated,
             user_membership: null,
         });
-        expect(
-            isUserAuthorized(
-                memberWithoutMembership,
-                ["", GlobalConstants.SHOP],
-                routeTreeConfig,
-            ),
-        ).toBe(true);
+        expect(isUserAuthorized(memberWithoutMembership, GlobalConstants.SHOP)).toBe(true);
     });
 
     it("denies member access to admin routes", () => {
         const member = makeUser({ status: UserStatus.validated, role: UserRole.member });
-        expect(
-            isUserAuthorized(member, ["", GlobalConstants.MEMBERS], routeTreeConfig),
-        ).toBe(false);
+        expect(isUserAuthorized(member, GlobalConstants.MEMBERS)).toBe(false);
     });
 
     it("allows admin access to admin routes", () => {
         const admin = makeUser({ status: UserStatus.validated, role: UserRole.admin });
-        expect(
-            isUserAuthorized(admin, ["", GlobalConstants.MEMBERS], routeTreeConfig),
-        ).toBe(true);
+        expect(isUserAuthorized(admin, GlobalConstants.MEMBERS)).toBe(true);
     });
 
     it("allows higher status to access lower-status routes", () => {
         const validatedMember = makeUser({ status: UserStatus.validated });
-        expect(
-            isUserAuthorized(
-                validatedMember,
-                ["", GlobalConstants.PROFILE],
-                routeTreeConfig,
-            ),
-        ).toBe(true);
+        expect(isUserAuthorized(validatedMember, "/profile")).toBe(true);
     });
 
-    it("throws when route configuration is missing for a path", () => {
+    it("denies when route configuration is missing for a path", () => {
         const user = makeUser();
-        expect(() =>
-            isUserAuthorized(user, ["", "missing"], routeTreeConfig),
-        ).toThrowError(/Route configuration/);
+        expect(isUserAuthorized(user, "missing")).toBe(false);
     });
 });
