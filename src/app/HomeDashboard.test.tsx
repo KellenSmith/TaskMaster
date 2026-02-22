@@ -16,16 +16,6 @@ vi.mock("./ui/TextContent", () => ({
 }));
 
 const mockUser = { nickname: "TestUser" };
-const mockTicketInfo = [
-    {
-        id: "1",
-        ticket: { event: { title: "Event 1" } },
-    },
-    {
-        id: "2",
-        ticket: { event: { title: "Event 2" } },
-    },
-];
 
 describe("HomeDashboard", () => {
     it("renders LoggedOutHomeDashboard for logged out user", async () => {
