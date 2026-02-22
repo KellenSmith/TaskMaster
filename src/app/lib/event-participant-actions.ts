@@ -219,7 +219,7 @@ export const checkInEventParticipant = async (
         }
 
         // Dont check in if not within one hour of event opening hours
-        const now = dayjs();
+        const now = dayjs.utc();
         const eventStart = dayjs(eventParticipant.ticket.event.start_time);
         const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
         if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {

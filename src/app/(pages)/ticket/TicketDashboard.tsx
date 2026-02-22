@@ -61,7 +61,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
     const checkInEventParticipantAction = async () => {
         try {
             // Dont check in if not within one hour of event opening hours
-            const now = dayjs();
+            const now = dayjs.utc();
             const eventStart = dayjs(eventParticipant.ticket.event.start_time);
             const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
             if (

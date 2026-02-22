@@ -291,8 +291,8 @@ describe("event-participant-actions", () => {
             } as any);
             tx.event.findUniqueOrThrow.mockResolvedValue({
                 id: eventId,
-                start_time: dayjs().add(1, "day").toDate(),
-                end_time: dayjs().add(1, "day").add(2, "hours").toDate(),
+                start_time: dayjs.utc().add(1, "day").toDate(),
+                end_time: dayjs.utc().add(1, "day").add(2, "hours").toDate(),
             } as any);
             vi.mocked(notifyEventReserves).mockResolvedValue();
         });
