@@ -91,7 +91,6 @@ const NavPanel = () => {
     };
 
     const hiddenRoutes = [
-        GlobalConstants.HOME,
         GlobalConstants.LOGIN,
         GlobalConstants.DASHBOARD,
         GlobalConstants.ORDER,
@@ -99,6 +98,7 @@ const NavPanel = () => {
         GlobalConstants.APPLY,
         GlobalConstants.EVENT,
     ];
+    !user && hiddenRoutes.push(GlobalConstants.HOME);
 
     const createInfoPageAction = async (formData: FormData) => {
         try {
@@ -231,7 +231,11 @@ const NavPanel = () => {
                             height={40}
                             width={200}
                             style={{ cursor: "pointer" }}
-                            onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
+                            onClick={() =>
+                                clientRedirect(router, [
+                                    user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
+                                ])
+                            }
                         />
                     </Box>
                     <LanguageMenu />

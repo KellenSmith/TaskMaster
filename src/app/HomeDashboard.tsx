@@ -14,7 +14,7 @@ interface HomeDashboardProps {
 }
 
 const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => {
-    const { language } = useUserContext();
+    const { user, language } = useUserContext();
     const router = useRouter();
 
     return (
@@ -27,13 +27,15 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => 
                     justifyContent: "center",
                 }}
             >
-                <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}
-                >
-                    {LanguageTranslations.routeLabel[GlobalConstants.APPLY][language]}
-                </Button>
+                {!user && (
+                    <Button
+                        fullWidth
+                        variant="outlined"
+                        onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}
+                    >
+                        {LanguageTranslations.routeLabel[GlobalConstants.APPLY][language]}
+                    </Button>
+                )}
                 <TextContent id={"home"} textContentPromise={textContentPromise} />
             </Stack>
         </Stack>
