@@ -1,5 +1,6 @@
 import { Prisma, UserRole, UserStatus } from "@/prisma/generated/browser";
 import GlobalConstants from "../../GlobalConstants";
+import { isMembershipExpired } from "../utils";
 
 export type RouteConfigType = {
     name: string;
@@ -9,7 +10,11 @@ export type RouteConfigType = {
 };
 
 export const routeTreeConfig: RouteConfigType[] = [
-    { name: GlobalConstants.HOME, status: null, role: null },
+    {
+        name: GlobalConstants.HOME,
+        status: null,
+        role: null,
+    },
     {
         name: GlobalConstants.APPLY,
         status: null,
@@ -29,6 +34,12 @@ export const routeTreeConfig: RouteConfigType[] = [
         name: GlobalConstants.PROFILE,
         status: UserStatus.pending,
         role: UserRole.member,
+    },
+    {
+        name: GlobalConstants.DASHBOARD,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: true,
     },
     {
         name: GlobalConstants.EVENT,
@@ -154,12 +165,9 @@ const userHasStatusPrivileges = (
 };
 
 export const isUserAuthorized = (
-    loggedInUser:
-        | Prisma.UserGetPayload<{
-              select: { role: true; status: true; user_membership: true };
-          }>
-        | null
-        | undefined,
+    loggedInUser: Prisma.UserGetPayload<{
+        select: { role: true; status: true; user_membership: true };
+    }> | null,
     pathname: string,
 ): boolean => {
     // Always allow access to root path - can be used for public landing page or redirect to login
@@ -176,7 +184,7 @@ export const isUserAuthorized = (
     )
         return false;
     // If route requires auth (role or status) but user has no membership, not authorized
-    if (routeConfig.membershipRequired && !loggedInUser?.user_membership) return false;
+    if (routeConfig.membershipRequired && isMembershipExpired(loggedInUser)) return false;
 
     return true;
 };

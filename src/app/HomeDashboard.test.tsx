@@ -31,13 +31,9 @@ describe("HomeDashboard", () => {
     it("renders LoggedOutHomeDashboard for logged out user", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
-            customRender(
-                <HomeDashboard
-                    textContentPromise={textContentPromise as any}
-                    ticketInfoPromise={null}
-                />,
-                { language: "english" } as any,
-            ),
+            customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
+                language: "english",
+            } as any),
         );
         expect(
             await screen.findByRole("button", { name: /apply for membership/i }),
@@ -48,13 +44,9 @@ describe("HomeDashboard", () => {
     it("calls clientRedirect when apply button clicked", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
-            customRender(
-                <HomeDashboard
-                    textContentPromise={textContentPromise as any}
-                    ticketInfoPromise={null}
-                />,
-                { language: "english" } as any,
-            ),
+            customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
+                language: "english",
+            } as any),
         );
         const button = await screen.findByRole("button", { name: "Apply for membership" });
         fireEvent.click(button);
@@ -62,49 +54,13 @@ describe("HomeDashboard", () => {
         expect(vi.mocked(clientRedirect).mock.calls[0][1]).toEqual(["apply"]);
     });
 
-    it("renders LoggedInHomeDashboard with tickets for logged in user", async () => {
-        const ticketInfoPromise = Promise.resolve(mockTicketInfo);
-        await act(async () =>
-            customRender(
-                <HomeDashboard
-                    textContentPromise={Promise.resolve({ id: "home", translations: [] } as any)}
-                    ticketInfoPromise={ticketInfoPromise as any}
-                />,
-                { user: mockUser, language: "english" } as any,
-            ),
-        );
-        expect(await screen.findByText("Welcome back, TestUser!")).toBeInTheDocument();
-        expect(screen.getByText("Tickets for upcoming events")).toBeInTheDocument();
-        expect(screen.getByText("Event 1")).toBeInTheDocument();
-        expect(screen.getByText("Event 2")).toBeInTheDocument();
-    });
-
-    it("renders calendar link if no tickets for logged in user", async () => {
-        const ticketInfoPromise = Promise.resolve([]);
-        await act(async () =>
-            customRender(
-                <HomeDashboard
-                    textContentPromise={Promise.resolve({ id: "home", translations: [] }) as any}
-                    ticketInfoPromise={ticketInfoPromise}
-                />,
-                mockUser as any,
-            ),
-        );
-        expect(
-            await screen.findByText("Check the calendar for upcoming events"),
-        ).toBeInTheDocument();
-    });
-
     it("renders correct language for swedish", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
-            customRender(
-                <HomeDashboard
-                    textContentPromise={textContentPromise as any}
-                    ticketInfoPromise={null}
-                />,
-                { user: mockUser, language: "swedish" } as any,
-            ),
+            customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
+                user: mockUser,
+                language: "swedish",
+            } as any),
         );
         expect(
             await screen.findByRole("button", { name: "Ansök om medlemskap" }),
