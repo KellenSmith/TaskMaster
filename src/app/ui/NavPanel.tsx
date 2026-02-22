@@ -93,6 +93,7 @@ const NavPanel = () => {
     const hiddenRoutes = [
         GlobalConstants.HOME,
         GlobalConstants.LOGIN,
+        GlobalConstants.DASHBOARD,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
         GlobalConstants.APPLY,

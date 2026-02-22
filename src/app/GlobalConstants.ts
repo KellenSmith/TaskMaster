@@ -8,6 +8,7 @@ const GlobalConstants = {
     PRIVATE: "private",
     ADMIN: "admin",
     HOME: "",
+    DASHBOARD: "dashboard",
     LOGIN: "login",
     PROFILE: "profile",
     RECEIPT: "receipt",
