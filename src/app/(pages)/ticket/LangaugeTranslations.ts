@@ -1,4 +1,4 @@
-import { Language } from "../../../prisma/generated/enums"
+import { Language } from "../../../prisma/generated/enums";
 
 const LanguageTranslations = {
     ticketNotFound: {
@@ -6,8 +6,10 @@ const LanguageTranslations = {
         [Language.swedish]: "Biljett hittades inte",
     },
     ticketNorFoundDetails: {
-        [Language.english]: "We could not find a ticket for the provided ID. Please check the link and try again.",
-        [Language.swedish]: "Vi kunde inte hitta en biljett för det angivna ID:t. Kontrollera länken och försök igen.",
+        [Language.english]:
+            "We could not find a ticket for the provided ID. Please check the link and try again.",
+        [Language.swedish]:
+            "Vi kunde inte hitta en biljett för det angivna ID:t. Kontrollera länken och försök igen.",
     },
     missingData: {
         [Language.english]: "Missing data",
@@ -46,8 +48,10 @@ const LanguageTranslations = {
         [Language.swedish]: "Biljettyp saknas",
     },
     ticketScanInfo: {
-        [Language.english]: "If this ticket is scanned within one hour of the event duration the member will be checked in and the ticket voided.",
-        [Language.swedish]: "Om denna biljett skannas inom en timme från evenemangets öppettider kommer medlemmen att checkas in och biljetten bli ogiltig."
+        [Language.english]:
+            "If this ticket is scanned within one hour of the event duration the member will be checked in and the ticket voided.",
+        [Language.swedish]:
+            "Om denna biljett skannas inom en timme från evenemangets öppettider kommer medlemmen att checkas in och biljetten bli ogiltig.",
     },
     belongsTo: {
         [Language.english]: "Belongs to",
@@ -65,6 +69,6 @@ const LanguageTranslations = {
         [Language.english]: "Already checked in at",
         [Language.swedish]: "Redan checkat in vid",
     },
-}
+};
 
-export default LanguageTranslations
+export default LanguageTranslations;

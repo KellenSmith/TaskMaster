@@ -107,7 +107,6 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
     });
 };
 
-
 export const updateEvent = async (eventId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
 
@@ -139,7 +138,10 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
         const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
-        if (sanitizedData.max_participants && eventParticipantsCount > sanitizedData.max_participants) {
+        if (
+            sanitizedData.max_participants &&
+            eventParticipantsCount > sanitizedData.max_participants
+        ) {
             throw new Error(
                 `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
             );
@@ -147,8 +149,9 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
 
         // Add or remove the new number of available tickets to product stock
         // deltaMaxParticipants might be negative
-        const deltaMaxParticipants =
-            sanitizedData.max_participants ? sanitizedData.max_participants - eventToUpdate.max_participants : 0;
+        const deltaMaxParticipants = sanitizedData.max_participants
+            ? sanitizedData.max_participants - eventToUpdate.max_participants
+            : 0;
         if (Math.abs(deltaMaxParticipants)) {
             const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
             await tx.product.updateMany({
@@ -180,11 +183,15 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 ],
             });
-            if (!eventToUpdate.host) throw new Error(`Event host not found in event ${eventId}. Failed to notify event host of event update.`);
+            if (!eventToUpdate.host)
+                throw new Error(
+                    `Event host not found in event ${eventId}. Failed to notify event host of event update.`,
+                );
             await sendMail(
                 [organizationSettings.event_manager_email],
                 "Event requires approval",
-                mailContent, eventToUpdate.host.email
+                mailContent,
+                eventToUpdate.host.email,
             );
         }
 
@@ -204,7 +211,10 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 ],
             });
-            if (!eventToUpdate.host) throw new Error(`Event host not found in event ${eventId}. Failed to notify event host of event update.`);
+            if (!eventToUpdate.host)
+                throw new Error(
+                    `Event host not found in event ${eventId}. Failed to notify event host of event update.`,
+                );
             await sendMail([eventToUpdate.host.email], "Event published", mailContent);
         }
 
@@ -230,7 +240,7 @@ export const publishEvent = async (eventId: string): Promise<void> => {
         data: { status: EventStatus.published },
     });
     revalidateTag(GlobalConstants.EVENT, "max");
-}
+};
 
 export const cancelEvent = async (eventId: string): Promise<void> => {
     // Validate event ID format
@@ -291,7 +301,6 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 };
 
 export const cloneEvent = async (eventId: string, formData: FormData) => {
-
     const loggedInUser = await getLoggedInUser();
     // Ensure user is logged in
     if (!loggedInUser) {
@@ -373,7 +382,9 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         // Add the event host as participant
         const volunteerTicket = clonedTickets.find((t) => t.type === TicketType.volunteer);
         if (!volunteerTicket) {
-            throw new Error(`Volunteer ticket not found in cloned tickets for cloned event ${createdEvent.id}`);
+            throw new Error(
+                `Volunteer ticket not found in cloned tickets for cloned event ${createdEvent.id}`,
+            );
         }
         await tx.eventParticipant.create({
             data: {
@@ -412,12 +423,14 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                         reviewer_id: loggedInUser.id,
                         // Create tasks as "To Do"
                         status: TaskStatus.toDo,
-                        start_time: task.start_time ? moveTaskTimeForward(task.start_time) : createdEvent.start_time,
+                        start_time: task.start_time
+                            ? moveTaskTimeForward(task.start_time)
+                            : createdEvent.start_time,
                         end_time: moveTaskTimeForward(task.end_time),
                         skill_badges: { createMany: { data: skillBadgesWithoutTaskId } },
                     },
                 });
-            })
+            }),
         );
         return createdEvent;
     });

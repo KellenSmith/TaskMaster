@@ -14,18 +14,18 @@ export const isUserParticipant = (
     return !!event.tickets.find((ticket) =>
         ticket.event_participants.find((participant) => participant.user_id === user.id),
     );
-}
+};
 
 export // Helper function to check if user is on reserve list
-    const isUserReserve = (
-        user: Prisma.UserGetPayload<{ include: { user_membership: true } }> | null,
-        event: Prisma.EventGetPayload<{
-            include: { event_reserves: true };
-        }>,
-    ): boolean => {
-        if (!event.event_reserves || !user) return false;
-        return !!event.event_reserves.find((reserve) => reserve.user_id === user.id);
-    };
+const isUserReserve = (
+    user: Prisma.UserGetPayload<{ include: { user_membership: true } }> | null,
+    event: Prisma.EventGetPayload<{
+        include: { event_reserves: true };
+    }>,
+): boolean => {
+    if (!event.event_reserves || !user) return false;
+    return !!event.event_reserves.find((reserve) => reserve.user_id === user.id);
+};
 
 // User is volunteer if assigned to at least one task
 export const isUserVolunteer = (
@@ -118,7 +118,12 @@ export const isEventSoldOut = (
 export const isEventCancelled = (event: Prisma.EventGetPayload<true>) =>
     event && event.status === EventStatus.cancelled;
 
-export const doDateRangesOverlap = (start1?: Date | null, end1?: Date | null, start2?: Date | null, end2?: Date | null) => {
+export const doDateRangesOverlap = (
+    start1?: Date | null,
+    end1?: Date | null,
+    start2?: Date | null,
+    end2?: Date | null,
+) => {
     if (!start1 || !end1 || !start2 || !end2) return false;
     return dayjs.utc(start1).isBefore(end2) && dayjs.utc(end1).isAfter(start2);
 };

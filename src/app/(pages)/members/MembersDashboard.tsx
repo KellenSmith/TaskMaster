@@ -104,12 +104,14 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     <Text style={styles.headerCell}>Email</Text>
                     <Text style={styles.headerCell}>Nickname</Text>
                 </View>
-                {members.sort((a, b) => a.email.localeCompare(b.email)).map((member, idx) => (
-                    <View style={styles.row} key={idx}>
-                        <Text style={styles.cell}>{member.email}</Text>
-                        <Text style={styles.cell}>{member.nickname || ""}</Text>
-                    </View>
-                ))}
+                {members
+                    .sort((a, b) => a.email.localeCompare(b.email))
+                    .map((member, idx) => (
+                        <View style={styles.row} key={idx}>
+                            <Text style={styles.cell}>{member.email}</Text>
+                            <Text style={styles.cell}>{member.nickname || ""}</Text>
+                        </View>
+                    ))}
             </Page>
         </Document>
     );
@@ -209,7 +211,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 }
                 // expired - pending/active
                 if (value1 === GlobalConstants.EXPIRED) return 1;
-                return 0
+                return 0;
             },
             renderCell: (params) => {
                 const member: ImplementedDatagridEntities = params.row;
@@ -306,12 +308,12 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 getDefaultFormValues={(member: ImplementedDatagridEntities) =>
                     member
                         ? {
-                            [GlobalConstants.SKILL_BADGES]: (
-                                member as Prisma.UserGetPayload<{
-                                    include: { skill_badges: true };
-                                }>
-                            ).skill_badges.map((badge) => badge.skill_badge_id),
-                        }
+                              [GlobalConstants.SKILL_BADGES]: (
+                                  member as Prisma.UserGetPayload<{
+                                      include: { skill_badges: true };
+                                  }>
+                              ).skill_badges.map((badge) => badge.skill_badge_id),
+                          }
                         : {}
                 }
                 customFormOptions={{

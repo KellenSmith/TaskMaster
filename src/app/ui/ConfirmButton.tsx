@@ -22,7 +22,12 @@ interface ConfirmButtonProps {
     buttonProps?: ButtonProps;
 }
 
-const ConfirmButton = ({ onClick, children, confirmText = "", buttonProps }: ConfirmButtonProps) => {
+const ConfirmButton = ({
+    onClick,
+    children,
+    confirmText = "",
+    buttonProps,
+}: ConfirmButtonProps) => {
     const { language } = useUserContext();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));

@@ -92,7 +92,7 @@ const EventDashboard = ({
             tickets: implementedTabs.tickets,
             participants: undefined,
             reserveList: undefined,
-        }
+        };
         if (isUserHost(user, event) || isUserAdmin(user)) {
             availableTabs.participants = implementedTabs.participants;
         }

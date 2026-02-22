@@ -27,7 +27,7 @@ const LanguageTranslations = {
     locationNotFound: {
         [Language.english]: "Selected location not found",
         [Language.swedish]: "Vald plats hittades inte",
-    }
+    },
 };
 
 export default LanguageTranslations;

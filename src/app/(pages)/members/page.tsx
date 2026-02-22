@@ -5,7 +5,6 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { prisma } from "../../../prisma/prisma-client";
 
 const MembersPage = async () => {
-
     const membersPromise = prisma.user.findMany({
         include: {
             user_membership: true,

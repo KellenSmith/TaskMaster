@@ -51,9 +51,11 @@ interface DroppableColumnProps {
     draggedTask: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } } };
     }> | null;
-    setDraggedTask: Dispatch<SetStateAction<Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } } };
-    }> | null>>
+    setDraggedTask: Dispatch<
+        SetStateAction<Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } } };
+        }> | null>
+    >;
     draggedOverColumn: TaskStatus | null;
     setDraggedOverColumn: Dispatch<SetStateAction<TaskStatus | null>>;
 }
@@ -218,12 +220,12 @@ const DroppableColumn = ({
                     defaultValues={
                         taskFormDefaultValues
                             ? {
-                                ...taskFormDefaultValues,
-                                skill_badges: taskFormDefaultValues.skill_badges?.map(
-                                    (b: Prisma.TaskSkillBadgeGetPayload<true>) =>
-                                        b.skill_badge_id,
-                                ),
-                            }
+                                  ...taskFormDefaultValues,
+                                  skill_badges: taskFormDefaultValues.skill_badges?.map(
+                                      (b: Prisma.TaskSkillBadgeGetPayload<true>) =>
+                                          b.skill_badge_id,
+                                  ),
+                              }
                             : undefined
                     }
                     customOptions={{

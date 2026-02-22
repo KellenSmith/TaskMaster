@@ -57,14 +57,16 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     }
 
     const getSelectedLocation = () =>
-        selectedLocationOption ? locations.find((loc) => loc.id === selectedLocationOption.id) || location : location;
+        selectedLocationOption
+            ? locations.find((loc) => loc.id === selectedLocationOption.id) || location
+            : location;
 
     const switchEventLocation = async () => {
         startTransition(async () => {
             try {
                 if (!selectedLocationOption) {
                     addNotification(GlobalLanguageTranslations.failedSave[language], "error");
-                    return
+                    return;
                 }
                 const formData = new FormData();
                 formData.append(GlobalConstants.LOCATION_ID, selectedLocationOption.id);
@@ -99,11 +101,11 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                         isUserAdmin(user) || isUserHost(user, event)
                             ? RenderedFields[GlobalConstants.LOCATION]
                             : [
-                                GlobalConstants.NAME,
-                                GlobalConstants.ADDRESS,
-                                GlobalConstants.ACCESSIBILITY_INFO,
-                                GlobalConstants.DESCRIPTION,
-                            ]
+                                  GlobalConstants.NAME,
+                                  GlobalConstants.ADDRESS,
+                                  GlobalConstants.ACCESSIBILITY_INFO,
+                                  GlobalConstants.DESCRIPTION,
+                              ]
                     }
                 />
             </Box>
@@ -137,7 +139,8 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             variant="contained"
                             disabled={
                                 isSwitchButtonDisabled() ||
-                                (!!selectedLocationOption && selectedLocationOption.id === event.location_id)
+                                (!!selectedLocationOption &&
+                                    selectedLocationOption.id === event.location_id)
                             }
                             onClick={switchEventLocation}
                         >

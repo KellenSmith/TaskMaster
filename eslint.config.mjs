@@ -81,7 +81,7 @@ export default [
             "@typescript-eslint": tsPlugin,
             "@next/next": nextPlugin,
             "react-hooks": reactHooksPlugin,
-            vitest
+            vitest,
         },
         rules: {
             ...js.configs.recommended.rules,
@@ -97,5 +97,5 @@ export default [
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
         },
-    }
+    },
 ];

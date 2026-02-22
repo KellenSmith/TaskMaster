@@ -88,7 +88,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         return new NextResponse("OK", { status: 200 });
     } catch (error) {
-        console.error(`Payment callback error from IP ${clientIp}:`, error instanceof Error ? error.message : String(error));
+        console.error(
+            `Payment callback error from IP ${clientIp}:`,
+            error instanceof Error ? error.message : String(error),
+        );
         // Don't expose internal error details to external callers
         return new NextResponse("Internal Server Error", { status: 500 });
     }

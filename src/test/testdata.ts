@@ -4,7 +4,6 @@ import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
 
-
 const testdata = {
     env: {
         AUTH_SECRET: "test-auth-secret",
@@ -154,7 +153,6 @@ const testdata = {
         "prod-1234-5678": 2,
         "prod-5678-9abc": 1,
     },
-
 };
 
 export default testdata;

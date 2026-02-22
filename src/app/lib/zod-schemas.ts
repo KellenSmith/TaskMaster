@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { UserRole, EventStatus, TaskStatus, TicketType, OrderStatus, Prisma } from "@/prisma/generated/browser";
+import {
+    UserRole,
+    EventStatus,
+    TaskStatus,
+    TicketType,
+    OrderStatus,
+    Prisma,
+} from "@/prisma/generated/browser";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import utc from "dayjs/plugin/utc";

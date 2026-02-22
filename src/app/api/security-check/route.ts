@@ -43,11 +43,14 @@ export async function GET(request: NextRequest) {
             },
         });
     } catch (error) {
-        return new NextResponse(`Error checking headers: ${error instanceof Error ? error.message : String(error)}`, {
-            status: 500,
-            headers: {
-                "Content-Type": "text/plain",
+        return new NextResponse(
+            `Error checking headers: ${error instanceof Error ? error.message : String(error)}`,
+            {
+                status: 500,
+                headers: {
+                    "Content-Type": "text/plain",
+                },
             },
-        });
+        );
     }
 }

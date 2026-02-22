@@ -16,13 +16,17 @@ interface RichTextFieldProps {
     defaultValue?: string | null;
 }
 
-const RichTextField: FC<RichTextFieldProps> = ({ fieldId, editMode = false, defaultValue = "" }) => {
+const RichTextField: FC<RichTextFieldProps> = ({
+    fieldId,
+    editMode = false,
+    defaultValue = "",
+}) => {
     const { language } = useUserContext();
     const extensions = useExtensions();
     const rteRef = useRef<RichTextEditorRef>(null);
 
     const [content, setContent] = useState(
-        defaultValue || (fieldId && FieldLabels[fieldId][language] as string) || "",
+        defaultValue || (fieldId && (FieldLabels[fieldId][language] as string)) || "",
     );
 
     return (

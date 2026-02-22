@@ -93,7 +93,7 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                                 color: isReserve ? "error" : "primary",
                                 variant: "outlined",
                                 fullWidth: true,
-                                startIcon: isReserve ? <ExitToApp /> : <PersonAdd />
+                                startIcon: isReserve ? <ExitToApp /> : <PersonAdd />,
                             }}
                             onClick={isReserve ? leaveReserveList : joinReserveList}
                             confirmText={LanguageTranslations.areYouSureYouWannaJoin[language](

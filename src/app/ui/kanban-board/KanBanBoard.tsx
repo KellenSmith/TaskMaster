@@ -53,9 +53,9 @@ const KanBanBoard = ({
     const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
         !(isUserHost(user, event) || isUserAdmin(user))
             ? {
-                unassigned: true,
-                [GlobalConstants.STATUS]: event ? [TaskStatus.toDo] : Object.values(TaskStatus),
-            }
+                  unassigned: true,
+                  [GlobalConstants.STATUS]: event ? [TaskStatus.toDo] : Object.values(TaskStatus),
+              }
             : null,
     );
 

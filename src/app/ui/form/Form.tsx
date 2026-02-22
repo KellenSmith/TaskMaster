@@ -209,8 +209,7 @@ const Form: FC<FormProps> = ({
                 allowRedirectException(error);
                 if (error && typeof error === "object" && "message" in error)
                     addNotification(error.message as string, "error");
-                else
-                    throw error;
+                else throw error;
             }
         });
     };
@@ -221,7 +220,8 @@ const Form: FC<FormProps> = ({
     const getDefaultValue = (fieldId: string) => {
         if (defaultValues && fieldId in defaultValues) {
             if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId] as number);
-            if (datePickerFields.includes(fieldId)) return dayjs.utc(defaultValues[fieldId] as Dayjs);
+            if (datePickerFields.includes(fieldId))
+                return dayjs.utc(defaultValues[fieldId] as Dayjs);
             return defaultValues[fieldId];
         }
 
@@ -276,7 +276,7 @@ const Form: FC<FormProps> = ({
                         <Checkbox
                             name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                            defaultChecked={getDefaultValue(fieldId) as boolean || false}
+                            defaultChecked={(getDefaultValue(fieldId) as boolean) || false}
                         />
                     }
                     label={FieldLabels[fieldId][language] as string}
@@ -288,7 +288,7 @@ const Form: FC<FormProps> = ({
                     key={getFieldCompKey(fieldId)}
                     fieldId={fieldId}
                     editMode={editMode || customReadOnlyFields.includes(fieldId)}
-                    defaultValue={defaultValues?.[fieldId] as string || ""}
+                    defaultValue={(defaultValues?.[fieldId] as string) || ""}
                 />
             );
         }

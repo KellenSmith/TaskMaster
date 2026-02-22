@@ -16,7 +16,7 @@ const TicketPage = async ({ searchParams }: TicketPageProps) => {
         include: {
             ticket: { include: { event: true } },
             user: { select: { id: true, nickname: true } },
-        }
+        },
     });
 
     return (
@@ -24,6 +24,6 @@ const TicketPage = async ({ searchParams }: TicketPageProps) => {
             <TicketDashboard eventParticipantPromise={eventParticipantPromise} />
         </ErrorBoundarySuspense>
     );
-}
+};
 
 export default TicketPage;

@@ -31,42 +31,55 @@ const LoggedOutHomeDashboard: React.FC<LoggedOutHomeDashboardProps> = ({ textCon
             <TextContent id={"home"} textContentPromise={textContentPromise} />
         </>
     );
-}
+};
 
 interface LoggedInHomeDashboardProps {
-    ticketInfoPromise: TicketInfoType
+    ticketInfoPromise: TicketInfoType;
 }
 
 const LoggedInHomeDashboard: React.FC<LoggedInHomeDashboardProps> = ({ ticketInfoPromise }) => {
     const { user, language } = useUserContext();
     const ticketInfo = use(ticketInfoPromise);
 
-    const getTicketCard = (eventParticipant: typeof ticketInfo[0]) => {
-        return <Card key={eventParticipant.ticket.event.title} sx={{ width: "fit-content", padding: 2 }}>
-            <CardHeader title={eventParticipant.ticket.event.title} />
-            <CardMedia sx={{ display: "flex", justifyContent: "center" }}>
-                <Image
-                    src={getAbsoluteUrl(["api", "ticket-qrcode", eventParticipant.id])}
-                    alt={`${LanguageTranslations.qrImageAlt[language]} ${eventParticipant.id}`}
-                    width={100}
-                    height={100} />
-            </CardMedia>
-        </Card>
-    }
+    const getTicketCard = (eventParticipant: (typeof ticketInfo)[0]) => {
+        return (
+            <Card
+                key={eventParticipant.ticket.event.title}
+                sx={{ width: "fit-content", padding: 2 }}
+            >
+                <CardHeader title={eventParticipant.ticket.event.title} />
+                <CardMedia sx={{ display: "flex", justifyContent: "center" }}>
+                    <Image
+                        src={getAbsoluteUrl(["api", "ticket-qrcode", eventParticipant.id])}
+                        alt={`${LanguageTranslations.qrImageAlt[language]} ${eventParticipant.id}`}
+                        width={100}
+                        height={100}
+                    />
+                </CardMedia>
+            </Card>
+        );
+    };
 
     if (ticketInfo.length) {
-        return <Stack width="100%" spacing={4}>
-            <Typography variant="h4">{`${LanguageTranslations.welcomeBack[language]}, ${user!.nickname}!`}</Typography>
-            <Stack width="100%" spacing={2}>
-                <Typography variant="h5">{LanguageTranslations.upcomingEventTickets[language]}</Typography>
-                {ticketInfo.map((ticket) => (getTicketCard(ticket)))}
+        return (
+            <Stack width="100%" spacing={4}>
+                <Typography variant="h4">{`${LanguageTranslations.welcomeBack[language]}, ${user!.nickname}!`}</Typography>
+                <Stack width="100%" spacing={2}>
+                    <Typography variant="h5">
+                        {LanguageTranslations.upcomingEventTickets[language]}
+                    </Typography>
+                    {ticketInfo.map((ticket) => getTicketCard(ticket))}
+                </Stack>
             </Stack>
-        </Stack>;
+        );
     } else {
-        return <Link href={getRelativeUrl([GlobalConstants.CALENDAR])}>{LanguageTranslations.checkCalendarForEvents[language]}</Link>
+        return (
+            <Link href={getRelativeUrl([GlobalConstants.CALENDAR])}>
+                {LanguageTranslations.checkCalendarForEvents[language]}
+            </Link>
+        );
     }
 };
-
 
 interface HomeDashboardProps {
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;
@@ -85,9 +98,11 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise, ticke
                     justifyContent: "center",
                 }}
             >
-                {user && ticketInfoPromise ?
+                {user && ticketInfoPromise ? (
                     <LoggedInHomeDashboard ticketInfoPromise={ticketInfoPromise} />
-                    : <LoggedOutHomeDashboard textContentPromise={textContentPromise} />}
+                ) : (
+                    <LoggedOutHomeDashboard textContentPromise={textContentPromise} />
+                )}
             </Stack>
         </Stack>
     );

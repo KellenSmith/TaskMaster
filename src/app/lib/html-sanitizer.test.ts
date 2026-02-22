@@ -12,7 +12,7 @@ describe("html-sanitizer", () => {
 
         it("removes scripts and 'javascript:' protocols while preserving allowed tags", () => {
             const input =
-                "<p>Safe <strong>bold</strong></p><script>alert(1)</script><a href=\"javascript:alert(2)\">Click</a>";
+                '<p>Safe <strong>bold</strong></p><script>alert(1)</script><a href="javascript:alert(2)">Click</a>';
 
             const result = sanitizeRichText(input);
 
@@ -25,11 +25,11 @@ describe("html-sanitizer", () => {
         });
 
         it("strips dangerous attributes", () => {
-            const input = "<img src=\"x\" onerror=\"alert(1)\" /><div style=\"color:red\">Hi</div>";
+            const input = '<img src="x" onerror="alert(1)" /><div style="color:red">Hi</div>';
             const result = sanitizeRichText(input);
 
             expect(result).toContain("<img");
-            expect(result).toContain("src=\"x\"");
+            expect(result).toContain('src="x"');
             expect(result).not.toContain("onerror");
             expect(result).not.toContain("style=");
         });
@@ -53,8 +53,8 @@ describe("html-sanitizer", () => {
         it("sanitizes rich text fields and preserves other fields", () => {
             const input = {
                 [GlobalConstants.TEXT]: "<p>Ok</p><script>alert(1)</script>",
-                [GlobalConstants.DESCRIPTION]: "<div style=\"color:red\">Desc</div>",
-                [GlobalConstants.CONTENT]: "<a href=\"javascript:alert(2)\">Click</a>",
+                [GlobalConstants.DESCRIPTION]: '<div style="color:red">Desc</div>',
+                [GlobalConstants.CONTENT]: '<a href="javascript:alert(2)">Click</a>',
                 [GlobalConstants.TITLE]: "Plain Title",
                 count: 2,
             };

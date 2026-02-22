@@ -20,15 +20,22 @@ export const allowRedirectException = (error: unknown) => {
     if (hasDigest && (error as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT")) {
         throw error;
     }
-
 };
 
 export const getPrivacyPolicyUrl = (
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
     language: Language,
 ) => {
-    if (language === Language.english) return organizationSettings.privacy_policy_english_url || "documents/privacy-policy-english.pdf";
-    if (language === Language.swedish) return organizationSettings.privacy_policy_swedish_url || "documents/privacy-policy-swedish.pdf";
+    if (language === Language.english)
+        return (
+            organizationSettings.privacy_policy_english_url ||
+            "documents/privacy-policy-english.pdf"
+        );
+    if (language === Language.swedish)
+        return (
+            organizationSettings.privacy_policy_swedish_url ||
+            "documents/privacy-policy-swedish.pdf"
+        );
 };
 
 export const getTermsOfMembershipUrl = (

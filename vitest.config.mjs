@@ -24,7 +24,7 @@ export default defineConfig({
                 "node_modules/**",
                 "src/test/**",
                 "src/prisma/generated/**",
-                "src/app/lib/auth/auth-types.ts"
+                "src/app/lib/auth/auth-types.ts",
             ],
         },
         // Improve test collection performance

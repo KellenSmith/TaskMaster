@@ -85,7 +85,7 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
                                 <ConfirmButton
                                     buttonProps={{
                                         color: "error",
-                                        disabled: isPending
+                                        disabled: isPending,
                                     }}
                                     onClick={() => deleteBadgeAction(badge.id)}
                                 >

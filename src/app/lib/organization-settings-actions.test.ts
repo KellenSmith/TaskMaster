@@ -64,9 +64,7 @@ describe("organization-settings-actions", () => {
                     logo_url: "https://blob.vercel-storage.com/new.png",
                 },
             });
-            expect(vi.mocked(del)).toHaveBeenCalledWith(
-                "https://blob.vercel-storage.com/old.png",
-            );
+            expect(vi.mocked(del)).toHaveBeenCalledWith("https://blob.vercel-storage.com/old.png");
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
                 GlobalConstants.ORGANIZATION_SETTINGS,
                 "max",
@@ -81,9 +79,7 @@ describe("organization-settings-actions", () => {
                 "https://blob.vercel-storage.com/new.png",
             );
 
-            expect(vi.mocked(del)).toHaveBeenCalledWith(
-                "https://blob.vercel-storage.com/old.png",
-            );
+            expect(vi.mocked(del)).toHaveBeenCalledWith("https://blob.vercel-storage.com/old.png");
         });
 
         it("does not delete when old url is missing or unchanged", async () => {

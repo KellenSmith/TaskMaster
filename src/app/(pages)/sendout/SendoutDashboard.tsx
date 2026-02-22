@@ -48,7 +48,7 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
 
     const getRecipientCriteria = useCallback(() => {
         const recipientCriteria: Prisma.UserWhereInput = {
-            status: UserStatus.validated
+            status: UserStatus.validated,
         };
         if (sendTo === sendToOptions.CONSENTING[language]) {
             recipientCriteria.consent_to_newsletters = true;

@@ -29,7 +29,6 @@ export const updateOrganizationSettings = async (formData: FormData): Promise<vo
     // attempt to delete the old blob from Vercel Blob storage.
     await deleteOldBlob(settings.logo_url, validatedData.logo_url);
 
-
     await prisma.organizationSettings.update({
         where: {
             id: settings?.id,

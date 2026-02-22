@@ -7,7 +7,7 @@ const YearWheelPage = () => {
         include: {
             tasks: true,
         },
-    })
+    });
     return (
         <ErrorBoundarySuspense>
             <YearWheelDashboard eventsPromise={eventsPromise} />

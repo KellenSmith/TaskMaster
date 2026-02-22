@@ -148,7 +148,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                         color: "error",
                                         variant: "outlined",
                                         fullWidth: true,
-                                        startIcon: <ExitToApp />
+                                        startIcon: <ExitToApp />,
                                     }}
                                     onClick={leaveParticipantList}
                                     confirmText={LanguageTranslations.sureYouWannaLeave[language]}

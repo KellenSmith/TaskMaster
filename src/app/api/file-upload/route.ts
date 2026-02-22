@@ -145,7 +145,6 @@ export async function POST(request: Request): Promise<NextResponse> {
 
         return NextResponse.json(jsonResponse);
     } catch (error) {
-
         // ✅ SECURITY: Log failed upload attempts for monitoring
         console.error("File upload failed:", {
             error: error instanceof Error ? error.message : String(error),
@@ -154,6 +153,9 @@ export async function POST(request: Request): Promise<NextResponse> {
         });
 
         // ✅ SECURITY: Return generic error to prevent information disclosure
-        return NextResponse.json({ error: error instanceof Error ? error.message : "Upload failed" }, { status: 400 });
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : "Upload failed" },
+            { status: 400 },
+        );
     }
 }

@@ -57,8 +57,8 @@ const ProfilePage = async () => {
             },
             event_reserves: true,
         },
-    })
-    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } })
+    });
+    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 
     return (
         <ProfileDashboard
