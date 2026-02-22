@@ -22,6 +22,7 @@ describe("HomeDashboard", () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
             customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
+                user: null,
                 language: "english",
             } as any),
         );
@@ -35,6 +36,7 @@ describe("HomeDashboard", () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
             customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
+                user: null,
                 language: "english",
             } as any),
         );
@@ -48,7 +50,7 @@ describe("HomeDashboard", () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
             customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
-                user: mockUser,
+                user: null,
                 language: "swedish",
             } as any),
         );

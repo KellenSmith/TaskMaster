@@ -9,6 +9,7 @@ import type { Transporter } from "nodemailer";
 import { getMailTransport } from "../app/lib/mail-service/mail-transport";
 import testdata from "./testdata";
 import { prisma } from "../prisma/prisma-client";
+
 // Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
 dayjs.extend(utc);
 
@@ -30,6 +31,9 @@ vi.mock("next/cache", () => ({
 }));
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: vi.fn() }),
+    redirect: vi.fn(() => {
+        throw new Error("Redirect called");
+    }),
 }));
 
 afterAll(() => {

@@ -9,6 +9,7 @@ import { getAbsoluteUrl, getRelativeUrl } from "../../lib/utils";
 import Link from "next/link";
 import GlobalConstants from "../../GlobalConstants";
 import LanguageTranslations from "./LanguageTranslations";
+import { formatDate } from "../../ui/utils";
 
 interface DashboardProps {
     ticketInfoPromise: Promise<
@@ -45,11 +46,13 @@ const Dashboard: React.FC<DashboardProps> = ({ ticketInfoPromise }) => {
                 </Typography>
                 {ticketInfo.length > 0 ? (
                     ticketInfo.map((eventParticipant) => (
-                        <Card
-                            key={eventParticipant.ticket.event.title}
-                            sx={{ width: "fit-content", padding: 2 }}
-                        >
+                        <Card key={eventParticipant.id} sx={{ width: "fit-content", padding: 2 }}>
                             <CardHeader title={eventParticipant.ticket.event.title} />
+                            <Typography variant="h5">
+                                {eventParticipant.ticket.event.location?.name ||
+                                    LanguageTranslations.noLocation[language]}
+                            </Typography>
+                            <Typography>{`${formatDate(eventParticipant.ticket.event.start_time)} - ${formatDate(eventParticipant.ticket.event.end_time)}`}</Typography>
                             <CardMedia sx={{ display: "flex", justifyContent: "center" }}>
                                 <Image
                                     src={getAbsoluteUrl([

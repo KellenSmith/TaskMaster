@@ -17,6 +17,10 @@ const LanguageTranslations = {
         [Language.english]: "You have no tickets. Check the calendar for upcoming events.",
         [Language.swedish]: "Du har inga biljetter. Kolla kalendern för kommande evenemang.",
     },
+    noLocation: {
+        [Language.english]: "No location specified",
+        [Language.swedish]: "Ingen plats angiven",
+    },
 };
 
 export default LanguageTranslations;
