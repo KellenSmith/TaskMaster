@@ -42,7 +42,7 @@ export const routeTreeConfig: RouteConfigType[] = [
         membershipRequired: true,
     },
     {
-        name: GlobalConstants.EVENT,
+        name: GlobalConstants.CALENDAR_POST,
         status: UserStatus.validated,
         role: UserRole.member,
         membershipRequired: true,

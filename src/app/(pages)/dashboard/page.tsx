@@ -26,6 +26,7 @@ const DashboardPage = async () => {
                 include: {
                     event: {
                         select: {
+                            id: true,
                             title: true,
                             start_time: true,
                             end_time: true,
