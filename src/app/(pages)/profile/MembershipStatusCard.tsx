@@ -1,13 +1,7 @@
 "use client";
 import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
 import { isMembershipExpired } from "../../lib/utils";
-import {
-    AdminPanelSettings,
-    CheckCircle,
-    Person,
-    Schedule,
-    Warning,
-} from "@mui/icons-material";
+import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import { formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
@@ -116,7 +110,7 @@ const MembershipStatusCard = () => {
                             </Stack>
 
                             {/* Expiration Date */}
-                            {user.user_membership &&
+                            {user.user_membership && (
                                 <Stack direction="row" alignItems="center" spacing={2}>
                                     <Schedule color="primary" />
                                     <Stack>
@@ -127,7 +121,8 @@ const MembershipStatusCard = () => {
                                             {formatDate(dayjs.utc(user.user_membership.expires_at))}
                                         </Typography>
                                     </Stack>
-                                </Stack>}
+                                </Stack>
+                            )}
 
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <AdminPanelSettings color="primary" />

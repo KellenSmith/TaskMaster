@@ -59,7 +59,7 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
                     fullWidth: true,
                     color: "error",
                     variant: "outlined",
-                    startIcon: <Delete />
+                    startIcon: <Delete />,
                 }}
                 onClick={unassignFromTask}
                 confirmText={LanguageTranslations.areYouSureCancelShiftBooking[language](event)}
@@ -104,7 +104,7 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
                 fullWidth: true,
                 color: "error",
                 variant: "outlined",
-                startIcon: <CheckCircle />
+                startIcon: <CheckCircle />,
             }}
             onClick={assignTaskToMe}
             confirmText={confirmText}

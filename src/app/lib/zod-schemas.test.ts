@@ -38,7 +38,13 @@ import {
     UserRoleSchema,
     UuidSchema,
 } from "./zod-schemas";
-import { EventStatus, OrderStatus, TaskStatus, TicketType, UserRole } from "@/prisma/generated/client";
+import {
+    EventStatus,
+    OrderStatus,
+    TaskStatus,
+    TicketType,
+    UserRole,
+} from "@/prisma/generated/client";
 import testdata from "../../test/testdata";
 
 const validDate = "03/02/2026 14:30";
@@ -420,9 +426,7 @@ describe("Custom schemas", () => {
             }).success,
         ).toBe(true);
 
-        expect(
-            AddEventReserveSchema.safeParse({ user_id: "not-a-uuid" }).success,
-        ).toBe(false);
+        expect(AddEventReserveSchema.safeParse({ user_id: "not-a-uuid" }).success).toBe(false);
 
         expect(UuidSchema.safeParse("not-a-uuid").success).toBe(false);
     });
@@ -466,18 +470,26 @@ describe("Custom schemas", () => {
     });
 
     it("validates auxiliary schemas and strips unexpected fields", () => {
-        expect(EmailSendoutSchema.parse({ subject: "Hi", content: "Body", injected: "<script />" })).toEqual({
+        expect(
+            EmailSendoutSchema.parse({ subject: "Hi", content: "Body", injected: "<script />" }),
+        ).toEqual({
             subject: "Hi",
             content: "Body",
         });
-        expect(UpdateTextContentSchema.parse({ text: "Updated", injected: "<script />" })).toEqual({ text: "Updated" });
+        expect(UpdateTextContentSchema.parse({ text: "Updated", injected: "<script />" })).toEqual({
+            text: "Updated",
+        });
         expect(CloneEventSchema.parse({ start_time: validDate, injected: "<script />" })).toEqual({
             start_time: expectedDate,
         });
-        expect(AddMembershipSchema.parse({ expires_at: validDate, injected: "<script />" })).toEqual({
+        expect(
+            AddMembershipSchema.parse({ expires_at: validDate, injected: "<script />" }),
+        ).toEqual({
             expires_at: expectedDate,
         });
-        expect(ContactMemberSchema.parse({ content: "Hi", injected: "<script />" })).toEqual({ content: "Hi" });
+        expect(ContactMemberSchema.parse({ content: "Hi", injected: "<script />" })).toEqual({
+            content: "Hi",
+        });
     });
 
     it("rejects short contact content", () => {

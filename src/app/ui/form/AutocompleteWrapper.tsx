@@ -56,7 +56,9 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
     const getInitialValue = useCallback((): null | CustomOptionProps | CustomOptionProps[] => {
         if (!defaultValue) return multiple ? [] : null;
         if (typeof defaultValue === "string") return getOptionWithId(defaultValue);
-        return defaultValue.map((val) => getOptionWithId(val)).filter(Boolean) as CustomOptionProps[];
+        return defaultValue
+            .map((val) => getOptionWithId(val))
+            .filter(Boolean) as CustomOptionProps[];
     }, [defaultValue, multiple, getOptionWithId]);
 
     const [selectedOption, setSelectedOption] = useState<
@@ -80,10 +82,7 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
         <>
             <Autocomplete
                 value={selectedOption}
-                onChange={(
-                    _event,
-                    newValue
-                ) => setSelectedOption(newValue)}
+                onChange={(_event, newValue) => setSelectedOption(newValue)}
                 renderInput={(params) => (
                     <TextField {...params} label={label} required={required} />
                 )}

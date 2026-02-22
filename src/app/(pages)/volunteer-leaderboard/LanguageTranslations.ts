@@ -26,6 +26,6 @@ const LanguageTranslations = {
         [Language.english]: "Next",
         [Language.swedish]: "Nästa",
     },
-}
+};
 
 export default LanguageTranslations;

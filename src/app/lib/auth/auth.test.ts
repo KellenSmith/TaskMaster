@@ -46,7 +46,6 @@ vi.mock("../mail-service/mail-service", () => ({
 }));
 
 describe("auth.ts", () => {
-
     beforeEach(() => {
         nextAuthOptions = undefined;
         sendMailMock.mockClear();
@@ -62,7 +61,7 @@ describe("auth.ts", () => {
     };
 
     it("throws when EMAIL is not set", async () => {
-        process.env.EMAIL = undefined
+        process.env.EMAIL = undefined;
         await expect(import("./auth")).rejects.toThrowError(/EMAIL is not set/);
     });
 

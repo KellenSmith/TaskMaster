@@ -254,8 +254,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         }
 
         const statusActionButton = getStatusActionButton();
-        if (statusActionButton)
-            ActionButtons.unshift(statusActionButton);
+        if (statusActionButton) ActionButtons.unshift(statusActionButton);
 
         ActionButtons.unshift(
             <MenuItem key="edit">

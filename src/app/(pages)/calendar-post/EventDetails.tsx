@@ -55,21 +55,23 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                             </Box>
                         </Stack>
 
-                        {event.location && <Stack
-                            direction="row"
-                            spacing={1}
-                            sx={{ alignItems: "center", minWidth: 0 }}
-                        >
-                            <LocationOn color="primary" />
-                            <Typography
-                                sx={{
-                                    fontSize: { xs: "0.85rem", sm: "1rem" },
-                                    overflowWrap: "anywhere",
-                                }}
+                        {event.location && (
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ alignItems: "center", minWidth: 0 }}
                             >
-                                {event.location.name}, {event.location.address}
-                            </Typography>
-                        </Stack>}
+                                <LocationOn color="primary" />
+                                <Typography
+                                    sx={{
+                                        fontSize: { xs: "0.85rem", sm: "1rem" },
+                                        overflowWrap: "anywhere",
+                                    }}
+                                >
+                                    {event.location.name}, {event.location.address}
+                                </Typography>
+                            </Stack>
+                        )}
                         {event.tags && event.tags.length > 0 && (
                             <Box>
                                 <Typography

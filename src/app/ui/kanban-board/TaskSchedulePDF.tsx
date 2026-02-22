@@ -22,15 +22,20 @@ const customStyles = {
 };
 
 // Create a PDF document component
-const TaskSchedulePDF = ({ event, tasks }: {
+const TaskSchedulePDF = ({
+    event,
+    tasks,
+}: {
     event?: Prisma.EventGetPayload<{}>;
     tasks: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-    }>[]
+    }>[];
 }) => {
-    const getTaskRow = (task: Prisma.TaskGetPayload<{
-        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
-    }>) => (
+    const getTaskRow = (
+        task: Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+        }>,
+    ) => (
         <View style={styles.tableRow} key={task.id}>
             <Text wrap={true} style={{ ...styles.tableCell, ...customStyles.columnTask }}>
                 {task.name}
@@ -47,18 +52,19 @@ const TaskSchedulePDF = ({ event, tasks }: {
         </View>
     );
 
-    const getEventDetails = () => (
-        event ? <View style={styles.eventDetails}>
-            <View style={styles.eventDetailRow}>
-                <Text style={styles.eventDetailLabel}>Event:</Text>
-                <Text>{event?.title}</Text>
+    const getEventDetails = () =>
+        event ? (
+            <View style={styles.eventDetails}>
+                <View style={styles.eventDetailRow}>
+                    <Text style={styles.eventDetailLabel}>Event:</Text>
+                    <Text>{event?.title}</Text>
+                </View>
+                <View style={styles.eventDetailRow}>
+                    <Text style={styles.eventDetailLabel}>Time:</Text>
+                    <Text>{`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}</Text>
+                </View>
             </View>
-            <View style={styles.eventDetailRow}>
-                <Text style={styles.eventDetailLabel}>Time:</Text>
-                <Text>{`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}</Text>
-            </View>
-        </View> : null
-    );
+        ) : null;
 
     return (
         <Document>

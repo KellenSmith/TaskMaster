@@ -45,8 +45,7 @@ export const deleteSkillBadge = async (skillBadgeId: string): Promise<void> => {
         where: { id: validatedSkillBadgeId },
     });
 
-    if (deletedSkillBadge.image_url)
-        await deleteOldBlob(deletedSkillBadge.image_url);
+    if (deletedSkillBadge.image_url) await deleteOldBlob(deletedSkillBadge.image_url);
 
     revalidateTag(GlobalConstants.SKILL_BADGES, "max");
 };

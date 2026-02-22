@@ -6,7 +6,6 @@ import { prisma } from "../../../prisma/prisma-client";
 const OrdersPage = async () => {
     const ordersPromise = prisma.order.findMany({
         include: {
-
             user: {
                 select: {
                     nickname: true,

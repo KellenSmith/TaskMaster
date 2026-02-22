@@ -1,12 +1,12 @@
 import { Language } from "@/prisma/generated/browser";
 
 export type ImplementedTabs = {
-    details: "Details",
-    location: "Location",
-    organize: "Organize",
-    tickets: "Tickets",
-    participants: "Participants",
-    reserveList: "Reserve List",
+    details: "Details";
+    location: "Location";
+    organize: "Organize";
+    tickets: "Tickets";
+    participants: "Participants";
+    reserveList: "Reserve List";
 };
 
 export const implementedTabs: ImplementedTabs = {

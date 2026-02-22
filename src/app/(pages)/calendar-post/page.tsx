@@ -82,9 +82,9 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
             },
         },
     });
-    const locationsPromise = prisma.location.findMany()
+    const locationsPromise = prisma.location.findMany();
     const events = await prisma.event.findMany({ select: { tags: true } });
-    const uniqueEventTags = [...new Set(events.flatMap(e => e.tags))];
+    const uniqueEventTags = [...new Set(events.flatMap((e) => e.tags))];
 
     return (
         <ErrorBoundarySuspense>

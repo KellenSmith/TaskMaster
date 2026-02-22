@@ -21,8 +21,7 @@ const ApplyPage = () => {
         termsOfMembership: !termsOfMembershipUrl,
         privacyPolicy: !privacyPolicyUrl,
     });
-    const shouldIncludeApplicationPrompt = !!organizationSettings.member_application_prompt
-
+    const shouldIncludeApplicationPrompt = !!organizationSettings.member_application_prompt;
 
     const submitApplication = async (formData: FormData) => {
         try {
@@ -36,37 +35,40 @@ const ApplyPage = () => {
     return (
         <Stack spacing={1}>
             <Typography variant="h6">{LanguageTranslations.makeSureYouRead[language]}</Typography>
-            {termsOfMembershipUrl && <Stack direction="row" alignItems={"center"}>
-                <Checkbox
-                    checked={termsAccepted.termsOfMembership}
-                    onChange={(e) =>
-                        setTermsAccepted({
-                            ...termsAccepted,
-                            termsOfMembership: e.target.checked,
-                        })
-                    }
-                    required
-                />
-                <Typography
-                    variant="body2"
-                    sx={{
-                        display: "inline",
-                        wordBreak: "keep-all",
-                        hyphens: "none",
-                        marginRight: 1,
-                    }}
-                >
-                    {OrderLanguageTranslations.iHaveRead[language]}{" "}
-                </Typography>
-                {termsOfMembershipUrl &&
-                    <Link
-                        href={termsOfMembershipUrl as string}
-                        target="_blank"
-                        rel="noopener noreferrer"
+            {termsOfMembershipUrl && (
+                <Stack direction="row" alignItems={"center"}>
+                    <Checkbox
+                        checked={termsAccepted.termsOfMembership}
+                        onChange={(e) =>
+                            setTermsAccepted({
+                                ...termsAccepted,
+                                termsOfMembership: e.target.checked,
+                            })
+                        }
+                        required
+                    />
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            display: "inline",
+                            wordBreak: "keep-all",
+                            hyphens: "none",
+                            marginRight: 1,
+                        }}
                     >
-                        {LanguageTranslations.termsOfMembership[language]}
-                    </Link>}
-            </Stack>}
+                        {OrderLanguageTranslations.iHaveRead[language]}{" "}
+                    </Typography>
+                    {termsOfMembershipUrl && (
+                        <Link
+                            href={termsOfMembershipUrl as string}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {LanguageTranslations.termsOfMembership[language]}
+                        </Link>
+                    )}
+                </Stack>
+            )}
 
             <Stack direction="row" alignItems={"center"}>
                 <Checkbox
@@ -90,14 +92,15 @@ const ApplyPage = () => {
                 >
                     {OrderLanguageTranslations.iHaveRead[language]}{" "}
                 </Typography>
-                {privacyPolicyUrl &&
+                {privacyPolicyUrl && (
                     <Link
                         href={privacyPolicyUrl as string}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         {OrderLanguageTranslations.privacyPolicy[language]}
-                    </Link>}
+                    </Link>
+                )}
             </Stack>
 
             <Form
@@ -119,9 +122,9 @@ const ApplyPage = () => {
                 customInfoTexts={
                     shouldIncludeApplicationPrompt
                         ? {
-                            [GlobalConstants.MEMBER_APPLICATION_PROMPT as string]:
-                                organizationSettings.member_application_prompt as string,
-                        }
+                              [GlobalConstants.MEMBER_APPLICATION_PROMPT as string]:
+                                  organizationSettings.member_application_prompt as string,
+                          }
                         : {}
                 }
                 readOnly={!(termsAccepted.termsOfMembership && termsAccepted.privacyPolicy)}

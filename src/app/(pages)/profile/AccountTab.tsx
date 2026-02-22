@@ -54,8 +54,7 @@ const AccountTab = () => {
             </Button>
         );
         if (isMembershipExpired(user)) return ActivateMembershipButton;
-        return ActivateMembershipButton
-
+        return ActivateMembershipButton;
     };
 
     return (
@@ -70,11 +69,13 @@ const AccountTab = () => {
                 defaultValues={user}
             ></Form>
 
-            <ConfirmButton buttonProps={{
-                color: "error",
-                disabled: isPending
-            }}
-                onClick={deleteMyAccount}>
+            <ConfirmButton
+                buttonProps={{
+                    color: "error",
+                    disabled: isPending,
+                }}
+                onClick={deleteMyAccount}
+            >
                 {LanguageTranslations.deleteAccount[language]}
             </ConfirmButton>
         </Stack>

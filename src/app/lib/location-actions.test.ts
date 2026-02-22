@@ -55,10 +55,7 @@ describe("location-actions", () => {
             expect(mockContext.prisma.location.create).toHaveBeenCalledWith({
                 data: sanitized,
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.LOCATION,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.LOCATION, "max");
             expect(result).toEqual(created);
         });
 
@@ -93,14 +90,8 @@ describe("location-actions", () => {
                 where: { id: locationId },
                 data: sanitized,
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.LOCATION,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.LOCATION, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
         });
 
         it("rejects invalid input", async () => {
@@ -119,14 +110,8 @@ describe("location-actions", () => {
             expect(mockContext.prisma.location.delete).toHaveBeenCalledWith({
                 where: { id: locationId },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.LOCATION,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.LOCATION, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
         });
 
         it("rejects invalid location id", async () => {

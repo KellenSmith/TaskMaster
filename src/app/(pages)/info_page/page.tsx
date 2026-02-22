@@ -35,7 +35,6 @@ const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
             <InfoDashboard textContentPromise={textContentPromise} id={infoPage.content.id} />
         </ErrorBoundarySuspense>
     );
-
 };
 
 export default InfoPage;

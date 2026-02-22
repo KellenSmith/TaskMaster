@@ -48,8 +48,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         if (!user) throw new Error("You must be logged in to create an event");
 
         if (
-            !selectedLocation || selectedLocation.capacity <
-            parseInt(formData.get(GlobalConstants.MAX_PARTICIPANTS) as string)
+            !selectedLocation ||
+            selectedLocation.capacity <
+                parseInt(formData.get(GlobalConstants.MAX_PARTICIPANTS) as string)
         )
             throw new Error(
                 LanguageTranslations.locationCapacityExceeded[language](selectedLocation.capacity),

@@ -9,7 +9,6 @@ import { prisma } from "../../../prisma/prisma-client";
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
 
-
     const eventFilterParams = {} as Prisma.EventWhereInput;
 
     // Non-admins can only see their own event drafts and pending approval events or published events
@@ -25,7 +24,7 @@ const CalendarPage = async () => {
     const eventsPromise = prisma.event.findMany({
         where: eventFilterParams,
     });
-    const locationsPromise = prisma.location.findMany()
+    const locationsPromise = prisma.location.findMany();
 
     return (
         <ErrorBoundarySuspense>

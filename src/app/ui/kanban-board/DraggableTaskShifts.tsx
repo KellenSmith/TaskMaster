@@ -80,7 +80,10 @@ const DraggableTaskShifts = ({
         return (
             <Button
                 fullWidth
-                onClick={() => openCreateTaskDialog && openCreateTaskDialog(getDefaultValuesForTaskShift(taskList[0]))}
+                onClick={() =>
+                    openCreateTaskDialog &&
+                    openCreateTaskDialog(getDefaultValuesForTaskShift(taskList[0]))
+                }
             >
                 {LanguageTranslations.addShift[language]}
             </Button>
@@ -106,11 +109,11 @@ const DraggableTaskShifts = ({
         const earliestStartTime = getEarliestStartTime(taskList);
         const latestEndTime = getLatestEndTime();
         return (
-            (earliestStartTime ? formatDate(earliestStartTime) : "Unknown")
-            + " - "
-            + (latestEndTime ? formatDate(latestEndTime) : "Unknown")
+            (earliestStartTime ? formatDate(earliestStartTime) : "Unknown") +
+            " - " +
+            (latestEndTime ? formatDate(latestEndTime) : "Unknown")
         );
-    }
+    };
     return (
         <Card key={taskList[0].id} sx={{ width: "100%" }}>
             <Stack

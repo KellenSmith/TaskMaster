@@ -38,14 +38,11 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
     const { language, user } = useUserContext();
     const event = eventPromise ? use(eventPromise) : undefined;
 
-    const isReadOnly = useMemo(
-        () => {
-            if (user && task.assignee_id === user.id) return false;
-            if (user && task.reviewer_id === user.id) return false;
-            return readOnly;
-        },
-        [readOnly, task, user],
-    );
+    const isReadOnly = useMemo(() => {
+        if (user && task.assignee_id === user.id) return false;
+        if (user && task.reviewer_id === user.id) return false;
+        return readOnly;
+    }, [readOnly, task, user]);
 
     // TODO: Make randos unable to drag and drop unless assigned or reviewer
 
@@ -84,7 +81,9 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
                             gap={2}
                             sx={{ mt: 0.5 }}
                         >
-                            <Typography variant="body2">{task.start_time ? formatDate(task.start_time) : ""}</Typography>
+                            <Typography variant="body2">
+                                {task.start_time ? formatDate(task.start_time) : ""}
+                            </Typography>
                             <Typography variant="body2">-</Typography>
                             <Typography variant="body2">{formatDate(task.end_time)}</Typography>
                         </Stack>

@@ -4,7 +4,6 @@ import { createContext, FC, ReactNode, useCallback, useContext, useEffect, useSt
 import { Portal, Stack, Alert } from "@mui/material";
 import type { AlertColor } from "@mui/material/Alert";
 
-
 interface NotificationContextValue {
     // eslint-disable-next-line no-unused-vars
     addNotification: (msg: string, severity: AlertColor) => void;
@@ -55,7 +54,9 @@ const NotificationToast: FC<NotificationToastProps> = ({
 };
 
 const NotificationContextProvider: FC<NotificationContextProviderProps> = ({ children }) => {
-    const [notifications, setNotifications] = useState<{ id: number; msg: string; severity: AlertColor }[]>([]);
+    const [notifications, setNotifications] = useState<
+        { id: number; msg: string; severity: AlertColor }[]
+    >([]);
 
     const addNotification = useCallback(
         (msg: string, severity: AlertColor) => {

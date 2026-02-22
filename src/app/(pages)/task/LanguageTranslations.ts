@@ -32,7 +32,7 @@ const LanguageTranslations = {
     messageSendError: {
         [Language.english]: "Could not send message. Please try again later.",
         [Language.swedish]: "Kunde inte skicka meddelandet. Försök igen senare.",
-    }
+    },
 };
 
 export default LanguageTranslations;

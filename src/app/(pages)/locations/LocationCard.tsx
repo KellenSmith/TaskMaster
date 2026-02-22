@@ -38,7 +38,9 @@ const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
                                     defaultValue={location.description}
                                 />
                             ) : (
-                                <Typography>{location[fieldId as keyof Prisma.LocationGetPayload<{}>]}</Typography>
+                                <Typography>
+                                    {location[fieldId as keyof Prisma.LocationGetPayload<{}>]}
+                                </Typography>
                             )}
                         </Stack>
                     ))}

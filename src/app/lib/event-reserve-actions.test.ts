@@ -52,10 +52,7 @@ describe("event-reserve-actions", () => {
                 GlobalConstants.RESERVE_USERS,
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
         });
 
         it("throws error when user is already a participant", async () => {
@@ -122,9 +119,9 @@ describe("event-reserve-actions", () => {
                 user_id: userId,
             } as any);
 
-            await expect(
-                eventReserveActions.addEventReserve(userId, eventId),
-            ).rejects.toThrow("User is already a participant in the event");
+            await expect(eventReserveActions.addEventReserve(userId, eventId)).rejects.toThrow(
+                "User is already a participant in the event",
+            );
         });
     });
 
@@ -144,10 +141,7 @@ describe("event-reserve-actions", () => {
                 GlobalConstants.RESERVE_USERS,
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
         });
 
         it("uses deleteMany to avoid errors when reserve does not exist", async () => {
@@ -182,10 +176,7 @@ describe("event-reserve-actions", () => {
                 GlobalConstants.RESERVE_USERS,
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.EVENT,
-                "max",
-            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
         });
     });
 

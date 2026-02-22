@@ -309,7 +309,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                             fullWidth: true,
                                             color: "error",
                                             variant: "outlined",
-                                            size: "small"
+                                            size: "small",
                                         }}
                                         onClick={deleteTaskAction}
                                     >

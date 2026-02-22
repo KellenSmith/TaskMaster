@@ -11,25 +11,32 @@ interface VolunteerLeaderboardProps {
 const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchParams }) => {
     const year = (await searchParams)?.year || new Date().getFullYear().toString();
 
-    const volunteerTasksForYear: Prisma.TaskGetPayload<{ include: { assignee: true } }>[] = await prisma.task.findMany({
-        where: {
-            start_time: {
-                gte: new Date(`${year}-01-01`),
-                lt: new Date(`${parseInt(year) + 1}-01-01`),
+    const volunteerTasksForYear: Prisma.TaskGetPayload<{ include: { assignee: true } }>[] =
+        await prisma.task.findMany({
+            where: {
+                start_time: {
+                    gte: new Date(`${year}-01-01`),
+                    lt: new Date(`${parseInt(year) + 1}-01-01`),
+                },
+                NOT: {
+                    assignee: null,
+                },
             },
-            NOT: {
-                assignee: null,
-            }
-        },
-        include: {
-            assignee: true,
-        }
-    })
-    const uniqueVolunteerNicknames = Array.from(new Set(volunteerTasksForYear.map(task => task.assignee?.nickname))).filter(Boolean) as string[];
-    const assigneeVolunteerHours = uniqueVolunteerNicknames.map(assigneeNickname => {
-        const tasksForAssignee = volunteerTasksForYear.filter(task => task.assignee && task.assignee.nickname === assigneeNickname);
+            include: {
+                assignee: true,
+            },
+        });
+    const uniqueVolunteerNicknames = Array.from(
+        new Set(volunteerTasksForYear.map((task) => task.assignee?.nickname)),
+    ).filter(Boolean) as string[];
+    const assigneeVolunteerHours = uniqueVolunteerNicknames.map((assigneeNickname) => {
+        const tasksForAssignee = volunteerTasksForYear.filter(
+            (task) => task.assignee && task.assignee.nickname === assigneeNickname,
+        );
         const totalHours = tasksForAssignee.reduce((sum, task) => {
-            const hours = task.start_time ? (task.end_time.getTime() - task.start_time.getTime()) / (1000 * 60 * 60) : 0;
+            const hours = task.start_time
+                ? (task.end_time.getTime() - task.start_time.getTime()) / (1000 * 60 * 60)
+                : 0;
             return sum + hours;
         }, 0);
         return {
@@ -40,7 +47,10 @@ const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchP
 
     return (
         <ErrorBoundarySuspense>
-            <VolunteerLeaderboardClient assigneeVolunteerHours={assigneeVolunteerHours} year={year} />
+            <VolunteerLeaderboardClient
+                assigneeVolunteerHours={assigneeVolunteerHours}
+                year={year}
+            />
         </ErrorBoundarySuspense>
     );
 };

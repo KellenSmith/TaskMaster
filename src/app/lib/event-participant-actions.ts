@@ -37,8 +37,7 @@ export const addEventParticipantWithTx = async (
         },
     });
     const participantIds = event.tickets.flatMap((t) => t.event_participants.map((p) => p.user_id));
-    if (participantIds.includes(userId))
-        throw new Error("Member is already a participant");
+    if (participantIds.includes(userId)) throw new Error("Member is already a participant");
     if (participantIds.length >= event.max_participants) {
         throw new Error("Event is already sold out");
     }
@@ -112,7 +111,6 @@ export const deleteEventParticipantWithTx = async (
         where: {
             user_id: userId,
             ticket_id: ticket.product_id,
-
         },
     });
     // Increment the product stock of all tickets with limited stock belonging to the same event
@@ -187,9 +185,11 @@ export const unassignUserFromEventTasks = async (
     });
 };
 
-export const checkInEventParticipant = async (eventParticipantId: string): Promise<void | string> => {
+export const checkInEventParticipant = async (
+    eventParticipantId: string,
+): Promise<void | string> => {
     const validatedEventParticipantId = UuidSchema.parse(eventParticipantId);
-    const language = await getUserLanguage()
+    const language = await getUserLanguage();
     try {
         const eventParticipant = await prisma.eventParticipant.findUniqueOrThrow({
             where: {
@@ -199,23 +199,31 @@ export const checkInEventParticipant = async (eventParticipantId: string): Promi
                 ticket: {
                     include: {
                         event: true,
-                    }
-                }
-            }
-        })
+                    },
+                },
+            },
+        });
         if (eventParticipant.checked_in_at) {
             // Consider already checked in if checked_in_at is set and is before now minus 10 seconds (to account for small delays)
-            if (dayjs.utc(eventParticipant.checked_in_at).isBefore(dayjs.utc().subtract(10, "seconds")))
-                return LanguageTranslations.alreadyCheckedIn[language] + " " + formatDate(eventParticipant.checked_in_at);
-            return
+            if (
+                dayjs
+                    .utc(eventParticipant.checked_in_at)
+                    .isBefore(dayjs.utc().subtract(10, "seconds"))
+            )
+                return (
+                    LanguageTranslations.alreadyCheckedIn[language] +
+                    " " +
+                    formatDate(eventParticipant.checked_in_at)
+                );
+            return;
         }
 
         // Dont check in if not within one hour of event opening hours
-        const now = dayjs()
+        const now = dayjs();
         const eventStart = dayjs(eventParticipant.ticket.event.start_time);
         const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
         if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {
-            return
+            return;
         }
 
         await prisma.eventParticipant.update({
@@ -227,10 +235,12 @@ export const checkInEventParticipant = async (eventParticipantId: string): Promi
             },
         });
     } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === prismaErrorCodes.resultNotFound) {
+        if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === prismaErrorCodes.resultNotFound
+        ) {
             return LanguageTranslations.eventParticipantNotFound[language];
         }
         console.error("Unknown Prisma error during check-in:", error);
-
     }
-}
+};

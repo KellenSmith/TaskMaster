@@ -4,9 +4,8 @@ import { getAbsoluteUrl } from "../../../lib/utils";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ event_participant_id: string }> }
+    { params }: { params: Promise<{ event_participant_id: string }> },
 ) {
-
     try {
         const { event_participant_id } = await params;
         // Decode the QR code parameter (in case it's URL encoded)

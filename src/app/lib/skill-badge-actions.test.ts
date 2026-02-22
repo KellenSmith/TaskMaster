@@ -141,9 +141,7 @@ describe("skill-badge-actions", () => {
                 image_url: "https://blob.vercel-storage.com/old.png",
             } as any);
 
-            await skillBadgeActions.deleteSkillBadge(
-                "550e8400-e29b-41d4-a716-446655440000",
-            );
+            await skillBadgeActions.deleteSkillBadge("550e8400-e29b-41d4-a716-446655440000");
 
             expect(mockContext.prisma.skillBadge.delete).toHaveBeenCalledWith({
                 where: { id: "550e8400-e29b-41d4-a716-446655440000" },
@@ -163,9 +161,7 @@ describe("skill-badge-actions", () => {
                 image_url: null,
             } as any);
 
-            await skillBadgeActions.deleteSkillBadge(
-                "550e8400-e29b-41d4-a716-446655440000",
-            );
+            await skillBadgeActions.deleteSkillBadge("550e8400-e29b-41d4-a716-446655440000");
 
             expect(vi.mocked(deleteOldBlob)).not.toHaveBeenCalled();
         });

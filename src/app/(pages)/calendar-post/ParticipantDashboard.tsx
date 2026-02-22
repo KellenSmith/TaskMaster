@@ -209,20 +209,22 @@ const ParticipantDashboard = ({
                 open={!!addDialogOpen}
                 onClose={() => setAddDialogOpen(null)}
             >
-                {!!addDialogOpen && <Form
-                    name={addDialogOpen}
-                    action={
-                        addDialogOpen === GlobalConstants.PARTICIPANT_USERS
-                            ? addEventParticipantAction
-                            : addEventReserveAction
-                    }
-                    customOptions={{
-                        [GlobalConstants.USER_ID]: getUserSelectOptions(activeMembers),
-                        [GlobalConstants.TICKET_ID]: getTicketsOptions(),
-                    }}
-                    editable={true}
-                    readOnly={false}
-                />}
+                {!!addDialogOpen && (
+                    <Form
+                        name={addDialogOpen}
+                        action={
+                            addDialogOpen === GlobalConstants.PARTICIPANT_USERS
+                                ? addEventParticipantAction
+                                : addEventReserveAction
+                        }
+                        customOptions={{
+                            [GlobalConstants.USER_ID]: getUserSelectOptions(activeMembers),
+                            [GlobalConstants.TICKET_ID]: getTicketsOptions(),
+                        }}
+                        editable={true}
+                        readOnly={false}
+                    />
+                )}
                 <Button onClick={() => setAddDialogOpen(null)}>
                     {GlobalLanguageTranslations.cancel[language]}
                 </Button>

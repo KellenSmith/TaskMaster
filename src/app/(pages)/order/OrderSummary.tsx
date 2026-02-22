@@ -129,7 +129,11 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                 <TableRow>
                                     <TableCell colSpan={4}>
                                         <Typography variant="subtitle1">
-                                            {ProductLanguageTranslations.total_vat_amount[language] as string}
+                                            {
+                                                ProductLanguageTranslations.total_vat_amount[
+                                                    language
+                                                ] as string
+                                            }
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="right">

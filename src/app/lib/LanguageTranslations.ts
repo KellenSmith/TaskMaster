@@ -9,6 +9,6 @@ const LanguageTranslations = {
         [Language.english]: "Already checked in at",
         [Language.swedish]: "Redan checkat in vid",
     },
-}
+};
 
 export default LanguageTranslations;
