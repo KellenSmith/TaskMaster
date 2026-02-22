@@ -11,6 +11,7 @@ import { sendMail } from "./mail-service/mail-service";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
 import { buildFormData } from "../../test/test-helpers";
+import { prisma } from "../../prisma/prisma-client";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -366,13 +367,22 @@ describe("user-actions", () => {
 
     describe("login", () => {
         it("signs in existing members", async () => {
-            mockContext.prisma.user.findUniqueOrThrow.mockResolvedValue({ id: "user-1" } as any);
+            vi.mocked(prisma.user.findUniqueOrThrow).mockResolvedValue({
+                id: "user-1",
+                email: "member@example.com",
+                user_membership: {
+                    id: "membership-1",
+                    user_id: "user-1",
+                    membership_id: "membership-basic",
+                },
+            } as any);
             const formData = buildFormData({ email: "member@example.com" });
 
             await userActions.login(formData);
 
-            expect(mockContext.prisma.user.findUniqueOrThrow).toHaveBeenCalledWith({
+            expect(prisma.user.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { email: "member@example.com" },
+                include: { user_membership: true },
             });
             expect(vi.mocked(signIn)).toHaveBeenCalledWith("email", {
                 email: "member@example.com",
@@ -386,7 +396,7 @@ describe("user-actions", () => {
             const formData = buildFormData({ email: "not-an-email" });
 
             await expect(userActions.login(formData)).rejects.toThrow();
-            expect(mockContext.prisma.user.findUniqueOrThrow).not.toHaveBeenCalled();
+            expect(prisma.user.findUniqueOrThrow).not.toHaveBeenCalled();
         });
     });
 

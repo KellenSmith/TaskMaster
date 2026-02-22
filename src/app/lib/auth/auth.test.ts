@@ -3,6 +3,7 @@ import type { Session, User } from "next-auth";
 import type { JWT } from "@auth/core/jwt";
 import dayjs from "dayjs";
 import { UserRole, UserStatus } from "../../../prisma/generated/enums";
+import { prisma } from "../../../prisma/prisma-client";
 
 type NextAuthOptions = {
     session: { strategy: string };
@@ -111,9 +112,6 @@ describe("auth.ts", () => {
 
     it("jwt callback adds user fields to the token", async () => {
         process.env.EMAIL = "test@example.com";
-        const options = await loadAuthModule();
-
-        const token: JWT = {} as JWT;
         const user: User = {
             id: "user-1",
             status: UserStatus.validated,
@@ -127,6 +125,11 @@ describe("auth.ts", () => {
                 payeeRef: null,
             },
         } as User;
+
+        vi.mocked(prisma.user.findUnique).mockResolvedValue(user as any);
+        const options = await loadAuthModule();
+
+        const token: JWT = {} as JWT;
 
         const result = await options.callbacks.jwt({ token, user });
 

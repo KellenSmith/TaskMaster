@@ -130,22 +130,6 @@ const LanguageTranslations = {
         [Language.english]: "After",
         [Language.swedish]: "Efter",
     },
-    qrImageAlt: {
-        [Language.english]: "QR code for ticket",
-        [Language.swedish]: "QR-kod för biljett",
-    },
-    welcomeBack: {
-        [Language.english]: "Welcome back",
-        [Language.swedish]: "Välkommen tillbaka",
-    },
-    upcomingEventTickets: {
-        [Language.english]: "Tickets for upcoming events",
-        [Language.swedish]: "Biljetter för kommande evenemang",
-    },
-    checkCalendarForEvents: {
-        [Language.english]: "Check the calendar for upcoming events",
-        [Language.swedish]: "Kolla kalendern för kommande evenemang",
-    },
 };
 
 export default LanguageTranslations;
