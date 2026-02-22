@@ -15,10 +15,8 @@ vi.mock("./ui/TextContent", () => ({
     default: ({ id }: any) => <div data-testid="text-content">{id}</div>,
 }));
 
-const mockUser = { nickname: "TestUser" };
-
 describe("HomeDashboard", () => {
-    it("renders LoggedOutHomeDashboard for logged out user", async () => {
+    it("renders home dashboard for logged out user", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
             customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
