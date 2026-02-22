@@ -43,12 +43,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async jwt({ token, user }) {
             // If user object is available (first time after sign in), add the user id to the token
             if (user) {
-                if (user.id) {
-                    token.id = user.id;
-                }
+                if (user.id) token.id = user.id;
+
                 token.status = user.status;
                 token.role = user.role;
-                token.user_membership = user.user_membership;
+                // Always fetch user_membership from Prisma at sign-in
+                const dbUser = await prisma.user.findUnique({
+                    where: { id: user.id },
+                    select: { user_membership: true },
+                });
+                token.user_membership = dbUser?.user_membership ?? null;
             }
             return token;
         },
