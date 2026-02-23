@@ -1,7 +1,8 @@
-import { screen, act } from "@testing-library/react";
+import { screen, act, render } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 import Dashboard from "./Dashboard";
-import { customRender } from "../../../test/test-utils";
+import { useUserContext } from "../../context/UserContext";
+import { Language } from "../../../prisma/generated/enums";
 
 // Mocks
 vi.mock("../../lib/utils", () => ({
@@ -34,12 +35,9 @@ const ticketInfoPromise = Promise.resolve([
 
 describe("Dashboard", () => {
     it("renders welcome and ticket cards for user with tickets", async () => {
-        await act(async () =>
-            customRender(<Dashboard ticketInfoPromise={ticketInfoPromise} />, {
-                user: mockUser,
-                language: "english",
-            } as any),
-        );
+        vi.mocked(useUserContext).mockReturnValue({ user: mockUser, language: "english" } as any);
+
+        await act(async () => render(<Dashboard ticketInfoPromise={ticketInfoPromise} />));
         // Welcome message
         expect(screen.getByText(/Welcome back, TestUser!/i)).toBeInTheDocument();
         // Tickets section title
@@ -55,12 +53,9 @@ describe("Dashboard", () => {
     });
 
     it("renders empty state link when no tickets", async () => {
-        await act(async () =>
-            customRender(<Dashboard ticketInfoPromise={Promise.resolve([])} />, {
-                user: mockUser,
-                language: "english",
-            } as any),
-        );
+        vi.mocked(useUserContext).mockReturnValue({ user: mockUser, language: "english" } as any);
+
+        await act(async () => render(<Dashboard ticketInfoPromise={Promise.resolve([])} />));
         // Empty state message
         expect(
             screen.getByText(/You have no tickets. Check the calendar for upcoming events./i),
@@ -70,12 +65,13 @@ describe("Dashboard", () => {
     });
 
     it("renders swedish translations", async () => {
-        await act(async () =>
-            customRender(<Dashboard ticketInfoPromise={ticketInfoPromise} />, {
-                user: mockUser,
-                language: "swedish",
-            } as any),
-        );
+        vi.mocked(useUserContext).mockReturnValue({
+            user: mockUser,
+            language: Language.swedish,
+        } as any);
+
+        await act(async () => render(<Dashboard ticketInfoPromise={ticketInfoPromise} />));
+
         expect(screen.getByText(/Välkommen tillbaka, TestUser!/i)).toBeInTheDocument();
         expect(screen.getByText(/Biljetter för kommande evenemang/i)).toBeInTheDocument();
         expect(screen.getByAltText(/QR-kod för biljett ep-1/i)).toBeInTheDocument();
