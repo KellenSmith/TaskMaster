@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-actions";
 import Dashboard from "./Dashboard";
