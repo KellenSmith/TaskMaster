@@ -42,6 +42,12 @@ export const routeTreeConfig: RouteConfigType[] = [
         membershipRequired: true,
     },
     {
+        name: GlobalConstants.TICKET,
+        status: UserStatus.validated,
+        role: UserRole.member,
+        membershipRequired: true,
+    },
+    {
         name: GlobalConstants.CALENDAR_POST,
         status: UserStatus.validated,
         role: UserRole.member,

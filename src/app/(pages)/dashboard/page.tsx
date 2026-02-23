@@ -16,7 +16,7 @@ const DashboardPage = async () => {
             ticket: {
                 event: {
                     end_time: {
-                        lt: dayjs.utc().add(1, "day").toDate(), // Only get tickets for events that haven't ended yet
+                        gt: new Date(), // Only get tickets for events that haven't ended yet
                     },
                 },
             },

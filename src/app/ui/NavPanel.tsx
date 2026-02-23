@@ -97,6 +97,7 @@ const NavPanel = () => {
         GlobalConstants.TASK,
         GlobalConstants.APPLY,
         GlobalConstants.CALENDAR_POST,
+        GlobalConstants.TICKET,
     ];
     !user && hiddenRoutes.push(GlobalConstants.HOME);
 
