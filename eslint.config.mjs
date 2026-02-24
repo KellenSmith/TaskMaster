@@ -3,6 +3,7 @@ import tsPlugin from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import nextPlugin from "@next/eslint-plugin-next";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
+import vitest from "@vitest/eslint-plugin";
 
 export default [
     {
@@ -13,7 +14,7 @@ export default [
             "build/**",
             "next-env.d.ts",
             "dist/**",
-            "prisma/generated/**",
+            "src/prisma/generated/**",
         ],
     },
     {

@@ -6,7 +6,6 @@ import { buildFormData } from "../../test/test-helpers";
 import * as productActions from "./product-actions";
 import { sanitizeFormData } from "./html-sanitizer";
 import { deleteOldBlob } from "./organization-settings-actions";
-import { Prisma } from "../../prisma/generated/client";
 
 vi.mock("./html-sanitizer", () => ({
     sanitizeFormData: vi.fn(),
