@@ -5,6 +5,7 @@ import { sendMail } from "../mail-service/mail-service";
 import "./auth-types";
 import { createElement } from "react";
 import SignInEmailTemplate from "../mail-service/mail-templates/SignInEmailTemplate";
+import { UserRole, UserStatus } from "../../../prisma/generated/enums";
 
 const EMAIL_FROM = process.env.EMAIL;
 if (!EMAIL_FROM) {
@@ -43,7 +44,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async jwt({ token, user }) {
             // If user object is available (first time after sign in), add the user id to the token
             if (user) {
-                if (user.id) token.id = user.id;
+                if (user.id) {
+                    token.id = user.id;
+                }
 
                 token.status = user.status;
                 token.role = user.role;
@@ -58,17 +61,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
         async session({ session, token }) {
             // Add the user id from the token to the session
+
             if (token.id) {
                 session.user.id = token.id as string;
-            }
-            if (token.status) {
-                session.user.status = token.status;
-            }
-            if (token.role) {
-                session.user.role = token.role;
-            }
-            if (token.user_membership) {
-                session.user.user_membership = token.user_membership;
+                // Always fetch user_membership from Prisma at sign-in
+                const dbUser = await prisma.user.findUnique({
+                    where: { id: token.id },
+                    select: { user_membership: true },
+                });
+                session.user.status = token.status as UserStatus;
+                session.user.role = token.role as UserRole;
+                session.user.user_membership = dbUser?.user_membership ?? null;
             }
             return session;
         },
