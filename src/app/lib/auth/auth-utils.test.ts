@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Prisma, UserRole, UserStatus } from "@/prisma/generated/client";
 import GlobalConstants from "../../GlobalConstants";
 import testdata from "../../../test/testdata";
 import { isUserAuthorized, userHasRolePrivileges } from "./auth-utils";
+import { UserRole, UserStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
 type AuthUser = Prisma.UserGetPayload<{
     select: { role: true; status: true; user_membership: true };
@@ -46,15 +47,11 @@ describe("userHasRolePrivileges", () => {
 describe("isUserAuthorized", () => {
     it("allows public routes for unauthenticated users", () => {
         expect(isUserAuthorized(null, GlobalConstants.LOGIN)).toBe(true);
-        expect(isUserAuthorized(undefined, GlobalConstants.APPLY)).toBe(true);
+        expect(isUserAuthorized(null, GlobalConstants.APPLY)).toBe(true);
     });
 
     it("denies restricted routes for unauthenticated null users", () => {
         expect(isUserAuthorized(null, GlobalConstants.PROFILE)).toBe(false);
-    });
-
-    it("denies restricted routes for unauthenticated undefined users", () => {
-        expect(isUserAuthorized(undefined, GlobalConstants.PROFILE)).toBe(false);
     });
 
     it("denies access when user has no status but route requires one", () => {

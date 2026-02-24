@@ -6,7 +6,7 @@ import { useUserContext } from "../../context/UserContext";
 import { formatDate } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
-import { UserStatus } from "@/prisma/generated/browser";
+import { UserStatus } from "../../../prisma/generated/enums";
 
 const MembershipStatusCard = () => {
     const theme = useTheme();

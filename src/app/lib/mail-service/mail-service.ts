@@ -4,7 +4,6 @@ import { getMailTransport } from "./mail-transport";
 import { createElement, ReactElement } from "react";
 import { render } from "@react-email/components";
 import { prisma } from "../../../prisma/prisma-client";
-import { Prisma } from "@/prisma/generated/client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { EmailSendoutSchema } from "../zod-schemas";
@@ -14,6 +13,7 @@ import { createNewsletterJob } from "./newsletter-helpers";
 import z from "zod";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { MailResult } from "../../ui/utils";
+import { Prisma } from "../../../prisma/generated/client";
 
 /**
  * Checks if an error indicates rate limiting from the email provider

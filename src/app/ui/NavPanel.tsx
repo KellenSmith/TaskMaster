@@ -46,8 +46,8 @@ import {
     getTermsOfMembershipUrl,
     getTermsOfPurchaseUrl,
 } from "./utils";
-import { Prisma } from "@/prisma/generated/browser";
 import ConfirmButton from "./ConfirmButton";
+import { Prisma } from "../../prisma/generated/browser";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -91,13 +91,15 @@ const NavPanel = () => {
     };
 
     const hiddenRoutes = [
-        GlobalConstants.HOME,
         GlobalConstants.LOGIN,
+        GlobalConstants.DASHBOARD,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
         GlobalConstants.APPLY,
-        GlobalConstants.EVENT,
+        GlobalConstants.CALENDAR_POST,
+        GlobalConstants.TICKET,
     ];
+    !user && hiddenRoutes.push(GlobalConstants.HOME);
 
     const createInfoPageAction = async (formData: FormData) => {
         try {
@@ -230,7 +232,11 @@ const NavPanel = () => {
                             height={40}
                             width={200}
                             style={{ cursor: "pointer" }}
-                            onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
+                            onClick={() =>
+                                clientRedirect(router, [
+                                    user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
+                                ])
+                            }
                         />
                     </Box>
                     <LanguageMenu />

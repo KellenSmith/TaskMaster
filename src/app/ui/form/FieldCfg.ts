@@ -1,4 +1,3 @@
-import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@/prisma/generated/browser";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import {
@@ -16,6 +15,8 @@ import {
     userFieldLabels,
 } from "./LanguageTranslations";
 import { CustomOptionProps } from "./AutocompleteWrapper";
+import { Language, TaskStatus, TicketType, UserRole } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 export const FieldLabels = {
     [GlobalConstants.ID]: {

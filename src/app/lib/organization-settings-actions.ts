@@ -4,8 +4,8 @@ import { prisma } from "../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
-import { Prisma } from "@/prisma/generated/client";
 import { del } from "@vercel/blob";
+import { Prisma } from "../../prisma/generated/client";
 
 export const getOrganizationSettings = async (): Promise<
     Prisma.OrganizationSettingsGetPayload<true>

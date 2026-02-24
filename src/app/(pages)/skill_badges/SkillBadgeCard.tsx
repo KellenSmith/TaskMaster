@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { SkillBadge } from "@/prisma/generated/browser";
 import Image from "next/image";
 import {
     Card,
@@ -18,9 +17,10 @@ import {
 import RichTextField from "../../ui/form/RichTextField";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface SkillBadgeProps {
-    badge: SkillBadge;
+    badge: Prisma.SkillBadgeGetPayload<true>;
     onClick?: () => void;
     greyedOut?: boolean;
 }

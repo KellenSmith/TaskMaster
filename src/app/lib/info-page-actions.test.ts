@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { Language, UserRole } from "@/prisma/generated/client";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import { buildFormData } from "../../test/test-helpers";
@@ -9,6 +8,7 @@ import * as infoPageActions from "./info-page-actions";
 import { getLoggedInUser } from "./user-actions";
 import { serverRedirect } from "./utils";
 import { createTextContent } from "./text-content-actions";
+import { Language, UserRole } from "../../prisma/generated/enums";
 
 vi.mock("./user-actions", () => ({
     getLoggedInUser: vi.fn(),

@@ -1,13 +1,12 @@
 "use client";
-import { Box, Chip, Paper, Stack, Typography, useTheme } from "@mui/material";
-import { Prisma } from "../../../prisma/generated/browser";
+import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
 import { use, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
-import { useNotificationContext } from "../../context/NotificationContext";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface TicketDashboardProps {
     eventParticipantPromise: Promise<Prisma.EventParticipantGetPayload<{
@@ -42,7 +41,7 @@ const NoTicketFound = () => {
                     </Stack>
 
                     <Typography variant="body1">
-                        {LanguageTranslations.ticketNorFoundDetails[language]}{" "}
+                        {LanguageTranslations.ticketNotFoundDetails[language]}
                     </Typography>
                 </Stack>
             </Paper>
@@ -52,39 +51,19 @@ const NoTicketFound = () => {
 
 const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
     const eventParticipant = use(eventParticipantPromise);
-
-    if (!eventParticipant) return <NoTicketFound />;
-
     const { language } = useUserContext();
-    const { addNotification } = useNotificationContext();
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    const checkInEventParticipantAction = async () => {
-        try {
-            // Dont check in if not within one hour of event opening hours
-            const now = dayjs();
-            const eventStart = dayjs(eventParticipant.ticket.event.start_time);
-            const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
-            if (
-                now.isBefore(eventStart.subtract(1, "hour")) ||
-                now.isAfter(eventEnd.add(1, "hour"))
-            ) {
-                return;
-            }
+    // State for check-in result and status
+    const [statusColor, setStatusColor] = useState<"success" | "warning" | "error">("warning");
+    const [statusText, setStatusText] = useState<string>("");
+    const [title, setTitle] = useState<string>("");
 
-            const result = await checkInEventParticipant(eventParticipant.id);
-            if (result) addNotification(result, "error");
-        } catch (error) {
-            addNotification(LanguageTranslations.checkInFailed[language], "error");
-        }
-    };
-
-    useEffect(() => {
-        checkInEventParticipantAction();
-    }, []);
+    if (!eventParticipant) {
+        return <NoTicketFound />;
+    }
 
     const ticket = eventParticipant.ticket;
-    const event = eventParticipant.ticket.event;
+    const event = eventParticipant.ticket?.event;
     const user = eventParticipant.user;
 
     const eventTitle = event?.title ?? null;
@@ -97,38 +76,67 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
         eventTitle && eventStart && eventEnd && ticketType && userNickname,
     );
 
+    const now = dayjs.utc();
     const startWindow = eventStart ? dayjs.utc(eventStart).subtract(1, "hour") : null;
     const endWindow = eventEnd ? dayjs.utc(eventEnd).add(1, "hour") : null;
-    const now = dayjs.utc();
-
     const isWithinWindow = Boolean(
         startWindow && endWindow && now.isAfter(startWindow) && now.isBefore(endWindow),
     );
-    // Consider already checked in if checked_in_at is set and is before now minus 10 seconds (to account for small delays)
     const alreadyCheckedIn =
         !!eventParticipant.checked_in_at &&
         dayjs.utc(eventParticipant.checked_in_at).isBefore(now.subtract(10, "seconds"));
-    let statusColor: "success" | "warning" | "error";
-    let statusText: string;
-    let title: string;
-    console.log(errorMsg);
-    if (errorMsg) {
-        statusColor = "error";
-        statusText = errorMsg;
-        title = "Error";
-    } else if (!hasAllProperties) {
-        statusColor = "error";
-        statusText = LanguageTranslations.missingData[language];
-        title = "Error";
-    } else if (!isWithinWindow) {
-        statusColor = "warning";
-        statusText = LanguageTranslations.eventNotOngoing[language];
-        title = "Not ongoing";
-    } else {
-        statusColor = "success";
-        statusText = LanguageTranslations.valid[language];
-        title = "Valid";
-    }
+
+    useEffect(() => {
+        // If missing props, show as invalid (red)
+        if (!hasAllProperties) {
+            setStatusColor("error");
+            setStatusText(LanguageTranslations.missingData[language]);
+            setTitle("Error");
+            return;
+        }
+
+        // If outside window, show as valid but not checked in (yellow)
+        if (!isWithinWindow) {
+            setStatusColor("warning");
+            setStatusText(LanguageTranslations.eventNotOngoing[language]);
+            setTitle("Valid");
+            return;
+        }
+
+        // If already checked in (more than 10s ago), show as checked in (red)
+        if (alreadyCheckedIn) {
+            setStatusColor("error");
+            setStatusText(
+                `${LanguageTranslations.alreadyCheckedIn[language]} ${formatDate(dayjs(eventParticipant.checked_in_at))}`,
+            );
+            setTitle("Checked in");
+            return;
+        }
+
+        // If within window and not checked in, attempt check-in
+        const doCheckIn = async () => {
+            try {
+                const result = await checkInEventParticipant(eventParticipant.id);
+                if (result) {
+                    // Check-in failed or already checked in
+                    setStatusColor("error");
+                    setStatusText(result);
+                    setTitle("Valid");
+                } else {
+                    // Check-in succeeded
+                    setStatusColor("success");
+                    setStatusText(LanguageTranslations.checkInSucceeded[language]);
+                    setTitle("Valid");
+                }
+            } catch {
+                setStatusColor("warning");
+                setStatusText(LanguageTranslations.checkInFailed[language]);
+                setTitle("Valid");
+            }
+        };
+        doCheckIn();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 2, sm: 3 } }}>
@@ -147,9 +155,6 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
                     <Chip label={title} color={statusColor} />
                     {hasAllProperties && (
                         <Typography>{LanguageTranslations.thisIsATicket[language]}</Typography>
-                    )}
-                    {!alreadyCheckedIn && (
-                        <Typography>{LanguageTranslations.ticketScanInfo[language]}</Typography>
                     )}
                     <Typography>{statusText}</Typography>
                     <Stack spacing={{ xs: 1, sm: 1.25 }}>

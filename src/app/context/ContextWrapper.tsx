@@ -7,7 +7,7 @@ import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
 import ErrorBoundarySuspense from "../ui/ErrorBoundarySuspense";
 import { SessionProvider } from "next-auth/react";
-import { Prisma } from "@/prisma/generated/browser";
+import { Prisma } from "../../prisma/generated/browser";
 
 interface ContextWrapperProps {
     children: ReactNode;

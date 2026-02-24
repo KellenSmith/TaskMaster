@@ -2,11 +2,12 @@
 import { prisma } from "../../prisma/prisma-client";
 import { getLoggedInUser } from "./user-actions";
 import { InfoPageCreateSchema, UuidSchema } from "./zod-schemas";
-import { Language, Prisma, UserRole } from "@/prisma/generated/client";
 import { serverRedirect } from "./utils";
 import GlobalConstants from "../GlobalConstants";
 import { createTextContent } from "./text-content-actions";
 import { revalidateTag } from "next/cache";
+import { Language, UserRole } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const createInfoPage = async (formData: FormData): Promise<void> => {
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));

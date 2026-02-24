@@ -1,6 +1,5 @@
 "use server";
 
-import { Language, Prisma, UserRole, UserStatus } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
@@ -21,6 +20,9 @@ import { getMembershipProduct, renewUserMembership } from "./user-membership-act
 import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 import MailTemplate from "./mail-service/mail-templates/MailTemplate";
+import { isUserAuthorized } from "./auth/auth-utils";
+import { Language, UserRole, UserStatus } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -219,12 +221,19 @@ export const login = async (formData: FormData): Promise<void> => {
     const validatedData = LoginSchema.parse(Object.fromEntries(formData.entries()));
 
     // Only let existing members log in from this route
-    await prisma.user.findUniqueOrThrow({ where: { email: validatedData.email } });
+    const existingUser = await prisma.user.findUniqueOrThrow({
+        where: { email: validatedData.email },
+        include: { user_membership: true },
+    });
+    let redirectTo: string;
+    if (isUserAuthorized(existingUser, GlobalConstants.DASHBOARD))
+        redirectTo = getRelativeUrl([GlobalConstants.DASHBOARD]);
+    else redirectTo = getRelativeUrl([GlobalConstants.HOME]);
 
     await signIn("email", {
-        email: validatedData.email,
+        email: existingUser.email,
         callback: getRelativeUrl([GlobalConstants.LOGIN]),
-        redirectTo: getRelativeUrl([GlobalConstants.HOME]),
+        redirectTo: redirectTo,
         redirect: false,
     });
 };

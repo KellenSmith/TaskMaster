@@ -13,7 +13,6 @@ import {
     Fab,
     Box,
 } from "@mui/material";
-import { Prisma, TaskStatus } from "@/prisma/generated/client";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
@@ -31,6 +30,8 @@ import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { openResourceInNewTab } from "../utils";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { TaskStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
 type FilterValueType = boolean | string | string[] | TaskStatus[];
 type FilterFunctionProps = {

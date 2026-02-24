@@ -3,10 +3,10 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma } from "../../prisma/prisma-client";
-import { Prisma } from "@/prisma/generated/client";
 import { isMembershipExpired } from "./utils";
 import { revalidateTag } from "next/cache";
 import { AddMembershipSchema } from "./zod-schemas";
+import { Prisma } from "../../prisma/generated/client";
 
 export const addUserMembership = async (userId: string, formData: FormData) => {
     const validatedData = AddMembershipSchema.parse(Object.fromEntries(formData.entries()));

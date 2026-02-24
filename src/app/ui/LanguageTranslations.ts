@@ -1,4 +1,4 @@
-import { Language, UserRole } from "@/prisma/generated/browser";
+import { Language, UserRole } from "../../prisma/generated/enums";
 import GlobalConstants from "../GlobalConstants";
 
 const LanguageTranslations = {
@@ -27,6 +27,10 @@ const LanguageTranslations = {
         },
     },
     routeLabel: {
+        [GlobalConstants.HOME]: {
+            [Language.english]: "Home",
+            [Language.swedish]: "Hem",
+        },
         [GlobalConstants.APPLY]: {
             [Language.english]: "Apply for membership",
             [Language.swedish]: "Ansök om medlemskap",
@@ -129,22 +133,6 @@ const LanguageTranslations = {
     after: {
         [Language.english]: "After",
         [Language.swedish]: "Efter",
-    },
-    qrImageAlt: {
-        [Language.english]: "QR code for ticket",
-        [Language.swedish]: "QR-kod för biljett",
-    },
-    welcomeBack: {
-        [Language.english]: "Welcome back",
-        [Language.swedish]: "Välkommen tillbaka",
-    },
-    upcomingEventTickets: {
-        [Language.english]: "Tickets for upcoming events",
-        [Language.swedish]: "Biljetter för kommande evenemang",
-    },
-    checkCalendarForEvents: {
-        [Language.english]: "Check the calendar for upcoming events",
-        [Language.swedish]: "Kolla kalendern för kommande evenemang",
     },
 };
 

@@ -12,11 +12,12 @@ import {
     TableHead,
     TableRow,
 } from "@mui/material";
-import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import { formatPrice } from "../../ui/utils";
 import { useUserContext } from "../../context/UserContext";
 import ProductLanguageTranslations from "../products/LanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
+import { OrderStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface OrderSummaryProps {
     order: Prisma.OrderGetPayload<{

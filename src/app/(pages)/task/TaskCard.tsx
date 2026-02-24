@@ -18,7 +18,6 @@ import { clientRedirect, isUserAdmin } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC, use, useState } from "react";
-import { Prisma } from "@/prisma/generated/client";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { ContactMemberSchema, TaskUpdateSchema } from "../../lib/zod-schemas";
@@ -33,6 +32,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
 import RichTextField from "../../ui/form/RichTextField";
 import BookTaskButton from "../../ui/kanban-board/BookTaskButton";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface TaskCardProps {
     taskPromise: Promise<

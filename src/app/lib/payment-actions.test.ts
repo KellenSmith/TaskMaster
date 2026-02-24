@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from "vitest";
-import { OrderStatus } from "@/prisma/generated/client";
 import { redirectToOrderPayment, checkPaymentStatus } from "./payment-actions";
 import { prisma } from "../../prisma/prisma-client";
 import { progressOrder } from "./order-helpers";
@@ -7,6 +6,7 @@ import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";
 import { getLoggedInUser } from "./user-actions";
 import { isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
+import { OrderStatus } from "../../prisma/generated/enums";
 
 vi.mock("./order-helpers", () => ({
     progressOrder: vi.fn(),

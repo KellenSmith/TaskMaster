@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { OrderStatus, UserRole } from "@/prisma/generated/client";
 import { mockContext } from "../../test/mocks/prismaMock";
 import * as orderActions from "./order-actions";
 import { getLoggedInUser } from "./user-actions";
 import { serverRedirect } from "./utils";
+import { OrderStatus, UserRole } from "../../prisma/generated/enums";
 
 vi.mock("./user-actions", () => ({
     getLoggedInUser: vi.fn(),

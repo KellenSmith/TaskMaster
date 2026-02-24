@@ -1,5 +1,4 @@
 "use client";
-import { Prisma } from "@/prisma/generated/browser";
 import { use, useMemo } from "react";
 import { useUserContext } from "../../context/UserContext";
 import {
@@ -19,6 +18,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import { deleteEventParticipant } from "../../lib/event-participant-actions";
 import { useRouter } from "next/navigation";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface TicketDashboardProps {
     eventPromise: Promise<

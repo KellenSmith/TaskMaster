@@ -1,6 +1,7 @@
-import { Language, Prisma } from "@/prisma/generated/browser";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { Language } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 // Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
 dayjs.extend(utc);

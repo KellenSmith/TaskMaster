@@ -15,7 +15,6 @@ import Form from "../form/Form";
 import { Dispatch, SetStateAction, use, useMemo, useState } from "react";
 import { Add } from "@mui/icons-material";
 import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
-import { Prisma, Task, TaskStatus } from "@/prisma/generated/client";
 import dayjs from "dayjs";
 import z from "zod";
 import { TaskCreateSchema, TaskFilterSchema } from "../../lib/zod-schemas";
@@ -27,6 +26,8 @@ import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-util
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
 import { getFilteredTasks } from "./KanBanBoardMenu";
+import { TaskStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface DroppableColumnProps {
     readOnly: boolean;
@@ -120,7 +121,7 @@ const DroppableColumn = ({
     const getTaskDefaultEndTime = (): Date =>
         (event ? dayjs.utc(event.end_time) : dayjs.utc().minute(0)).toDate();
 
-    const openCreateTaskDialog = (shiftProps: Task | null) => {
+    const openCreateTaskDialog = (shiftProps: Prisma.TaskGetPayload<true> | null) => {
         if (!user) return;
         const defaultTask = {
             status,

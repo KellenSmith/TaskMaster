@@ -9,7 +9,6 @@ import {
     Button,
 } from "@mui/material";
 
-import { Prisma } from "@/prisma/generated/browser";
 import dayjs from "dayjs";
 import { use, useState, useRef, PointerEvent } from "react";
 import YearWheelEvent from "./YearWheelEvent";
@@ -21,6 +20,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { getSortedEvents } from "../calendar-post/event-utils";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface YearWheelDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<{ include: { tasks: true } }>[]>;

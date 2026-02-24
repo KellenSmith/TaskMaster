@@ -13,7 +13,6 @@ import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import PeopleIcon from "@mui/icons-material/People";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
-import { EventStatus, Prisma } from "@/prisma/generated/browser";
 import TicketShop from "./TicketShop";
 import EventActions from "./EventActions";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
@@ -24,6 +23,7 @@ import TicketDashboard from "./TicketDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import LocationDashboard from "./LocationDashboard";
 import LanguageTranslations, { ImplementedTabs, implementedTabs } from "./LanguageTranslations";
+import { EventStatus, Prisma } from "../../../prisma/generated/browser";
 
 interface EventDashboardProps {
     eventPromise: Promise<

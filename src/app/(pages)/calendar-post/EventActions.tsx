@@ -13,7 +13,6 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import { EventStatus, Language, Prisma } from "@/prisma/generated/browser";
 import Form from "../../ui/form/Form";
 import {
     cancelEvent,
@@ -42,6 +41,7 @@ import EventLanguageTranslations from "../profile/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
+import { EventStatus, Language, Prisma } from "../../../prisma/generated/browser";
 
 interface IEventActions {
     eventPromise: Promise<

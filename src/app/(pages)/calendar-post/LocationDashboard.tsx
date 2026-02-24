@@ -1,6 +1,5 @@
 import { SyntheticEvent } from "react";
 
-import { Prisma } from "@/prisma/generated/client";
 import { use, useState, useTransition } from "react";
 import {
     Autocomplete,
@@ -23,6 +22,7 @@ import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import CalendarLanguageTranslations from "../calendar/LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface LocationDashboardProps {
     eventPromise: Promise<

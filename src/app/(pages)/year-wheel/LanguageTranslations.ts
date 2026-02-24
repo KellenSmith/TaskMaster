@@ -1,4 +1,4 @@
-import { Language } from "@/prisma/generated/browser";
+import { Language } from "../../../prisma/generated/enums";
 
 const LanguageTranslations = {
     currentEvents: {

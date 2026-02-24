@@ -15,7 +15,6 @@ import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { isMembershipExpired } from "../../lib/utils";
-import { Prisma, UserStatus } from "@/prisma/generated/browser";
 import { AddMembershipSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import {
@@ -32,6 +31,8 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { addUserMembership } from "../../lib/user-membership-actions";
 import { openResourceInNewTab } from "../../ui/utils";
+import { UserStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface MembersDashboardProps {
     membersPromise: Promise<

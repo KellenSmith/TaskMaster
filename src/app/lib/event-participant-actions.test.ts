@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { Prisma } from "@/prisma/generated/client";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import * as eventParticipantActions from "./event-participant-actions";
@@ -11,6 +10,7 @@ import { getUserLanguage } from "./user-actions";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
+import { Prisma } from "../../prisma/generated/client";
 
 vi.mock("./mail-service/mail-service", () => ({
     notifyEventReserves: vi.fn(),
@@ -291,8 +291,8 @@ describe("event-participant-actions", () => {
             } as any);
             tx.event.findUniqueOrThrow.mockResolvedValue({
                 id: eventId,
-                start_time: dayjs().add(1, "day").toDate(),
-                end_time: dayjs().add(1, "day").add(2, "hours").toDate(),
+                start_time: dayjs.utc().add(1, "day").toDate(),
+                end_time: dayjs.utc().add(1, "day").add(2, "hours").toDate(),
             } as any);
             vi.mocked(notifyEventReserves).mockResolvedValue();
         });

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { TaskStatus, TicketType, UserRole } from "@/prisma/generated/client";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import { buildFormData } from "../../test/test-helpers";
@@ -14,6 +13,7 @@ import {
 import { addEventReserveWithTx } from "./event-reserve-actions";
 import { getLoggedInUser } from "./user-actions";
 import { isUserAdmin, isUserHost } from "./utils";
+import { TaskStatus, TicketType, UserRole } from "../../prisma/generated/enums";
 
 vi.mock("./mail-service/mail-service", () => ({
     sendMail: vi.fn(),
