@@ -1,5 +1,4 @@
 "use client";
-import { Prisma } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import ConfirmButton from "../ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
@@ -13,6 +12,7 @@ import {
     isEventSoldOut,
     isUserParticipant,
 } from "../../(pages)/calendar-post/event-utils";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface BookTaskButtonProps {
     event?: Prisma.EventGetPayload<{

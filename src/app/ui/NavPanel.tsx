@@ -46,8 +46,8 @@ import {
     getTermsOfMembershipUrl,
     getTermsOfPurchaseUrl,
 } from "./utils";
-import { Prisma } from "@/prisma/generated/browser";
 import ConfirmButton from "./ConfirmButton";
+import { Prisma } from "../../prisma/generated/browser";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);

@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import { Prisma } from "@/prisma/generated/client";
 import { mockContext } from "../../../test/mocks/prismaMock";
 import { getMailTransport } from "./mail-transport";
 import { createNewsletterJob } from "./newsletter-helpers";
@@ -16,6 +15,7 @@ import {
 } from "./mail-service";
 import { createElement } from "react";
 import testdata from "../../../test/testdata";
+import { Prisma } from "../../../prisma/generated/client";
 
 vi.mock("./newsletter-helpers", () => ({
     createNewsletterJob: vi.fn(),

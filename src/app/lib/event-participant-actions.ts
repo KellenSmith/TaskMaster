@@ -3,7 +3,6 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
-import { Prisma } from "@/prisma/generated/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getUserLanguage } from "./user-actions";
@@ -11,6 +10,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { formatDate } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
+import { Prisma } from "../../prisma/generated/client";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,

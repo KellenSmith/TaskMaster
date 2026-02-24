@@ -1,6 +1,5 @@
 "use server";
 
-import { Prisma, TaskStatus, TicketType } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
@@ -17,6 +16,8 @@ import { isUserAdmin, isUserHost } from "./utils";
 import { createElement } from "react";
 import TaskUpdateTemplate from "./mail-service/mail-templates/TaskUpdateTemplate";
 import MemberContactMemberTemplate from "./mail-service/mail-templates/MemberContactMemberTemplate";
+import { TaskStatus, TicketType } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     // Validate task ID format

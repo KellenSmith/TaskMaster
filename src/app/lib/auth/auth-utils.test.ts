@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Prisma, UserRole, UserStatus } from "@/prisma/generated/client";
 import GlobalConstants from "../../GlobalConstants";
 import testdata from "../../../test/testdata";
 import { isUserAuthorized, userHasRolePrivileges } from "./auth-utils";
+import { UserRole, UserStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
 type AuthUser = Prisma.UserGetPayload<{
     select: { role: true; status: true; user_membership: true };

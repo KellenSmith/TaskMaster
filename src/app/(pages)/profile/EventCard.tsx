@@ -6,9 +6,9 @@ import { isEventPublished, isUserParticipant, isUserReserve } from "../calendar-
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
-import { Prisma } from "@/prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
 import EventLanguageTranslations from "../calendar-post/LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface EventCardProps {
     event: Prisma.EventGetPayload<{

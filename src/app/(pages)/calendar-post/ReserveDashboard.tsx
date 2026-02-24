@@ -1,4 +1,3 @@
-import { Prisma } from "@/prisma/generated/client";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-actions";
@@ -8,6 +7,7 @@ import { CheckCircle, ExitToApp, PersonAdd } from "@mui/icons-material";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { isUserReserve } from "./event-utils";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface ReserveDashboardProps {
     eventPromise: Promise<Prisma.EventGetPayload<{ include: { event_reserves: true } }>>;

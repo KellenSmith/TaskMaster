@@ -1,13 +1,13 @@
+import GlobalConstants from "../../GlobalConstants";
+import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
+import LanguageTranslations from "../../(pages)/profile/LanguageTranslations";
 import {
     Language,
     OrderStatus,
     TaskStatus,
     TicketType,
     UserRole,
-} from "@/prisma/generated/browser";
-import GlobalConstants from "../../GlobalConstants";
-import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
-import LanguageTranslations from "../../(pages)/profile/LanguageTranslations";
+} from "../../../prisma/generated/enums";
 
 export const organizationSettingsFieldLabels = {
     // Organization settings

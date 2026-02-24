@@ -3,11 +3,11 @@ import { Button, Stack } from "@mui/material";
 import React from "react";
 import GlobalConstants from "./GlobalConstants";
 import TextContent from "./ui/TextContent";
-import { Prisma } from "@/prisma/generated/browser";
 import LanguageTranslations from "./ui/LanguageTranslations";
 import { useUserContext } from "./context/UserContext";
 import { useRouter } from "next/navigation";
 import { clientRedirect } from "./lib/utils";
+import { Prisma } from "../prisma/generated/browser";
 
 interface HomeDashboardProps {
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;

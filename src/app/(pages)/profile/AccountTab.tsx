@@ -14,9 +14,9 @@ import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import MembershipStatusCard from "./MembershipStatusCard";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
-import { UserStatus } from "@/prisma/generated/browser";
 import { clientRedirect, isMembershipExpired } from "../../lib/utils";
 import { useRouter } from "next/navigation";
+import { UserStatus } from "../../../prisma/generated/enums";
 
 const AccountTab = () => {
     const { user, language } = useUserContext();

@@ -1,7 +1,6 @@
 "use client";
 import { use, useState } from "react";
 import { Stack, Typography, useTheme, Button, Dialog, useMediaQuery } from "@mui/material";
-import { Prisma, TicketType } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import { createAndRedirectToOrder } from "../../lib/order-actions";
 import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";
@@ -15,6 +14,8 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { TicketType } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface TicketShopProps {
     eventPromise: Promise<Prisma.EventGetPayload<true>>;

@@ -6,7 +6,6 @@ import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
 import { isMembershipExpired, clientRedirect } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
-import { Prisma } from "@/prisma/generated/browser";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import GlobalConstants from "../../GlobalConstants";
@@ -16,6 +15,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventIcon from "@mui/icons-material/Event";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import BadgeIcon from "@mui/icons-material/Badge";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface ProfileDashboardProps {
     tasksPromise: Promise<

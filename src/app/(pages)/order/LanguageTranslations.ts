@@ -1,4 +1,5 @@
-import { Language, OrderStatus, Prisma } from "@/prisma/generated/browser";
+import { Prisma } from "../../../prisma/generated/browser";
+import { Language, OrderStatus } from "../../../prisma/generated/enums";
 
 const LanguageTranslations = {
     failedCheckOrderStatus: {

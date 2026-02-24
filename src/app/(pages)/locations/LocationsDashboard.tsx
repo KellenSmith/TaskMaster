@@ -3,7 +3,6 @@
 import { Button, Dialog, Divider, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { use, useState, useTransition } from "react";
 import LocationCard from "./LocationCard";
-import { Location } from "@/prisma/generated/browser";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { LocationCreateSchema } from "../../lib/zod-schemas";
@@ -13,9 +12,10 @@ import { RenderedFields } from "../../ui/form/FieldCfg";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface LocationsDashboardProps {
-    locationsPromise: Promise<Location[]>;
+    locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
 }
 
 const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {

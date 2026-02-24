@@ -4,7 +4,6 @@ import Datagrid, { ImplementedDatagridEntities } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { OrderUpdateSchema } from "../../lib/zod-schemas";
 import { GridColDef, GridRowParams } from "@mui/x-data-grid";
-import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import { FieldLabels } from "../../ui/form/FieldCfg";
@@ -14,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { openResourceInNewTab } from "../../ui/utils";
 import OrdersReportPDF from "./OrdersReportPDF";
 import { pdf } from "@react-pdf/renderer";
+import { OrderStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface OrdersDashboardProps {
     ordersPromise: Promise<

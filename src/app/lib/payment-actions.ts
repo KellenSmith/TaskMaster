@@ -1,6 +1,5 @@
 "use server";
 
-import { OrderStatus } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import { isUserAdmin } from "./utils";
 import { getLoggedInUser } from "./user-actions";
@@ -9,6 +8,7 @@ import { progressOrder } from "./order-helpers";
 import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
+import { OrderStatus } from "../../prisma/generated/enums";
 
 export const redirectToOrderPayment = async (orderId: string): Promise<void> => {
     const validatedOrderId = UuidSchema.parse(orderId);

@@ -1,4 +1,5 @@
-import { Prisma, UserRole, UserStatus } from "@/prisma/generated/browser";
+import { Prisma } from "../../../prisma/generated/client";
+import { UserRole, UserStatus } from "../../../prisma/generated/enums";
 import GlobalConstants from "../../GlobalConstants";
 import { isMembershipExpired } from "../utils";
 

@@ -1,6 +1,6 @@
-import { Language } from "@/prisma/generated/browser";
 import dayjs from "dayjs";
 import localeData from "dayjs/plugin/localeData";
+import { Language } from "../../../prisma/generated/enums";
 
 // ensure localeData plugin is loaded before calling weekdaysShort()
 dayjs.extend(localeData);

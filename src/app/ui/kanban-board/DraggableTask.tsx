@@ -3,13 +3,13 @@ import { formatDate, openResourceInNewTab } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
 import { use, useMemo } from "react";
 import { useUserContext } from "../../context/UserContext";
-import { Prisma } from "@/prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
 import { getRelativeUrl } from "../../lib/utils";
 import { Info, OpenInNew } from "@mui/icons-material";
 import isBetween from "dayjs/plugin/isBetween";
 import dayjs from "dayjs";
 import BookTaskButton from "./BookTaskButton";
+import { Prisma } from "../../../prisma/generated/client";
 
 dayjs.extend(isBetween);
 

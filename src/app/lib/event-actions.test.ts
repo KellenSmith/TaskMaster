@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { EventStatus, TaskStatus, TicketType } from "@/prisma/generated/client";
 import { buildFormData } from "../../test/test-helpers";
 import * as eventActions from "./event-actions";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
@@ -10,6 +9,7 @@ import { getOrganizationSettings } from "./organization-settings-actions";
 import { isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
 import { prisma } from "../../prisma/prisma-client";
+import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enums";
 
 vi.mock("./mail-service/mail-service", () => ({
     sendMail: vi.fn(),

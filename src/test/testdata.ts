@@ -1,6 +1,7 @@
-import { Prisma, UserRole } from "@/prisma/generated/client";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { UserRole } from "../prisma/generated/enums";
+import { Prisma } from "../prisma/generated/client";
 
 dayjs.extend(utc);
 

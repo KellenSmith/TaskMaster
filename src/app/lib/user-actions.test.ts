@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import GlobalConstants from "../GlobalConstants";
-import { Language, UserRole, UserStatus } from "@/prisma/generated/client";
 import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import * as userActions from "./user-actions";
@@ -12,6 +11,7 @@ import { getOrganizationSettings } from "./organization-settings-actions";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
 import { buildFormData } from "../../test/test-helpers";
 import { prisma } from "../../prisma/prisma-client";
+import { Language, UserRole, UserStatus } from "../../prisma/generated/enums";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),

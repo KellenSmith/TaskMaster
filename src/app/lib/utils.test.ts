@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import dayjs from "dayjs";
-import { UserRole } from "@/prisma/generated/client";
 import {
     clientRedirect,
     getAbsoluteUrl,
@@ -12,6 +11,7 @@ import {
 } from "./utils";
 import { redirect } from "next/navigation";
 import testdata from "../../test/testdata";
+import { UserRole } from "../../prisma/generated/enums";
 
 vi.mock("next/navigation", () => ({
     redirect: vi.fn(),

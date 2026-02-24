@@ -24,11 +24,11 @@ import ConfirmButton from "./ConfirmButton";
 import { formatDate, formatPrice } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
-import { Prisma, Product } from "@/prisma/generated/browser";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../prisma/generated/browser";
 
 export interface RowActionProps {
     name: string;
@@ -52,7 +52,7 @@ export type ImplementedDatagridEntities =
               skill_badges: true;
           };
       }>
-    | Product
+    | Prisma.ProductGetPayload<true>
     | Prisma.OrderGetPayload<{
           include: {
               user: { select: { nickname: true } };

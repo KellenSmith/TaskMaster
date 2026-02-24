@@ -1,6 +1,5 @@
 "use server";
 
-import { Language, Prisma, UserRole, UserStatus } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
@@ -22,6 +21,8 @@ import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 import MailTemplate from "./mail-service/mail-templates/MailTemplate";
 import { isUserAuthorized } from "./auth/auth-utils";
+import { Language, UserRole, UserStatus } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client

@@ -1,15 +1,15 @@
 import { z } from "zod";
-import {
-    UserRole,
-    EventStatus,
-    TaskStatus,
-    TicketType,
-    OrderStatus,
-    Prisma,
-} from "@/prisma/generated/browser";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import utc from "dayjs/plugin/utc";
+import {
+    EventStatus,
+    OrderStatus,
+    TaskStatus,
+    TicketType,
+    UserRole,
+} from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);

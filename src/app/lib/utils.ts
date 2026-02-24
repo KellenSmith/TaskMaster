@@ -1,7 +1,8 @@
 import dayjs from "dayjs";
-import { Prisma, UserRole } from "@/prisma/generated/browser";
 import { redirect } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { UserRole } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 // Convention: "path"=`/${route}`
 

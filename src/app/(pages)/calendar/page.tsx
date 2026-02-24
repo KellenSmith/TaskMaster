@@ -2,9 +2,9 @@
 import CalendarDashboard from "./CalendarDashboard";
 import { getLoggedInUser } from "../../lib/user-actions";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { EventStatus, Prisma } from "@/prisma/generated/client";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
+import { EventStatus, Prisma } from "../../../prisma/generated/client";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
