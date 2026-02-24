@@ -1,23 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mockContext } from "../../../test/mocks/prismaMock";
 import GlobalConstants from "../../GlobalConstants";
 import { createNewsletterJob } from "./newsletter-helpers";
-import * as mailService from "./mail-service";
-import { getMailTransport } from "./mail-transport";
 import { revalidateTag } from "next/cache";
-import type { Transporter } from "nodemailer";
 
 describe("newsletter-actions", () => {
-    const transportSendMail = vi.fn();
-    let getEmailPayloadSpy: ReturnType<typeof vi.spyOn>;
-
-    beforeEach(() => {
-        vi.mocked(getMailTransport).mockResolvedValue({
-            sendMail: transportSendMail,
-        } as unknown as Transporter);
-        getEmailPayloadSpy = vi.spyOn(mailService, "getEmailPayload");
-    });
-
     it("creates a newsletter job with sanitized recipients and batch size", async () => {
         mockContext.prisma.newsletterJob.create.mockResolvedValue({ id: "job-123" });
 

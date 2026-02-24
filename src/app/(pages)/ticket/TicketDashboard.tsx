@@ -1,12 +1,12 @@
 "use client";
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
+import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
 import { use, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
-import { Prisma } from "../../../prisma/generated/browser";
 
 interface TicketDashboardProps {
     eventParticipantPromise: Promise<Prisma.EventParticipantGetPayload<{

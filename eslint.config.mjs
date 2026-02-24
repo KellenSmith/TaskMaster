@@ -65,6 +65,16 @@ export default [
                 __filename: "readonly",
                 __dirname: "readonly",
                 Buffer: "readonly",
+                // Vitest globals
+                describe: "readonly",
+                it: "readonly",
+                test: "readonly",
+                expect: "readonly",
+                vi: "readonly",
+                beforeAll: "readonly",
+                afterAll: "readonly",
+                beforeEach: "readonly",
+                afterEach: "readonly",
             },
         },
         plugins: {
