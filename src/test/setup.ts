@@ -9,6 +9,9 @@ import type { Transporter } from "nodemailer";
 import { getMailTransport } from "../app/lib/mail-service/mail-transport";
 import testdata from "./testdata";
 import { prisma } from "../prisma/prisma-client";
+import { Language } from "../prisma/generated/enums";
+import { Prisma } from "../prisma/generated/browser";
+
 // Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
 dayjs.extend(utc);
 
@@ -29,7 +32,42 @@ vi.mock("next/cache", () => ({
     revalidateTag: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
-    useRouter: () => ({ push: vi.fn() }),
+    useRouter: vi.fn(() => ({ push: vi.fn() })),
+    redirect: vi.fn(() => {
+        throw new Error("Redirect called");
+    }),
+}));
+vi.mock("../app/context/ThemeContext", () => ({
+    useTheme: vi.fn(() => ({
+        palette: {
+            mode: "dark",
+        },
+    })),
+}));
+vi.mock("../app/context/UserContext", () => ({
+    useUserContext: vi.fn(() => ({
+        user: null,
+        language: Language.english,
+        setLanguage: vi.fn(() => {}),
+        editMode: false,
+        setEditMode: vi.fn(() => {}),
+    })),
+}));
+vi.mock("../app/context/OrganizationSettingsContext", () => ({
+    useOrganizationSettingsContext: vi.fn(() => ({
+        organizationSettings: {
+            organizationSettings: {
+                id: "orgsettingsid",
+                remind_membership_expires_in_days: 7,
+                purge_members_after_days_unvalidated: 180,
+                default_task_shift_length: 2,
+                member_application_prompt: "Please provide a brief introduction about yourself.",
+                ticket_instructions:
+                    "Please include any relevant information or questions you have about the event.",
+            } as Prisma.OrganizationSettingsGetPayload<true>,
+            infopagesPromise: Promise.resolve([]),
+        },
+    })),
 }));
 
 afterAll(() => {

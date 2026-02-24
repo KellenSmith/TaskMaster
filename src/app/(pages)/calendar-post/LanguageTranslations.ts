@@ -1,4 +1,4 @@
-import { Language } from "@/prisma/generated/browser";
+import { Language } from "../../../prisma/generated/enums";
 
 export type ImplementedTabs = {
     details: "Details";

@@ -2,8 +2,9 @@
 import { revalidateTag } from "next/cache";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { Language, Prisma } from "@/prisma/generated/client";
 import { sanitizeRichText } from "./html-sanitizer";
+import { Language } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const createTextContent = async (
     tx: Prisma.TransactionClient,

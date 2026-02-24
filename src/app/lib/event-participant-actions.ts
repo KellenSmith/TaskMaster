@@ -3,7 +3,6 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
-import { Prisma } from "@/prisma/generated/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getUserLanguage } from "./user-actions";
@@ -11,6 +10,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { formatDate } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
+import { Prisma } from "../../prisma/generated/client";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,
@@ -219,7 +219,7 @@ export const checkInEventParticipant = async (
         }
 
         // Dont check in if not within one hour of event opening hours
-        const now = dayjs();
+        const now = dayjs.utc();
         const eventStart = dayjs(eventParticipant.ticket.event.start_time);
         const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
         if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {

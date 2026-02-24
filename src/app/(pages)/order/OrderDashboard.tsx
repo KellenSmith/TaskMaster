@@ -1,5 +1,4 @@
 "use client";
-import { Prisma } from "@/prisma/generated/browser";
 import PaymentHandler from "./PaymentHandler";
 import OrderSummary from "./OrderSummary";
 import { use, useEffect, useTransition } from "react";
@@ -8,6 +7,7 @@ import { useUserContext } from "../../context/UserContext";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface OrderDashboardProps {
     orderPromise: Promise<

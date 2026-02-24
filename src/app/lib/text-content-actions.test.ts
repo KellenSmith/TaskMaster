@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { Language } from "@/prisma/generated/client";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import * as textContentActions from "./text-content-actions";
 import { sanitizeRichText } from "./html-sanitizer";
+import { Language } from "../../prisma/generated/enums";
 
 vi.mock("./html-sanitizer", () => ({
     sanitizeRichText: vi.fn(),

@@ -1,6 +1,6 @@
 "use client";
 
-import { Prisma } from "@/prisma/generated/browser";
+import { Prisma } from "../../../prisma/generated/browser";
 import TaskCard from "./TaskCard";
 
 interface TaskDashboardProps {

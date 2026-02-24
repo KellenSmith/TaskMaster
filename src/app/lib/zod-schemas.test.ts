@@ -38,14 +38,14 @@ import {
     UserRoleSchema,
     UuidSchema,
 } from "./zod-schemas";
+import testdata from "../../test/testdata";
 import {
     EventStatus,
     OrderStatus,
     TaskStatus,
     TicketType,
     UserRole,
-} from "@/prisma/generated/client";
-import testdata from "../../test/testdata";
+} from "../../prisma/generated/enums";
 
 const validDate = "03/02/2026 14:30";
 const expectedDate = dayjs.utc(validDate, "DD/MM/YYYY HH:mm").format();

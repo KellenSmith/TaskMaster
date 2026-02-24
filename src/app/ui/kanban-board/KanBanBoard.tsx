@@ -3,7 +3,6 @@
 import { use, useState } from "react";
 import { Grid, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DroppableColumn from "./DroppableColumn";
-import { Prisma, TaskStatus } from "@/prisma/generated/browser";
 import KanBanBoardMenu from "./KanBanBoardMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -11,6 +10,8 @@ import z from "zod";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
+import { TaskStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface KanBanBoardProps {
     readOnly: boolean;

@@ -3,8 +3,9 @@ import { styles } from "../../ui/pdf-styles";
 import { formatDate, formatPrice } from "../../ui/utils";
 import { useMemo } from "react";
 import dayjs from "dayjs";
-import { Language, Prisma } from "@/prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
+import { Language } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface OrdersReportPDFProps {
     orders: Prisma.OrderGetPayload<{

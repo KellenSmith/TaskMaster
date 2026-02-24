@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
-import { EventStatus, Prisma, Task } from "@/prisma/generated/browser";
+import { EventStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 export const isEventPublished = (event: Prisma.EventGetPayload<true>) =>
     event.status === EventStatus.published;
@@ -36,20 +37,25 @@ export const isUserVolunteer = (
     return !!eventTasks.find((task) => task.assignee_id === user.id);
 };
 
-export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>
-    selectedTasks.map((task) => task.id).includes(task.id);
+export const isTaskSelected = (
+    task: Prisma.TaskGetPayload<true>,
+    selectedTasks: Prisma.TaskGetPayload<true>[],
+) => selectedTasks.map((task) => task.id).includes(task.id);
 
-export const getEarliestStartTime = (tasks: Task[]) =>
+export const getEarliestStartTime = (tasks: Prisma.TaskGetPayload<true>[]) =>
     tasks
         .map((task) => task.start_time)
         .sort((startTime1, startTime2) => dayjs.utc(startTime1).diff(dayjs.utc(startTime2)))[0];
 
-export const getEarliestEndTime = (tasks: Task[]) =>
+export const getEarliestEndTime = (tasks: Prisma.TaskGetPayload<true>[]) =>
     tasks
         .map((task) => task.end_time)
         .sort((startTime1, startTime2) => dayjs.utc(startTime1).diff(dayjs.utc(startTime2)))[0];
 
-export const sortTasks = (task1: Task, task2: Task) => {
+export const sortTasks = (
+    task1: Prisma.TaskGetPayload<true>,
+    task2: Prisma.TaskGetPayload<true>,
+) => {
     const startTime1 = dayjs.utc(task1.start_time);
     const startTime2 = dayjs.utc(task2.start_time);
     if (Math.abs(startTime2.diff(startTime1, "minute")) > 1)

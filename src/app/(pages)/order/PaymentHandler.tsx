@@ -2,7 +2,6 @@
 import { Button, Stack, Checkbox, Typography, Link } from "@mui/material";
 import React, { use, useState } from "react";
 import { redirectToOrderPayment } from "../../lib/payment-actions";
-import { OrderStatus, Prisma } from "@/prisma/generated/browser";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { allowRedirectException, getPrivacyPolicyUrl, getTermsOfPurchaseUrl } from "../../ui/utils";
 import ConfirmButton from "../../ui/ConfirmButton";
@@ -11,6 +10,8 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
+import { OrderStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface PaymentHandlerProps {
     orderPromise: Promise<

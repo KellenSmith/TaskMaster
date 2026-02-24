@@ -1,4 +1,5 @@
-import { Language, Prisma } from "@/prisma/generated/browser";
+import { Prisma } from "../../../prisma/generated/browser";
+import { Language } from "../../../prisma/generated/enums";
 import GlobalConstants from "../../GlobalConstants";
 
 const LanguageTranslations = {

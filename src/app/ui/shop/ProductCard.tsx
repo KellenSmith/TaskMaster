@@ -22,10 +22,10 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { Lock } from "@mui/icons-material";
 import { formatPrice } from "../utils";
 import RichTextField from "../form/RichTextField";
-import { Prisma } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface ProductCardProps {
     product: Prisma.ProductGetPayload<true>;

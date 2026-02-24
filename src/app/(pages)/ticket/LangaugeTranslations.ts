@@ -5,7 +5,7 @@ const LanguageTranslations = {
         [Language.english]: "Ticket not found",
         [Language.swedish]: "Biljett hittades inte",
     },
-    ticketNorFoundDetails: {
+    ticketNotFoundDetails: {
         [Language.english]:
             "We could not find a ticket for the provided ID. Please check the link and try again.",
         [Language.swedish]:
@@ -20,8 +20,10 @@ const LanguageTranslations = {
         [Language.swedish]: "Giltig",
     },
     eventNotOngoing: {
-        [Language.english]: "Not ongoing",
-        [Language.swedish]: "Pågår ej",
+        [Language.english]:
+            "This event is not ongoing. If the ticket is scanned within one hour of the event duration it will be valid for check-in.",
+        [Language.swedish]:
+            "Detta evenemang pågår inte. Om biljetten skannas inom en timme från evenemangets öppettider kommer den vara giltig för incheckning.",
     },
     thisIsATicket: {
         [Language.english]: `This is a valid ${process.env.NEXT_PUBLIC_ORG_NAME} ticket!`,
@@ -60,6 +62,10 @@ const LanguageTranslations = {
     ticketType: {
         [Language.english]: "Ticket type",
         [Language.swedish]: "Biljettyp",
+    },
+    checkInSucceeded: {
+        [Language.english]: "Check-in succeeded",
+        [Language.swedish]: "Incheckning lyckades",
     },
     checkInFailed: {
         [Language.english]: "Check-in failed",

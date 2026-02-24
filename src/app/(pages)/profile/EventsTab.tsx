@@ -2,10 +2,10 @@
 
 import { FC, use } from "react";
 import { Stack, Typography } from "@mui/material";
-import { Prisma } from "@/prisma/generated/browser";
 import EventCard from "./EventCard";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface EventsTabProps {
     eventsPromise: Promise<

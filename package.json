@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "next dev --turbopack --experimental-https",
-        "build": "pnpm prisma-migrate && next build",
+        "build": "pnpm prisma-generate && pnpm prisma-migrate && next build",
         "analyze": "powershell -Command \"$env:ANALYZE='true'; next build\"",
         "start": "next start",
         "lint": "eslint .",

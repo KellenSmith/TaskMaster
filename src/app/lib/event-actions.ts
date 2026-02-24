@@ -1,6 +1,5 @@
 "use server";
 
-import { EventStatus, Prisma, TaskStatus, TicketType } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import { CloneEventSchema, EventCreateSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
@@ -14,6 +13,8 @@ import { sanitizeFormData } from "./html-sanitizer";
 import { createElement } from "react";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
 import z from "zod";
+import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const getEventParticipants = async (
     eventId: string,

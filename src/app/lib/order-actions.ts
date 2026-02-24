@@ -1,6 +1,5 @@
 "use server";
 
-import { OrderStatus, Prisma, UserRole } from "@/prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
@@ -8,6 +7,8 @@ import { serverRedirect } from "./utils";
 import { UuidSchema } from "./zod-schemas";
 import { getLoggedInUser } from "./user-actions";
 import { validateAndBuildOrderItems } from "./order-item-helpers";
+import { OrderStatus, UserRole } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const createAndRedirectToOrder = async (
     orderItems: Prisma.OrderItemCreateManyOrderInput[],

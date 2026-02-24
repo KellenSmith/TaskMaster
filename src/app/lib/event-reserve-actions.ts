@@ -4,7 +4,7 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { UuidSchema } from "./zod-schemas";
-import { Prisma } from "@/prisma/generated/client";
+import { Prisma } from "../../prisma/generated/client";
 
 export const addEventReserveWithTx = async (
     tx: Prisma.TransactionClient,

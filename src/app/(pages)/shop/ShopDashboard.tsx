@@ -10,7 +10,6 @@ import {
     Button,
     Dialog,
 } from "@mui/material";
-import { Prisma } from "@/prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import { createAndRedirectToOrder } from "../../lib/order-actions";
 import {
@@ -39,6 +38,7 @@ import {
     ProductCreateSchema,
     ProductUpdateSchema,
 } from "../../lib/zod-schemas";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface ShopDashboardProps {
     productsPromise: Promise<Prisma.ProductGetPayload<{ include: { membership: true } }>[]>;

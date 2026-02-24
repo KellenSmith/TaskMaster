@@ -43,18 +43,18 @@ export default async function proxy(req: NextRequest) {
         }
     }
 
-    const loggedInUser = (await auth())?.user;
+    const loggedInUser = (await auth())?.user || null;
 
     // Create response based on authorization
     let response: NextResponse;
 
     if (isUserAuthorized(loggedInUser, req.nextUrl.pathname)) {
         response = NextResponse.next();
-    } else if (loggedInUser) {
-        // Redirect authenticated but unauthorized users to home
+    } else if (isUserAuthorized(loggedInUser, GlobalConstants.DASHBOARD)) {
+        response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.DASHBOARD]));
+    } else if (isUserAuthorized(loggedInUser, GlobalConstants.HOME)) {
         response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
     } else {
-        // Redirect unauthorized unauthenticated users to login
         response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
     }
 

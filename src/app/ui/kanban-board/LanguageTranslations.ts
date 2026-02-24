@@ -1,6 +1,6 @@
-import { Language, TaskStatus } from "@/prisma/generated/browser";
+import { Prisma } from "../../../prisma/generated/client";
+import { Language, TaskStatus } from "../../../prisma/generated/enums";
 import GlobalConstants from "../../GlobalConstants";
-import { Prisma } from "../../../prisma/generated/browser";
 
 export const menuTabs = {
     my_tasks: "My shifts",

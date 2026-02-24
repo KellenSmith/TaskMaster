@@ -3,7 +3,6 @@
 import { Button, Dialog, Divider, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { use, useState, useTransition } from "react";
 import SkillBadgeCard from "./SkillBadgeCard";
-import { Prisma } from "@/prisma/generated/browser";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { SkillBadgeCreateSchema } from "../../lib/zod-schemas";
@@ -17,6 +16,7 @@ import ConfirmButton from "../../ui/ConfirmButton";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface SkillBadgesDashboardProps {
     skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
