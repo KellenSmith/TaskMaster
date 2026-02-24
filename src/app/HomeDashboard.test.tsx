@@ -1,8 +1,9 @@
-import { screen, fireEvent, act } from "@testing-library/react";
+import { screen, fireEvent, act, render } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 import HomeDashboard from "./HomeDashboard";
-import { customRender } from "../test/test-utils";
 import { clientRedirect } from "./lib/utils";
+import { useUserContext } from "./context/UserContext";
+import { Language } from "../prisma/generated/enums";
 
 // Mocks
 vi.mock("./lib/utils", () => ({
@@ -19,10 +20,7 @@ describe("HomeDashboard", () => {
     it("renders home dashboard for logged out user", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
-            customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
-                user: null,
-                language: "english",
-            } as any),
+            render(<HomeDashboard textContentPromise={textContentPromise as any} />),
         );
         expect(
             await screen.findByRole("button", { name: /apply for membership/i }),
@@ -33,10 +31,7 @@ describe("HomeDashboard", () => {
     it("calls clientRedirect when apply button clicked", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
         await act(async () =>
-            customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
-                user: null,
-                language: "english",
-            } as any),
+            render(<HomeDashboard textContentPromise={textContentPromise as any} />),
         );
         const button = await screen.findByRole("button", { name: "Apply for membership" });
         fireEvent.click(button);
@@ -46,12 +41,15 @@ describe("HomeDashboard", () => {
 
     it("renders correct language for swedish", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
+        vi.mocked(useUserContext).mockReturnValue({
+            user: null,
+            language: Language.swedish,
+        } as any);
+
         await act(async () =>
-            customRender(<HomeDashboard textContentPromise={textContentPromise as any} />, {
-                user: null,
-                language: "swedish",
-            } as any),
+            render(<HomeDashboard textContentPromise={textContentPromise as any} />),
         );
+
         expect(
             await screen.findByRole("button", { name: "Ansök om medlemskap" }),
         ).toBeInTheDocument();

@@ -48,9 +48,9 @@ vi.mock("../app/context/UserContext", () => ({
     useUserContext: vi.fn(() => ({
         user: null,
         language: Language.english,
-        setLanguage: () => {},
+        setLanguage: vi.fn(() => {}),
         editMode: false,
-        setEditMode: () => {},
+        setEditMode: vi.fn(() => {}),
     })),
 }));
 vi.mock("../app/context/OrganizationSettingsContext", () => ({
