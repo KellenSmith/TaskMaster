@@ -4,7 +4,6 @@ import { EventStatus, Language, TicketType } from "../../../prisma/generated/enu
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
-import NotificationContextProvider from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import testdata from "../../../test/testdata";
 
@@ -53,11 +52,7 @@ function getEventParticipant(overrides = {}) {
 
 const renderWithNotificationContext = async (eventParticipant: any) => {
     return await act(async () =>
-        render(
-            <NotificationContextProvider>
-                <TicketDashboard eventParticipantPromise={Promise.resolve(eventParticipant)} />
-            </NotificationContextProvider>,
-        ),
+        render(<TicketDashboard eventParticipantPromise={Promise.resolve(eventParticipant)} />),
     );
 };
 

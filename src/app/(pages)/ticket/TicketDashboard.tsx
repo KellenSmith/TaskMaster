@@ -7,7 +7,6 @@ import { use, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
-import { useNotificationContext } from "../../context/NotificationContext";
 
 interface TicketDashboardProps {
     eventParticipantPromise: Promise<Prisma.EventParticipantGetPayload<{
@@ -129,7 +128,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
                     setStatusText(LanguageTranslations.checkInSucceeded[language]);
                     setTitle("Valid");
                 }
-            } catch (err) {
+            } catch {
                 setStatusColor("warning");
                 setStatusText(LanguageTranslations.checkInFailed[language]);
                 setTitle("Valid");
