@@ -106,7 +106,7 @@ export const routeTreeConfig: RouteConfigType[] = [
         name: GlobalConstants.ORDER,
         status: UserStatus.validated,
         role: UserRole.member,
-        membershipRequired: true,
+        membershipRequired: false,
     },
     {
         name: GlobalConstants.ORDERS,
