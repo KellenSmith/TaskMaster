@@ -23,10 +23,6 @@ const LanguageTranslations = {
         [Language.english]: "Stock",
         [Language.swedish]: "Lager",
     },
-    [GlobalConstants.UNLIMITED_STOCK]: {
-        [Language.english]: "Unlimited Stock",
-        [Language.swedish]: "Obegränsat Lager",
-    },
     [GlobalConstants.QUANTITY]: {
         [Language.english]: "Quantity",
         [Language.swedish]: "Antal",

@@ -50,18 +50,15 @@ export default function ProductCard({
 
     const getStockChipLabel = () => {
         if (product.stock == 0) return ProductLanguageTranslations.outOfStock[language];
-        if (product.stock === null || (product.stock && product.stock > 5)) {
+        if (product.stock === null || (product.stock && product.stock > 5))
             return ProductLanguageTranslations.inStock[language];
-        }
         return `${product.stock} ${ProductLanguageTranslations.left[language]}`;
     };
 
     const getStockChipColor = () => {
-        if (!product.stock || (product.stock && product.stock > 5)) {
-            return "success";
-        }
-        if (!product.stock) return "error";
-        return `warning`;
+        if (product.stock == 0) return "error";
+        if (product.stock === null || (product.stock && product.stock > 5)) return "success";
+        return "warning";
     };
 
     return (

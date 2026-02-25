@@ -80,7 +80,7 @@ export const getMembershipProduct = async (): Promise<
     if (membershipProduct) {
         return membershipProduct;
     }
-    // If no membership product exists, create it
+    // If no membership product exists, create a default
     const newMembershipProduct = await prisma.product.create({
         data: {
             name: GlobalConstants.MEMBERSHIP_PRODUCT_NAME,

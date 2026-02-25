@@ -207,7 +207,11 @@ export const ProductCreateSchema = z
         description: z.string().optional(),
         price: priceSchema.optional(),
         vat_percentage: z.coerce.number().min(0).max(100),
-        stock: z.coerce.number().int().nonnegative().nullable().optional(),
+        stock: z
+            .union([z.literal(""), z.coerce.number().int().nonnegative()])
+            .transform((val) => (val === "" ? null : val))
+            .nullable()
+            .optional(),
         image_url: z.string().optional(),
     })
     .omit({ id: true });
