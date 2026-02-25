@@ -8,12 +8,15 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 
 **Steps:**
 1. Navigate to the home page.
-2. Submit a membership application using an email address you have access to.
-3. Check your email inbox for the membership confirmation link.
-4. Log in using the link provided in the email.
-5. Go to the profile page.
+2. Click "Apply for Membership" and fill in the application form with valid details, using an email address you have access to.
+3. Click the document links.
+4. Submit a membership application using an email address you have access to.
+5. Check your email inbox for the membership confirmation link.
+6. Log in using the link provided in the email.
+7. Go to the profile page.
 
 **Expected Results:**
+- The document links are accessible and open the correct documents.
 - The user is granted a free yearly membership.
 - The user is assigned the role "admin".
 - Membership details are visible on the profile page.
@@ -27,16 +30,16 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 
 **Steps:**
 1. Submit a membership application for a second user.
-2. Verify that an email notification is sent to the organization email address.
-3. Log in with the admin account created in Scenario 1.
-4. Navigate to the members page.
-5. Validate the new membership application.
-6. Log out.
-7. Check that an email notification is sent to the new user, informing them of membership validation.
-8. Log in with the new member's account.
+2. Log in with the admin account created in Scenario 1.
+3. Navigate to the members page.
+4. Validate the new membership application.
+5. Log out.
+6. Check that an email notification is sent to the new user, informing them of membership validation.
+7. Log in with the new member's account.
 
 **Expected Results:**
-- Upon login, the new member is directed to the root page.
+- An email notification is sent to the organization email address.
+- Upon login with the send login link, the new member is directed to the root page.
 - The left-hand menu displays only: Contact, Profile, and Shop.
 
 ---
