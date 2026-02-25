@@ -1,9 +1,10 @@
-import { screen, fireEvent, act, render } from "@testing-library/react";
+import { screen, act, render } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 import HomeDashboard from "./HomeDashboard";
 import { clientRedirect } from "./lib/utils";
 import { useUserContext } from "./context/UserContext";
 import { Language } from "../prisma/generated/enums";
+import userEvent from "@testing-library/user-event";
 
 // Mocks
 vi.mock("./lib/utils", () => ({
@@ -34,7 +35,7 @@ describe("HomeDashboard", () => {
             render(<HomeDashboard textContentPromise={textContentPromise as any} />),
         );
         const button = await screen.findByRole("button", { name: "Apply for membership" });
-        fireEvent.click(button);
+        await userEvent.click(button);
         expect(vi.mocked(clientRedirect)).toHaveBeenCalledWith(expect.anything(), ["apply"]);
         expect(vi.mocked(clientRedirect).mock.calls[0][1]).toEqual(["apply"]);
     });

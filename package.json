@@ -37,6 +37,7 @@
         "@prisma/extension-accelerate": "^3.0.1",
         "@react-email/components": "^1.0.2",
         "@react-pdf/renderer": "^4.3.1",
+        "@testing-library/user-event": "^14.6.1",
         "@tiptap/core": "^3.14.0",
         "@tiptap/extension-bold": "^3.14.0",
         "@tiptap/extension-bullet-list": "^3.14.0",
