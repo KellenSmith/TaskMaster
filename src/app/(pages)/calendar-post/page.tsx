@@ -1,11 +1,11 @@
 "use server";
-import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { prisma } from "../../../prisma/prisma-client";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { EventStatus } from "../../../prisma/generated/enums";
+import { getActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 
 interface EventPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;

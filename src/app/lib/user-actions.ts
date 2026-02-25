@@ -2,9 +2,7 @@
 
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import dayjs from "dayjs";
 import { revalidateTag } from "next/cache";
-import { cookies } from "next/headers";
 import {
     LoginSchema,
     MembershipApplicationSchema,
@@ -13,7 +11,7 @@ import {
     UuidSchema,
 } from "./zod-schemas";
 import { sendMail } from "./mail-service/mail-service";
-import { auth, signIn, signOut } from "./auth/auth";
+import { signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getRelativeUrl } from "./utils";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
@@ -21,7 +19,7 @@ import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 import MailTemplate from "./mail-service/mail-templates/MailTemplate";
 import { isUserAuthorized } from "./auth/auth-utils";
-import { Language, UserRole, UserStatus } from "../../prisma/generated/enums";
+import { UserRole, UserStatus } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 
 export const createUser = async (formData: FormData): Promise<void> => {
@@ -106,15 +104,6 @@ export const submitMemberApplication = async (formData: FormData) => {
     revalidateTag(GlobalConstants.USER, "max");
 };
 
-export const getUserLanguage = async () => {
-    const cookieStore = await cookies();
-    const languageValue = cookieStore.get(GlobalConstants.LANGUAGE)?.value;
-    if (languageValue && Object.values(Language).includes(languageValue as Language)) {
-        return languageValue as Language;
-    }
-    return Language.english;
-};
-
 export const updateUser = async (userId: string, formData: FormData): Promise<void> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
@@ -181,39 +170,6 @@ export const deleteUser = async (userId: string): Promise<void> => {
     revalidateTag(GlobalConstants.USER_MEMBERSHIP, "max");
     revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
     revalidateTag(GlobalConstants.EVENT, "max");
-};
-
-export const getActiveMembers = async (): Promise<
-    Prisma.UserGetPayload<{
-        select: { id: true; nickname: true; skill_badges: true };
-    }>[]
-> => {
-    return await prisma.user.findMany({
-        where: {
-            user_membership: {
-                expires_at: {
-                    gt: dayjs.utc().toISOString(),
-                },
-            },
-        },
-        select: {
-            id: true,
-            nickname: true,
-            skill_badges: true,
-        },
-    });
-};
-
-export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
-    include: { user_membership: true; skill_badges: true };
-}> | null> => {
-    const authResult = await auth();
-    if (!authResult?.user) return null;
-    const loggedInUser = await prisma.user.findUnique({
-        where: { id: authResult.user.id },
-        include: { user_membership: true, skill_badges: true },
-    });
-    return loggedInUser;
 };
 
 export const login = async (formData: FormData): Promise<void> => {

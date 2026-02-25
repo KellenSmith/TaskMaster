@@ -4,7 +4,7 @@ import GlobalConstants from "../GlobalConstants";
 import { buildFormData } from "../../test/test-helpers";
 import * as eventActions from "./event-actions";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
@@ -17,7 +17,7 @@ vi.mock("./mail-service/mail-service", () => ({
     informOfCancelledEvent: vi.fn(),
 }));
 
-vi.mock("./user-actions", () => ({
+vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 

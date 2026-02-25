@@ -1,10 +1,10 @@
 import HomePage from "./page";
 import { vi, describe, it, expect } from "vitest";
-import { getLoggedInUser } from "./lib/user-actions";
+import { getLoggedInUser } from "./lib/user-helpers";
 import { getTextContent } from "./lib/text-content-actions";
 import dayjs from "dayjs";
 
-vi.mock("./lib/user-actions", () => ({
+vi.mock("./lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 vi.mock("./lib/text-content-actions", () => ({

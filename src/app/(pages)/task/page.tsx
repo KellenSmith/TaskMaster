@@ -1,7 +1,7 @@
 import GlobalConstants from "../../GlobalConstants";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import TaskDashboard from "./TaskDashboard";
-import { getActiveMembers } from "../../lib/user-actions";
+import { getActiveMembers } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import { SearchParams } from "next/dist/server/request/search-params";
 

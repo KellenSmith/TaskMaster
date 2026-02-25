@@ -1,6 +1,6 @@
 "use server";
 import CalendarDashboard from "./CalendarDashboard";
-import { getLoggedInUser } from "../../lib/user-actions";
+import { getLoggedInUser } from "../../lib/user-helpers";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";

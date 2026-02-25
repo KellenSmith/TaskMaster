@@ -2,7 +2,7 @@ import InfoDashboard from "./InfoDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import { getTextContent } from "../../lib/text-content-actions";
 import { FC } from "react";
-import { getLoggedInUser } from "../../lib/user-actions";
+import { getLoggedInUser } from "../../lib/user-helpers";
 import { userHasRolePrivileges } from "../../lib/auth/auth-utils";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { prisma } from "../../../prisma/prisma-client";

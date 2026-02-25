@@ -10,7 +10,7 @@ import {
 import { getAbsoluteUrl } from "./utils";
 import GlobalConstants from "../GlobalConstants";
 import { getOrganizationSettings } from "./organization-settings-actions";
-import { getUserLanguage } from "./user-actions";
+import { getUserLanguage } from "./user-helpers";
 import { redirect } from "next/navigation";
 
 const makeSwedbankApiRequest = async (url: string, body?: unknown) => {

@@ -5,7 +5,7 @@ import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
-import { getUserLanguage } from "./user-actions";
+import { getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { formatDate } from "../ui/utils";

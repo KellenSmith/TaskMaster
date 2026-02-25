@@ -10,7 +10,7 @@ import {
     deleteEventParticipantWithTx,
 } from "./event-participant-actions";
 import { addEventReserveWithTx } from "./event-reserve-actions";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { sanitizeFormData, sanitizeRichText } from "./html-sanitizer";
 import { isUserAdmin, isUserHost } from "./utils";
 import { createElement } from "react";

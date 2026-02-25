@@ -6,7 +6,7 @@ import type { TransactionClient } from "../../test/types/test-types";
 import * as eventParticipantActions from "./event-participant-actions";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
-import { getUserLanguage } from "./user-actions";
+import { getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
@@ -20,7 +20,7 @@ vi.mock("./event-reserve-actions", () => ({
     deleteEventReserveWithTx: vi.fn(),
 }));
 
-vi.mock("./user-actions", () => ({
+vi.mock("./user-helpers", () => ({
     getUserLanguage: vi.fn(),
 }));
 

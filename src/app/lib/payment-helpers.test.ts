@@ -17,10 +17,10 @@ vi.mock("./organization-settings-actions", () => ({
         .fn()
         .mockResolvedValue({ logo_url: "logo", terms_of_purchase_english_url: "terms" }),
 }));
-vi.mock("./user-actions", () => ({ getUserLanguage: vi.fn().mockResolvedValue(Language.english) }));
+vi.mock("./user-helpers", () => ({ getUserLanguage: vi.fn().mockResolvedValue(Language.english) }));
 
 import { redirectToSwedbankPayment, isOrderpaid, capturePaymentFunds } from "./payment-helpers";
-import { getUserLanguage } from "./user-actions";
+import { getUserLanguage } from "./user-helpers";
 import { getOrganizationSettings } from "./organization-settings-actions";
 
 const baseOrder = {

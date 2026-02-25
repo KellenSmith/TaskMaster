@@ -1,5 +1,5 @@
 import { prisma } from "../../../prisma/prisma-client";
-import { getLoggedInUser } from "../../lib/user-actions";
+import { getLoggedInUser } from "../../lib/user-helpers";
 import Dashboard from "./Dashboard";
 import { serverRedirect } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";

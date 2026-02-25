@@ -1,6 +1,6 @@
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
-import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
+import { getActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
 

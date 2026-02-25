@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import DashboardPage from "./page";
-import { getLoggedInUser } from "../../lib/user-actions";
+import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../../GlobalConstants";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
