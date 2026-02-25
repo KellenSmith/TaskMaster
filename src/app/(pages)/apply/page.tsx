@@ -58,15 +58,13 @@ const ApplyPage = () => {
                     >
                         {OrderLanguageTranslations.iHaveRead[language]}{" "}
                     </Typography>
-                    {termsOfMembershipUrl && (
-                        <Link
-                            href={termsOfMembershipUrl as string}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {LanguageTranslations.termsOfMembership[language]}
-                        </Link>
-                    )}
+                    <Link
+                        href={termsOfMembershipUrl as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {LanguageTranslations.termsOfMembership[language]}
+                    </Link>
                 </Stack>
             )}
 

@@ -43,16 +43,8 @@ export const getTermsOfMembershipUrl = (
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
     language: Language,
 ): string | null => {
-    if (language === Language.english)
-        return (
-            organizationSettings.terms_of_membership_english_url ||
-            "documents/terms-of-membership-english.pdf"
-        );
-    if (language === Language.swedish)
-        return (
-            organizationSettings.terms_of_membership_swedish_url ||
-            "documents/terms-of-membership-swedish.pdf"
-        );
+    if (language === Language.english) return organizationSettings.terms_of_membership_english_url;
+    if (language === Language.swedish) return organizationSettings.terms_of_membership_swedish_url;
     return null;
 };
 
