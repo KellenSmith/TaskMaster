@@ -17,6 +17,7 @@ vi.mock("../organization-settings-actions", () => ({
 // We traverse the raw React element tree here because these templates are not rendered
 // into a DOM in these tests; Testing Library selectors like getByText require a DOM.
 // This helper lets us locate elements (e.g., Img/Heading) directly in the element tree.
+// eslint-disable-next-line no-unused-vars
 const findNode = (node: any, predicate: (value: any) => boolean): any => {
     if (!node) return undefined;
     if (predicate(node)) return node;
