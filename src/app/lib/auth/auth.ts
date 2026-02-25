@@ -43,36 +43,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     callbacks: {
         async jwt({ token, user }) {
             // If user object is available (first time after sign in), add the user id to the token
-            if (user) {
-                if (user.id) {
-                    token.id = user.id;
-                }
+            if (!user) return token; // No user object, return token as is
 
-                token.status = user.status;
-                token.role = user.role;
-                // Always fetch user_membership from Prisma at sign-in
-                const dbUser = await prisma.user.findUnique({
-                    where: { id: user.id },
-                    select: { user_membership: true },
-                });
-                token.user_membership = dbUser?.user_membership ?? null;
-            }
+            const dbUser = await prisma.user.findUnique({
+                where: { id: user.id },
+                select: { id: true, status: true, role: true, user_membership: true },
+            });
+            if (!dbUser) return token; // No user found in database, return token as is
+
+            token.id = dbUser.id;
+            token.status = dbUser.status;
+            token.role = dbUser.role;
+            token.user_membership = dbUser.user_membership;
+
             return token;
         },
         async session({ session, token }) {
             // Add the user id from the token to the session
+            if (!token.id) return session; // No user id in token, return session as is
 
-            if (token.id) {
-                session.user.id = token.id as string;
-                // Always fetch user_membership from Prisma at sign-in
-                const dbUser = await prisma.user.findUnique({
-                    where: { id: token.id },
-                    select: { user_membership: true },
-                });
-                session.user.status = token.status as UserStatus;
-                session.user.role = token.role as UserRole;
-                session.user.user_membership = dbUser?.user_membership ?? null;
-            }
+            // Always fetch user_membership from Prisma at sign-in
+            const dbUser = await prisma.user.findUnique({
+                where: { id: token.id },
+                select: { id: true, user_membership: true },
+            });
+            if (!dbUser) return session; // No user found in database, return session as is
+
+            session.user.id = dbUser.id;
+            session.user.status = token.status as UserStatus;
+            session.user.role = token.role as UserRole;
+            session.user.user_membership = dbUser?.user_membership ?? null;
+
             return session;
         },
     },
