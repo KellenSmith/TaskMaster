@@ -13,7 +13,7 @@ vi.mock("./auth/auth", () => ({
     auth: vi.fn(),
 }));
 
-describe("user-actions", () => {
+describe("user-helpers", () => {
     describe("getUserLanguage", () => {
         it("returns language from cookie when valid", async () => {
             vi.mocked(cookies).mockResolvedValue({
