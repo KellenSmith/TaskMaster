@@ -30,17 +30,16 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 
 **Steps:**
 1. Submit a membership application for a second user.
-2. Log in with the admin account created in Scenario 1.
-3. Navigate to the members page.
-4. Validate the new membership application.
-5. Log out.
-6. Check that an email notification is sent to the new user, informing them of membership validation.
-7. Log in with the new member's account.
+2. Log in with the new member's email address using the link provided in the email.
 
 **Expected Results:**
-- An email notification is sent to the organization email address.
-- Upon login with the send login link, the new member is directed to the root page.
-- The left-hand menu displays only: Contact, Profile, and Shop.
+- An email notification is sent to the organization email address to inform them of the pending membership application.
+- Upon login with the sent login link, the new member is directed to the profile page.
+- "Your membership is awaiting validation by an admin" message is displayed on the profile page.
+- The left-hand menu displays only: Home, Contact and Profile.
+
+** Post-condition:**
+- Log out.
 
 ---
 
