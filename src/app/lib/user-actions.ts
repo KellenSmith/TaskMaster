@@ -14,7 +14,7 @@ import { sendMail } from "./mail-service/mail-service";
 import { signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { getRelativeUrl } from "./utils";
-import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
+import { getMembershipProduct, renewUserMembership } from "./user-membership-helpers";
 import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 import MailTemplate from "./mail-service/mail-templates/MailTemplate";

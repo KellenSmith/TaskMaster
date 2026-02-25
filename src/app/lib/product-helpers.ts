@@ -2,7 +2,7 @@
 
 import dayjs from "dayjs";
 import { OrderStatus, Prisma } from "../../prisma/generated/client";
-import { renewUserMembership } from "./user-membership-actions";
+import { renewUserMembership } from "./user-membership-helpers";
 import { addEventParticipantWithTx } from "./event-participant-actions";
 import { createElement } from "react";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";

@@ -7,7 +7,7 @@ import * as userActions from "./user-actions";
 import { signIn, signOut } from "./auth/auth";
 import { sendMail } from "./mail-service/mail-service";
 import { getOrganizationSettings } from "./organization-settings-actions";
-import { getMembershipProduct, renewUserMembership } from "./user-membership-actions";
+import { getMembershipProduct, renewUserMembership } from "./user-membership-helpers";
 import { buildFormData } from "../../test/test-helpers";
 import { prisma } from "../../prisma/prisma-client";
 import { UserRole, UserStatus } from "../../prisma/generated/enums";
@@ -25,7 +25,7 @@ vi.mock("./organization-settings-actions", () => ({
     getOrganizationSettings: vi.fn(),
 }));
 
-vi.mock("./user-membership-actions", () => ({
+vi.mock("./user-membership-helpers", () => ({
     getMembershipProduct: vi.fn(),
     renewUserMembership: vi.fn(),
 }));

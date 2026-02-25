@@ -7,9 +7,10 @@ import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import dayjs from "dayjs";
 import * as utils from "../../lib/utils";
 
-vi.mock("../../lib/user-actions", () => ({
+vi.mock("../../lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
+
 vi.mock("./Dashboard", () => ({
     default: () => <div data-testid="dashboard">Dashboard</div>,
 }));
