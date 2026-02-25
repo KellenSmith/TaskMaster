@@ -199,9 +199,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                         validationSchema={EventCreateSchema}
                         customOptions={{
                             [GlobalConstants.LOCATION_ID]: getLocationOptions(),
-                            [GlobalConstants.TAGS]: stringsToSelectOptions(
-                                events.flatMap((e) => e.tags || []),
-                            ),
+                            [GlobalConstants.TAGS]: stringsToSelectOptions([
+                                ...new Set(events.flatMap((e) => e.tags || [])),
+                            ]),
                         }}
                         readOnly={false}
                         editable={false}
