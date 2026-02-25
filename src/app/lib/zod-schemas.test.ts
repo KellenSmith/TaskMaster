@@ -298,6 +298,21 @@ describe("Product and membership schemas", () => {
         });
     });
 
+    it("accepts empty stock and transforms to null", () => {
+        const result = ProductCreateSchema.parse({
+            ...baseProduct,
+            price: "10.00",
+            stock: "",
+        });
+
+        expect(result).toEqual({
+            name: baseProduct.name,
+            vat_percentage: baseProduct.vat_percentage,
+            price: 1000,
+            stock: null,
+        });
+    });
+
     it("updates membership with product data and strips unexpected fields", () => {
         const result = MembershipUpdateSchema.parse({
             ...baseProduct,

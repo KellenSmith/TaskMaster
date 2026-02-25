@@ -148,8 +148,6 @@ describe("auth.ts", () => {
 
     it("jwt callback does not set id when missing", async () => {
         process.env.EMAIL = "test@example.com";
-        const options = await loadAuthModule();
-
         const token: JWT = {} as JWT;
         const user = {
             id: undefined,
@@ -157,6 +155,8 @@ describe("auth.ts", () => {
             role: UserRole.member,
             user_membership: null,
         } as unknown as User;
+        vi.mocked(prisma.user.findUnique).mockResolvedValue(user as any);
+        const options = await loadAuthModule();
 
         const result = await options.callbacks.jwt({ token, user });
 
@@ -168,9 +168,21 @@ describe("auth.ts", () => {
 
     it("session callback maps token fields onto session.user", async () => {
         process.env.EMAIL = "test@example.com";
-        const options = await loadAuthModule();
 
         const session = { user: {} } as Session;
+        const user: User = {
+            id: "user-1",
+            status: UserStatus.validated,
+            role: UserRole.member,
+            user_membership: {
+                id: "membership-1",
+                user_id: "user-1",
+                membership_id: "membership-basic",
+                expires_at: dayjs.utc().add(1, "month").toDate(),
+                subscription_token: null,
+                payeeRef: null,
+            },
+        } as User;
         const token: JWT = {
             id: "user-1",
             status: UserStatus.validated,
@@ -184,6 +196,10 @@ describe("auth.ts", () => {
                 payeeRef: null,
             },
         } as JWT;
+
+        vi.mocked(prisma.user.findUnique).mockResolvedValue(user as any);
+
+        const options = await loadAuthModule();
 
         const result = await options.callbacks.session({ session, token });
 

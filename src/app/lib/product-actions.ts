@@ -53,6 +53,7 @@ export const updateMembershipProduct = async (
     const formDataObject = Object.fromEntries(formData.entries());
     const membershipData = MembershipWithoutProductSchema.parse(formDataObject);
     const productValues = ProductUpdateSchema.parse(formDataObject);
+    console.log(formDataObject, productValues);
     // Sanitize rich text fields (description)before saving to database
     const sanitizedProductData = sanitizeFormData(productValues);
 

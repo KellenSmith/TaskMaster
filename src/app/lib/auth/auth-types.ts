@@ -26,7 +26,7 @@ declare module "@auth/core/jwt" {
 
     interface JWT
         extends Prisma.UserGetPayload<{
-            select: { id: true; status: true; role: true; user_membership: true };
+            select: { id: true };
         }> {
         _dummy?: never;
     }
