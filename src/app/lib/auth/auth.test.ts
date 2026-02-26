@@ -170,6 +170,7 @@ describe("auth.ts", () => {
         process.env.EMAIL = "test@example.com";
 
         const session = { user: {} } as Session;
+        const expiresAt = dayjs.utc().add(1, "month").toDate();
         const user: User = {
             id: "user-1",
             status: UserStatus.validated,
@@ -178,7 +179,7 @@ describe("auth.ts", () => {
                 id: "membership-1",
                 user_id: "user-1",
                 membership_id: "membership-basic",
-                expires_at: dayjs.utc().add(1, "month").toDate(),
+                expires_at: expiresAt,
                 subscription_token: null,
                 payeeRef: null,
             },
@@ -191,7 +192,7 @@ describe("auth.ts", () => {
                 id: "membership-1",
                 user_id: "user-1",
                 membership_id: "membership-basic",
-                expires_at: dayjs.utc().add(1, "month").toDate(),
+                expires_at: expiresAt,
                 subscription_token: null,
                 payeeRef: null,
             },

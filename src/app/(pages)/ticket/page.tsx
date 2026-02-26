@@ -1,5 +1,4 @@
 import { prisma } from "../../../prisma/prisma-client";
-// ...existing code...
 import TicketDashboard from "./TicketDashboard";
 
 interface TicketPageProps {
