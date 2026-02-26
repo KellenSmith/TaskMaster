@@ -44,11 +44,7 @@ const DashboardPage = async () => {
         },
     });
 
-    return (
-        <ErrorBoundarySuspense>
-            <Dashboard ticketInfoPromise={ticketInfoPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <Dashboard ticketInfoPromise={ticketInfoPromise} />;
 };
 
 export default DashboardPage;
