@@ -18,9 +18,9 @@ vi.mock("./ui/TextContent", () => ({
 describe("HomeDashboard", () => {
     it("renders home dashboard for logged out user", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
-        await act(async () =>
-            render(<HomeDashboard textContentPromise={textContentPromise as any} />),
-        );
+
+        render(<HomeDashboard textContentPromise={textContentPromise as any} />);
+
         expect(
             await screen.findByRole("button", { name: /apply for membership/i }),
         ).toBeInTheDocument();
@@ -29,9 +29,9 @@ describe("HomeDashboard", () => {
 
     it("calls clientRedirect when apply button clicked", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
-        await act(async () =>
-            render(<HomeDashboard textContentPromise={textContentPromise as any} />),
-        );
+
+        render(<HomeDashboard textContentPromise={textContentPromise as any} />);
+
         const button = await screen.findByRole("button", { name: "Apply for membership" });
         await userEvent.click(button);
         expect(vi.mocked(clientRedirect)).toHaveBeenCalledWith(expect.anything(), ["apply"]);
@@ -45,9 +45,7 @@ describe("HomeDashboard", () => {
             language: Language.swedish,
         } as any);
 
-        await act(async () =>
-            render(<HomeDashboard textContentPromise={textContentPromise as any} />),
-        );
+        render(<HomeDashboard textContentPromise={textContentPromise as any} />);
 
         expect(
             await screen.findByRole("button", { name: "Ansök om medlemskap" }),
