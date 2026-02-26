@@ -1,5 +1,5 @@
 "use server";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import GlobalConstants from "../../GlobalConstants";
 import OrderDashboard from "./OrderDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
@@ -29,11 +29,7 @@ const OrderPage = async ({ searchParams }: OrderPageProps) => {
     if (loggedInUser.id !== order.user_id && !isUserAdmin(loggedInUser))
         throw new Error("Not authorized to view this order");
 
-    return (
-        <ErrorBoundarySuspense>
-            <OrderDashboard orderPromise={new Promise((resolve) => resolve(order))} />
-        </ErrorBoundarySuspense>
-    );
+    return <OrderDashboard orderPromise={new Promise((resolve) => resolve(order))} />;
 };
 
 export default OrderPage;

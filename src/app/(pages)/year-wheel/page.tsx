@@ -1,4 +1,4 @@
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import YearWheelDashboard from "./YearWheelDashboard";
 import { prisma } from "../../../prisma/prisma-client";
 
@@ -8,10 +8,6 @@ const YearWheelPage = () => {
             tasks: true,
         },
     });
-    return (
-        <ErrorBoundarySuspense>
-            <YearWheelDashboard eventsPromise={eventsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <YearWheelDashboard eventsPromise={eventsPromise} />;
 };
 export default YearWheelPage;

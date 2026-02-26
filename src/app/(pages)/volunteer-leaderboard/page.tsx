@@ -1,5 +1,5 @@
 import { FC } from "react";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import { prisma } from "../../../prisma/prisma-client";
 import VolunteerLeaderboardClient from "./VolunteerLeaderboardClient";
 import { Prisma } from "../../../prisma/generated/client";
@@ -46,12 +46,7 @@ const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchP
     });
 
     return (
-        <ErrorBoundarySuspense>
-            <VolunteerLeaderboardClient
-                assigneeVolunteerHours={assigneeVolunteerHours}
-                year={year}
-            />
-        </ErrorBoundarySuspense>
+        <VolunteerLeaderboardClient assigneeVolunteerHours={assigneeVolunteerHours} year={year} />
     );
 };
 

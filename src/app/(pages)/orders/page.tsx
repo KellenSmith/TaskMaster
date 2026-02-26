@@ -1,6 +1,6 @@
 "use server";
 import OrdersDashboard from "./OrdersDashboard";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import { prisma } from "../../../prisma/prisma-client";
 
 const OrdersPage = async () => {
@@ -18,11 +18,7 @@ const OrdersPage = async () => {
             },
         },
     });
-    return (
-        <ErrorBoundarySuspense>
-            <OrdersDashboard ordersPromise={ordersPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <OrdersDashboard ordersPromise={ordersPromise} />;
 };
 
 export default OrdersPage;
