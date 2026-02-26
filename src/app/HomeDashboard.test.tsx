@@ -9,8 +9,6 @@ import userEvent from "@testing-library/user-event";
 // Mocks
 vi.mock("./lib/utils", () => ({
     clientRedirect: vi.fn(),
-    getRelativeUrl: vi.fn(() => "/calendar"),
-    getAbsoluteUrl: vi.fn(() => "https://testurl.com/api/ticket-qrcode/1"),
 }));
 vi.mock("./ui/TextContent", () => ({
     __esModule: true,
