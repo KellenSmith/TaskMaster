@@ -1,4 +1,4 @@
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import ShopDashboard from "./ShopDashboard";
 import { prisma } from "../../../prisma/prisma-client";
 
@@ -11,11 +11,7 @@ const ShopPage = () => {
             membership: true,
         },
     });
-    return (
-        <ErrorBoundarySuspense>
-            <ShopDashboard productsPromise={productsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <ShopDashboard productsPromise={productsPromise} />;
 };
 
 export default ShopPage;

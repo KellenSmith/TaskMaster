@@ -1,4 +1,4 @@
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 import { isUserAdmin } from "../../lib/utils";
@@ -24,14 +24,12 @@ const TasksPage = async () => {
     const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 
     return (
-        <ErrorBoundarySuspense>
-            <KanBanBoard
-                readOnly={!isUserAdmin(loggedInUser)}
-                tasksPromise={tasksPromise}
-                activeMembersPromise={activeMembersPromise}
-                skillBadgesPromise={skillBadgesPromise}
-            />
-        </ErrorBoundarySuspense>
+        <KanBanBoard
+            readOnly={!isUserAdmin(loggedInUser)}
+            tasksPromise={tasksPromise}
+            activeMembersPromise={activeMembersPromise}
+            skillBadgesPromise={skillBadgesPromise}
+        />
     );
 };
 

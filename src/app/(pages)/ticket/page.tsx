@@ -1,5 +1,5 @@
 import { prisma } from "../../../prisma/prisma-client";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import TicketDashboard from "./TicketDashboard";
 
 interface TicketPageProps {
@@ -19,11 +19,7 @@ const TicketPage = async ({ searchParams }: TicketPageProps) => {
         },
     });
 
-    return (
-        <ErrorBoundarySuspense>
-            <TicketDashboard eventParticipantPromise={eventParticipantPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <TicketDashboard eventParticipantPromise={eventParticipantPromise} />;
 };
 
 export default TicketPage;

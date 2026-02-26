@@ -1,11 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import TicketPage from "./page";
 import { prisma } from "../../../prisma/prisma-client";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
-vi.mock("../../ui/ErrorBoundarySuspense", () => ({
-    default: ({ children }: any) => <div data-testid="error-boundary">{children}</div>,
-}));
 vi.mock("./TicketDashboard", () => ({
     default: () => <div data-testid="ticket-dashboard" />,
 }));
@@ -33,14 +29,8 @@ describe("TicketPage", () => {
                 user: { select: { id: true, nickname: true } },
             },
         });
-        // Should render ErrorBoundarySuspense
-        expect(result.type).toBe(ErrorBoundarySuspense);
-        // Should render TicketDashboard inside ErrorBoundarySuspense
-        const ticketDashboardElement = result.props.children.type();
-        expect(ticketDashboardElement.props["data-testid"]).toBe("ticket-dashboard");
         // passes the ticketInfoPromise to Dashboard
-        const ticketDashboard = result.props.children;
-        expect(ticketDashboard.props.eventParticipantPromise).toStrictEqual(
+        expect(result.props.eventParticipantPromise).toStrictEqual(
             Promise.resolve(mockEventParticipant),
         );
     });
@@ -51,10 +41,7 @@ describe("TicketPage", () => {
 
         const result = await TicketPage({ searchParams });
 
-        const ticketDashboardElement = result.props.children.type();
-        expect(ticketDashboardElement.props["data-testid"]).toBe("ticket-dashboard");
         // passes the ticketInfoPromise to Dashboard
-        const ticketDashboard = result.props.children;
-        expect(ticketDashboard.props.eventParticipantPromise).toStrictEqual(Promise.resolve(null));
+        expect(result.props.eventParticipantPromise).toStrictEqual(Promise.resolve(null));
     });
 });

@@ -1,15 +1,11 @@
 import { prisma } from "../../../prisma/prisma-client";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import LocationsDashboard from "./LocationsDashboard";
 
 const LocationsPage = async () => {
     const locationsPromise = prisma.location.findMany();
 
-    return (
-        <ErrorBoundarySuspense>
-            <LocationsDashboard locationsPromise={locationsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <LocationsDashboard locationsPromise={locationsPromise} />;
 };
 
 export default LocationsPage;

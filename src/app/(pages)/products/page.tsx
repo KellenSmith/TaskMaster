@@ -1,5 +1,5 @@
 import ProductsDashboard from "./ProductsDashboard";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import { prisma } from "../../../prisma/prisma-client";
 
 const ProductsPage = () => {
@@ -12,11 +12,7 @@ const ProductsPage = () => {
         },
     });
 
-    return (
-        <ErrorBoundarySuspense>
-            <ProductsDashboard productsPromise={productsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <ProductsDashboard productsPromise={productsPromise} />;
 };
 
 export default ProductsPage;

@@ -1,7 +1,7 @@
 "use server";
 import CalendarDashboard from "./CalendarDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventStatus, Prisma } from "../../../prisma/generated/client";
@@ -26,11 +26,7 @@ const CalendarPage = async () => {
     });
     const locationsPromise = prisma.location.findMany();
 
-    return (
-        <ErrorBoundarySuspense>
-            <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />;
 };
 
 export default CalendarPage;

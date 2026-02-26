@@ -1,7 +1,6 @@
 "use server";
 import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { prisma } from "../../../prisma/prisma-client";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { EventStatus } from "../../../prisma/generated/enums";
@@ -87,19 +86,17 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const uniqueEventTags = [...new Set(events.flatMap((e) => e.tags))];
 
     return (
-        <ErrorBoundarySuspense>
-            <EventDashboard
-                eventPromise={new Promise((resolve) => resolve(event))}
-                eventTasksPromise={eventTasksPromise}
-                eventTicketsPromise={eventTicketsPromise}
-                activeMembersPromise={activeMembersPromise}
-                skillBadgesPromise={skillBadgesPromise}
-                eventParticipantsPromise={eventParticipantsPromise}
-                eventReservesPromise={eventReservesPromise}
-                locationsPromise={locationsPromise}
-                eventTags={uniqueEventTags}
-            />
-        </ErrorBoundarySuspense>
+        <EventDashboard
+            eventPromise={new Promise((resolve) => resolve(event))}
+            eventTasksPromise={eventTasksPromise}
+            eventTicketsPromise={eventTicketsPromise}
+            activeMembersPromise={activeMembersPromise}
+            skillBadgesPromise={skillBadgesPromise}
+            eventParticipantsPromise={eventParticipantsPromise}
+            eventReservesPromise={eventReservesPromise}
+            locationsPromise={locationsPromise}
+            eventTags={uniqueEventTags}
+        />
     );
 };
 
