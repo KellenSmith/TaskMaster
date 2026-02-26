@@ -1,5 +1,4 @@
 import { prisma } from "../../../prisma/prisma-client";
-// ...existing code...
 import LocationsDashboard from "./LocationsDashboard";
 
 const LocationsPage = async () => {
