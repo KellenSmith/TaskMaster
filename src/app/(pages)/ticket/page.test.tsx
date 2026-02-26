@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import TicketPage from "./page";
 import { prisma } from "../../../prisma/prisma-client";
 
+// Mock child component to not have to call contexts and other dependencies
 vi.mock("./TicketDashboard", () => ({
     default: () => <div data-testid="ticket-dashboard" />,
 }));

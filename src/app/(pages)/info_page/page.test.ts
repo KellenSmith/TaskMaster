@@ -15,9 +15,6 @@ vi.mock("../../lib/user-helpers", () => ({
 vi.mock("../../lib/text-content-actions", () => ({
     getTextContent: vi.fn(),
 }));
-vi.mock("./InfoDashboard", () => ({
-    default: () => <div data-testid="text-content">info page content</div>,
-}));
 
 describe("InfoPage", () => {
     it("renders info page correctly when user is authorized", async () => {
