@@ -66,5 +66,19 @@ describe("RootLayout", () => {
             expect(wrapper.contains(navPanel)).toBe(true);
             expect(wrapper).toHaveTextContent("Wrapped Content");
         });
+        it("catches errors in child components and does not crash the entire layout", () => {
+            const ErrorThrowingComponent = () => {
+                throw new Error("Test error");
+            };
+
+            expect(() =>
+                render(
+                    <RootLayoutInner>
+                        <ErrorThrowingComponent />
+                    </RootLayoutInner>,
+                ),
+            ).not.toThrow();
+            expect(screen.getByText("An unexpected error occurred")).toBeInTheDocument();
+        });
     });
 });
