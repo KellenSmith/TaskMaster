@@ -20,6 +20,8 @@ const TaskPage = async ({ searchParams }: { searchParams: SearchParams }) => {
     });
     const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
     const activeMembersPromise = getActiveMembers();
+
+    // TODO: enable unassigning tasks + clone tasks and edit such that the task is unassigned
     return (
         <TaskDashboard
             taskPromise={taskPromise}
