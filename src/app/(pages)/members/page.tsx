@@ -14,6 +14,7 @@ const MembersPage = async () => {
     const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 
     // TODO: If on mobile, just show list of pending members, viewable and validatable
+    // TODO: Extend filter options
     return (
         <MembersDashboard membersPromise={membersPromise} skillBadgesPromise={skillBadgesPromise} />
     );
