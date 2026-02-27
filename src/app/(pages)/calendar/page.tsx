@@ -2,12 +2,14 @@
 import CalendarDashboard from "./CalendarDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
 // ...existing code...
-import { isUserAdmin } from "../../lib/utils";
+import { isMembershipExpired, isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventStatus, Prisma } from "../../../prisma/generated/client";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
+
+    if (!loggedInUser || isMembershipExpired(loggedInUser)) throw new Error("Unauthorized");
 
     const eventFilterParams = {} as Prisma.EventWhereInput;
 
