@@ -289,6 +289,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
 
     const updateEventById = async (formData: FormData) => {
         try {
+            // TODO: Allow reassigning host when updating event, currently host can only be assigned when creating event
             await updateEvent(event.id, formData);
             setDialogOpen(null);
             return GlobalLanguageTranslations.successfulSave[language];
