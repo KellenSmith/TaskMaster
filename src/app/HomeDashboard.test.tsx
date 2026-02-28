@@ -1,4 +1,4 @@
-import { screen, act, render } from "@testing-library/react";
+import { screen, render } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 import HomeDashboard from "./HomeDashboard";
 import { clientRedirect } from "./lib/utils";
