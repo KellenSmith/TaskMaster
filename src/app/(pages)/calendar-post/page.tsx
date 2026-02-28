@@ -13,6 +13,7 @@ interface EventPageProps {
 const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventId = (await searchParams)[GlobalConstants.EVENT_ID];
     const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) throw new Error("Unauthorized");
 
     const event = await prisma.event.findUniqueOrThrow({
         where: {
@@ -33,9 +34,10 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
         !isUserAdmin(loggedInUser) &&
         !isUserHost(loggedInUser, event)
     ) {
-        throw new Error("You are not authorized to view this event");
+        throw new Error("Unauthorized");
     }
 
+    // TODO: Optimize database queries based on role and need for data (e.g. only fetch locations if user is host or admin)
     const eventTasksPromise = prisma.task.findMany({
         where: { event_id: eventId },
         include: {
