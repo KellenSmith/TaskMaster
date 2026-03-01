@@ -1,6 +1,10 @@
 import { Language } from "../../prisma/generated/enums";
 
 const LanguageTranslations = {
+    unauthorized: {
+        [Language.english]: "Unauthorized",
+        [Language.swedish]: "Obehörig",
+    },
     eventParticipantNotFound: {
         [Language.english]: "Event participant not found",
         [Language.swedish]: "Evenemangsdeltagare hittades inte",

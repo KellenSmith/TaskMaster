@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import TicketDashboard from "./TicketDashboard";
-import { EventStatus, Language, TicketType } from "../../../prisma/generated/enums";
+import { EventStatus, Language, TicketType, UserRole } from "../../../prisma/generated/enums";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
@@ -10,9 +10,13 @@ import testdata from "../../../test/testdata";
 vi.mock("../../lib/event-participant-actions", () => ({
     checkInEventParticipant: vi.fn(),
 }));
-vi.mock("../../lib/user-actions", () => ({
-    getLoggedInUser: vi.fn(),
-}));
+const baseUser = {
+    id: "user1",
+    nickname: "TestUser",
+    user_membership: {
+        expires_at: dayjs().add(1, "month").toDate(),
+    },
+};
 
 const baseEvent = {
     id: "event1",
@@ -25,6 +29,7 @@ const baseEvent = {
     max_participants: 100,
     tags: [],
     host_id: null,
+    tasks: [],
 };
 const baseTicket = {
     id: "ticket1",
@@ -32,10 +37,6 @@ const baseTicket = {
     product_id: "product1",
     event_id: baseEvent.id,
     event: baseEvent,
-};
-const baseUser = {
-    id: "user1",
-    nickname: "TestUser",
 };
 
 function getEventParticipant(overrides = {}) {
@@ -51,9 +52,7 @@ function getEventParticipant(overrides = {}) {
 }
 
 const renderWithNotificationContext = async (eventParticipant: any) => {
-    return await act(async () =>
-        render(<TicketDashboard eventParticipantPromise={Promise.resolve(eventParticipant)} />),
-    );
+    return await act(async () => render(<TicketDashboard eventParticipant={eventParticipant} />));
 };
 
 describe("TicketDashboard", () => {
@@ -85,6 +84,10 @@ describe("TicketDashboard", () => {
     });
 
     it("checks in the participant and shows green status if within event window", async () => {
+        vi.mocked(useUserContext).mockReturnValue({
+            user: { ...baseUser, role: UserRole.admin },
+            language: Language.english,
+        } as any);
         vi.mocked(checkInEventParticipant).mockResolvedValue(undefined);
         const eventParticipant = getEventParticipant();
 
@@ -96,6 +99,10 @@ describe("TicketDashboard", () => {
     });
 
     it("shows yellow status and error if check-in fails", async () => {
+        vi.mocked(useUserContext).mockReturnValue({
+            user: { ...baseUser, role: UserRole.admin },
+            language: Language.english,
+        } as any);
         vi.mocked(checkInEventParticipant).mockResolvedValue("Server error");
         const eventParticipant = getEventParticipant();
 
@@ -107,6 +114,10 @@ describe("TicketDashboard", () => {
     });
 
     it("shows red status if already checked in (checked_in_at > 10s ago)", async () => {
+        vi.mocked(useUserContext).mockReturnValue({
+            user: { ...baseUser, role: UserRole.admin },
+            language: Language.english,
+        } as any);
         const checkedInAt = dayjs().subtract(30, "second").toDate();
         const eventParticipant = getEventParticipant({ checked_in_at: checkedInAt });
 
@@ -147,6 +158,10 @@ describe("TicketDashboard", () => {
     });
 
     it("retries check-in if it fails due to a transient error", async () => {
+        vi.mocked(useUserContext).mockReturnValue({
+            user: { ...baseUser, role: UserRole.admin },
+            language: Language.english,
+        } as any);
         // Simulate transient error by failing first, then succeeding
         let callCount = 0;
         vi.mocked(checkInEventParticipant).mockImplementation(async () => {
@@ -162,12 +177,16 @@ describe("TicketDashboard", () => {
     });
 
     it("handles unexpected errors during check-in gracefully", async () => {
+        vi.mocked(useUserContext).mockReturnValue({
+            user: { ...baseUser, role: UserRole.admin },
+            language: Language.english,
+        } as any);
         vi.mocked(checkInEventParticipant).mockImplementation(() => {
             throw new Error("Unexpected");
         });
         const eventParticipant = getEventParticipant();
         await renderWithNotificationContext(eventParticipant);
-        expect(screen.getByText(/check-in failed/i)).toBeInTheDocument();
+        expect(await screen.findByText(/check-in failed/i)).toBeInTheDocument();
         expect(screen.getByText("Valid")).toBeInTheDocument();
     });
 });

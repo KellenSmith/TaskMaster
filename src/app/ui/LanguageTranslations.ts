@@ -134,6 +134,10 @@ const LanguageTranslations = {
         [Language.english]: "After",
         [Language.swedish]: "Efter",
     },
+    unexpectedError: {
+        [Language.english]: "An unexpected error occurred",
+        [Language.swedish]: "Ett oväntat fel inträffade",
+    },
 };
 
 export default LanguageTranslations;

@@ -5,12 +5,12 @@ import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import { buildFormData } from "../../test/test-helpers";
 import * as infoPageActions from "./info-page-actions";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { serverRedirect } from "./utils";
 import { createTextContent } from "./text-content-actions";
 import { Language, UserRole } from "../../prisma/generated/enums";
 
-vi.mock("./user-actions", () => ({
+vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 

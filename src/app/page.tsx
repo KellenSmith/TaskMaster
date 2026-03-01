@@ -1,16 +1,12 @@
 import React from "react";
-import ErrorBoundarySuspense from "./ui/ErrorBoundarySuspense";
+// ...existing code...
 import HomeDashboard from "./HomeDashboard";
 import { getTextContent } from "./lib/text-content-actions";
 
 const HomePage: React.FC = async () => {
     const textContentPromise = getTextContent("home");
 
-    return (
-        <ErrorBoundarySuspense>
-            <HomeDashboard textContentPromise={textContentPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <HomeDashboard textContentPromise={textContentPromise} />;
 };
 
 export default HomePage;

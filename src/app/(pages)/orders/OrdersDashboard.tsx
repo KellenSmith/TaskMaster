@@ -152,6 +152,7 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     ];
 
     // TODO: If on mobile, minimize content
+    // TODO: Extend filter options
     return (
         <Stack sx={{ height: "100%" }}>
             <Datagrid

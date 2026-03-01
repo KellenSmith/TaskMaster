@@ -52,8 +52,16 @@ export const getTermsOfPurchaseUrl = (
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
     language: Language,
 ) => {
-    if (language === Language.english) return organizationSettings.terms_of_purchase_english_url;
-    if (language === Language.swedish) return organizationSettings.terms_of_purchase_swedish_url;
+    if (language === Language.english)
+        return (
+            organizationSettings.terms_of_purchase_english_url ||
+            "documents/terms-of-purchase-english.pdf"
+        );
+    if (language === Language.swedish)
+        return (
+            organizationSettings.terms_of_purchase_swedish_url ||
+            "documents/terms-of-purchase-swedish.pdf"
+        );
 };
 
 export const userHasSkillBadge = (

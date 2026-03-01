@@ -1,9 +1,8 @@
 import { prisma } from "../../../prisma/prisma-client";
-import { getLoggedInUser } from "../../lib/user-actions";
+import { getLoggedInUser } from "../../lib/user-helpers";
 import Dashboard from "./Dashboard";
 import { serverRedirect } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 
 const DashboardPage = async () => {
     const loggedInUser = await getLoggedInUser();
@@ -44,11 +43,7 @@ const DashboardPage = async () => {
         },
     });
 
-    return (
-        <ErrorBoundarySuspense>
-            <Dashboard ticketInfoPromise={ticketInfoPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <Dashboard ticketInfoPromise={ticketInfoPromise} />;
 };
 
 export default DashboardPage;

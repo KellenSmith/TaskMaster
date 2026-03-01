@@ -3,11 +3,11 @@ import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import * as orderActions from "./order-actions";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { serverRedirect } from "./utils";
 import { OrderStatus, UserRole } from "../../prisma/generated/enums";
 
-vi.mock("./user-actions", () => ({
+vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 
