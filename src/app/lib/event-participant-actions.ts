@@ -5,12 +5,13 @@ import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
-import { getUserLanguage } from "./user-helpers";
+import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { formatDate } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { Prisma } from "../../prisma/generated/client";
+import { isUserAdmin } from "./utils";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,
@@ -189,6 +190,7 @@ export const checkInEventParticipant = async (
     eventParticipantId: string,
 ): Promise<void | string> => {
     const validatedEventParticipantId = UuidSchema.parse(eventParticipantId);
+    const loggedInUser = await getLoggedInUser();
     const language = await getUserLanguage();
     try {
         const eventParticipant = await prisma.eventParticipant.findUniqueOrThrow({
@@ -198,11 +200,30 @@ export const checkInEventParticipant = async (
             include: {
                 ticket: {
                     include: {
-                        event: true,
+                        event: {
+                            include: {
+                                tasks: {
+                                    where: {
+                                        assignee_id: loggedInUser!.id,
+                                    },
+                                    select: {
+                                        id: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
+                user: { select: { id: true, nickname: true } },
             },
         });
+
+        const isEventHost = eventParticipant.ticket.event.host_id === loggedInUser!.id;
+        const isVolunteer = eventParticipant.ticket.event.tasks.length || 0 > 0;
+
+        if (!(isUserAdmin(loggedInUser) || isEventHost || isVolunteer))
+            return LanguageTranslations.unauthorized[language];
+
         if (eventParticipant.checked_in_at) {
             // Consider already checked in if checked_in_at is set and is before now minus 10 seconds (to account for small delays)
             if (

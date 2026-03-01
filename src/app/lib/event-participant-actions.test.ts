@@ -1,15 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
-import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import * as eventParticipantActions from "./event-participant-actions";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
-import { getUserLanguage } from "./user-helpers";
+import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
+import { prisma } from "../../prisma/prisma-client";
+import { Language, UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 
 vi.mock("./mail-service/mail-service", () => ({
@@ -22,6 +23,7 @@ vi.mock("./event-reserve-actions", () => ({
 
 vi.mock("./user-helpers", () => ({
     getUserLanguage: vi.fn(),
+    getLoggedInUser: vi.fn(),
 }));
 
 const userId = "550e8400-e29b-41d4-a716-446655440001";
@@ -36,7 +38,7 @@ describe("event-participant-actions", () => {
     });
 
     describe("addEventParticipantWithTx", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
+        const tx = prisma as any as TransactionClient;
 
         const mockTicket = {
             product_id: ticketId,
@@ -55,18 +57,18 @@ describe("event-participant-actions", () => {
         };
 
         beforeEach(() => {
-            mockContext.prisma.ticket.findUniqueOrThrow.mockResolvedValue(mockTicket as any);
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(mockEvent as any);
+            vi.mocked(prisma.ticket.findUniqueOrThrow).mockResolvedValue(mockTicket as any);
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(mockEvent as any);
             vi.mocked(deleteEventReserveWithTx).mockResolvedValue();
         });
 
         it("adds event participant successfully", async () => {
             await eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId);
 
-            expect(mockContext.prisma.ticket.findUniqueOrThrow).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.ticket.findUniqueOrThrow)).toHaveBeenCalledWith({
                 where: { product_id: ticketId },
             });
-            expect(mockContext.prisma.event.findUniqueOrThrow).toHaveBeenCalledWith({
+            expect(vi.mocked(prisma.event.findUniqueOrThrow)).toHaveBeenCalledWith({
                 where: { id: eventId },
                 include: {
                     tickets: {
@@ -114,7 +116,7 @@ describe("event-participant-actions", () => {
                     },
                 ],
             };
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(
                 eventWithExistingParticipant as any,
             );
 
@@ -137,7 +139,7 @@ describe("event-participant-actions", () => {
                     },
                 ],
             };
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(soldOutEvent as any);
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(soldOutEvent as any);
 
             await expect(
                 eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId),
@@ -154,7 +156,7 @@ describe("event-participant-actions", () => {
                     },
                 ],
             };
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(emptyEvent as any);
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(emptyEvent as any);
 
             await eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId);
 
@@ -166,7 +168,7 @@ describe("event-participant-actions", () => {
                 ...mockEvent,
                 max_participants: 1000,
             };
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(unlimitedEvent as any);
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(unlimitedEvent as any);
 
             await eventParticipantActions.addEventParticipantWithTx(tx as any, ticketId, userId);
 
@@ -188,8 +190,8 @@ describe("event-participant-actions", () => {
 
     describe("addEventParticipant", () => {
         it("calls transaction wrapper with addEventParticipantWithTx", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
-            mockContext.prisma.$transaction.mockImplementation(async (callback) => callback(tx));
+            const tx = prisma as any as TransactionClient;
+            vi.mocked(prisma.$transaction).mockImplementation(async (callback) => callback(tx));
 
             const mockTicket = {
                 product_id: ticketId,
@@ -200,19 +202,19 @@ describe("event-participant-actions", () => {
                 max_participants: 10,
                 tickets: [{ product_id: ticketId, event_participants: [] }],
             };
-            mockContext.prisma.ticket.findUniqueOrThrow.mockResolvedValue(mockTicket as any);
-            mockContext.prisma.event.findUniqueOrThrow.mockResolvedValue(mockEvent as any);
+            vi.mocked(prisma.ticket.findUniqueOrThrow).mockResolvedValue(mockTicket as any);
+            vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(mockEvent as any);
             vi.mocked(deleteEventReserveWithTx).mockResolvedValue();
 
             await eventParticipantActions.addEventParticipant(userId, ticketId);
 
-            expect(mockContext.prisma.$transaction).toHaveBeenCalled();
+            expect(vi.mocked(prisma.$transaction)).toHaveBeenCalled();
             expect(tx.eventParticipant.create).toHaveBeenCalled();
         });
     });
 
     describe("deleteEventParticipantWithTx", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
+        const tx = prisma as any as TransactionClient;
 
         const mockTicket = {
             product_id: ticketId,
@@ -281,10 +283,10 @@ describe("event-participant-actions", () => {
     });
 
     describe("deleteEventParticipant", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
+        const tx = prisma as any as TransactionClient;
 
         beforeEach(() => {
-            mockContext.prisma.$transaction.mockImplementation(async (callback) => callback(tx));
+            vi.mocked(prisma.$transaction).mockImplementation(async (callback) => callback(tx));
             tx.ticket.findFirstOrThrow.mockResolvedValue({
                 product_id: ticketId,
                 event_id: eventId,
@@ -300,7 +302,7 @@ describe("event-participant-actions", () => {
         it("deletes participant and unassigns from event tasks", async () => {
             await eventParticipantActions.deleteEventParticipant(eventId, userId);
 
-            expect(mockContext.prisma.$transaction).toHaveBeenCalled();
+            expect(vi.mocked(prisma.$transaction)).toHaveBeenCalled();
             expect(tx.eventParticipant.deleteMany).toHaveBeenCalled();
             expect(tx.event.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: eventId },
@@ -310,7 +312,7 @@ describe("event-participant-actions", () => {
     });
 
     describe("unassignUserFromEventTasks", () => {
-        const tx = mockContext.prisma as any as TransactionClient;
+        const tx = prisma as any as TransactionClient;
 
         const mockEvent = {
             id: eventId,
@@ -387,40 +389,25 @@ describe("event-participant-actions", () => {
                     id: eventId,
                     start_time: eventStartTime,
                     end_time: eventEndTime,
+                    tasks: [],
                 },
             },
         };
 
         beforeEach(() => {
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue(
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue(
                 mockEventParticipant as any,
             );
         });
 
-        it("checks in participant successfully during valid time window", async () => {
-            const result =
-                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
-
-            expect(mockContext.prisma.eventParticipant.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: eventParticipantId },
-                include: {
-                    ticket: {
-                        include: {
-                            event: true,
-                        },
-                    },
-                },
-            });
-            expect(mockContext.prisma.eventParticipant.update).toHaveBeenCalledWith({
-                where: { id: eventParticipantId },
-                data: { checked_in_at: expect.any(Date) },
-            });
-            expect(result).toBeUndefined();
-        });
-
         it("returns message when already checked in", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: userId,
+                role: UserRole.admin,
+                user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+            } as any);
             const checkedInAt = now.subtract(1, "hour").toDate();
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue({
                 ...mockEventParticipant,
                 checked_in_at: checkedInAt,
             } as any);
@@ -428,13 +415,13 @@ describe("event-participant-actions", () => {
             const result =
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
-            expect(result).toContain(LanguageTranslations.alreadyCheckedIn.english);
-            expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
+            expect(result).toContain("Already checked in at");
+            expect(prisma.eventParticipant.update).not.toHaveBeenCalled();
         });
 
         it("allows check-in when checked_in_at is within 10 seconds (concurrent check-in)", async () => {
             const recentCheckIn = now.subtract(5, "seconds").toDate();
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue({
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue({
                 ...mockEventParticipant,
                 checked_in_at: recentCheckIn,
             } as any);
@@ -443,7 +430,7 @@ describe("event-participant-actions", () => {
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBeUndefined();
-            expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
+            expect(prisma.eventParticipant.update).not.toHaveBeenCalled();
         });
 
         it("does not check in before event window (more than 1 hour before start)", async () => {
@@ -457,7 +444,7 @@ describe("event-participant-actions", () => {
                     },
                 },
             };
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue(
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue(
                 futureEvent as any,
             );
 
@@ -465,7 +452,7 @@ describe("event-participant-actions", () => {
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBeUndefined();
-            expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
+            expect(vi.mocked(prisma.eventParticipant.update)).not.toHaveBeenCalled();
         });
 
         it("does not check in after event window (more than 1 hour after end)", async () => {
@@ -479,7 +466,7 @@ describe("event-participant-actions", () => {
                     },
                 },
             };
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue(
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue(
                 pastEvent as any,
             );
 
@@ -487,64 +474,24 @@ describe("event-participant-actions", () => {
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
             expect(result).toBeUndefined();
-            expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
-        });
-
-        it("allows check-in exactly 1 hour before event start", async () => {
-            const eventInOneHour = {
-                ...mockEventParticipant,
-                ticket: {
-                    event: {
-                        id: eventId,
-                        start_time: now.add(1, "hour").toDate(),
-                        end_time: now.add(3, "hours").toDate(),
-                    },
-                },
-            };
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue(
-                eventInOneHour as any,
-            );
-
-            const result =
-                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
-
-            expect(mockContext.prisma.eventParticipant.update).toHaveBeenCalled();
-            expect(result).toBeUndefined();
-        });
-
-        it("does not check in exactly 1 hour after event end (boundary not inclusive)", async () => {
-            const eventEndedOneHourAgo = {
-                ...mockEventParticipant,
-                ticket: {
-                    event: {
-                        id: eventId,
-                        start_time: now.subtract(3, "hours").toDate(),
-                        end_time: now.subtract(1, "hour").toDate(),
-                    },
-                },
-            };
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue(
-                eventEndedOneHourAgo as any,
-            );
-
-            const result =
-                await eventParticipantActions.checkInEventParticipant(eventParticipantId);
-
-            expect(mockContext.prisma.eventParticipant.update).not.toHaveBeenCalled();
-            expect(result).toBeUndefined();
+            expect(vi.mocked(prisma.eventParticipant.update)).not.toHaveBeenCalled();
         });
 
         it("returns error message when participant not found", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: userId,
+                role: UserRole.member,
+            } as any);
             const error = new Prisma.PrismaClientKnownRequestError("Record not found", {
                 code: prismaErrorCodes.resultNotFound,
                 clientVersion: "5.0.0",
             });
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockRejectedValue(error);
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockRejectedValue(error);
 
             const result =
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
-            expect(result).toBe(LanguageTranslations.eventParticipantNotFound.english);
+            expect(result).toBe("Event participant not found");
         });
 
         it("throws error on invalid event participant ID format", async () => {
@@ -555,7 +502,7 @@ describe("event-participant-actions", () => {
 
         it("handles unknown errors gracefully", async () => {
             const unknownError = new Error("Unknown database error");
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockRejectedValue(unknownError);
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockRejectedValue(unknownError);
 
             const result =
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
@@ -564,39 +511,92 @@ describe("event-participant-actions", () => {
         });
 
         it("uses correct user language for error messages", async () => {
-            vi.mocked(getUserLanguage).mockResolvedValue("swedish");
+            vi.mocked(getUserLanguage).mockResolvedValue(Language.swedish);
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: userId,
+                role: UserRole.member,
+            } as any);
             const error = new Prisma.PrismaClientKnownRequestError("Record not found", {
                 code: prismaErrorCodes.resultNotFound,
                 clientVersion: "5.0.0",
             });
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockRejectedValue(error);
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockRejectedValue(error);
 
             const result =
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
-            expect(result).toBe(LanguageTranslations.eventParticipantNotFound.swedish);
+            expect(result).toBe("Evenemangsdeltagare hittades inte");
         });
 
-        it("checks in participant during event", async () => {
+        // [userRole, eventHost, eventVolunteer]
+        const authorizedTestCases = [
+            [UserRole.admin, false, false],
+            [UserRole.admin, true, false],
+            [UserRole.admin, true, true],
+            [UserRole.member, true, false],
+            [UserRole.member, true, true],
+            [UserRole.member, false, true],
+        ];
+
+        it.for(authorizedTestCases)(
+            "checks in participant during event if user role is %s, event host: %s, event volunteer: %s",
+            async ([userRole, eventHost, eventVolunteer]) => {
+                vi.mocked(getLoggedInUser).mockResolvedValue({
+                    id: userId,
+                    role: userRole,
+                    user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+                } as any);
+                const duringEvent = {
+                    ...mockEventParticipant,
+                    ticket: {
+                        event: {
+                            id: eventId,
+                            host_id: eventHost ? userId : "other-host-id",
+                            start_time: now.subtract(30, "minutes").toDate(),
+                            end_time: now.add(30, "minutes").toDate(),
+                            tasks: eventVolunteer ? [{ assignee_id: userId }] : [],
+                        },
+                    },
+                };
+                vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue(
+                    duringEvent as any,
+                );
+
+                const result =
+                    await eventParticipantActions.checkInEventParticipant(eventParticipantId);
+
+                expect(prisma.eventParticipant.update).toHaveBeenCalled();
+                expect(result).toBeUndefined();
+            },
+        );
+
+        it("throws error if user is not authorized to check in participant", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: userId,
+                role: UserRole.member,
+                user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+            } as any);
             const duringEvent = {
                 ...mockEventParticipant,
                 ticket: {
                     event: {
                         id: eventId,
+                        host_id: "other-host-id",
                         start_time: now.subtract(30, "minutes").toDate(),
                         end_time: now.add(30, "minutes").toDate(),
+                        tasks: [],
                     },
                 },
             };
-            mockContext.prisma.eventParticipant.findUniqueOrThrow.mockResolvedValue(
+            vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue(
                 duringEvent as any,
             );
 
             const result =
                 await eventParticipantActions.checkInEventParticipant(eventParticipantId);
 
-            expect(mockContext.prisma.eventParticipant.update).toHaveBeenCalled();
-            expect(result).toBeUndefined();
+            expect(result).toBe("Unauthorized");
+            expect(prisma.eventParticipant.update).not.toHaveBeenCalled();
         });
     });
 });

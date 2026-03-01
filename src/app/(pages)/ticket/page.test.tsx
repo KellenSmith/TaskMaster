@@ -4,7 +4,6 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { UserRole } from "../../../prisma/generated/enums";
 import dayjs from "dayjs";
-import { includes } from "zod";
 
 // Mock child component to not have to call contexts and other dependencies
 vi.mock("./TicketDashboard", () => ({
