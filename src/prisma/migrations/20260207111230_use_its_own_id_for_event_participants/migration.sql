@@ -1,11 +1,17 @@
-/*
-  Warnings:
+-- 1) Add the new id column as nullable first
+ALTER TABLE "event_participants"
+ADD COLUMN "id" TEXT;
 
-  - The primary key for the `event_participants` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - The required column `id` was added to the `event_participants` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
+-- 2) Backfill existing rows using a deterministic value derived from the old composite key
+UPDATE "event_participants"
+SET "id" = json_build_array("user_id", "ticket_id")::text
+WHERE "id" IS NULL;
 
-*/
--- AlterTable
-ALTER TABLE "event_participants" DROP CONSTRAINT "event_participants_pkey",
-ADD COLUMN     "id" TEXT NOT NULL,
+-- 3) Make id required now that existing rows are populated
+ALTER TABLE "event_participants"
+ALTER COLUMN "id" SET NOT NULL;
+
+-- 4) Replace old composite primary key with id primary key
+ALTER TABLE "event_participants"
+DROP CONSTRAINT "event_participants_pkey",
 ADD CONSTRAINT "event_participants_pkey" PRIMARY KEY ("id");
