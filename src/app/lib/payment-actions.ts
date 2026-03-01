@@ -2,7 +2,7 @@
 
 import { prisma } from "../../prisma/prisma-client";
 import { isUserAdmin } from "./utils";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { UuidSchema } from "./zod-schemas";
 import { progressOrder } from "./order-helpers";
 import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";

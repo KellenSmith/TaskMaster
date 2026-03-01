@@ -3,7 +3,7 @@ import { redirectToOrderPayment, checkPaymentStatus } from "./payment-actions";
 import { prisma } from "../../prisma/prisma-client";
 import { progressOrder } from "./order-helpers";
 import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { isUserAdmin } from "./utils";
 import { revalidateTag } from "next/cache";
 import { OrderStatus } from "../../prisma/generated/enums";
@@ -15,7 +15,7 @@ vi.mock("./payment-helpers", () => ({
     isOrderpaid: vi.fn(),
     redirectToSwedbankPayment: vi.fn(),
 }));
-vi.mock("./user-actions", () => ({
+vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 vi.mock("./utils", () => ({

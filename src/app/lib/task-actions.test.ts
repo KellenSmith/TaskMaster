@@ -11,7 +11,7 @@ import {
     deleteEventParticipantWithTx,
 } from "./event-participant-actions";
 import { addEventReserveWithTx } from "./event-reserve-actions";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { isUserAdmin, isUserHost } from "./utils";
 import { TaskStatus, TicketType, UserRole } from "../../prisma/generated/enums";
 
@@ -28,7 +28,7 @@ vi.mock("./event-reserve-actions", () => ({
     addEventReserveWithTx: vi.fn(),
 }));
 
-vi.mock("./user-actions", () => ({
+vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 

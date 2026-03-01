@@ -3,9 +3,9 @@ import { TransactionClient } from "../../test/types/test-types";
 import { addEventParticipantWithTx } from "./event-participant-actions";
 import { sendMail } from "./mail-service/mail-service";
 import * as productHelpers from "./product-helpers";
-import { renewUserMembership } from "./user-membership-actions";
+import { renewUserMembership } from "./user-membership-helpers";
 
-vi.mock("./user-membership-actions", () => ({
+vi.mock("./user-membership-helpers", () => ({
     renewUserMembership: vi.fn(),
 }));
 

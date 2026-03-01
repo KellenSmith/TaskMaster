@@ -1,10 +1,11 @@
 import HomePage from "./page";
 import { vi, describe, it, expect } from "vitest";
-import { getLoggedInUser } from "./lib/user-actions";
+import { getLoggedInUser } from "./lib/user-helpers";
 import { getTextContent } from "./lib/text-content-actions";
 import dayjs from "dayjs";
+import { ReactElement } from "react";
 
-vi.mock("./lib/user-actions", () => ({
+vi.mock("./lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 vi.mock("./lib/text-content-actions", () => ({
@@ -15,25 +16,36 @@ beforeEach(() => {
     vi.spyOn(dayjs, "utc").mockReturnValue(mockedNow);
 });
 
-// Mock child components
-vi.mock("./HomeDashboard", () => ({
-    default: () => <div data-testid="home-dashboard">HomeDashboard</div>,
-}));
-
 describe("HomePage", () => {
     it("renders TextContent for logged-out user", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue(null);
+        const textContentData = {
+            id: "home",
+            translations: [],
+        } as any;
+        vi.mocked(getTextContent).mockResolvedValue(textContentData);
 
-        await HomePage({});
+        const result = (await HomePage({})) as ReactElement;
 
         expect(vi.mocked(getTextContent)).toHaveBeenCalledWith("home");
+        expect(result.props).toStrictEqual({
+            textContentPromise: Promise.resolve(textContentData),
+        });
     });
 
     it("renders TextContent for logged in user", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue({ id: "user-1" } as any);
+        const textContentData = {
+            id: "home",
+            translations: [],
+        } as any;
+        vi.mocked(getTextContent).mockResolvedValue(textContentData);
 
-        await HomePage({});
+        const result = (await HomePage({})) as ReactElement;
 
         expect(vi.mocked(getTextContent)).toHaveBeenCalledWith("home");
+        expect(result.props).toStrictEqual({
+            textContentPromise: Promise.resolve(textContentData),
+        });
     });
 });

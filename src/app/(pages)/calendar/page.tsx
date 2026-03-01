@@ -1,13 +1,15 @@
 "use server";
 import CalendarDashboard from "./CalendarDashboard";
-import { getLoggedInUser } from "../../lib/user-actions";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { isUserAdmin } from "../../lib/utils";
+import { getLoggedInUser } from "../../lib/user-helpers";
+// ...existing code...
+import { isMembershipExpired, isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventStatus, Prisma } from "../../../prisma/generated/client";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
+
+    if (!loggedInUser || isMembershipExpired(loggedInUser)) throw new Error("Unauthorized");
 
     const eventFilterParams = {} as Prisma.EventWhereInput;
 
@@ -26,11 +28,7 @@ const CalendarPage = async () => {
     });
     const locationsPromise = prisma.location.findMany();
 
-    return (
-        <ErrorBoundarySuspense>
-            <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />;
 };
 
 export default CalendarPage;

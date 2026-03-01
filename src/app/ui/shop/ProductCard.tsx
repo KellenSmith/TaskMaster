@@ -56,9 +56,11 @@ export default function ProductCard({
     };
 
     const getStockChipColor = () => {
-        if (product.stock == 0) return "error";
-        if (product.stock === null || (product.stock && product.stock > 5)) return "success";
-        return "warning";
+        if (product.stock === null || (product.stock && product.stock > 5)) {
+            return "success";
+        }
+        if (product.stock === 0) return "error";
+        return `warning`;
     };
 
     return (

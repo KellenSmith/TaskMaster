@@ -5,11 +5,6 @@ import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
 
 // Mocks
-vi.mock("../../lib/utils", () => ({
-    clientRedirect: vi.fn(),
-    getRelativeUrl: vi.fn(() => "/calendar"),
-    getAbsoluteUrl: vi.fn(() => "https://testurl.com/api/ticket-qrcode/1"),
-}));
 vi.mock("../../ui/TextContent", () => ({
     __esModule: true,
     default: ({ id }: any) => <div data-testid="text-content">{id}</div>,
@@ -61,7 +56,8 @@ describe("Dashboard", () => {
             screen.getByText(/You have no tickets. Check the calendar for upcoming events./i),
         ).toBeInTheDocument();
         // Link to calendar
-        expect(screen.getByRole("link", { name: /You have no tickets/i })).toBeInTheDocument();
+        const calendarLink = screen.getByRole("link", { name: /You have no tickets/i });
+        expect(calendarLink.getAttribute("href")).toBe("/calendar");
     });
 
     it("renders swedish translations", async () => {

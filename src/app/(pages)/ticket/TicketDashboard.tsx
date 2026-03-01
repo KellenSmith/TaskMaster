@@ -1,20 +1,22 @@
 "use client";
+
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
+import { isUserAdmin } from "../../lib/utils";
 
 interface TicketDashboardProps {
-    eventParticipantPromise: Promise<Prisma.EventParticipantGetPayload<{
+    eventParticipant: Prisma.EventParticipantGetPayload<{
         include: {
-            ticket: { include: { event: true } };
+            ticket: { include: { event: { include: { tasks: true } } } };
             user: { select: { id: true; nickname: true } };
         };
-    }> | null>;
+    }> | null;
 }
 
 const NoTicketFound = () => {
@@ -49,9 +51,8 @@ const NoTicketFound = () => {
     );
 };
 
-const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
-    const eventParticipant = use(eventParticipantPromise);
-    const { language } = useUserContext();
+const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
+    const { language, user } = useUserContext();
 
     // State for check-in result and status
     const [statusColor, setStatusColor] = useState<"success" | "warning" | "error">("warning");
@@ -64,16 +65,17 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
 
     const ticket = eventParticipant.ticket;
     const event = eventParticipant.ticket?.event;
-    const user = eventParticipant.user;
+    const isEventHost = user && ticket.event.host_id === user.id;
+    const isVolunteer = event.tasks.length || 0 > 0;
 
     const eventTitle = event?.title ?? null;
     const eventStart = event?.start_time ?? null;
     const eventEnd = event?.end_time ?? null;
     const ticketType = ticket?.type ?? null;
-    const userNickname = user?.nickname ?? null;
+    const eventParticipantNickname = eventParticipant.user?.nickname ?? null;
 
     const hasAllProperties = Boolean(
-        eventTitle && eventStart && eventEnd && ticketType && userNickname,
+        eventTitle && eventStart && eventEnd && ticketType && eventParticipantNickname,
     );
 
     const now = dayjs.utc();
@@ -134,7 +136,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
                 setTitle("Valid");
             }
         };
-        doCheckIn();
+        if (isUserAdmin(user) || isEventHost || isVolunteer) doCheckIn();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -171,7 +173,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
                                     : LanguageTranslations.endMissing[language])}
                         </Typography>
                         <Typography>
-                            {`${LanguageTranslations.belongsTo[language]}: ${userNickname ?? LanguageTranslations.userNicknameMissing[language]}`}
+                            {`${LanguageTranslations.belongsTo[language]}: ${eventParticipantNickname ?? LanguageTranslations.userNicknameMissing[language]}`}
                         </Typography>
                         <Typography>
                             {`${LanguageTranslations.ticketType[language]}: ${ticketType ?? LanguageTranslations.ticketTypeMissing[language]}`}

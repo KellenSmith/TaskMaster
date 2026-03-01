@@ -5,6 +5,7 @@ import {
     Card,
     CardContent,
     Checkbox,
+    CircularProgress,
     Divider,
     FormControlLabel,
     IconButton,
@@ -358,6 +359,7 @@ const Form: FC<FormProps> = ({
                 {editMode && (
                     <Button type="submit" variant="contained" disabled={isPending}>
                         {buttonLabel || GlobalLanguageTranslations.save[language]}
+                        {isPending && <CircularProgress size={20} sx={{ marginLeft: 2 }} />}
                     </Button>
                 )}
             </CardContent>

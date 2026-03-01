@@ -1,11 +1,10 @@
 "use server";
-import { getActiveMembers, getLoggedInUser } from "../../lib/user-actions";
 import EventDashboard from "./EventDashboard";
 import GlobalConstants from "../../GlobalConstants";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import { prisma } from "../../../prisma/prisma-client";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { EventStatus } from "../../../prisma/generated/enums";
+import { getActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 
 interface EventPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
@@ -14,6 +13,7 @@ interface EventPageProps {
 const EventPage = async ({ searchParams }: EventPageProps) => {
     const eventId = (await searchParams)[GlobalConstants.EVENT_ID];
     const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) throw new Error("Unauthorized");
 
     const event = await prisma.event.findUniqueOrThrow({
         where: {
@@ -34,9 +34,10 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
         !isUserAdmin(loggedInUser) &&
         !isUserHost(loggedInUser, event)
     ) {
-        throw new Error("You are not authorized to view this event");
+        throw new Error("Unauthorized");
     }
 
+    // TODO: Optimize database queries based on role and need for data (e.g. only fetch locations if user is host or admin)
     const eventTasksPromise = prisma.task.findMany({
         where: { event_id: eventId },
         include: {
@@ -87,19 +88,17 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
     const uniqueEventTags = [...new Set(events.flatMap((e) => e.tags))];
 
     return (
-        <ErrorBoundarySuspense>
-            <EventDashboard
-                eventPromise={new Promise((resolve) => resolve(event))}
-                eventTasksPromise={eventTasksPromise}
-                eventTicketsPromise={eventTicketsPromise}
-                activeMembersPromise={activeMembersPromise}
-                skillBadgesPromise={skillBadgesPromise}
-                eventParticipantsPromise={eventParticipantsPromise}
-                eventReservesPromise={eventReservesPromise}
-                locationsPromise={locationsPromise}
-                eventTags={uniqueEventTags}
-            />
-        </ErrorBoundarySuspense>
+        <EventDashboard
+            eventPromise={new Promise((resolve) => resolve(event))}
+            eventTasksPromise={eventTasksPromise}
+            eventTicketsPromise={eventTicketsPromise}
+            activeMembersPromise={activeMembersPromise}
+            skillBadgesPromise={skillBadgesPromise}
+            eventParticipantsPromise={eventParticipantsPromise}
+            eventReservesPromise={eventReservesPromise}
+            locationsPromise={locationsPromise}
+            eventTags={uniqueEventTags}
+        />
     );
 };
 

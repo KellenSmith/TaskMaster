@@ -10,7 +10,7 @@ import { auth } from "./app/lib/auth/auth";
 export const config = {
     // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
     matcher: [
-        "/((?!api|_next/static|_next/image|.well-known,appspecific,com.chrome.devtools.json|appspecific,com.chrome.devtools.json|README.pdf|.*\\.png$|.*\\.ico$|.*\\.svg$).*)",
+        "/((?!api|_next/static|_next/image|.well-known,appspecific,com.chrome.devtools.json|appspecific,com.chrome.devtools.json|README.pdf|.*\\.png$|.*\\.ico$|.*\\.svg$|.*\\.pdf$).*)",
     ],
 };
 
