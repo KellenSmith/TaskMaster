@@ -1,35 +1,64 @@
 "use server";
 import ProfileDashboard from "./ProfileDashboard";
-import { getFilteredTasks } from "../../lib/task-actions";
-import GlobalConstants from "../../GlobalConstants";
-import { getFilteredEvents } from "../../lib/event-actions";
-import { serverRedirect } from "../../lib/utils";
-import { getLoggedInUser } from "../../lib/user-actions";
-import { getAllSkillBadges } from "../../lib/skill-badge-actions";
+import { getLoggedInUser } from "../../lib/user-helpers";
+import { prisma } from "../../../prisma/prisma-client";
 
 const ProfilePage = async () => {
     const loggedInUser = await getLoggedInUser();
-    if (!loggedInUser) serverRedirect([GlobalConstants.LOGIN]);
+    if (!loggedInUser) throw new Error("Not authorized to view profile");
 
-    const tasksPromise = getFilteredTasks({ OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] });
-    const eventsPromise = getFilteredEvents({
-        OR: [
-            { host_id: loggedInUser.id },
-            {
-                tickets: {
-                    some: {
-                        event_participants: {
-                            some: {
-                                user_id: loggedInUser.id,
+    const tasksPromise = prisma.task.findMany({
+        where: { OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] },
+        include: {
+            assignee: {
+                select: {
+                    id: true,
+                    nickname: true,
+                },
+            },
+            reviewer: {
+                select: {
+                    id: true,
+                    nickname: true,
+                },
+            },
+            skill_badges: true,
+        },
+    });
+    const eventsPromise = prisma.event.findMany({
+        where: {
+            OR: [
+                { host_id: loggedInUser.id },
+                {
+                    tickets: {
+                        some: {
+                            event_participants: {
+                                some: {
+                                    user_id: loggedInUser.id,
+                                },
                             },
                         },
                     },
                 },
+                { event_reserves: { some: { user_id: loggedInUser.id } } },
+            ],
+        },
+        include: {
+            location: true,
+            host: {
+                select: {
+                    id: true,
+                },
             },
-            { event_reserves: { some: { user_id: loggedInUser.id } } },
-        ],
+            tickets: {
+                include: {
+                    event_participants: true,
+                },
+            },
+            event_reserves: true,
+        },
     });
-    const skillBadgesPromise = getAllSkillBadges();
+    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 
     return (
         <ProfileDashboard

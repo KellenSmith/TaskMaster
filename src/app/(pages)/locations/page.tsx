@@ -1,16 +1,10 @@
-import { getAllLocations } from "../../lib/location-actions";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import { prisma } from "../../../prisma/prisma-client";
 import LocationsDashboard from "./LocationsDashboard";
-import GlobalConstants from "../../GlobalConstants";
 
 const LocationsPage = async () => {
-    const locationsPromise = getAllLocations();
+    const locationsPromise = prisma.location.findMany();
 
-    return (
-        <ErrorBoundarySuspense>
-            <LocationsDashboard locationsPromise={locationsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <LocationsDashboard locationsPromise={locationsPromise} />;
 };
 
 export default LocationsPage;

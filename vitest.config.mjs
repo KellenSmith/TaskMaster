@@ -7,6 +7,12 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
     plugins: [react()],
+    poolOptions: {
+        threads: {
+            minThreads: 2,
+            maxThreads: 4,
+        },
+    },
     test: {
         environment: "jsdom",
         setupFiles: ["./src/test/setup.ts"],
@@ -14,7 +20,12 @@ export default defineConfig({
         coverage: {
             provider: "v8",
             reporter: ["text"],
-            exclude: ["node_modules/**", "src/test/**"],
+            exclude: [
+                "node_modules/**",
+                "src/test/**",
+                "src/prisma/generated/**",
+                "src/app/lib/auth/auth-types.ts",
+            ],
         },
         // Improve test collection performance
         include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
@@ -27,12 +38,6 @@ export default defineConfig({
         ],
         // Performance optimizations
         pool: "threads",
-        poolOptions: {
-            threads: {
-                minThreads: 2,
-                maxThreads: 4,
-            },
-        },
         testTimeout: 10000,
         hookTimeout: 10000,
         isolate: true,

@@ -1,5 +1,4 @@
 "use client";
-import { Prisma } from "@prisma/client";
 import PaymentHandler from "./PaymentHandler";
 import OrderSummary from "./OrderSummary";
 import { use, useEffect, useTransition } from "react";
@@ -8,6 +7,7 @@ import { useUserContext } from "../../context/UserContext";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface OrderDashboardProps {
     orderPromise: Promise<
@@ -28,6 +28,7 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     useEffect(() => {
         startTransition(async () => {
             try {
+                if (!user) throw new Error("User not logged in");
                 await checkPaymentStatus(user.id, order.id);
             } catch {
                 addNotification(LanguageTranslations.failedCheckOrderStatus[language], "error");

@@ -1,10 +1,10 @@
 "use client";
 import { Divider, Stack } from "@mui/material";
-import { Prisma } from "@prisma/client";
 import { use } from "react";
 import { userHasSkillBadge } from "../../ui/utils";
 import { useUserContext } from "../../context/UserContext";
 import SkillBadgeCard from "../skill_badges/SkillBadgeCard";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface SkillBadgesTabProps {
     skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;

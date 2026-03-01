@@ -2,7 +2,7 @@ import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
 import { formatPrice } from "../../../ui/utils";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../prisma/generated/client";
 
 /**
  * Props for the OrderConfirmationTemplate component.
@@ -12,7 +12,9 @@ import { Prisma } from "@prisma/client";
  */
 interface IOrderConfirmationTemplateProps {
     order: Prisma.OrderGetPayload<{
-        include: {
+        select: {
+            id: true;
+            total_amount: true;
             order_items: { include: { product: { select: { name: true; description: true } } } };
         };
     }>;

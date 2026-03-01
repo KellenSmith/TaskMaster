@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, FC, ReactNode, useContext, useState, useEffect, use } from "react";
-import { Language, Prisma } from "@prisma/client";
 import GlobalConstants from "../GlobalConstants";
+import { Language } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/browser";
 
 interface UserContextValue {
     user: Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }> | null;
@@ -45,7 +46,7 @@ const UserContextProvider: FC<UserContextProviderProps> = ({ children, userPromi
     const [language, setLanguage] = useState<Language>(() => readLanguageFromCookie());
 
     // Persist language to a cookie whenever it changes
-    useEffect(() => { }, [language]);
+    useEffect(() => {}, [language]);
     const [editMode, setEditMode] = useState(false);
 
     const updateLanguage = (newLanguage: Language) => {

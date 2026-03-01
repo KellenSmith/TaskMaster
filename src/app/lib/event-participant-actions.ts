@@ -1,29 +1,31 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
-import { Prisma } from "@prisma/client";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
+import { getLoggedInUser, getUserLanguage } from "./user-helpers";
+import LanguageTranslations from "./LanguageTranslations";
+import dayjs from "dayjs";
+import { formatDate } from "../ui/utils";
+import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
+import { Prisma } from "../../prisma/generated/client";
+import { isUserAdmin } from "./utils";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,
     ticketId: string,
     userId: string,
 ) => {
-    // Validate ID formats
-    const validatedTicketId = UuidSchema.parse(ticketId);
-    const validatedUserId = UuidSchema.parse(userId);
-
-    const ticket = await prisma.ticket.findUniqueOrThrow({
+    const ticket = await tx.ticket.findUniqueOrThrow({
         where: {
-            product_id: validatedTicketId,
+            product_id: ticketId,
         },
     });
 
     // Check that the event isn't sold out
-    const event = await prisma.event.findUniqueOrThrow({
+    const event = await tx.event.findUniqueOrThrow({
         where: {
             id: ticket.event_id,
         },
@@ -36,13 +38,12 @@ export const addEventParticipantWithTx = async (
         },
     });
     const participantIds = event.tickets.flatMap((t) => t.event_participants.map((p) => p.user_id));
-    if (participantIds.includes(validatedUserId))
-        throw new Error("Member is already a participant");
+    if (participantIds.includes(userId)) throw new Error("Member is already a participant");
     if (participantIds.length >= event.max_participants) {
         throw new Error("Event is already sold out");
     }
 
-    await deleteEventReserveWithTx(tx, validatedUserId, ticket.event_id);
+    await deleteEventReserveWithTx(tx, userId, ticket.event_id);
     revalidateTag(GlobalConstants.RESERVE_USERS, "max");
 
     // Decrement the product stock of all tickets with limited stock belonging to the same event
@@ -53,7 +54,7 @@ export const addEventParticipantWithTx = async (
                 event_id: ticket.event_id,
             },
             NOT: {
-                unlimited_stock: true,
+                stock: null,
             },
         },
         data: {
@@ -83,8 +84,11 @@ export const addEventParticipantWithTx = async (
 };
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
+    const validatedUserId = UuidSchema.parse(userId);
+    const validatedTicketId = UuidSchema.parse(ticketId);
+
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await addEventParticipantWithTx(tx, ticketId, userId);
+        await addEventParticipantWithTx(tx, validatedTicketId, validatedUserId);
     });
 };
 
@@ -104,12 +108,10 @@ export const deleteEventParticipantWithTx = async (
             },
         },
     });
-    await tx.eventParticipant.delete({
+    await tx.eventParticipant.deleteMany({
         where: {
-            user_id_ticket_id: {
-                user_id: userId,
-                ticket_id: ticket.product_id,
-            },
+            user_id: userId,
+            ticket_id: ticket.product_id,
         },
     });
     // Increment the product stock of all tickets with limited stock belonging to the same event
@@ -120,7 +122,7 @@ export const deleteEventParticipantWithTx = async (
                 event_id: eventId,
             },
             NOT: {
-                unlimited_stock: true,
+                stock: null,
             },
         },
         data: {
@@ -137,9 +139,12 @@ export const deleteEventParticipantWithTx = async (
 };
 
 export const deleteEventParticipant = async (eventId: string, userId: string) => {
+    const validatedEventId = UuidSchema.parse(eventId);
+    const validatedUserId = UuidSchema.parse(userId);
+
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await deleteEventParticipantWithTx(tx, eventId, userId);
-        await unassignUserFromEventTasks(tx, eventId, userId);
+        await deleteEventParticipantWithTx(tx, validatedEventId, validatedUserId);
+        await unassignUserFromEventTasks(tx, validatedEventId, validatedUserId);
     });
 };
 
@@ -181,36 +186,82 @@ export const unassignUserFromEventTasks = async (
     });
 };
 
-export const getEventParticipants = async (
-    eventId: string,
-): Promise<
-    Prisma.EventParticipantGetPayload<{
-        include: { user: { select: { id: true; nickname: true } } };
-    }>[]
-> => {
-    return await prisma.eventParticipant.findMany({
-        where: { ticket: { event_id: eventId } },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
+export const checkInEventParticipant = async (
+    eventParticipantId: string,
+): Promise<void | string> => {
+    const validatedEventParticipantId = UuidSchema.parse(eventParticipantId);
+    const loggedInUser = await getLoggedInUser();
+    const language = await getUserLanguage();
+    try {
+        const eventParticipant = await prisma.eventParticipant.findUniqueOrThrow({
+            where: {
+                id: validatedEventParticipantId,
             },
-        },
-    });
-};
+            include: {
+                ticket: {
+                    include: {
+                        event: {
+                            include: {
+                                tasks: {
+                                    where: {
+                                        assignee_id: loggedInUser!.id,
+                                    },
+                                    select: {
+                                        id: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                user: { select: { id: true, nickname: true } },
+            },
+        });
 
-export const getEventParticipantEmails = async (eventId: string): Promise<string[]> => {
-    const participants = await prisma.eventParticipant.findMany({
-        where: { ticket: { event_id: eventId } },
-        select: {
-            user: {
-                select: {
-                    email: true,
-                },
+        const isEventHost = eventParticipant.ticket.event.host_id === loggedInUser!.id;
+        const isVolunteer = eventParticipant.ticket.event.tasks.length || 0 > 0;
+
+        if (!(isUserAdmin(loggedInUser) || isEventHost || isVolunteer))
+            return LanguageTranslations.unauthorized[language];
+
+        if (eventParticipant.checked_in_at) {
+            // Consider already checked in if checked_in_at is set and is before now minus 10 seconds (to account for small delays)
+            if (
+                dayjs
+                    .utc(eventParticipant.checked_in_at)
+                    .isBefore(dayjs.utc().subtract(10, "seconds"))
+            )
+                return (
+                    LanguageTranslations.alreadyCheckedIn[language] +
+                    " " +
+                    formatDate(eventParticipant.checked_in_at)
+                );
+            return;
+        }
+
+        // Dont check in if not within one hour of event opening hours
+        const now = dayjs.utc();
+        const eventStart = dayjs(eventParticipant.ticket.event.start_time);
+        const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
+        if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {
+            return;
+        }
+
+        await prisma.eventParticipant.update({
+            where: {
+                id: validatedEventParticipantId,
             },
-        },
-    });
-    return participants.map((participant) => participant.user.email);
+            data: {
+                checked_in_at: new Date(),
+            },
+        });
+    } catch (error) {
+        if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === prismaErrorCodes.resultNotFound
+        ) {
+            return LanguageTranslations.eventParticipantNotFound[language];
+        }
+        console.error("Unknown Prisma error during check-in:", error);
+    }
 };

@@ -14,40 +14,13 @@ For payments, use the following test data:
 - Swish: any phone number, e.g. +46 739000001
 - Visa card number: 4761739001010416, expiry after the following month (today is 2025/08/25 so 09/25 for me), any 3-digit security code
 - Mastercard: 5226612199533406, same as above
+- More at [Swedbank Pay Test Data](https://developer.swedbankpay.com/checkout-v3/test-data/)
 
 <mark>**Keep in mind that this is a test version open to the internet and everyone i ask to help me test this. Don't input any data you don't want to share with random people.**</mark>
 
-## Known bugs
+## Further plans
 
-- All known fixed!
-
-## Further plans in order of priority
-
-- ~~Enable eventHosts to manually add participants and reserves~~
-- ~~Add configurable locations with properties like address, accessibility info, max capacity which can be chosen by eventHosts~~
-- ~~Ditch the task phase property and sort by start/end dates instead~~
-- ~~Skill badges for members mapped to tasks such that an event host can limit who can be assigned to which tasks.~~
-- ~~A year wheel for admins showing planning times and current and upcoming events~~
-- ~~Ability to translate texts and labels for menu, event descriptions etc.~~
-- ~~Mobile friendly layout~~
-- ~~Upload images for events/products/texts~~
-- ~~Add approval for events posted by non-admins~~
-- ~~Move task shift start and end time when cloning an event~~
-- ~~Event tags (munch/playparty/section etc...)~~
-- ~~Buttons to message the assignee and reviewer of a task~~
-- Implement membership subscription
-- Fine tune filtering of tasks in the task board and events
-- Add age check for purchases
-- QR code scanner usable from any mobile device to check in event participants along with qr codes for tickets. Currently tickets are checked manually by crossing off nicknames on the participant list. The QR code scanner should be reachable through a link on a task if configured by the event host.
-- Implement checklists for tasks.
-- Add automatic notification to event participants if there are unbooked tasks remaining a configurable time before the event starts.
-- Enable different membership types.
-- Implement shopping cart.
-- Enable different event types (open to all members, open to specific membership types, open to public)
-- Enable task assignees to submit receipts
-- Solidarity and community funded event tickets - one bought solidarity ticket funds a ticket for someone else
-- Merch store
-- Connect databases for different organizations within the taskmaster family to share events, tasks, member lists and locations.
+Check the [project board](https://github.com/users/KellenSmith/projects/1/views/2) for the latest plans and progress.'
 
 ## Contributions
 
@@ -91,7 +64,6 @@ Create a new file in the root folder called ".env" and ask Kellen for the conten
 
 ## Documentation
 
-- Start here: `docs/README.md`
 - Purpose and audience: `docs/00-purpose.md`
 - Local setup: `docs/01-getting-started.md`
 - Environment variables: `docs/02-environment.md` (+ see `.env.example`)

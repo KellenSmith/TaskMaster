@@ -1,15 +1,24 @@
 "use server";
 import OrdersDashboard from "./OrdersDashboard";
-import { getAllOrders } from "../../lib/order-actions";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
+import { prisma } from "../../../prisma/prisma-client";
 
 const OrdersPage = async () => {
-    const ordersPromise = getAllOrders();
-    return (
-        <ErrorBoundarySuspense>
-            <OrdersDashboard ordersPromise={ordersPromise} />
-        </ErrorBoundarySuspense>
-    );
+    const ordersPromise = prisma.order.findMany({
+        include: {
+            user: {
+                select: {
+                    nickname: true,
+                },
+            },
+            order_items: {
+                include: {
+                    product: true,
+                },
+            },
+        },
+    });
+    return <OrdersDashboard ordersPromise={ordersPromise} />;
 };
 
 export default OrdersPage;

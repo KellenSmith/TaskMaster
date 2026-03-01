@@ -1,4 +1,4 @@
-import { Language, UserRole } from "@prisma/client";
+import { Language, UserRole } from "../../prisma/generated/enums";
 import GlobalConstants from "../GlobalConstants";
 
 const LanguageTranslations = {
@@ -27,6 +27,10 @@ const LanguageTranslations = {
         },
     },
     routeLabel: {
+        [GlobalConstants.HOME]: {
+            [Language.english]: "Home",
+            [Language.swedish]: "Hem",
+        },
         [GlobalConstants.APPLY]: {
             [Language.english]: "Apply for membership",
             [Language.swedish]: "Ansök om medlemskap",
@@ -129,6 +133,10 @@ const LanguageTranslations = {
     after: {
         [Language.english]: "After",
         [Language.swedish]: "Efter",
+    },
+    unexpectedError: {
+        [Language.english]: "An unexpected error occurred",
+        [Language.swedish]: "Ett oväntat fel inträffade",
     },
 };
 

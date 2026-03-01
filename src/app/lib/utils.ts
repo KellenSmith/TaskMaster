@@ -1,7 +1,8 @@
 import dayjs from "dayjs";
-import { Prisma, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { UserRole } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 // Convention: "path"=`/${route}`
 
@@ -34,7 +35,6 @@ export const getAbsoluteUrl = (
     return baseUrl + getRelativeUrl(pathSegments, searchParams);
 };
 
-export const pathToRoutes = (path: string) => (path ? path.split("/").slice(1) : []);
 export const serverRedirect = (
     pathSegments: string[],
     searchParams: { [key: string]: string } = {},
@@ -51,8 +51,8 @@ export const clientRedirect = (
 
 export const isMembershipExpired = (
     user: Prisma.UserGetPayload<{
-        include: { user_membership: true };
-    }>,
+        select: { user_membership: true };
+    }> | null,
 ): boolean => {
     if (!user) return true;
     const membershipExpiresAt = user.user_membership?.expires_at;
@@ -60,10 +60,17 @@ export const isMembershipExpired = (
 };
 
 export const isUserAdmin = (
-    user: Prisma.UserGetPayload<{ select: { role: true, user_membership: true } }>,
-): boolean => user && user.role === UserRole.admin && !!user.user_membership;
+    user: Prisma.UserGetPayload<{ select: { role: true; user_membership: true } }> | null,
+): boolean => {
+    if (!user || isMembershipExpired(user)) return false;
+    if (user.role === UserRole.admin) return true;
+    return false;
+};
 
 export const isUserHost = (
-    user: Prisma.UserGetPayload<{ select: { id: true } }>,
+    user: Prisma.UserGetPayload<{ select: { id: true } }> | null,
     event: Prisma.EventGetPayload<true> | null,
-): boolean => user && event && user.id === event.host_id;
+): boolean => {
+    if (!user || !event) return false;
+    return user.id === event.host_id;
+};

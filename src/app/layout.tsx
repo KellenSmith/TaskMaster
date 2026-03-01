@@ -5,6 +5,8 @@ import ServerContextWrapper from "./context/ServerContextWrapper";
 import { generateSEOMetadata } from "./lib/seo-utils";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import NewsletterTrigger from "./NewsletterTrigger";
+import ErrorBoundarySuspense from "./ui/ErrorBoundarySuspense";
 
 export const metadata = generateSEOMetadata({
     title: undefined, // Will use base title from environment
@@ -23,7 +25,7 @@ export const RootLayoutInner: React.FC<RootLayoutProps> = ({ children }) => {
         <ServerContextWrapper>
             <NavPanel />
             <Stack sx={{ height: "100%" }} padding={4}>
-                {children}
+                <ErrorBoundarySuspense>{children}</ErrorBoundarySuspense>
             </Stack>
         </ServerContextWrapper>
     );
@@ -34,6 +36,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
         <html lang="en">
             <body style={{ height: "100vh", backgroundColor: "#121212" }}>
                 <RootLayoutInner>{children}</RootLayoutInner>
+                <NewsletterTrigger />
                 <Analytics />
                 <SpeedInsights />
             </body>

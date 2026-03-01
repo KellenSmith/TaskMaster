@@ -3,25 +3,26 @@ import { Button, Stack } from "@mui/material";
 import React from "react";
 import GlobalConstants from "./GlobalConstants";
 import TextContent from "./ui/TextContent";
-import { Prisma } from "@prisma/client";
 import LanguageTranslations from "./ui/LanguageTranslations";
 import { useUserContext } from "./context/UserContext";
 import { useRouter } from "next/navigation";
 import { clientRedirect } from "./lib/utils";
+import { Prisma } from "../prisma/generated/browser";
 
 interface HomeDashboardProps {
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;
 }
 
 const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => {
-    const { language, user } = useUserContext();
+    const { user, language } = useUserContext();
     const router = useRouter();
+
     return (
-        <Stack width={"100%"} alignItems="center" justifyContent="center">
+        <Stack width="100%">
             <Stack
                 spacing={4}
                 sx={{
-                    width: { xs: "100%", lg: "50%" },
+                    width: "100%",
                     alignItems: "center",
                     justifyContent: "center",
                 }}

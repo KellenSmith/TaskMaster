@@ -10,7 +10,6 @@ import {
     Button,
     Dialog,
 } from "@mui/material";
-import { Prisma } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import { createAndRedirectToOrder } from "../../lib/order-actions";
 import {
@@ -39,6 +38,7 @@ import {
     ProductCreateSchema,
     ProductUpdateSchema,
 } from "../../lib/zod-schemas";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface ShopDashboardProps {
     productsPromise: Promise<Prisma.ProductGetPayload<{ include: { membership: true } }>[]>;
@@ -56,6 +56,8 @@ const tabLabels = {
 
 const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw new Error("You must be logged in to view the shop");
+
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
@@ -101,7 +103,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
             quantity: 1,
         };
         try {
-            await createAndRedirectToOrder(user.id, [productOrderItems]);
+            await createAndRedirectToOrder([productOrderItems]);
         } catch (error) {
             allowRedirectException(error);
             addNotification("Failed to create order", "error");
@@ -144,9 +146,9 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     };
 
     const getFormDefaultValues = () => {
-        if (!editingProductId) return null;
+        if (!editingProductId) return undefined;
         const product = products.find((p) => p.id === editingProductId);
-        if (!product) return null;
+        if (!product) return undefined;
         return { ...product, ...(product.membership && { duration: product.membership.duration }) };
     };
 
@@ -170,7 +172,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
                                     {GlobalLanguageTranslations.edit[language]}
                                 </Button>
                                 <ConfirmButton
-                                    color="error"
+                                    buttonProps={{ color: "error" }}
                                     onClick={() => deleteProductAction(product.id)}
                                 >
                                     {GlobalLanguageTranslations.delete[language]}

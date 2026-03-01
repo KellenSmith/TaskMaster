@@ -3,18 +3,16 @@ import MailTemplate from "./MailTemplate";
 import { FC } from "react";
 import GlobalConstants from "../../../GlobalConstants";
 import { getAbsoluteUrl } from "../../utils";
+import { Prisma } from "../../../../prisma/generated/client";
 
 interface EventCancelledTemplateProps {
-    event: {
-        id: string;
-        title: string;
-    };
+    event: Prisma.EventGetPayload<{ select: { id: true; title: true } }>;
 }
 
 const EventCancelledTemplate: FC<EventCancelledTemplateProps> = ({ event }) => {
     return (
         <MailTemplate>
-            <Text>{`The event ${event[GlobalConstants.TITLE]} has been cancelled. Go to the event for more details.`}</Text>
+            <Text>{`The event ${event.title} has been cancelled. Go to the event for more details.`}</Text>
             <Button
                 href={getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
                     [GlobalConstants.EVENT_ID]: event.id,

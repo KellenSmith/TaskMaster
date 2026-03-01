@@ -14,9 +14,9 @@ import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import MembershipStatusCard from "./MembershipStatusCard";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
-import { UserStatus } from "@prisma/client";
 import { clientRedirect, isMembershipExpired } from "../../lib/utils";
 import { useRouter } from "next/navigation";
+import { UserStatus } from "../../../prisma/generated/enums";
 
 const AccountTab = () => {
     const { user, language } = useUserContext();
@@ -54,8 +54,7 @@ const AccountTab = () => {
             </Button>
         );
         if (isMembershipExpired(user)) return ActivateMembershipButton;
-        return ActivateMembershipButton
-
+        return ActivateMembershipButton;
     };
 
     return (
@@ -70,7 +69,13 @@ const AccountTab = () => {
                 defaultValues={user}
             ></Form>
 
-            <ConfirmButton color="error" onClick={deleteMyAccount} disabled={isPending}>
+            <ConfirmButton
+                buttonProps={{
+                    color: "error",
+                    disabled: isPending,
+                }}
+                onClick={deleteMyAccount}
+            >
                 {LanguageTranslations.deleteAccount[language]}
             </ConfirmButton>
         </Stack>

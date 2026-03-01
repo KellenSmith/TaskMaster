@@ -1,21 +1,34 @@
 "use server";
 import CalendarDashboard from "./CalendarDashboard";
-import { getAllEvents } from "../../lib/event-actions";
-import GlobalConstants from "../../GlobalConstants";
-import { getLoggedInUser } from "../../lib/user-actions";
-import { getAllLocations } from "../../lib/location-actions";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+import { getLoggedInUser } from "../../lib/user-helpers";
+// ...existing code...
+import { isMembershipExpired, isUserAdmin } from "../../lib/utils";
+import { prisma } from "../../../prisma/prisma-client";
+import { EventStatus, Prisma } from "../../../prisma/generated/client";
 
 const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
-    const eventsPromise = getAllEvents(loggedInUser.id);
-    const locationsPromise = getAllLocations();
 
-    return (
-        <ErrorBoundarySuspense>
-            <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    if (!loggedInUser || isMembershipExpired(loggedInUser)) throw new Error("Unauthorized");
+
+    const eventFilterParams = {} as Prisma.EventWhereInput;
+
+    // Non-admins can only see their own event drafts and pending approval events or published events
+    if (loggedInUser && !isUserAdmin(loggedInUser)) {
+        eventFilterParams.OR = [
+            {
+                status: EventStatus.published,
+            },
+            { host_id: loggedInUser.id },
+        ];
+    }
+
+    const eventsPromise = prisma.event.findMany({
+        where: eventFilterParams,
+    });
+    const locationsPromise = prisma.location.findMany();
+
+    return <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />;
 };
 
 export default CalendarPage;

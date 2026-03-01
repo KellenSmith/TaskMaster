@@ -3,19 +3,17 @@
 import { getMailTransport } from "./mail-transport";
 import { createElement, ReactElement } from "react";
 import { render } from "@react-email/components";
-import { prisma } from "../../../../prisma/prisma-client";
-import { Prisma } from "@prisma/client";
+import { prisma } from "../../../prisma/prisma-client";
 import EventCancelledTemplate from "./mail-templates/EventCancelledTemplate";
 import OrderConfirmationTemplate from "./mail-templates/OrderConfirmationTemplate";
 import { EmailSendoutSchema } from "../zod-schemas";
 import OpenEventSpotTemplate from "./mail-templates/OpenEventSpotTemplate";
-import { getEventParticipantEmails } from "../event-participant-actions";
-import { getEventReservesEmails } from "../event-reserve-actions";
 import { sanitizeFormData } from "../html-sanitizer";
-import { createNewsletterJob } from "./newsletter-actions";
+import { createNewsletterJob } from "./newsletter-helpers";
 import z from "zod";
 import MailTemplate from "./mail-templates/MailTemplate";
 import { MailResult } from "../../ui/utils";
+import { Prisma } from "../../../prisma/generated/client";
 
 /**
  * Checks if an error indicates rate limiting from the email provider
@@ -27,7 +25,7 @@ export const isRateLimitError = async (error: Error): Promise<boolean> => {
     const rateLimitPatterns = [
         "rate limit",
         "rate exceeded",
-        "throttl",
+        "throttle",
         "too many",
         "quota",
         "limit exceeded",
@@ -52,11 +50,11 @@ const createFallbackNewsletterJob = async (
 ): Promise<{ id: string; total: number; batchSize: number }> => {
     const recipientCount = recipients.length;
     let batchSize = 250;
-    if (recipientCount <= 250)
-        batchSize = 50; // Medium batches for medium groups
+    if (recipientCount <= 10)
+        batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
     else if (recipientCount <= 100)
         batchSize = Math.min(recipientCount, 25); // Small batches for small groups
-    else if (recipientCount <= 10) batchSize = Math.min(recipientCount, 5); // Very small batches for individual emails
+    else if (recipientCount <= 250) batchSize = 50; // Medium batches for medium groups
 
     return await createNewsletterJob({
         subject,
@@ -80,26 +78,31 @@ interface EmailPayload {
 }
 
 export const getEmailPayload = async (
-    receivers: string[],
+    emailRecipients: string[],
     subject: string,
     mailContent: ReactElement | string,
-    replyTo?: string,
+    replyTo?: string | null,
 ): Promise<EmailPayload> => {
     // Normalize and validate recipients
-    const recipients = (receivers || []).map((s) => z.email().parse((s || "").trim()));
+    const recipients = (emailRecipients || []).map((s) => z.email().parse((s || "").trim()));
     if (recipients.length === 0) {
         throw new Error("Invalid email address(es) provided");
     }
 
     // Base payload
-    const domain = process.env.EMAIL?.split("@")[1] || "taskmaster.local";
+    const senderEmail = process.env.EMAIL?.trim();
+    if (!senderEmail || !z.email().safeParse(senderEmail).success) {
+        throw new Error("Sender email is not configured");
+    }
+
+    const domain = senderEmail.split("@")[1];
     const htmlContent = typeof mailContent === "string" ? mailContent : await render(mailContent);
     const strippedTextContent = htmlContent
         .replace(/<[^>]*>/g, "")
         .replace(/\s+/g, " ")
         .trim();
     const payload: EmailPayload = {
-        from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${process.env.EMAIL}>`,
+        from: `${process.env.NEXT_PUBLIC_ORG_NAME} <${senderEmail}>`,
         subject,
         html: htmlContent,
         // Add plain text version by stripping HTML
@@ -107,7 +110,7 @@ export const getEmailPayload = async (
         headers: {
             "X-Mailer": `${process.env.NEXT_PUBLIC_ORG_NAME} Task Master`,
             "X-Priority": "3",
-            "List-Unsubscribe": `<mailto:${process.env.EMAIL}?subject=Unsubscribe>`,
+            "List-Unsubscribe": `<mailto:${senderEmail}?subject=Unsubscribe>`,
             "Auto-Submitted": "auto-generated",
             "Message-ID": `<${Date.now()}-${Math.random().toString(36).slice(2, 11)}@${domain}>`,
         },
@@ -146,7 +149,7 @@ export const sendMail = async (
         };
     } catch (error) {
         // Check if the error indicates rate limiting
-        if (await isRateLimitError(error)) {
+        if (await isRateLimitError(error as Error)) {
             try {
                 const fallbackJob = await createFallbackNewsletterJob(
                     recipients,
@@ -155,7 +158,7 @@ export const sendMail = async (
                     replyTo,
                 );
                 console.warn(
-                    `Mail rate limiting detected: ${error.message}. Creating newsletter job as fallback. Batch size: ${fallbackJob.batchSize}`,
+                    `Mail rate limiting detected: ${(error as Error).message}. Creating newsletter job as fallback. Batch size: ${fallbackJob.batchSize}`,
                 );
 
                 return {
@@ -165,7 +168,9 @@ export const sendMail = async (
                 };
             } catch (fallbackError) {
                 // If fallback also fails, throw the original error
-                console.error(`Fallback newsletter job creation failed: ${fallbackError.message}`);
+                console.error(
+                    `Fallback newsletter job creation failed: ${(fallbackError as Error).message}`,
+                );
                 throw error;
             }
         }
@@ -173,6 +178,20 @@ export const sendMail = async (
         // For non-rate-limiting errors, throw the original error
         throw error;
     }
+};
+
+const getEventReservesEmails = async (eventId: string): Promise<string[]> => {
+    const reserves = await prisma.eventReserve.findMany({
+        where: { event_id: eventId },
+        select: {
+            user: {
+                select: {
+                    email: true,
+                },
+            },
+        },
+    });
+    return reserves.map((reserve) => reserve.user.email);
 };
 
 /**
@@ -204,7 +223,17 @@ export const notifyEventReserves = async (eventId: string): Promise<void> => {
  * @throws Error if email fails
  */
 export const informOfCancelledEvent = async (eventId: string): Promise<void> => {
-    const participantEmails = await getEventParticipantEmails(eventId);
+    const participants = await prisma.eventParticipant.findMany({
+        where: { ticket: { event_id: eventId } },
+        select: {
+            user: {
+                select: {
+                    email: true,
+                },
+            },
+        },
+    });
+    const participantEmails = participants.map((participant) => participant.user.email);
     const reserveEmails = await getEventReservesEmails(eventId);
     if (participantEmails.length === 0 && reserveEmails.length === 0) return;
 
@@ -249,7 +278,7 @@ export const sendMassEmail = async (
                 email: true,
             },
         })
-    ).map((user: Prisma.UserGetPayload<true>) => user.email);
+    ).map((user: Prisma.UserGetPayload<{ select: { email: true } }>) => user.email);
 
     const revalidatedContent = EmailSendoutSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -259,27 +288,21 @@ export const sendMassEmail = async (
     return await sendMail(recipients, sanitizedContent.subject, mailContent);
 };
 
-export const sendOrderConfirmation = async (orderId: string): Promise<void> => {
-    const order = await prisma.order.findUniqueOrThrow({
-        where: { id: orderId },
-        include: {
-            user: {
-                select: {
-                    email: true,
-                },
-            },
-            order_items: {
-                include: {
-                    product: {
-                        select: {
-                            name: true,
-                            description: true,
-                        },
-                    },
-                },
-            },
-        },
-    });
+export const sendOrderConfirmation = async (
+    order: Prisma.OrderGetPayload<{
+        select: {
+            id: true;
+            total_amount: true;
+            user: { select: { email: true } };
+            order_items: { include: { product: { select: { name: true; description: true } } } };
+        };
+    }>,
+): Promise<void> => {
+    if (!order.user?.email)
+        throw new Error(
+            `Cannot send order confirmation: Order ${order.id} has no associated user email`,
+        );
+
     const mailContent = createElement(OrderConfirmationTemplate, { order });
     const result = await sendMail(
         [order.user.email],

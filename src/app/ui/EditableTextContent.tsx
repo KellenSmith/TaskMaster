@@ -6,7 +6,7 @@ import { useUserContext } from "../context/UserContext";
 import Form from "./form/Form";
 import GlobalConstants from "../GlobalConstants";
 import { UpdateTextContentSchema } from "../lib/zod-schemas";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../prisma/generated/browser";
 
 interface EditableTextContentProps {
     id: string;

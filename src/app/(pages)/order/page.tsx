@@ -1,10 +1,10 @@
 "use server";
-import React from "react";
-import ErrorBoundarySuspense, { ErrorFallback } from "../../ui/ErrorBoundarySuspense";
-import { getOrderById } from "../../lib/order-actions";
+// ...existing code...
 import GlobalConstants from "../../GlobalConstants";
 import OrderDashboard from "./OrderDashboard";
-import { getLoggedInUser } from "../../lib/user-actions";
+import { getLoggedInUser } from "../../lib/user-helpers";
+import { prisma } from "../../../prisma/prisma-client";
+import { isUserAdmin } from "../../lib/utils";
 
 interface OrderPageProps {
     searchParams: Promise<{ [orderId: string]: string }>;
@@ -13,19 +13,23 @@ interface OrderPageProps {
 const OrderPage = async ({ searchParams }: OrderPageProps) => {
     const orderId = (await searchParams)[GlobalConstants.ORDER_ID] as string;
     const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) throw new Error("Not authorized to view this order");
 
-    if (!loggedInUser || !orderId) {
-        // Redirect to home page if not logged in or no order ID provided
-        return <ErrorFallback />;
-    }
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: orderId },
+        include: {
+            order_items: {
+                include: {
+                    product: { include: { membership: true } },
+                },
+            },
+        },
+    });
 
-    const orderPromise = getOrderById(loggedInUser?.id, orderId);
+    if (loggedInUser.id !== order.user_id && !isUserAdmin(loggedInUser))
+        throw new Error("Not authorized to view this order");
 
-    return (
-        <ErrorBoundarySuspense>
-            <OrderDashboard orderPromise={orderPromise} />
-        </ErrorBoundarySuspense>
-    );
+    return <OrderDashboard orderPromise={new Promise((resolve) => resolve(order))} />;
 };
 
 export default OrderPage;

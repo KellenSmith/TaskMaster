@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPaymentStatus } from "../../lib/payment-actions";
-import { prisma } from "../../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
 
 const getClientIp = (request: NextRequest): string | null => {
     // Try multiple headers for better IP detection
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     try {
         const orderId = request.nextUrl.searchParams.get("orderId");
+        if (!orderId) throw new Error("Missing orderId parameter");
 
         // ✅ SECURITY: Simple idempotency check to prevent duplicate processing
         const order = await prisma.order.findUniqueOrThrow({
@@ -81,12 +82,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Process the payment check as normal
+        if (!order.user_id) throw new Error("Order has no associated user");
         await checkPaymentStatus(order.user_id, orderId);
         console.log(`Order ${orderId} status verified and updated via GET request`);
 
         return new NextResponse("OK", { status: 200 });
     } catch (error) {
-        console.error(`Payment callback error from IP ${clientIp}:`, error);
+        console.error(
+            `Payment callback error from IP ${clientIp}:`,
+            error instanceof Error ? error.message : String(error),
+        );
         // Don't expose internal error details to external callers
         return new NextResponse("Internal Server Error", { status: 500 });
     }

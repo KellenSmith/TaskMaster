@@ -1,9 +1,9 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../utils";
 import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-utils";
 import dayjs from "dayjs";
 import { styles } from "../pdf-styles";
+import { Prisma } from "../../../prisma/generated/browser";
 
 const customStyles = {
     // Add new column-specific styles
@@ -22,17 +22,29 @@ const customStyles = {
 };
 
 // Create a PDF document component
-const TaskSchedulePDF = ({ event = null, tasks }) => {
-    const getTaskRow = (task) => (
-        <View style={styles.tableRow} key={task[GlobalConstants.ID]}>
+const TaskSchedulePDF = ({
+    event,
+    tasks,
+}: {
+    event?: Prisma.EventGetPayload<{}>;
+    tasks: Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+    }>[];
+}) => {
+    const getTaskRow = (
+        task: Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+        }>,
+    ) => (
+        <View style={styles.tableRow} key={task.id}>
             <Text wrap={true} style={{ ...styles.tableCell, ...customStyles.columnTask }}>
-                {task[GlobalConstants.NAME]}
+                {task.name}
             </Text>
             <Text style={{ ...styles.tableCell, ...customStyles.columnDate }}>
-                {formatDate(task[GlobalConstants.START_TIME])}
+                {task.start_time ? formatDate(task.start_time) : ""}
             </Text>
             <Text style={{ ...styles.tableCell, ...customStyles.columnDate }}>
-                {formatDate(task[GlobalConstants.END_TIME])}
+                {formatDate(task.end_time)}
             </Text>
             <Text style={{ ...styles.tableCell, ...customStyles.columnAssignee }}>
                 {task.assignee?.nickname}
@@ -40,18 +52,19 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
         </View>
     );
 
-    const getEventDetails = () => (
-        <View style={styles.eventDetails}>
-            <View style={styles.eventDetailRow}>
-                <Text style={styles.eventDetailLabel}>Event:</Text>
-                <Text>{event[GlobalConstants.TITLE]}</Text>
+    const getEventDetails = () =>
+        event ? (
+            <View style={styles.eventDetails}>
+                <View style={styles.eventDetailRow}>
+                    <Text style={styles.eventDetailLabel}>Event:</Text>
+                    <Text>{event?.title}</Text>
+                </View>
+                <View style={styles.eventDetailRow}>
+                    <Text style={styles.eventDetailLabel}>Time:</Text>
+                    <Text>{`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}</Text>
+                </View>
             </View>
-            <View style={styles.eventDetailRow}>
-                <Text style={styles.eventDetailLabel}>Time:</Text>
-                <Text>{`${formatDate(event[GlobalConstants.START_TIME])} - ${formatDate(event[GlobalConstants.END_TIME])}`}</Text>
-            </View>
-        </View>
-    );
+        ) : null;
 
     return (
         <Document>
@@ -81,7 +94,7 @@ const TaskSchedulePDF = ({ event = null, tasks }) => {
                     </View>
                     {/* Table Body */}
                     {getGroupedAndSortedTasks(tasks).map((taskGroup) => (
-                        <View key={taskGroup[0][GlobalConstants.NAME]} style={styles.taskGroup}>
+                        <View key={taskGroup[0].name} style={styles.taskGroup}>
                             {taskGroup.map((task) => getTaskRow(task))}
                         </View>
                     ))}

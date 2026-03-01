@@ -1,23 +1,33 @@
 import GlobalConstants from "../../GlobalConstants";
-import { getTaskById } from "../../lib/task-actions";
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import TaskDashboard from "./TaskDashboard";
-import { getAllSkillBadges } from "../../lib/skill-badge-actions";
-import { getActiveMembers } from "../../lib/user-actions";
+import { getActiveMembers } from "../../lib/user-helpers";
+import { prisma } from "../../../prisma/prisma-client";
+import { SearchParams } from "next/dist/server/request/search-params";
 
-const TaskPage = async ({ searchParams }) => {
-    const taskId = (await searchParams)[GlobalConstants.TASK_ID];
-    const taskPromise = getTaskById(taskId);
-    const skillBadgesPromise = getAllSkillBadges();
+const TaskPage = async ({ searchParams }: { searchParams: SearchParams }) => {
+    const taskId = (await searchParams)[GlobalConstants.TASK_ID] as string;
+    const taskPromise = prisma.task.findUniqueOrThrow({
+        where: {
+            id: taskId,
+        },
+        include: {
+            assignee: { select: { id: true, nickname: true } },
+            reviewer: { select: { id: true, nickname: true } },
+            event: true,
+            skill_badges: true,
+        },
+    });
+    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
     const activeMembersPromise = getActiveMembers();
+
+    // TODO: enable unassigning tasks + clone tasks and edit such that the task is unassigned
     return (
-        <ErrorBoundarySuspense>
-            <TaskDashboard
-                taskPromise={taskPromise}
-                skillBadgesPromise={skillBadgesPromise}
-                activeMembersPromise={activeMembersPromise}
-            />
-        </ErrorBoundarySuspense>
+        <TaskDashboard
+            taskPromise={taskPromise}
+            skillBadgesPromise={skillBadgesPromise}
+            activeMembersPromise={activeMembersPromise}
+        />
     );
 };
 

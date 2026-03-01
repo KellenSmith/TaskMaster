@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { mockDeep, mockReset, DeepMockProxy } from "vitest-mock-extended";
 import { beforeEach } from "vitest";
+import { PrismaClient } from "../prisma/generated/client";
 
 // mockDeep creates a deeply mocked PrismaClient
 // This means all properties and methods, no matter how deeply nested,

@@ -1,5 +1,4 @@
 "use client";
-import { Prisma } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import ConfirmButton from "../ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
@@ -13,6 +12,7 @@ import {
     isEventSoldOut,
     isUserParticipant,
 } from "../../(pages)/calendar-post/event-utils";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface BookTaskButtonProps {
     event?: Prisma.EventGetPayload<{
@@ -28,6 +28,8 @@ interface BookTaskButtonProps {
 
 const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
     const { user, language } = useUserContext();
+    if (!user) return null;
+
     const { addNotification } = useNotificationContext();
 
     const assignTaskToMe = async () => {
@@ -52,12 +54,14 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
     if (task.assignee_id)
         return (
             <ConfirmButton
+                buttonProps={{
+                    disabled: task.assignee_id !== user.id,
+                    fullWidth: true,
+                    color: "error",
+                    variant: "outlined",
+                    startIcon: <Delete />,
+                }}
                 onClick={unassignFromTask}
-                disabled={task.assignee_id !== user.id}
-                fullWidth
-                color="error"
-                variant="outlined"
-                startIcon={<Delete />}
                 confirmText={LanguageTranslations.areYouSureCancelShiftBooking[language](event)}
             >
                 {task.assignee_id === user.id
@@ -96,11 +100,13 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
     }
     return (
         <ConfirmButton
+            buttonProps={{
+                fullWidth: true,
+                color: "error",
+                variant: "outlined",
+                startIcon: <CheckCircle />,
+            }}
             onClick={assignTaskToMe}
-            fullWidth
-            color="success"
-            variant="outlined"
-            startIcon={<CheckCircle />}
             confirmText={confirmText}
         >
             {LanguageTranslations.bookThisShift[language]}

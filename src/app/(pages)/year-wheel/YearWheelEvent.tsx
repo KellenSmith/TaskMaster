@@ -1,8 +1,8 @@
 import * as colors from "@mui/material/colors";
-import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import { getSortedEvents, getTasksSortedByTime } from "../calendar-post/event-utils";
 import CircleSector from "./CircleSector";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface YearWheelEventProps {
     event: Prisma.EventGetPayload<{ include: { tasks: true } }>;
@@ -75,10 +75,26 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
     const safeIndex = Math.max(0, overLappingEvents.indexOf(event));
     const sizePercent = Math.min(100, Math.max(50, 50 + 50 / (1 + Math.log10(safeIndex + 1))));
 
-    const getColorShade = () => {
-        // Pick the shade according to index. When colors run out, start again on the first color
+    type ShadePalette = {
+        50: string;
+        100: string;
+        200: string;
+        300: string;
+        400: string;
+        500: string;
+        600: string;
+        700: string;
+        800: string;
+        900: string;
+        A100: string;
+        A200: string;
+        A400: string;
+        A700: string;
+    };
+
+    const getColorShade = (): ShadePalette => {
         const shadeIndex = safeIndex % Object.keys(colors).length;
-        return Object.values(colors)[shadeIndex];
+        return Object.values(colors)[shadeIndex] as ShadePalette;
     };
 
     return (

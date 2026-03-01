@@ -8,13 +8,26 @@ import {
     DialogTitle,
     useMediaQuery,
     useTheme,
+    ButtonProps,
 } from "@mui/material";
 import { useState, useTransition } from "react";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
 
-const ConfirmButton = ({ onClick, children, confirmText = "", ...buttonProps }) => {
+interface ConfirmButtonProps {
+    onClick: () => Promise<void>;
+    confirmText?: string;
+    children: React.ReactNode;
+    buttonProps?: ButtonProps;
+}
+
+const ConfirmButton = ({
+    onClick,
+    children,
+    confirmText = "",
+    buttonProps,
+}: ConfirmButtonProps) => {
     const { language } = useUserContext();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));

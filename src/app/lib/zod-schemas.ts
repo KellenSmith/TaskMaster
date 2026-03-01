@@ -1,18 +1,27 @@
 import { z } from "zod";
-import { UserRole, EventStatus, TaskStatus, TicketType, OrderStatus, Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import utc from "dayjs/plugin/utc";
+import {
+    EventStatus,
+    OrderStatus,
+    TaskStatus,
+    TicketType,
+    UserRole,
+} from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 dayjs.extend(customParseFormat);
+dayjs.extend(utc);
 
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
-    .refine((val) => !val || dayjs.utc(val, "DD/MM/YYYY HH:mm").isValid(), {
+    .refine((val) => !val || dayjs.utc(val, "DD/MM/YYYY HH:mm", true).isValid(), {
         message: "Invalid date",
     })
     .transform((val) =>
-        val ? dayjs.utc(val, "DD/MM/YYYY HH:mm").format() : "",
+        val ? dayjs.utc(val, "DD/MM/YYYY HH:mm", true).format() : "",
     ) as z.ZodType<string>;
 
 const priceSchema = z.coerce
@@ -198,8 +207,11 @@ export const ProductCreateSchema = z
         description: z.string().optional(),
         price: priceSchema.optional(),
         vat_percentage: z.coerce.number().min(0).max(100),
-        stock: z.coerce.number().int().nonnegative().nullable().optional(),
-        unlimited_stock: z.coerce.boolean().optional(),
+        stock: z
+            .union([z.literal(""), z.coerce.number().int().nonnegative()])
+            .transform((val) => (val === "" ? null : val))
+            .nullable()
+            .optional(),
         image_url: z.string().optional(),
     })
     .omit({ id: true });

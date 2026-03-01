@@ -1,7 +1,16 @@
 "use client";
 
 import { Button, Dialog, Stack, useMediaQuery, useTheme, TextField } from "@mui/material";
-import { DataGrid, GridColDef, useGridApiRef, gridFilteredSortedRowEntriesSelector, GridFilterOperator, getGridDateOperators, GridFilterInputValueProps, GridRowParams } from "@mui/x-data-grid";
+import {
+    DataGrid,
+    GridColDef,
+    useGridApiRef,
+    gridFilteredSortedRowEntriesSelector,
+    GridFilterOperator,
+    getGridDateOperators,
+    GridFilterInputValueProps,
+    GridRowParams,
+} from "@mui/x-data-grid";
 import React, { useEffect, useMemo, use, useState, useTransition } from "react";
 import {
     checkboxFields,
@@ -15,11 +24,11 @@ import ConfirmButton from "./ConfirmButton";
 import { formatDate, formatPrice } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
-import { Prisma, Product } from "@prisma/client";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
 import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../prisma/generated/browser";
 
 export interface RowActionProps {
     name: string;
@@ -38,18 +47,18 @@ export interface FilteredRowsActionProps {
 
 export type ImplementedDatagridEntities =
     | Prisma.UserGetPayload<{
-        include: {
-            user_membership: true;
-            skill_badges: true;
-        };
-    }>
-    | Product
+          include: {
+              user_membership: true;
+              skill_badges: true;
+          };
+      }>
+    | Prisma.ProductGetPayload<true>
     | Prisma.OrderGetPayload<{
-        include: {
-            user: { select: { nickname: true } };
-            order_items: { include: { product: true } };
-        };
-    }>
+          include: {
+              user: { select: { nickname: true } };
+              order_items: { include: { product: true } };
+          };
+      }>
     | Prisma.NewsletterJobGetPayload<true>;
 
 interface DatagridProps {
@@ -65,9 +74,9 @@ interface DatagridProps {
     createAction?: (fieldValues: FormData) => Promise<void>;
     filteredRowsActions?: FilteredRowsActionProps[];
     validationSchema?:
-    | typeof UserUpdateSchema
-    | typeof ProductUpdateSchema
-    | typeof OrderUpdateSchema;
+        | typeof UserUpdateSchema
+        | typeof ProductUpdateSchema
+        | typeof OrderUpdateSchema;
     rowActions?: RowActionProps[];
     customColumns?: GridColDef[];
     hiddenColumns?: string[];
@@ -111,13 +120,13 @@ const Datagrid: React.FC<DatagridProps> = ({
         const defaultOperators = getGridDateOperators();
 
         // Find and customize the "after" and "before" operators
-        const afterOperator = defaultOperators.find(op => op.value === 'after');
-        const beforeOperator = defaultOperators.find(op => op.value === 'before');
+        const afterOperator = defaultOperators.find((op) => op.value === "after");
+        const beforeOperator = defaultOperators.find((op) => op.value === "before");
 
         // Custom date range filter operator
         const dateRangeOperator: GridFilterOperator = {
-            label: 'is between',
-            value: 'between',
+            label: "is between",
+            value: "between",
             getApplyFilterFn: (filterItem) => {
                 if (!filterItem.value || !Array.isArray(filterItem.value)) {
                     return null;
@@ -142,7 +151,7 @@ const Datagrid: React.FC<DatagridProps> = ({
             },
             InputComponent: (props: GridFilterInputValueProps) => {
                 const { item, applyValue } = props;
-                const [startDate, endDate] = Array.isArray(item.value) ? item.value : ['', ''];
+                const [startDate, endDate] = Array.isArray(item.value) ? item.value : ["", ""];
 
                 const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
                     const newValue = [event.target.value, endDate];
@@ -162,7 +171,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                             value={startDate}
                             onChange={handleStartDateChange}
                             slotProps={{
-                                inputLabel: { shrink: true }
+                                inputLabel: { shrink: true },
                             }}
                             size="small"
                         />
@@ -172,7 +181,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                             value={endDate}
                             onChange={handleEndDateChange}
                             slotProps={{
-                                inputLabel: { shrink: true }
+                                inputLabel: { shrink: true },
                             }}
                             size="small"
                         />
@@ -182,11 +191,9 @@ const Datagrid: React.FC<DatagridProps> = ({
         };
 
         // Return only the operators we want to support
-        return [
-            dateRangeOperator,
-            afterOperator,
-            beforeOperator,
-        ].filter(Boolean) as GridFilterOperator[];
+        return [dateRangeOperator, afterOperator, beforeOperator].filter(
+            Boolean,
+        ) as GridFilterOperator[];
     };
 
     const getColumns = () => {
@@ -195,14 +202,13 @@ const Datagrid: React.FC<DatagridProps> = ({
             const customColumn = customColumns.find((col) => col.field === key);
             if (customColumn) return null;
 
-
             return {
                 field: key,
                 headerName: key in FieldLabels ? FieldLabels[key][language] : key,
                 type: getColumnType(key),
                 ...(datePickerFields.includes(key) && {
                     filterOperators: getDateFilterOperators(),
-                    valueGetter: (value) => value ? new Date(value) : null,
+                    valueGetter: (value) => (value ? new Date(value) : null),
                 }),
                 valueFormatter: (value) => {
                     if (datePickerFields.includes(key)) {
@@ -221,14 +227,16 @@ const Datagrid: React.FC<DatagridProps> = ({
     const columns = useMemo(getColumns, [datagridRows, customColumns, language]);
 
     useEffect(() => {
-        apiRef.current.autosizeColumns({
-            includeOutliers: true,
-            includeHeaders: true,
-        });
+        apiRef.current &&
+            apiRef.current.autosizeColumns({
+                includeOutliers: true,
+                includeHeaders: true,
+            });
     }, [apiRef, columns]);
 
     const createRow = async (fieldValues: FormData) => {
         try {
+            if (!createAction) throw new Error("No create action provided");
             await createAction(fieldValues);
             setAddNew(false);
             return GlobalLanguageTranslations.successfulSave[language];
@@ -239,6 +247,8 @@ const Datagrid: React.FC<DatagridProps> = ({
 
     const updateRow = async (fieldValues: FormData) => {
         try {
+            if (!updateAction) throw new Error("No update action provided");
+            if (!clickedRow) throw new Error("No row selected");
             await updateAction(clickedRow.id, fieldValues);
             setClickedRow(null);
             return GlobalLanguageTranslations.successfulSave[language];
@@ -250,25 +260,29 @@ const Datagrid: React.FC<DatagridProps> = ({
     const handleRowAction = (rowAction: RowActionProps) => {
         startTransition(async () => {
             try {
+                if (!clickedRow) throw new Error("No row selected");
                 const result = await rowAction.serverAction(clickedRow);
                 setClickedRow(null);
                 addNotification(result, "success");
             } catch (error) {
-                addNotification(error.message, "error");
+                if (error && typeof error === "object" && "message" in error)
+                    addNotification(error.message as string, "error");
+                throw error;
             }
         });
     };
 
     const getRowActionButton = (
-        clickedRow: ImplementedDatagridEntities,
+        clickedRow: ImplementedDatagridEntities | null,
         rowAction: RowActionProps,
     ) => {
+        if (!clickedRow) return null;
         const ButtonComponent = rowAction.buttonColor === "error" ? ConfirmButton : Button;
         return (
             rowAction.available(clickedRow) && (
                 <ButtonComponent
                     key={rowAction.name}
-                    onClick={() => handleRowAction(rowAction)}
+                    onClick={async () => handleRowAction(rowAction)}
                     color={rowAction.buttonColor || "secondary"}
                     disabled={isPending}
                 >
@@ -283,7 +297,11 @@ const Datagrid: React.FC<DatagridProps> = ({
             <DataGrid
                 apiRef={apiRef}
                 rows={datagridRows}
-                onRowClick={(row) => onRowClick ? onRowClick(row) : (updateAction || rowActions) && setClickedRow(row.row)}
+                onRowClick={(row) =>
+                    onRowClick
+                        ? onRowClick(row)
+                        : (updateAction || rowActions) && setClickedRow(row.row)
+                }
                 columns={columns}
                 initialState={{
                     columns: {
@@ -299,19 +317,24 @@ const Datagrid: React.FC<DatagridProps> = ({
                     {LanguageTranslations.addNew[language]}
                 </Button>
             )}
-            {filteredRowsActions && filteredRowsActions.map((filteredRowsAction) => (
-                <Button
-                    key={filteredRowsAction.buttonLabel}
-                    onClick={() => {
-                        const filteredRows = gridFilteredSortedRowEntriesSelector(apiRef).map(entry => entry.model);
-                        filteredRowsAction.action(filteredRows as ImplementedDatagridEntities[]);
-                    }}
-                    color={filteredRowsAction.buttonColor || "secondary"}
-                    disabled={isPending}
-                >
-                    {filteredRowsAction.buttonLabel}
-                </Button>
-            ))}
+            {filteredRowsActions &&
+                filteredRowsActions.map((filteredRowsAction) => (
+                    <Button
+                        key={filteredRowsAction.buttonLabel}
+                        onClick={() => {
+                            const filteredRows = gridFilteredSortedRowEntriesSelector(apiRef).map(
+                                (entry) => entry.model,
+                            );
+                            filteredRowsAction.action(
+                                filteredRows as ImplementedDatagridEntities[],
+                            );
+                        }}
+                        color={filteredRowsAction.buttonColor || "secondary"}
+                        disabled={isPending}
+                    >
+                        {filteredRowsAction.buttonLabel}
+                    </Button>
+                ))}
             <Dialog
                 fullScreen={isSmallScreen}
                 fullWidth
@@ -322,18 +345,22 @@ const Datagrid: React.FC<DatagridProps> = ({
                     setAddNew(false);
                 }}
             >
-                {name in RenderedFields && (
+                {name && name in RenderedFields && (
                     <Form
                         name={name}
                         buttonLabel={GlobalLanguageTranslations.save[language]}
                         action={clickedRow ? updateRow : createRow}
                         validationSchema={validationSchema}
-                        defaultValues={
-                            clickedRow && {
-                                ...clickedRow,
-                                ...(getDefaultFormValues ? getDefaultFormValues(clickedRow) : []),
-                            }
-                        }
+                        {...(clickedRow
+                            ? {
+                                  defaultValues: {
+                                      ...clickedRow,
+                                      ...(getDefaultFormValues
+                                          ? getDefaultFormValues(clickedRow)
+                                          : []),
+                                  },
+                              }
+                            : {})}
                         readOnly={!updateAction}
                         customOptions={customFormOptions}
                     />

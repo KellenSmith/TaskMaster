@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import {
     AppBar,
     Toolbar,
@@ -23,7 +23,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAdmin, clientRedirect, pathToRoutes } from "../lib/utils";
+import { isUserAdmin, clientRedirect } from "../lib/utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
@@ -34,7 +34,7 @@ import LoginLanguageTranslations from "../(pages)/login/LanguageTranslations";
 import OrderLanguageTranslations from "../(pages)/order/LanguageTranslations";
 import ApplyLanguageTranslations from "../(pages)/apply/LanguageTranslations";
 import Image from "next/image";
-import { isUserAuthorized, RouteConfigType, routeTreeConfig } from "../lib/auth/auth-utils";
+import { isUserAuthorized, routeTreeConfig } from "../lib/auth/auth-utils";
 import { logOut } from "../lib/user-actions";
 import Form from "./form/Form";
 import { InfoPageCreateSchema } from "../lib/zod-schemas";
@@ -46,8 +46,8 @@ import {
     getTermsOfMembershipUrl,
     getTermsOfPurchaseUrl,
 } from "./utils";
-import { Prisma } from "@prisma/client";
 import ConfirmButton from "./ConfirmButton";
+import { Prisma } from "../../prisma/generated/browser";
 
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -78,48 +78,28 @@ const NavPanel = () => {
             addNotification(LanguageTranslations.failedToLogOut[language], "error");
             setDrawerOpen(false);
         } catch (error) {
-            // Catch redirect exception and refresh session before moving on.
-            if (error?.digest?.startsWith("NEXT_REDIRECT")) {
-                setDrawerOpen(false);
+            try {
+                allowRedirectException(error);
+                // If we reach here, it was not a redirect exception
                 throw error;
+            } catch (redirectError) {
+                // Close drawer before redirecting
+                setDrawerOpen(false);
+                throw redirectError;
             }
         }
     };
 
     const hiddenRoutes = [
-        GlobalConstants.HOME,
         GlobalConstants.LOGIN,
+        GlobalConstants.DASHBOARD,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
         GlobalConstants.APPLY,
-        GlobalConstants.EVENT,
+        GlobalConstants.CALENDAR_POST,
+        GlobalConstants.TICKET,
     ];
-
-    const getRouteNavButton = (routeConfig: RouteConfigType, currentPathSegments: string[]) => {
-        if (hiddenRoutes.includes(routeConfig.name)) return null;
-        if (!isUserAuthorized(user, [routeConfig.name], routeConfig)) return null;
-        return (
-            <ListItem key={routeConfig.name} dense>
-                <Button
-                    fullWidth
-                    sx={{ justifyContent: "flex-start" }}
-                    onClick={() => {
-                        setDrawerOpen(false);
-                        clientRedirect(router, [routeConfig.name]);
-                    }}
-                >
-                    {LanguageTranslations.routeLabel[routeConfig.name][language]}
-                </Button>
-                {routeConfig.children.length > 0 && (
-                    <List>
-                        {routeConfig.children.map((child) =>
-                            getRouteNavButton(child, currentPathSegments.slice(1)),
-                        )}
-                    </List>
-                )}
-            </ListItem>
-        );
-    };
+    !user && hiddenRoutes.push(GlobalConstants.HOME);
 
     const createInfoPageAction = async (formData: FormData) => {
         try {
@@ -133,6 +113,9 @@ const NavPanel = () => {
     };
 
     const updateInfoPageAction = async (formData: FormData) => {
+        if (!updateInfoPageId) {
+            throw new Error("No InfoPage ID provided for update");
+        }
         try {
             await updateInfoPage(formData, updateInfoPageId, language);
             setUpdateInfoPageId(null);
@@ -144,6 +127,9 @@ const NavPanel = () => {
     };
 
     const deleteInfoPageAction = async (infoPageId: string) => {
+        if (!infoPageId) {
+            throw new Error("No InfoPage ID provided for delete");
+        }
         try {
             await deleteInfoPage(infoPageId);
             addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
@@ -181,7 +167,7 @@ const NavPanel = () => {
                             {<Edit fontSize="small" />}
                         </Button>
                         <ConfirmButton
-                            sx={{ minWidth: "20px" }}
+                            buttonProps={{ sx: { minWidth: "20px" } }}
                             aria-label="delete info page"
                             onClick={() => deleteInfoPageAction(infoPage.id)}
                         >
@@ -193,15 +179,18 @@ const NavPanel = () => {
         );
     };
 
-    const getInfoPageTitle = (infoPage: {
-        titleText: { translations: { language: string; text: string }[] };
-    }) => {
+    const getInfoPageTitle = (
+        infoPage: Prisma.InfoPageGetPayload<{
+            include: { titleText: { include: { translations: true } } };
+        }>,
+    ) => {
         const titleTextContent = infoPage?.titleText;
         if (!titleTextContent) return "No title";
         const titleInLanguage = titleTextContent.translations.find((t) => t.language === language);
 
         if (titleInLanguage && titleInLanguage.text.trim() !== "") return titleInLanguage.text;
 
+        if (!infoPage.titleText) return "No title found";
         return infoPage.titleText.translations.find((t) => t.language === language)?.text || "";
     };
 
@@ -243,7 +232,11 @@ const NavPanel = () => {
                             height={40}
                             width={200}
                             style={{ cursor: "pointer" }}
-                            onClick={() => clientRedirect(router, [GlobalConstants.HOME])}
+                            onClick={() =>
+                                clientRedirect(router, [
+                                    user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
+                                ])
+                            }
                         />
                     </Box>
                     <LanguageMenu />
@@ -299,18 +292,16 @@ const NavPanel = () => {
                         </Button>
                     )}
                     <Stack sx={{ flexShrink: 1 }}>
-                        {[
-                            ...new Set(
-                                routeTreeConfig.children.map((childRoute) => childRoute.role),
-                            ),
-                        ].map((role) => {
-                            const routesForRole = routeTreeConfig.children.filter(
-                                (childRoute) => childRoute.role === role,
+                        {/* Group routes by role and render sections with headers for each role */}
+                        {[...new Set(routeTreeConfig.map((route) => route.role))].map((role) => {
+                            // Get routes for this role, then filter to only those the user is authorized to see
+                            const routesToShow = routeTreeConfig.filter(
+                                (route) =>
+                                    !hiddenRoutes.includes(route.name) &&
+                                    route.role === role &&
+                                    isUserAuthorized(user, `/${route.name}`),
                             );
-                            const authorizedRoutes = routesForRole.filter((route) =>
-                                isUserAuthorized(user, [route.name], route),
-                            );
-                            if (authorizedRoutes.length === 0) return null;
+                            if (routesToShow.length === 0) return null;
                             return (
                                 <Stack key={role} spacing={1} sx={{ mb: 2, height: "100%" }}>
                                     {role && (
@@ -318,9 +309,25 @@ const NavPanel = () => {
                                             {LanguageTranslations.roleLabels[role][language]}
                                         </ListSubheader>
                                     )}
-                                    {routesForRole.map((route) =>
-                                        getRouteNavButton(route, pathToRoutes(pathname)),
-                                    )}
+                                    {routesToShow.map((route) => (
+                                        <ListItem key={route.name} dense>
+                                            <Button
+                                                fullWidth
+                                                sx={{ justifyContent: "flex-start" }}
+                                                onClick={() => {
+                                                    setDrawerOpen(false);
+                                                    clientRedirect(router, [route.name]);
+                                                }}
+                                                disabled={pathname === `/${route.name}`} // Disable button for current route
+                                            >
+                                                {
+                                                    LanguageTranslations.routeLabel[route.name][
+                                                        language
+                                                    ]
+                                                }
+                                            </Button>
+                                        </ListItem>
+                                    ))}
                                     {infoPages
                                         .filter(
                                             (infoPage) =>
@@ -356,10 +363,12 @@ const NavPanel = () => {
                     </Stack>
                     <Stack sx={{ mt: "auto", pb: 2 }}>
                         <ListItem>
-                            {" "}
                             <Link
                                 textTransform="capitalize"
-                                href={getTermsOfMembershipUrl(organizationSettings, language)}
+                                href={
+                                    getTermsOfMembershipUrl(organizationSettings, language) ??
+                                    undefined
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -369,7 +378,9 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
-                                href={getPrivacyPolicyUrl(organizationSettings, language)}
+                                href={
+                                    getPrivacyPolicyUrl(organizationSettings, language) ?? undefined
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -379,7 +390,10 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
-                                href={getTermsOfPurchaseUrl(organizationSettings, language)}
+                                href={
+                                    getTermsOfPurchaseUrl(organizationSettings, language) ??
+                                    undefined
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

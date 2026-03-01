@@ -3,13 +3,13 @@ import { formatDate, openResourceInNewTab } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
 import { use, useMemo } from "react";
 import { useUserContext } from "../../context/UserContext";
-import { Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
 import { getRelativeUrl } from "../../lib/utils";
 import { Info, OpenInNew } from "@mui/icons-material";
 import isBetween from "dayjs/plugin/isBetween";
 import dayjs from "dayjs";
 import BookTaskButton from "./BookTaskButton";
+import { Prisma } from "../../../prisma/generated/client";
 
 dayjs.extend(isBetween);
 
@@ -36,16 +36,13 @@ interface DraggableTaskProps {
 
 const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: DraggableTaskProps) => {
     const { language, user } = useUserContext();
-    const event = eventPromise ? use(eventPromise) : null;
+    const event = eventPromise ? use(eventPromise) : undefined;
 
-    const isReadOnly = useMemo(
-        () => () => {
-            if (user && task.assignee_id === user.id) return false;
-            if (user && task.reviewer_id === user.id) return false;
-            return readOnly;
-        },
-        [readOnly, task, user],
-    );
+    const isReadOnly = useMemo(() => {
+        if (user && task.assignee_id === user.id) return false;
+        if (user && task.reviewer_id === user.id) return false;
+        return readOnly;
+    }, [readOnly, task, user]);
 
     // TODO: Make randos unable to drag and drop unless assigned or reviewer
 
@@ -53,7 +50,7 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
         <>
             <Card
                 draggable={!isReadOnly}
-                onDragStart={() => setDraggedTask(task)}
+                {...(setDraggedTask && { onDragStart: () => setDraggedTask(task) })}
                 sx={{
                     padding: { xs: 1, sm: 2 },
                     ...(isReadOnly ? {} : { cursor: "grab" }),
@@ -84,7 +81,9 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
                             gap={2}
                             sx={{ mt: 0.5 }}
                         >
-                            <Typography variant="body2">{formatDate(task.start_time)}</Typography>
+                            <Typography variant="body2">
+                                {task.start_time ? formatDate(task.start_time) : ""}
+                            </Typography>
                             <Typography variant="body2">-</Typography>
                             <Typography variant="body2">{formatDate(task.end_time)}</Typography>
                         </Stack>

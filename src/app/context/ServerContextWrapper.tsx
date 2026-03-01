@@ -1,30 +1,43 @@
 import { ReactNode, FC } from "react";
 import ContextWrapper from "./ContextWrapper";
 import { getOrganizationSettings } from "../lib/organization-settings-actions";
-import GlobalConstants from "../GlobalConstants";
-import { getLoggedInUser, getUserById } from "../lib/user-actions";
-import { getInfoPages } from "../lib/info-page-actions";
+import { getLoggedInUser } from "../lib/user-helpers";
+import { prisma } from "../../prisma/prisma-client";
+import { userHasRolePrivileges } from "../lib/auth/auth-utils";
+import { UserRole } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/browser";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
 }
 
 const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
-    const organizationSettingsPromise = getOrganizationSettings();
-
     const loggedInUser = await getLoggedInUser();
 
-    // Only fetch the user data if we have a user ID
-    const userPromise = loggedInUser?.id
-        ? getUserById(loggedInUser.id)
-        : Promise.resolve(null);
+    const allowedUserRolePrivileges = Object.values(UserRole).filter((role) =>
+        userHasRolePrivileges(loggedInUser, role),
+    ) as UserRole[];
 
-    const infoPagesPromise = getInfoPages(loggedInUser?.id ?? null);
+    // Pages with no role restrictions are always allowed
+    const lowestAllowedUserRoleCondition: Prisma.InfoPageWhereInput & {
+        OR: Prisma.InfoPageWhereInput[];
+    } = { OR: [{ lowest_allowed_user_role: { equals: null } }] };
+    if (allowedUserRolePrivileges.length > 0) {
+        lowestAllowedUserRoleCondition.OR.push({
+            lowest_allowed_user_role: { in: allowedUserRolePrivileges },
+        });
+    }
+    const infoPagesPromise = prisma.infoPage.findMany({
+        where: lowestAllowedUserRoleCondition,
+        include: { titleText: { include: { translations: true } } },
+    });
+
+    const organizationSettingsPromise = getOrganizationSettings();
 
     return (
         <ContextWrapper
             organizationSettingsPromise={organizationSettingsPromise}
-            userPromise={userPromise}
+            userPromise={new Promise((resolve) => resolve(loggedInUser))}
             infoPagesPromise={infoPagesPromise}
         >
             {children}

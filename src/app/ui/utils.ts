@@ -1,7 +1,7 @@
-import { Language, Prisma } from "@prisma/client";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
-import Error from "next/error";
+import { Language } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 // Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
 dayjs.extend(utc);
@@ -16,8 +16,9 @@ export const openResourceInNewTab = (resourceUrl: string) => {
     if (newWindow) newWindow.opener = null;
 };
 
-export const allowRedirectException = (error: Error & { digest?: string }) => {
-    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+export const allowRedirectException = (error: unknown) => {
+    const hasDigest = error && typeof error === "object" && error !== null && "digest" in error;
+    if (hasDigest && (error as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT")) {
         throw error;
     }
 };
@@ -26,32 +27,50 @@ export const getPrivacyPolicyUrl = (
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
     language: Language,
 ) => {
-    if (language === Language.english) return organizationSettings.privacy_policy_english_url;
-    if (language === Language.swedish) return organizationSettings.privacy_policy_swedish_url;
+    if (language === Language.english)
+        return (
+            organizationSettings.privacy_policy_english_url ||
+            "documents/privacy-policy-english.pdf"
+        );
+    if (language === Language.swedish)
+        return (
+            organizationSettings.privacy_policy_swedish_url ||
+            "documents/privacy-policy-swedish.pdf"
+        );
 };
 
 export const getTermsOfMembershipUrl = (
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
     language: Language,
-) => {
+): string | null => {
     if (language === Language.english) return organizationSettings.terms_of_membership_english_url;
     if (language === Language.swedish) return organizationSettings.terms_of_membership_swedish_url;
+    return null;
 };
 
 export const getTermsOfPurchaseUrl = (
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>,
     language: Language,
 ) => {
-    if (language === Language.english) return organizationSettings.terms_of_purchase_english_url;
-    if (language === Language.swedish) return organizationSettings.terms_of_purchase_swedish_url;
+    if (language === Language.english)
+        return (
+            organizationSettings.terms_of_purchase_english_url ||
+            "documents/terms-of-purchase-english.pdf"
+        );
+    if (language === Language.swedish)
+        return (
+            organizationSettings.terms_of_purchase_swedish_url ||
+            "documents/terms-of-purchase-swedish.pdf"
+        );
 };
 
 export const userHasSkillBadge = (
     user: Prisma.UserGetPayload<{
         select: { skill_badges: true };
-    }>,
+    }> | null,
     skillBadgeId: string,
 ): boolean => {
+    if (!user) return false;
     return user.skill_badges.some((userBadge) => userBadge.skill_badge_id === skillBadgeId);
 };
 

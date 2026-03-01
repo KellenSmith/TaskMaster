@@ -1,6 +1,5 @@
 import { SyntheticEvent } from "react";
 
-import { Prisma } from "@prisma/client";
 import { use, useState, useTransition } from "react";
 import {
     Autocomplete,
@@ -23,6 +22,7 @@ import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import CalendarLanguageTranslations from "../calendar/LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface LocationDashboardProps {
     eventPromise: Promise<
@@ -42,7 +42,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     const location = event.location;
     const locations = use(locationsPromise);
     const [isPending, startTransition] = useTransition();
-    const [selectedLocationOption, setSelectedLocationOption] = useState<CustomOptionProps>(
+    const [selectedLocationOption, setSelectedLocationOption] = useState<CustomOptionProps | null>(
         location?.id ? { id: location.id, label: location.name } : null,
     );
 
@@ -57,11 +57,17 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     }
 
     const getSelectedLocation = () =>
-        locations.find((loc) => loc.id === selectedLocationOption.id) || location;
+        selectedLocationOption
+            ? locations.find((loc) => loc.id === selectedLocationOption.id) || location
+            : location;
 
     const switchEventLocation = async () => {
         startTransition(async () => {
             try {
+                if (!selectedLocationOption) {
+                    addNotification(GlobalLanguageTranslations.failedSave[language], "error");
+                    return;
+                }
                 const formData = new FormData();
                 formData.append(GlobalConstants.LOCATION_ID, selectedLocationOption.id);
                 await updateEvent(event.id, formData);
@@ -133,7 +139,8 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             variant="contained"
                             disabled={
                                 isSwitchButtonDisabled() ||
-                                selectedLocationOption.id === event.location_id
+                                (!!selectedLocationOption &&
+                                    selectedLocationOption.id === event.location_id)
                             }
                             onClick={switchEventLocation}
                         >
@@ -147,7 +154,7 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                             >
                                 {CalendarLanguageTranslations.locationCapacityExceeded[language](
                                     locations.find(
-                                        (location) => location.id === selectedLocationOption.id,
+                                        (location) => location.id === selectedLocationOption?.id,
                                     )?.capacity || 0,
                                 )}
                             </Typography>

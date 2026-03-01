@@ -6,7 +6,7 @@ See `.env.example` for a template you can copy.
 
 ## Required
 
-- PRISMA_DATABASE_URL: Postgres connection string
+- DATABASE_URL: Postgres connection string
 - AUTH_SECRET: Secret for signing Auth.js JWTs
 - EMAIL: From-address used to send magic links (must match your SMTP auth)
 - EMAIL_PASSWORD: SMTP password or app-specific password

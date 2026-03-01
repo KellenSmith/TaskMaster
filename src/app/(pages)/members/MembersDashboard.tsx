@@ -15,7 +15,6 @@ import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { isMembershipExpired } from "../../lib/utils";
-import { Prisma, UserStatus } from "@prisma/client";
 import { AddMembershipSchema, UserUpdateSchema } from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import {
@@ -32,6 +31,8 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { addUserMembership } from "../../lib/user-membership-actions";
 import { openResourceInNewTab } from "../../ui/utils";
+import { UserStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
@@ -96,7 +97,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     });
 
     // PDF Document component
-    const MembersListPDF = ({ members }) => (
+    const MembersListPDF = () => (
         <Document>
             <Page size="A4" style={styles.page}>
                 <Text style={styles.header}>Members List</Text>
@@ -104,23 +105,21 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     <Text style={styles.headerCell}>Email</Text>
                     <Text style={styles.headerCell}>Nickname</Text>
                 </View>
-                {members.map((member, idx) => (
-                    <View style={styles.row} key={idx}>
-                        <Text style={styles.cell}>{member.email}</Text>
-                        <Text style={styles.cell}>{member.nickname || ""}</Text>
-                    </View>
-                ))}
+                {members
+                    .sort((a, b) => a.email.localeCompare(b.email))
+                    .map((member, idx) => (
+                        <View style={styles.row} key={idx}>
+                            <Text style={styles.cell}>{member.email}</Text>
+                            <Text style={styles.cell}>{member.nickname || ""}</Text>
+                        </View>
+                    ))}
             </Page>
         </Document>
     );
 
     const printMembersList = async () => {
-        // Only keep email and nickname
-        const simpleMembers = members
-            .map((m) => ({ email: m.email, nickname: m.nickname }))
-            .sort((a, b) => a.email.localeCompare(b.email));
         // Generate PDF blob
-        const doc = <MembersListPDF members={simpleMembers} />;
+        const doc = <MembersListPDF />;
         const asPdf = await pdf(doc).toBlob();
         const url = URL.createObjectURL(asPdf);
         openResourceInNewTab(url);
@@ -137,7 +136,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         {
             name: GlobalConstants.DELETE,
             serverAction: deleteUserAction,
-            available: (member: ImplementedDatagridEntities) => user && member?.id !== user.id,
+            available: (member: ImplementedDatagridEntities) => !!user && member?.id !== user.id,
             buttonColor: "error",
             buttonLabel: GlobalLanguageTranslations.delete[language],
         },
@@ -213,6 +212,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 }
                 // expired - pending/active
                 if (value1 === GlobalConstants.EXPIRED) return 1;
+                return 0;
             },
             renderCell: (params) => {
                 const member: ImplementedDatagridEntities = params.row;
@@ -309,13 +309,13 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 getDefaultFormValues={(member: ImplementedDatagridEntities) =>
                     member
                         ? {
-                            [GlobalConstants.SKILL_BADGES]: (
-                                member as Prisma.UserGetPayload<{
-                                    include: { skill_badges: true };
-                                }>
-                            ).skill_badges.map((badge) => badge.skill_badge_id),
-                        }
-                        : null
+                              [GlobalConstants.SKILL_BADGES]: (
+                                  member as Prisma.UserGetPayload<{
+                                      include: { skill_badges: true };
+                                  }>
+                              ).skill_badges.map((badge) => badge.skill_badge_id),
+                          }
+                        : {}
                 }
                 customFormOptions={{
                     [GlobalConstants.SKILL_BADGES]: skillBadges.map(

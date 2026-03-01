@@ -5,9 +5,9 @@ import { Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material
 import CalendarEvent from "./CalendarEvent";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-import { Prisma } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 dayjs.extend(isBetween);
 

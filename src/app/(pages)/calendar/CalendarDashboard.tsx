@@ -1,11 +1,11 @@
 "use client";
 
-import React, { FC, use, useState } from "react";
+import { FC, use, useState } from "react";
 import {
     Stack,
     Typography,
     Button,
-    Grid2,
+    Grid,
     Dialog,
     DialogContent,
     useMediaQuery,
@@ -13,18 +13,18 @@ import {
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
-import { createEvent } from "../../lib/event-actions";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form from "../../ui/form/Form";
 import GlobalConstants from "../../GlobalConstants";
 import { useUserContext } from "../../context/UserContext";
-import { Prisma } from "@prisma/client";
 import { EventCreateSchema } from "../../lib/zod-schemas";
 import { CustomOptionProps } from "../../ui/form/AutocompleteWrapper";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { allowRedirectException } from "../../ui/utils";
 import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
+import { createEvent } from "../../lib/event-actions";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
@@ -44,9 +44,13 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         const selectedLocation = locations.find(
             (loc) => loc.id === formData.get(GlobalConstants.LOCATION_ID),
         );
+        if (!selectedLocation) throw new Error(LanguageTranslations.locationNotFound[language]);
+        if (!user) throw new Error("You must be logged in to create an event");
+
         if (
+            !selectedLocation ||
             selectedLocation.capacity <
-            parseInt(formData.get(GlobalConstants.MAX_PARTICIPANTS) as string)
+                parseInt(formData.get(GlobalConstants.MAX_PARTICIPANTS) as string)
         )
             throw new Error(
                 LanguageTranslations.locationCapacityExceeded[language](selectedLocation.capacity),
@@ -100,9 +104,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     const getCalendarGrid = () => {
         return (
             <Stack sx={{ width: "100%" }}>
-                <Grid2 container spacing={2} columns={7}>
+                <Grid container spacing={2} columns={7}>
                     {LanguageTranslations.weekDaysShort[language].map((day) => (
-                        <Grid2 key={day} size={1} alignContent="center">
+                        <Grid key={day} size={1} alignContent="center">
                             <Typography
                                 key={day}
                                 variant="subtitle2"
@@ -110,14 +114,14 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                             >
                                 {day}
                             </Typography>
-                        </Grid2>
+                        </Grid>
                     ))}
                     {getDaysToShow().map((date) => (
-                        <Grid2 key={date.format("YYYY-MM-DD")} size={1}>
+                        <Grid key={date.format("YYYY-MM-DD")} size={1}>
                             <CalendarDay date={date} eventsPromise={eventsPromise} />
-                        </Grid2>
+                        </Grid>
                     ))}
-                </Grid2>
+                </Grid>
             </Stack>
         );
     };
@@ -195,9 +199,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                         validationSchema={EventCreateSchema}
                         customOptions={{
                             [GlobalConstants.LOCATION_ID]: getLocationOptions(),
-                            [GlobalConstants.TAGS]: stringsToSelectOptions(
-                                events.flatMap((e) => e.tags || []),
-                            ),
+                            [GlobalConstants.TAGS]: stringsToSelectOptions([
+                                ...new Set(events.flatMap((e) => e.tags || [])),
+                            ]),
                         }}
                         readOnly={false}
                         editable={false}

@@ -1,14 +1,11 @@
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import SendoutDashboard from "./SendoutDashboard";
-import { getAllNewsletterJobs } from "../../lib/mail-service/newsletter-actions";
-import GlobalConstants from "../../GlobalConstants";
+import { prisma } from "../../../prisma/prisma-client";
 
 const SendoutPage = () => {
-    const newsLetterJobsPromise = getAllNewsletterJobs();
-    return (
-        <ErrorBoundarySuspense>
-            <SendoutDashboard newsLetterJobsPromise={newsLetterJobsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    const newsLetterJobsPromise = prisma.newsletterJob.findMany({
+        orderBy: { created_at: "desc" },
+    });
+    return <SendoutDashboard newsLetterJobsPromise={newsLetterJobsPromise} />;
 };
 export default SendoutPage;

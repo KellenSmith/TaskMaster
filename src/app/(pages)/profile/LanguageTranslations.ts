@@ -1,7 +1,8 @@
-import { EventStatus, Language, Prisma, UserRole } from "@prisma/client";
 import { isMembershipExpired } from "../../lib/utils";
 import UILanguageTranslations from "../../ui/LanguageTranslations";
 import GlobalConstants from "../../GlobalConstants";
+import { EventStatus, Language, UserRole } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 export const implementedTabs = {
     account: "Account",

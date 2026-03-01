@@ -1,4 +1,5 @@
-import { Language, Prisma } from "@prisma/client";
+import { Prisma } from "../../../prisma/generated/browser";
+import { Language } from "../../../prisma/generated/enums";
 import GlobalConstants from "../../GlobalConstants";
 
 const LanguageTranslations = {
@@ -21,10 +22,6 @@ const LanguageTranslations = {
     [GlobalConstants.STOCK]: {
         [Language.english]: "Stock",
         [Language.swedish]: "Lager",
-    },
-    [GlobalConstants.UNLIMITED_STOCK]: {
-        [Language.english]: "Unlimited Stock",
-        [Language.swedish]: "Obegränsat Lager",
     },
     [GlobalConstants.QUANTITY]: {
         [Language.english]: "Quantity",

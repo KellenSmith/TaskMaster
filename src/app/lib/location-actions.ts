@@ -1,17 +1,15 @@
 "use server";
 
-import { Location } from "@prisma/client";
 import { LocationCreateSchema, LocationUpdateSchema, UuidSchema } from "./zod-schemas";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { sanitizeFormData } from "./html-sanitizer";
+import { Prisma } from "../../prisma/generated/client";
 
-export const getAllLocations = async (): Promise<Location[]> => {
-    return await prisma.location.findMany();
-};
-
-export const createLocation = async (formData: FormData): Promise<Location> => {
+export const createLocation = async (
+    formData: FormData,
+): Promise<Prisma.LocationGetPayload<true>> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = LocationCreateSchema.parse(Object.fromEntries(formData.entries()));
 

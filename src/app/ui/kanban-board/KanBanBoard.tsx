@@ -1,9 +1,8 @@
 "use client";
 
-import React, { use, useState } from "react";
-import { Grid2, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { use, useState } from "react";
+import { Grid, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DroppableColumn from "./DroppableColumn";
-import { Prisma, TaskStatus } from "@prisma/client";
 import KanBanBoardMenu from "./KanBanBoardMenu";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -11,6 +10,8 @@ import z from "zod";
 import { TaskFilterSchema } from "../../lib/zod-schemas";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
+import { TaskStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface KanBanBoardProps {
     readOnly: boolean;
@@ -44,8 +45,10 @@ const KanBanBoard = ({
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
-    const [draggedTask, setDraggedTask] = useState(null);
-    const [draggedOverColumn, setDraggedOverColumn] = useState(null);
+    const [draggedTask, setDraggedTask] = useState<Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } } };
+    }> | null>(null);
+    const [draggedOverColumn, setDraggedOverColumn] = useState<TaskStatus | null>(null);
     const event = eventPromise ? use(eventPromise) : null;
     // Default to "booked for me" and not "unbooked" if kanbanboard seen from profile page
     const [appliedFilter, setAppliedFilter] = useState<z.infer<typeof TaskFilterSchema> | null>(
@@ -65,18 +68,18 @@ const KanBanBoard = ({
                     : LanguageTranslations.assignYourselfPrompt[language]}
             </Typography>
             <Stack direction="row">
-                <Grid2
+                <Grid
                     key={appliedFilter ? JSON.stringify(appliedFilter) : "all-tasks"}
                     container
                     spacing={2}
                     columns={isSmallScreen ? 1 : appliedFilter?.status?.length || 4}
                     width="100%"
                 >
-                    {(appliedFilter?.status?.length > 0
+                    {(appliedFilter?.status && appliedFilter.status.length > 0
                         ? (appliedFilter.status as TaskStatus[])
                         : Object.values(TaskStatus)
                     ).map((status) => (
-                        <Grid2 size={1} key={status}>
+                        <Grid size={1} key={status}>
                             <DroppableColumn
                                 readOnly={readOnly}
                                 eventPromise={eventPromise}
@@ -90,9 +93,9 @@ const KanBanBoard = ({
                                 draggedOverColumn={draggedOverColumn}
                                 setDraggedOverColumn={setDraggedOverColumn}
                             />
-                        </Grid2>
+                        </Grid>
                     ))}
-                </Grid2>
+                </Grid>
                 <KanBanBoardMenu
                     tasksPromise={tasksPromise}
                     appliedFilter={appliedFilter}

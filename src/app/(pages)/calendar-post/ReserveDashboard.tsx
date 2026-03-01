@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import { addEventReserve, deleteEventReserve } from "../../lib/event-reserve-actions";
@@ -8,6 +7,7 @@ import { CheckCircle, ExitToApp, PersonAdd } from "@mui/icons-material";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { isUserReserve } from "./event-utils";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface ReserveDashboardProps {
     eventPromise: Promise<Prisma.EventGetPayload<{ include: { event_reserves: true } }>>;
@@ -15,6 +15,7 @@ interface ReserveDashboardProps {
 
 const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw Error("You must be logged in to view the reserve dashboard");
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const event = use(eventPromise);
@@ -88,11 +89,13 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                             {LanguageTranslations.joinReserveToBeNotified[language](isReserve)}
                         </Typography>
                         <ConfirmButton
-                            color={isReserve ? "error" : "primary"}
-                            variant="outlined"
-                            fullWidth
+                            buttonProps={{
+                                color: isReserve ? "error" : "primary",
+                                variant: "outlined",
+                                fullWidth: true,
+                                startIcon: isReserve ? <ExitToApp /> : <PersonAdd />,
+                            }}
                             onClick={isReserve ? leaveReserveList : joinReserveList}
-                            startIcon={isReserve ? <ExitToApp /> : <PersonAdd />}
                             confirmText={LanguageTranslations.areYouSureYouWannaJoin[language](
                                 isReserve,
                             )}

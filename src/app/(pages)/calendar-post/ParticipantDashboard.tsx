@@ -14,7 +14,6 @@ import {
     useMediaQuery,
     Button,
 } from "@mui/material";
-import { Prisma } from "@prisma/client";
 import { use, useState, useTransition } from "react";
 import { isUserHost } from "../../lib/utils";
 import { Add, Delete, Person } from "@mui/icons-material";
@@ -29,8 +28,9 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
-interface ParticipantDashboard {
+interface ParticipantDashboardProps {
     eventPromise: Promise<
         Prisma.EventGetPayload<{
             include: { tickets: { include: { event_participants: true } }; event_reserves: true };
@@ -58,7 +58,7 @@ const ParticipantDashboard = ({
     eventReservesPromise,
     eventTicketsPromise,
     activeMembersPromise,
-}: ParticipantDashboard) => {
+}: ParticipantDashboardProps) => {
     const theme = useTheme();
     const { language } = useUserContext();
     const { addNotification } = useNotificationContext();
@@ -209,21 +209,22 @@ const ParticipantDashboard = ({
                 open={!!addDialogOpen}
                 onClose={() => setAddDialogOpen(null)}
             >
-                {/* Dialog content goes here */}
-                <Form
-                    name={addDialogOpen}
-                    action={
-                        addDialogOpen === GlobalConstants.PARTICIPANT_USERS
-                            ? addEventParticipantAction
-                            : addEventReserveAction
-                    }
-                    customOptions={{
-                        [GlobalConstants.USER_ID]: getUserSelectOptions(activeMembers),
-                        [GlobalConstants.TICKET_ID]: getTicketsOptions(),
-                    }}
-                    editable={true}
-                    readOnly={false}
-                />
+                {!!addDialogOpen && (
+                    <Form
+                        name={addDialogOpen}
+                        action={
+                            addDialogOpen === GlobalConstants.PARTICIPANT_USERS
+                                ? addEventParticipantAction
+                                : addEventReserveAction
+                        }
+                        customOptions={{
+                            [GlobalConstants.USER_ID]: getUserSelectOptions(activeMembers),
+                            [GlobalConstants.TICKET_ID]: getTicketsOptions(),
+                        }}
+                        editable={true}
+                        readOnly={false}
+                    />
+                )}
                 <Button onClick={() => setAddDialogOpen(null)}>
                     {GlobalLanguageTranslations.cancel[language]}
                 </Button>

@@ -3,8 +3,9 @@ import { styles } from "../../ui/pdf-styles";
 import { formatDate, formatPrice } from "../../ui/utils";
 import { useMemo } from "react";
 import dayjs from "dayjs";
-import { Language, Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
+import { Language } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface OrdersReportPDFProps {
     orders: Prisma.OrderGetPayload<{
@@ -79,7 +80,6 @@ const OrdersReportPDF = ({ orders, language, startDate, endDate }: OrdersReportP
             { totalPrice: 0, totalVat: 0 },
         );
     }, [productSummary]);
-
 
     const getReportDetails = () => (
         <View key="report-details" style={styles.eventDetails}>
@@ -172,12 +172,7 @@ const OrdersReportPDF = ({ orders, language, startDate, endDate }: OrdersReportP
                                 style={{
                                     ...styles.tableCell,
                                     ...styles.headerCell,
-                                    width:
-                                        index === 0
-                                            ? "30%"
-                                            : index === 1
-                                                ? "10%"
-                                                : "15%",
+                                    width: index === 0 ? "30%" : index === 1 ? "10%" : "15%",
                                 }}
                             >
                                 {header}

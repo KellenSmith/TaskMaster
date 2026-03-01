@@ -13,7 +13,6 @@ import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import PeopleIcon from "@mui/icons-material/People";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
-import { EventStatus, Prisma } from "@prisma/client";
 import TicketShop from "./TicketShop";
 import EventActions from "./EventActions";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
@@ -23,7 +22,8 @@ import ReserveDashboard from "./ReserveDashboard";
 import TicketDashboard from "./TicketDashboard";
 import GlobalConstants from "../../GlobalConstants";
 import LocationDashboard from "./LocationDashboard";
-import LanguageTranslations, { implementedTabs } from "./LanguageTranslations";
+import LanguageTranslations, { ImplementedTabs, implementedTabs } from "./LanguageTranslations";
+import { EventStatus, Prisma } from "../../../prisma/generated/browser";
 
 interface EventDashboardProps {
     eventPromise: Promise<
@@ -62,7 +62,7 @@ interface EventDashboardProps {
         }>[]
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
-    eventTagsPromise: Promise<string[]>;
+    eventTags: string[];
 }
 
 const EventDashboard = ({
@@ -74,7 +74,7 @@ const EventDashboard = ({
     eventParticipantsPromise,
     eventReservesPromise,
     locationsPromise,
-    eventTagsPromise,
+    eventTags,
 }: EventDashboardProps) => {
     const theme = useTheme();
     const router = useRouter();
@@ -84,15 +84,15 @@ const EventDashboard = ({
     const event = use(eventPromise);
 
     // Tab is available if it has a label
-    const eventTabs = useMemo(() => {
-        const availableTabs = {
+    const eventTabs = useMemo<Partial<ImplementedTabs>>(() => {
+        const availableTabs: Partial<ImplementedTabs> = {
             details: implementedTabs.details,
             location: implementedTabs.location,
             organize: implementedTabs.organize,
             tickets: implementedTabs.tickets,
-            participants: null,
-            reserveList: null,
-        } as typeof implementedTabs;
+            participants: undefined,
+            reserveList: undefined,
+        };
         if (isUserHost(user, event) || isUserAdmin(user)) {
             availableTabs.participants = implementedTabs.participants;
         }
@@ -114,7 +114,7 @@ const EventDashboard = ({
             [GlobalConstants.EVENT_ID]: event.id,
             tab,
         });
-    const goToOrganizeTab = () => setOpenTab(eventTabs.organize);
+    const goToOrganizeTab = () => eventTabs.organize && setOpenTab(eventTabs.organize);
 
     const getOpenTabComp = () => {
         switch (openTab) {
@@ -229,7 +229,7 @@ const EventDashboard = ({
                     aria-label="event tabs"
                     sx={{ flex: 1, minWidth: 0 }}
                 >
-                    {Object.keys(eventTabs).map((tabKey) => {
+                    {(Object.keys(eventTabs) as (keyof typeof eventTabs)[]).map((tabKey) => {
                         const tabVal = eventTabs[tabKey];
                         if (!tabVal) return null;
                         const label = LanguageTranslations[tabVal][language] as string;
@@ -271,7 +271,7 @@ const EventDashboard = ({
                     <EventActions
                         eventPromise={eventPromise}
                         locationsPromise={locationsPromise}
-                        eventTagsPromise={eventTagsPromise}
+                        eventTags={eventTags}
                     />
                 </Stack>
             </Stack>

@@ -1,15 +1,17 @@
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
+// ...existing code...
 import ShopDashboard from "./ShopDashboard";
-import { getAllNonTicketProducts } from "../../lib/product-actions";
-import GlobalConstants from "../../GlobalConstants";
+import { prisma } from "../../../prisma/prisma-client";
 
 const ShopPage = () => {
-    const productsPromise = getAllNonTicketProducts();
-    return (
-        <ErrorBoundarySuspense>
-            <ShopDashboard productsPromise={productsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    const productsPromise = prisma.product.findMany({
+        where: {
+            ticket: null,
+        },
+        include: {
+            membership: true,
+        },
+    });
+    return <ShopDashboard productsPromise={productsPromise} />;
 };
 
 export default ShopPage;

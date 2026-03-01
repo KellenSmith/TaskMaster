@@ -1,4 +1,5 @@
-import { Language, TaskStatus } from "@prisma/client";
+import { Prisma } from "../../../prisma/generated/client";
+import { Language, TaskStatus } from "../../../prisma/generated/enums";
 import GlobalConstants from "../../GlobalConstants";
 
 export const menuTabs = {
@@ -114,9 +115,9 @@ const LanguageTranslations = {
         [Language.swedish]: "Kunde inte boka volontärskift",
     },
     areYouSureCancelShiftBooking: {
-        [Language.english]: (event = null) =>
+        [Language.english]: (event?: Prisma.EventGetPayload<{}>) =>
             `Are you sure you want to cancel this shift booking?${event ? " If you are not booked for any other shifts, you will lose your volunteer ticket." : ""}`,
-        [Language.swedish]: (event = null) =>
+        [Language.swedish]: (event?: Prisma.EventGetPayload<{}>) =>
             `Är du säker på att du vill avboka detta skift?${event ? " Om du inte är bokad för några andra skift kommer du att förlora din volontärbiljett." : ""}`,
     },
     cancelShiftBooking: {

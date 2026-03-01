@@ -1,22 +1,25 @@
 import dayjs from "dayjs";
-import { EventStatus, Prisma, Task } from "@prisma/client";
+import { EventStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 export const isEventPublished = (event: Prisma.EventGetPayload<true>) =>
     event.status === EventStatus.published;
 
 export const isUserParticipant = (
-    user: Prisma.UserGetPayload<{ include: { user_membership: true } }>,
+    user: Prisma.UserGetPayload<{ include: { user_membership: true } }> | null,
     event: Prisma.EventGetPayload<{
         include: { tickets: { include: { event_participants: true } } };
     }>,
-) =>
-    !!event?.tickets.find((ticket) =>
-        ticket?.event_participants.find((participant) => participant?.user_id === user?.id),
+) => {
+    if (!event.tickets || !user) return false;
+    return !!event.tickets.find((ticket) =>
+        ticket.event_participants.find((participant) => participant.user_id === user.id),
     );
+};
 
 export // Helper function to check if user is on reserve list
 const isUserReserve = (
-    user: Prisma.UserGetPayload<{ include: { user_membership: true } }>,
+    user: Prisma.UserGetPayload<{ include: { user_membership: true } }> | null,
     event: Prisma.EventGetPayload<{
         include: { event_reserves: true };
     }>,
@@ -27,27 +30,32 @@ const isUserReserve = (
 
 // User is volunteer if assigned to at least one task
 export const isUserVolunteer = (
-    user: Prisma.UserGetPayload<true>,
+    user: Prisma.UserGetPayload<true> | null,
     eventTasks: Prisma.TaskGetPayload<true>[],
 ) => {
     if (!eventTasks || !user) return false;
     return !!eventTasks.find((task) => task.assignee_id === user.id);
 };
 
-export const isTaskSelected = (task: Task, selectedTasks: Task[]) =>
-    selectedTasks.map((task) => task.id).includes(task.id);
+export const isTaskSelected = (
+    task: Prisma.TaskGetPayload<true>,
+    selectedTasks: Prisma.TaskGetPayload<true>[],
+) => selectedTasks.map((task) => task.id).includes(task.id);
 
-export const getEarliestStartTime = (tasks: Task[]) =>
+export const getEarliestStartTime = (tasks: Prisma.TaskGetPayload<true>[]) =>
     tasks
         .map((task) => task.start_time)
         .sort((startTime1, startTime2) => dayjs.utc(startTime1).diff(dayjs.utc(startTime2)))[0];
 
-export const getEarliestEndTime = (tasks: Task[]) =>
+export const getEarliestEndTime = (tasks: Prisma.TaskGetPayload<true>[]) =>
     tasks
         .map((task) => task.end_time)
         .sort((startTime1, startTime2) => dayjs.utc(startTime1).diff(dayjs.utc(startTime2)))[0];
 
-export const sortTasks = (task1: Task, task2: Task) => {
+export const sortTasks = (
+    task1: Prisma.TaskGetPayload<true>,
+    task2: Prisma.TaskGetPayload<true>,
+) => {
     const startTime1 = dayjs.utc(task1.start_time);
     const startTime2 = dayjs.utc(task2.start_time);
     if (Math.abs(startTime2.diff(startTime1, "minute")) > 1)
@@ -116,6 +124,12 @@ export const isEventSoldOut = (
 export const isEventCancelled = (event: Prisma.EventGetPayload<true>) =>
     event && event.status === EventStatus.cancelled;
 
-export const doDateRangesOverlap = (start1: Date, end1: Date, start2: Date, end2: Date) => {
+export const doDateRangesOverlap = (
+    start1?: Date | null,
+    end1?: Date | null,
+    start2?: Date | null,
+    end2?: Date | null,
+) => {
+    if (!start1 || !end1 || !start2 || !end2) return false;
     return dayjs.utc(start1).isBefore(end2) && dayjs.utc(end1).isAfter(start2);
 };

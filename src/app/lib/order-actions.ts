@@ -1,228 +1,95 @@
 "use server";
 
-import { OrderStatus, Prisma } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
-import { processOrderedProduct } from "./product-actions";
-import { sendOrderConfirmation } from "./mail-service/mail-service";
+import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import { capturePaymentFunds } from "./payment-actions";
 import { revalidateTag } from "next/cache";
-import { isUserAdmin, serverRedirect } from "./utils";
+import { serverRedirect } from "./utils";
 import { UuidSchema } from "./zod-schemas";
+import { getLoggedInUser } from "./user-helpers";
+import { validateAndBuildOrderItems } from "./order-item-helpers";
+import { OrderStatus, UserRole } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
-export const getOrderById = async (
-    userId: string,
-    orderId: string,
-): Promise<
-    Prisma.OrderGetPayload<{
-        include: { order_items: { include: { product: { include: { membership: true } } } } };
-    }>
-> => {
-    const order = await prisma.order.findUniqueOrThrow({
-        where: { id: orderId },
-        include: {
-            order_items: {
-                include: {
-                    product: { include: { membership: true } },
-                },
-            },
-        },
-    });
-    const loggedInUser = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { role: true, user_membership: true },
-    });
-
-    if (userId !== order.user_id && !isUserAdmin(loggedInUser)) throw new Error("Not authorized to view this order");
-    return order;
-};
-
-export const getAllOrders = async (): Promise<
-    Prisma.OrderGetPayload<{
-        include: {
-            user: { select: { nickname: true } };
-            order_items: { include: { product: true } };
-        };
-    }>[]
-> => {
-    return prisma.order.findMany({
-        include: {
-            user: {
-                select: {
-                    nickname: true,
-                },
-            },
-            order_items: {
-                include: {
-                    product: true,
-                },
-            },
-        },
-    });
-};
-
-export const createOrder = async (
-    userId: string,
+export const createAndRedirectToOrder = async (
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
-): Promise<Prisma.OrderGetPayload<true>> => {
-    // Check that the stock of each product in the orderItems is sufficient
-    for (const orderItem of orderItems) {
-        const product = await prisma.product.findUniqueOrThrow({
-            where: { id: orderItem.product_id },
-        });
-        if (!product.unlimited_stock && product.stock < orderItem.quantity) {
-            throw new Error(`Insufficient stock for product ${product.id}`);
-        }
-    }
+): Promise<void> => {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) throw new Error("User must be logged in to create an order");
 
-    // Calculate the price of each order item
-    for (const item of orderItems) {
-        const product = await prisma.product.findUniqueOrThrow({
-            where: { id: item.product_id },
-        });
-        item.price = product.price;
-        item.vat_amount = product.vat_percentage / 100 * product.price;
-    }
+    const createdOrder = await prisma.$transaction(async (tx) => {
+        // Create the order with items in a transaction to ensure data consistency
+        // and proper stock validation
 
-    // Create the order with items in a transaction
-    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        return await tx.order.create({
+        const validOrderItems = await validateAndBuildOrderItems(tx, orderItems);
+
+        // OrderItem price, vat and quantity have been validated at this point
+        const order = await tx.order.create({
             data: {
-                total_amount: orderItems.reduce((acc, item) => item.price * item.quantity + acc, 0),
-                total_vat_amount: orderItems.reduce((acc, item) => item.vat_amount * item.quantity + acc, 0),
+                total_amount: validOrderItems.reduce(
+                    (acc, item) => (item.price as number) * (item.quantity as number) + acc,
+                    0,
+                ),
+                total_vat_amount: validOrderItems.reduce(
+                    (acc, item) => (item.vat_amount as number) * (item.quantity as number) + acc,
+                    0,
+                ),
                 user: {
                     connect: {
-                        id: userId,
+                        id: loggedInUser.id,
                     },
                 },
                 order_items: {
                     createMany: {
-                        data: orderItems,
+                        data: validOrderItems,
                     },
                 },
             },
+            select: {
+                id: true,
+            },
         });
+        return order;
     });
-    return order;
+
+    serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: createdOrder.id });
 };
 
-export const createAndRedirectToOrder = async (
-    userId: string,
-    orderItems: Prisma.OrderItemCreateManyOrderInput[],
-): Promise<void> => {
-    const order = await createOrder(userId, orderItems);
-    serverRedirect([GlobalConstants.ORDER], { [GlobalConstants.ORDER_ID]: order.id });
-};
-
-const processOrderItems = async (
-    tx: Prisma.TransactionClient,
-    orderId: string,
-): Promise<void> => {
-    const order = await tx.order.findUniqueOrThrow({
+export const cancelOrder = async (orderId: string): Promise<void> => {
+    // Only allow admins or order owners to cancel orders
+    const loggedInUser = await getLoggedInUser();
+    const order = await prisma.order.findUniqueOrThrow({
         where: { id: orderId },
-        include: {
-            order_items: {
-                include: {
-                    product: {
-                        include: {
-                            membership: true,
-                            ticket: true,
-                        },
-                    },
-                },
-            },
-        },
+        select: { user_id: true, status: true },
     });
+    if (!loggedInUser) throw new Error("User must be logged in to cancel an order");
+    if (!(loggedInUser.role === UserRole.admin || loggedInUser.id === order.user_id))
+        throw new Error("User does not have permission to cancel this order");
 
-    if (order.order_items.length === 0) {
-        throw new Error("No items found for this order");
-    }
+    // Only allow cancelling pending orders
+    if (order.status !== OrderStatus.pending)
+        throw new Error("Only pending orders can be cancelled");
 
-    // Process each order item
-    for (const orderItem of order.order_items) {
-        await processOrderedProduct(tx, order.user_id, orderItem);
-    }
-};
-
-export const progressOrder = async (
-    orderId: string,
-    newStatus: OrderStatus,
-    needsCapture = false,
-): Promise<void> => {
-    // Always allow transitioning to cancelled or error
-    if (([OrderStatus.cancelled, OrderStatus.error] as string[]).includes(newStatus)) {
-        await prisma.order.update({
-            where: { id: orderId },
-            data: { status: newStatus },
-        });
-        revalidateTag(GlobalConstants.ORDER, "max");
-        return;
-    }
-
-    let order: Prisma.OrderGetPayload<true> = await prisma.order.findUniqueOrThrow({
+    await prisma.order.update({
         where: { id: orderId },
+        data: { status: OrderStatus.cancelled },
     });
-
-    // If order status is error, allow trying to go through the flow again by setting to pending
-    if (order.status === OrderStatus.error)
-        order = await prisma.order.update({
-            where: { id: orderId },
-            data: { status: OrderStatus.pending },
-            select: { status: true },
-        });
-
-    // Pending to paid
-    if (order.status === OrderStatus.pending) {
-        order = await prisma.order.update({
-            where: { id: orderId },
-            data: { status: OrderStatus.paid },
-        });
-        revalidateTag(GlobalConstants.ORDER, "max");
-        if (newStatus === OrderStatus.paid) return
-    }
-
-    // Paid to shipped
-    if (order.status === OrderStatus.paid) {
-        // This transaction may perform multiple updates and external work; increase timeout locally.
-        await prisma.$transaction(
-            async (tx: Prisma.TransactionClient) => {
-                await processOrderItems(tx, orderId);
-                order = await prisma.order.update({
-                    where: { id: orderId },
-                    data: { status: OrderStatus.shipped },
-                });
-                revalidateTag(GlobalConstants.ORDER, "max");
-            },
-            {
-                // timeout in ms for this interactive transaction; set to 30s for safety
-                timeout: 10000,
-                // max wait to acquire a connection for transaction
-                maxWait: 5000,
-            },
-        );
-        try {
-            await sendOrderConfirmation(orderId);
-        } catch (error) {
-            // Allow progressing order despite failed confirmation
-            console.error("Failed to send order confirmation:", error);
-        }
-        if (newStatus === OrderStatus.shipped) return
-    }
-    // Shipped to completed
-    if (order.status === OrderStatus.shipped) {
-        if (needsCapture) await capturePaymentFunds(orderId);
-        order = await prisma.order.update({
-            where: { id: orderId },
-            data: { status: OrderStatus.completed },
-        });
-        revalidateTag(GlobalConstants.ORDER, "max");
-    }
+    revalidateTag(GlobalConstants.ORDER, "max");
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
     const validatedOrderId = UuidSchema.parse(orderId);
+    const loggedInUser = await getLoggedInUser();
+    const order = await prisma.order.findUniqueOrThrow({
+        where: { id: validatedOrderId },
+        select: { user_id: true },
+    });
+    if (!loggedInUser) throw new Error("User must be logged in to delete an order");
+    if (!(loggedInUser.role === UserRole.admin || loggedInUser.id === order.user_id))
+        throw new Error("User does not have permission to delete this order");
 
     await prisma.order.delete({
         where: { id: validatedOrderId },
     });
+
+    revalidateTag(GlobalConstants.ORDER, "max");
 };

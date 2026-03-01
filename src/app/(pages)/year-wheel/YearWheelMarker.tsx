@@ -3,7 +3,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { Box, useTheme } from "@mui/material";
 
 interface Props {
-    containerRef: React.RefObject<HTMLDivElement>;
+    containerRef: React.RefObject<HTMLDivElement | null>;
     markerDate: Dayjs;
     // eslint-disable-next-line no-unused-vars
     setMarkerDate: (d: Dayjs) => void;

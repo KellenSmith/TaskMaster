@@ -1,4 +1,4 @@
-import { Language } from "@prisma/client";
+import { Language } from "../../../prisma/generated/enums";
 import GlobalConstants from "../../GlobalConstants";
 
 const LanguageTranslations = {
@@ -26,6 +26,6 @@ const LanguageTranslations = {
         [Language.english]: "Next",
         [Language.swedish]: "Nästa",
     },
-}
+};
 
 export default LanguageTranslations;

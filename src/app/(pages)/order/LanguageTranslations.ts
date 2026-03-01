@@ -1,9 +1,9 @@
-import { Language, OrderStatus, Prisma } from "@prisma/client";
+import { Prisma } from "../../../prisma/generated/browser";
+import { Language, OrderStatus } from "../../../prisma/generated/enums";
 
 const LanguageTranslations = {
     failedCheckOrderStatus: {
-        [Language.english]:
-            "Failed to check order status. What you see may not be up to date",
+        [Language.english]: "Failed to check order status. What you see may not be up to date",
         [Language.swedish]:
             "Misslyckades med att kontrollera orderstatus. Det du ser kanske inte är aktuellt",
     },
@@ -57,9 +57,9 @@ const LanguageTranslations = {
         [Language.english]: "Cancelled",
         [Language.swedish]: "Avbruten",
     },
-    [OrderStatus.error]: {
-        [Language.english]: "Error",
-        [Language.swedish]: "Error",
+    [OrderStatus.shipped]: {
+        [Language.english]: "Shipped",
+        [Language.swedish]: "Skickad",
     },
     total: {
         [Language.english]: "Total",

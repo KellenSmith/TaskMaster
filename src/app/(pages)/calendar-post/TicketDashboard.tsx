@@ -1,5 +1,4 @@
 "use client";
-import { Prisma } from "@prisma/client";
 import { use, useMemo } from "react";
 import { useUserContext } from "../../context/UserContext";
 import {
@@ -19,6 +18,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import { deleteEventParticipant } from "../../lib/event-participant-actions";
 import { useRouter } from "next/navigation";
 import LanguageTranslations from "./LanguageTranslations";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface TicketDashboardProps {
     eventPromise: Promise<
@@ -33,6 +33,8 @@ interface TicketDashboardProps {
 
 const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw Error("You must be logged in to view the ticket dashboard");
+
     const { addNotification } = useNotificationContext();
     const router = useRouter();
     const theme = useTheme();
@@ -40,7 +42,6 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
     const tickets = use(ticketsPromise);
     const ticket = useMemo(() => {
         const participantTicket = event.tickets.find((t) =>
-            // tickets now include event_participants according to Prisma schema
             t.event_participants?.find(
                 (ep: Prisma.EventParticipantGetPayload<true>) => ep.user_id === user.id,
             ),
@@ -48,6 +49,8 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
         if (!participantTicket) return null;
         return tickets.find((ticket) => ticket.product_id === participantTicket?.product_id);
     }, [tickets, user, event]);
+
+    if (!ticket) throw new Error("No ticket found for user");
 
     const leaveParticipantList = async () => {
         try {
@@ -77,7 +80,7 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
             >
                 {/* Product Card Section */}
                 <Stack sx={{ flex: "0 0 auto" }}>
-                    <ProductCard product={ticket?.product} />
+                    <ProductCard product={ticket.product} />
                 </Stack>
 
                 {/* Content Section */}
@@ -141,11 +144,13 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                     {LanguageTranslations.leaveToFreeUpSpot[language]}
                                 </Typography>
                                 <ConfirmButton
-                                    color="error"
-                                    variant="outlined"
-                                    fullWidth
+                                    buttonProps={{
+                                        color: "error",
+                                        variant: "outlined",
+                                        fullWidth: true,
+                                        startIcon: <ExitToApp />,
+                                    }}
                                     onClick={leaveParticipantList}
-                                    startIcon={<ExitToApp />}
                                     confirmText={LanguageTranslations.sureYouWannaLeave[language]}
                                 >
                                     {LanguageTranslations.leaveParticipantList[language]}

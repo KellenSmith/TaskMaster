@@ -13,7 +13,6 @@ import {
     Fab,
     Box,
 } from "@mui/material";
-import { Prisma, TaskStatus } from "@prisma/client";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
@@ -31,8 +30,9 @@ import TaskSchedulePDF from "./TaskSchedulePDF";
 import { pdf } from "@react-pdf/renderer";
 import { openResourceInNewTab } from "../utils";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { TaskStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
-type FilterNameType = keyof typeof filterOptions & string;
 type FilterValueType = boolean | string | string[] | TaskStatus[];
 type FilterFunctionProps = {
     tasks: Prisma.TaskGetPayload<true>[];
@@ -59,14 +59,24 @@ export const filterOptions = {
         ),
     has_tag: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
-    [GlobalConstants.STATUS]: ({ tasks, value }) =>
+    [GlobalConstants.STATUS]: ({
+        tasks,
+        value,
+    }: {
+        tasks: Prisma.TaskGetPayload<true>[];
+        value: FilterValueType;
+    }) =>
         tasks?.filter((task: Prisma.TaskGetPayload<true>) =>
             (value as TaskStatus[]).includes(task.status),
         ),
 };
+type FilterSchema = z.infer<typeof TaskFilterSchema>;
+type FilterNameType = keyof FilterSchema;
+const dateKeys: FilterNameType[] = ["begins_after", "ends_before"];
+const switchKeys: FilterNameType[] = ["unassigned", "assigned_to_me", "for_me_to_review"];
 
 export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
-    appliedFilter: z.infer<typeof TaskFilterSchema>,
+    appliedFilter: FilterSchema | null,
     tasks: T[],
     userId: string,
 ): T[] => {
@@ -76,7 +86,8 @@ export const getFilteredTasks = <T extends Prisma.TaskGetPayload<true>>(
         const tasksFitInFilter = filterOptions[key as FilterNameType]({ tasks, value, userId });
         filteredTasks.push(...(tasksFitInFilter as T[]));
     }
-    return filteredTasks;
+    // Bug fix: Avoid tasks showing twice
+    return [...new Set(filteredTasks)];
 };
 
 interface KanBanBoardFilterProps {
@@ -101,10 +112,12 @@ const KanBanBoardMenu = ({
         [],
     );
     const { user, language } = useUserContext();
-    const { addNotification } = useNotificationContext();
-    const event = eventPromise ? use(eventPromise) : null;
+    if (!user) throw new Error("Unauthorized");
+
     const tasks = use(tasksPromise);
     const myTasks = tasks.filter((task) => task.assignee_id === user.id);
+    const { addNotification } = useNotificationContext();
+    const event = eventPromise ? use(eventPromise) : undefined;
     const [menuOpen, setMenuOpen] = useState(true);
     const tagsOptions = useMemo(
         () =>
@@ -133,17 +146,16 @@ const KanBanBoardMenu = ({
     const getFilterOptionComp = (fieldId: FilterNameType) => {
         const label = LanguageTranslations[fieldId][language] as string;
 
-        if (["begins_after", "ends_before"].includes(fieldId))
+        if (dateKeys.includes(fieldId)) {
+            const filterValue = appliedFilter?.[fieldId] as
+                | FilterSchema["begins_after"]
+                | FilterSchema["ends_before"];
             return (
                 <DateTimePicker
                     key={fieldId}
                     name={fieldId}
                     label={label}
-                    defaultValue={
-                        appliedFilter?.[fieldId]
-                            ? dayjs.utc(appliedFilter[fieldId] as string)
-                            : null
-                    }
+                    defaultValue={filterValue ? dayjs.utc(filterValue) : null}
                     slotProps={{
                         textField: {
                             name: fieldId,
@@ -152,12 +164,13 @@ const KanBanBoardMenu = ({
                     }}
                 />
             );
-        if (["unassigned", "assigned_to_me", "for_me_to_review"].includes(fieldId))
+        }
+        if (switchKeys.includes(fieldId))
             return (
                 <FormControlLabel
                     key={fieldId}
                     control={
-                        <Switch name={fieldId} defaultChecked={appliedFilter?.[fieldId] || false} />
+                        <Switch name={fieldId} defaultChecked={Boolean(appliedFilter?.[fieldId])} />
                     }
                     label={label}
                 />
@@ -168,7 +181,9 @@ const KanBanBoardMenu = ({
                     key={fieldId}
                     fieldId={fieldId}
                     label={label}
-                    defaultValue={appliedFilter?.[fieldId] || null}
+                    defaultValue={
+                        (appliedFilter?.[fieldId] as FilterSchema["has_tag"]) || undefined
+                    }
                     customOptions={tagsOptions}
                     customMultiple={true}
                     editMode={true}
@@ -180,7 +195,7 @@ const KanBanBoardMenu = ({
                     key={fieldId}
                     fieldId={fieldId}
                     label={label}
-                    defaultValue={appliedFilter?.[fieldId] || null}
+                    defaultValue={(appliedFilter?.[fieldId] as FilterSchema["status"]) || undefined}
                     customMultiple={true}
                     editMode={true}
                 />
@@ -309,8 +324,8 @@ const KanBanBoardMenu = ({
                         {tabOpen === menuTabs.filter && (
                             <form key={JSON.stringify(appliedFilter)} onSubmit={applyFilter}>
                                 <Stack spacing={2}>
-                                    {Object.keys(filterOptions).map((fieldId) =>
-                                        getFilterOptionComp(fieldId as FilterNameType),
+                                    {(Object.keys(filterOptions) as FilterNameType[]).map(
+                                        (fieldId) => getFilterOptionComp(fieldId),
                                     )}
                                     <Button type="submit">
                                         {LanguageTranslations.apply[language]}

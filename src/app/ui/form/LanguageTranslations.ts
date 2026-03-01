@@ -1,7 +1,13 @@
-import { Language, OrderStatus, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import ProductLanguageTranslations from "../../(pages)/products/LanguageTranslations";
 import LanguageTranslations from "../../(pages)/profile/LanguageTranslations";
+import {
+    Language,
+    OrderStatus,
+    TaskStatus,
+    TicketType,
+    UserRole,
+} from "../../../prisma/generated/enums";
 
 export const organizationSettingsFieldLabels = {
     // Organization settings
@@ -299,7 +305,6 @@ export const productFieldLabels = {
     [GlobalConstants.PRICE]: ProductLanguageTranslations.price,
     [GlobalConstants.VAT_PERCENTAGE]: ProductLanguageTranslations.vat_percentage,
     [GlobalConstants.STOCK]: ProductLanguageTranslations.stock,
-    [GlobalConstants.UNLIMITED_STOCK]: ProductLanguageTranslations[GlobalConstants.UNLIMITED_STOCK],
     [GlobalConstants.IMAGE_URL]: {
         [Language.english]: "Image",
         [Language.swedish]: "Bild",
@@ -368,9 +373,5 @@ export const orderFieldLabels = {
     [OrderStatus.cancelled]: {
         [Language.english]: "Cancelled",
         [Language.swedish]: "Avbruten",
-    },
-    [OrderStatus.error]: {
-        [Language.english]: "Error",
-        [Language.swedish]: "Error",
     },
 };

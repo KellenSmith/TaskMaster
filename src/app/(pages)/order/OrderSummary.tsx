@@ -12,11 +12,12 @@ import {
     TableHead,
     TableRow,
 } from "@mui/material";
-import { OrderStatus, Prisma } from "@prisma/client";
 import { formatPrice } from "../../ui/utils";
 import { useUserContext } from "../../context/UserContext";
 import ProductLanguageTranslations from "../products/LanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
+import { OrderStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface OrderSummaryProps {
     order: Prisma.OrderGetPayload<{
@@ -129,7 +130,11 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                                 <TableRow>
                                     <TableCell colSpan={4}>
                                         <Typography variant="subtitle1">
-                                            {ProductLanguageTranslations.total_vat_amount[language] as string}
+                                            {
+                                                ProductLanguageTranslations.total_vat_amount[
+                                                    language
+                                                ] as string
+                                            }
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="right">

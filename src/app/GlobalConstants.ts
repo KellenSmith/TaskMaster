@@ -8,6 +8,7 @@ const GlobalConstants = {
     PRIVATE: "private",
     ADMIN: "admin",
     HOME: "",
+    DASHBOARD: "dashboard",
     LOGIN: "login",
     PROFILE: "profile",
     RECEIPT: "receipt",
@@ -114,7 +115,6 @@ const GlobalConstants = {
     PRICE: "price",
     VAT_PERCENTAGE: "vat_percentage",
     STOCK: "stock",
-    UNLIMITED_STOCK: "unlimited_stock",
     IMAGE_URL: "image_url",
     MEMBERSHIP_PRODUCT_NAME: "Membership",
     // Membership

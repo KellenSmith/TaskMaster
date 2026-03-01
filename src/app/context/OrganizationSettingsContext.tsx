@@ -1,12 +1,12 @@
 "use client";
 
 import { createContext, FC, ReactNode, use, useContext } from "react";
-import { Prisma } from "@prisma/client";
 import { CircularProgress } from "@mui/material";
+import { Prisma } from "../../prisma/generated/browser";
 
 interface OrganizationSettingsContextValue {
     organizationSettings: Prisma.OrganizationSettingsGetPayload<true>;
-    infopagesPromise?: Promise<
+    infopagesPromise: Promise<
         Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>[]
     >;
 }

@@ -2,11 +2,11 @@ import { CalendarMonth, LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography, Box, Chip, useTheme, useMediaQuery } from "@mui/material";
 import { formatDate } from "../../ui/utils";
 import RichTextField from "../../ui/form/RichTextField";
-import { Prisma } from "@prisma/client";
 import { use } from "react";
 import LanguageTranslations from "./LanguageTranslations";
 import { taskFieldLabels } from "../../ui/form/LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface EventDetailsProps {
     eventPromise: Promise<Prisma.EventGetPayload<{ include: { location: true } }>>;
@@ -55,21 +55,23 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                             </Box>
                         </Stack>
 
-                        <Stack
-                            direction="row"
-                            spacing={1}
-                            sx={{ alignItems: "center", minWidth: 0 }}
-                        >
-                            <LocationOn color="primary" />
-                            <Typography
-                                sx={{
-                                    fontSize: { xs: "0.85rem", sm: "1rem" },
-                                    overflowWrap: "anywhere",
-                                }}
+                        {event.location && (
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ alignItems: "center", minWidth: 0 }}
                             >
-                                {event.location.name}, {event.location.address}
-                            </Typography>
-                        </Stack>
+                                <LocationOn color="primary" />
+                                <Typography
+                                    sx={{
+                                        fontSize: { xs: "0.85rem", sm: "1rem" },
+                                        overflowWrap: "anywhere",
+                                    }}
+                                >
+                                    {event.location.name}, {event.location.address}
+                                </Typography>
+                            </Stack>
+                        )}
                         {event.tags && event.tags.length > 0 && (
                             <Box>
                                 <Typography

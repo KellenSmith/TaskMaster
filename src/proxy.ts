@@ -2,16 +2,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import GlobalConstants from "./app/GlobalConstants";
-import { getAbsoluteUrl, pathToRoutes } from "./app/lib/utils";
-import NextAuth from "next-auth";
-import { isUserAuthorized, routeTreeConfig } from "./app/lib/auth/auth-utils";
-import { triggerNewsletterProcessing } from "./app/lib/newsletter-trigger";
+import { getAbsoluteUrl } from "./app/lib/utils";
+import { isUserAuthorized } from "./app/lib/auth/auth-utils";
 import "./app/lib/auth/auth-types";
+import { auth } from "./app/lib/auth/auth";
 
 export const config = {
     // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
     matcher: [
-        "/((?!api|_next/static|_next/image|.well-known,appspecific,com.chrome.devtools.json|appspecific,com.chrome.devtools.json|README.pdf|.*\\.png$|.*\\.ico$|.*\\.svg$).*)",
+        "/((?!api|_next/static|_next/image|.well-known,appspecific,com.chrome.devtools.json|appspecific,com.chrome.devtools.json|README.pdf|.*\\.png$|.*\\.ico$|.*\\.svg$|.*\\.pdf$).*)",
     ],
 };
 
@@ -19,6 +18,10 @@ export default async function proxy(req: NextRequest) {
     // Skip middleware for Next.js Server Actions and related special POSTs
     // Next adds special headers like Next-Action/RSC and often uses text/plain bodies
     // Be generous so we never block/redirect action requests by mistake.
+    if (req.nextUrl.pathname.startsWith("/api/ticket-qrcode")) {
+        return NextResponse.next();
+    }
+
     if (req.method === "POST") {
         const headers = req.headers;
         const contentType = headers.get("content-type") || "";
@@ -40,34 +43,23 @@ export default async function proxy(req: NextRequest) {
         }
     }
 
-    // Initialize NextAuth with empty providers to access the auth function
-    // in edge runtime without node-specific nodemailer provider and prisma adapter
-    const { auth } = NextAuth({ providers: [] });
-    const loggedInUser = (await auth())?.user;
-
-    if (!req?.nextUrl?.pathname) return NextResponse.next();
+    const loggedInUser = (await auth())?.user || null;
 
     // Create response based on authorization
     let response: NextResponse;
 
-    if (isUserAuthorized(loggedInUser, pathToRoutes(req.nextUrl.pathname), routeTreeConfig)) {
+    if (isUserAuthorized(loggedInUser, req.nextUrl.pathname)) {
         response = NextResponse.next();
-    } else if (loggedInUser) {
-        // Redirect authenticated but unauthorized users to home
+    } else if (isUserAuthorized(loggedInUser, GlobalConstants.DASHBOARD)) {
+        response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.DASHBOARD]));
+    } else if (isUserAuthorized(loggedInUser, GlobalConstants.HOME)) {
         response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
     } else {
-        // Redirect unauthorized unauthenticated users to login
         response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
     }
 
     // Add security headers
     addSecurityHeaders(response);
-
-    // Trigger newsletter processing in background on user activity
-    // This runs asynchronously and doesn't block the user request
-    triggerNewsletterProcessing().catch(() => {
-        // Silently handle errors - newsletter processing is not critical for user experience
-    });
 
     return response;
 }

@@ -12,10 +12,9 @@ import {
 import GlobalConstants from "../../GlobalConstants";
 import { createTask, updateTaskById } from "../../lib/task-actions";
 import Form from "../form/Form";
-import { use, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, use, useMemo, useState } from "react";
 import { Add } from "@mui/icons-material";
 import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
-import { Prisma, Task, TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import z from "zod";
 import { TaskCreateSchema, TaskFilterSchema } from "../../lib/zod-schemas";
@@ -27,6 +26,8 @@ import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-util
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
 import { getFilteredTasks } from "./KanBanBoardMenu";
+import { TaskStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface DroppableColumnProps {
     readOnly: boolean;
@@ -51,14 +52,13 @@ interface DroppableColumnProps {
     draggedTask: Prisma.TaskGetPayload<{
         include: { assignee: { select: { id: true; nickname: true } } };
     }> | null;
-    setDraggedTask: (
-        // eslint-disable-next-line no-unused-vars
-        task: Prisma.TaskGetPayload<{
+    setDraggedTask: Dispatch<
+        SetStateAction<Prisma.TaskGetPayload<{
             include: { assignee: { select: { id: true; nickname: true } } };
-        }> | null,
-    ) => void;
+        }> | null>
+    >;
     draggedOverColumn: TaskStatus | null;
-    setDraggedOverColumn: (column: TaskStatus | null) => void; // eslint-disable-line no-unused-vars
+    setDraggedOverColumn: Dispatch<SetStateAction<TaskStatus | null>>;
 }
 
 const DroppableColumn = ({
@@ -77,11 +77,15 @@ const DroppableColumn = ({
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { user, language } = useUserContext();
+    if (!user) throw new Error("You must be logged in to view the kanban board");
+
     const { addNotification } = useNotificationContext();
-    const [taskFormDefaultValues, setTaskFormDefaultValues] = useState(null);
+    const [taskFormDefaultValues, setTaskFormDefaultValues] = useState<Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+    }> | null>(null);
     const event = eventPromise ? use(eventPromise) : null;
     const activeMembers = activeMembersPromise ? use(activeMembersPromise) : [];
-    const skillBadges = use(skillBadgesPromise);
+    const skillBadges = skillBadgesPromise ? use(skillBadgesPromise) : [];
     const tasks = use(tasksPromise);
     const filteredTasks = useMemo(
         () =>
@@ -94,7 +98,7 @@ const DroppableColumn = ({
     );
 
     const handleDrop = async (status: TaskStatus) => {
-        if (draggedTask?.status !== status) {
+        if (draggedTask && draggedTask.status !== status) {
             try {
                 const statusFormData = new FormData();
                 statusFormData.append(GlobalConstants.STATUS, status);
@@ -117,14 +121,17 @@ const DroppableColumn = ({
     const getTaskDefaultEndTime = (): Date =>
         (event ? dayjs.utc(event.end_time) : dayjs.utc().minute(0)).toDate();
 
-    const openCreateTaskDialog = (shiftProps: Task | null) => {
+    const openCreateTaskDialog = (shiftProps: Prisma.TaskGetPayload<true> | null) => {
+        if (!user) return;
         const defaultTask = {
             status,
             reviewer_id: user.id,
             start_time: getTaskDefaultStartTime(),
             end_time: getTaskDefaultEndTime(),
             ...shiftProps,
-        } as Task;
+        } as Prisma.TaskGetPayload<{
+            include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+        }>;
         setTaskFormDefaultValues(defaultTask);
     };
 
@@ -220,7 +227,7 @@ const DroppableColumn = ({
                                           b.skill_badge_id,
                                   ),
                               }
-                            : null
+                            : undefined
                     }
                     customOptions={{
                         [GlobalConstants.ASSIGNEE_ID]: getUserSelectOptions(

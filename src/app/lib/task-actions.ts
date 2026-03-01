@@ -1,7 +1,6 @@
 "use server";
 
-import { Prisma, TaskStatus, TicketType } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema, UuidSchema } from "./zod-schemas";
@@ -11,12 +10,14 @@ import {
     deleteEventParticipantWithTx,
 } from "./event-participant-actions";
 import { addEventReserveWithTx } from "./event-reserve-actions";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { sanitizeFormData, sanitizeRichText } from "./html-sanitizer";
 import { isUserAdmin, isUserHost } from "./utils";
 import { createElement } from "react";
 import TaskUpdateTemplate from "./mail-service/mail-templates/TaskUpdateTemplate";
 import MemberContactMemberTemplate from "./mail-service/mail-templates/MemberContactMemberTemplate";
+import { TaskStatus, TicketType } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     // Validate task ID format
@@ -28,34 +29,6 @@ export const deleteTask = async (taskId: string): Promise<void> => {
         },
     });
     revalidateTag(GlobalConstants.TASK, "max");
-};
-
-export const getTaskById = async (
-    taskId: string,
-): Promise<
-    Prisma.TaskGetPayload<{
-        include: {
-            assignee: { select: { id: true; nickname: true } };
-            reviewer: { select: { id: true; nickname: true } };
-            event: true;
-            skill_badges: true;
-        };
-    }>
-> => {
-    // Validate task ID format
-    const validatedTaskId = UuidSchema.parse(taskId);
-
-    return await prisma.task.findUniqueOrThrow({
-        where: {
-            id: validatedTaskId,
-        },
-        include: {
-            assignee: { select: { id: true, nickname: true } },
-            reviewer: { select: { id: true, nickname: true } },
-            event: true,
-            skill_badges: true,
-        },
-    });
 };
 
 export const updateTaskById = async (taskId: string, formData: FormData): Promise<void> => {
@@ -99,12 +72,12 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         if (newSkillBadges) {
             await prisma.taskSkillBadge.deleteMany({
                 where: {
-                    task_id: taskId,
+                    task_id: validatedTaskId,
                 },
             });
             await prisma.taskSkillBadge.createMany({
                 data: newSkillBadges.map((badgeId) => ({
-                    task_id: taskId,
+                    task_id: validatedTaskId,
                     skill_badge_id: badgeId,
                 })),
             });
@@ -114,7 +87,7 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         // task ready for review
         // unassigned if not status to do
         let notificationMessage = "";
-        if (updatedTask.reviewer_id) {
+        if (updatedTask.reviewer) {
             if (
                 updatedTask.status === TaskStatus.inReview &&
                 oldTask.status !== TaskStatus.inReview
@@ -195,37 +168,6 @@ export const createTask = async (formData: FormData): Promise<void> => {
         include: { reviewer: true },
     });
     revalidateTag(GlobalConstants.TASK, "max");
-};
-
-export const getFilteredTasks = async (
-    searchParams: Prisma.TaskWhereInput | null, // Null if fetching default tasks
-): Promise<
-    Prisma.TaskGetPayload<{
-        include: {
-            assignee: { select: { id: true; nickname: true } };
-            reviewer: { select: { id: true; nickname: true } };
-            skill_badges: true;
-        };
-    }>[]
-> => {
-    return await prisma.task.findMany({
-        where: searchParams,
-        include: {
-            assignee: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-            reviewer: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-            skill_badges: true,
-        },
-    });
 };
 
 export const assignTaskToUser = async (userId: string, taskId: string) => {
@@ -374,7 +316,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
 
         await deleteEventParticipantWithTx(tx, updatedTask.event_id, userId);
 
-        if (updatedTask.reviewer_id)
+        if (updatedTask.reviewer)
             try {
                 const mailContent = createElement(TaskUpdateTemplate, {
                     taskName: updatedTask.name,
@@ -391,11 +333,11 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
 export const contactTaskMember = async (
     recipientId: string,
     formData: FormData,
-    taskId: string | null,
+    taskId: string,
 ): Promise<void> => {
     // Validate recipient and task ID formats
     const validatedRecipientId = UuidSchema.parse(recipientId);
-    const validatedTaskId = taskId ? UuidSchema.parse(taskId) : null;
+    const validatedTaskId = UuidSchema.parse(taskId);
 
     const recipient = await prisma.user.findUniqueOrThrow({
         where: {
@@ -403,6 +345,8 @@ export const contactTaskMember = async (
         },
     });
     const sender = await getLoggedInUser();
+    if (!sender) throw new Error("User must be logged in to contact members");
+
     const task = await prisma.task.findUniqueOrThrow({
         where: {
             id: validatedTaskId,
@@ -418,6 +362,4 @@ export const contactTaskMember = async (
     });
     // Set replyTo to the sender so the recipient can reply directly to the member
     await sendMail([recipient.email], `About ${task.name}`, mailContent, sender.email);
-
-    // Implementation goes here
 };

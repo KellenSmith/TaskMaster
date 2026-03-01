@@ -1,14 +1,13 @@
-import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
-import { getAllEventsWithTasks } from "../../lib/event-actions";
-import GlobalConstants from "../../GlobalConstants";
+// ...existing code...
 import YearWheelDashboard from "./YearWheelDashboard";
+import { prisma } from "../../../prisma/prisma-client";
 
 const YearWheelPage = () => {
-    const eventsPromise = getAllEventsWithTasks();
-    return (
-        <ErrorBoundarySuspense>
-            <YearWheelDashboard eventsPromise={eventsPromise} />
-        </ErrorBoundarySuspense>
-    );
+    const eventsPromise = prisma.event.findMany({
+        include: {
+            tasks: true,
+        },
+    });
+    return <YearWheelDashboard eventsPromise={eventsPromise} />;
 };
 export default YearWheelPage;

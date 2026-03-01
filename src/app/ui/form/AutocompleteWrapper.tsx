@@ -1,7 +1,7 @@
 "use client";
 
 import { Autocomplete, createFilterOptions, TextField } from "@mui/material";
-import { FC, SyntheticEvent, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 import { allowSelectMultiple, FieldLabels, allowAddNew, selectFieldOptions } from "./FieldCfg";
 import { useUserContext } from "../../context/UserContext";
 
@@ -53,10 +53,12 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
     );
 
     // Initialize state with proper default values
-    const getInitialValue = useCallback((): CustomOptionProps | CustomOptionProps[] => {
+    const getInitialValue = useCallback((): null | CustomOptionProps | CustomOptionProps[] => {
         if (!defaultValue) return multiple ? [] : null;
         if (typeof defaultValue === "string") return getOptionWithId(defaultValue);
-        return defaultValue.map((val) => getOptionWithId(val)).filter(Boolean);
+        return defaultValue
+            .map((val) => getOptionWithId(val))
+            .filter(Boolean) as CustomOptionProps[];
     }, [defaultValue, multiple, getOptionWithId]);
 
     const [selectedOption, setSelectedOption] = useState<
@@ -80,10 +82,7 @@ const AutocompleteWrapper: FC<AutocompleteWrapperProps> = ({
         <>
             <Autocomplete
                 value={selectedOption}
-                onChange={(
-                    _event: SyntheticEvent,
-                    newValue: CustomOptionProps | CustomOptionProps[] | null,
-                ) => setSelectedOption(newValue)}
+                onChange={(_event, newValue) => setSelectedOption(newValue)}
                 renderInput={(params) => (
                     <TextField {...params} label={label} required={required} />
                 )}

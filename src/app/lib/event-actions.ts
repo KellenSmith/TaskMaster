@@ -1,18 +1,45 @@
 "use server";
 
-import { EventStatus, Prisma, TaskStatus, TicketType } from "@prisma/client";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import { CloneEventSchema, EventCreateSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
-import { getLoggedInUser } from "./user-actions";
+import { getLoggedInUser } from "./user-helpers";
 import { getOrganizationSettings } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
 import { createElement } from "react";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";
+import z from "zod";
+import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
+
+export const getEventParticipants = async (
+    eventId: string,
+): Promise<
+    Prisma.EventParticipantGetPayload<{
+        include: { user: { select: { id: true; nickname: true } } };
+    }>[]
+> => {
+    const participants = await prisma.eventParticipant.findMany({
+        where: {
+            ticket: {
+                event_id: eventId,
+            },
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    nickname: true,
+                },
+            },
+        },
+    });
+    return participants;
+};
 
 export const createEvent = async (userId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -22,6 +49,7 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
     const sanitizedData = sanitizeFormData(validatedData);
 
     const { location_id, ...eventData } = sanitizedData;
+    if (!location_id) throw new Error("Location ID is required");
 
     // Check that the location has capacity for the max_participants
     const location = await prisma.location.findUniqueOrThrow({
@@ -75,165 +103,20 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
         return createdEvent;
     });
 
-    revalidateTag(GlobalConstants.EVENT, "max");
     serverRedirect([GlobalConstants.CALENDAR_POST], {
         [GlobalConstants.EVENT_ID]: createdEvent.id,
     });
-};
-
-export const getAllEvents = async (userId: string): Promise<Prisma.EventGetPayload<true>[]> => {
-    const loggedInUser = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        include: { user_membership: true },
-    });
-
-    const filterParams = {} as Prisma.EventWhereInput;
-
-    // Non-admins can only see their own event drafts and pending approval events or published events
-    if (!isUserAdmin(loggedInUser)) {
-        filterParams.OR = [
-            {
-                status: EventStatus.published,
-            },
-            { host_id: userId },
-        ];
-    }
-
-    return await prisma.event.findMany({
-        where: filterParams,
-    });
-};
-
-export const getEventTags = async (): Promise<string[]> => {
-    const events = (await prisma.event.findMany({
-        select: { tags: true },
-    })) as Prisma.EventGetPayload<{ select: { tags: true } }>[];
-
-    return [...new Set(events.flatMap((event) => event.tags))];
-};
-
-export const getFilteredEvents = async (
-    filters: Prisma.EventWhereInput,
-): Promise<
-    Prisma.EventGetPayload<{
-        include: {
-            location: true;
-            tickets: { include: { event_participants: true } };
-            event_reserves: true;
-        };
-    }>[]
-> => {
-    const events = await prisma.event.findMany({
-        where: filters,
-        include: {
-            location: true,
-            host: {
-                select: {
-                    id: true,
-                },
-            },
-            tickets: {
-                include: {
-                    event_participants: true,
-                },
-            },
-            event_reserves: true,
-        },
-    });
-    return events;
-};
-
-export const getAllEventsWithTasks = async (): Promise<
-    Prisma.EventGetPayload<{ include: { tasks: true } }>[]
-> => {
-    return prisma.event.findMany({
-        include: {
-            tasks: true,
-        },
-    });
-};
-
-export const getEventById = async (
-    eventId: string,
-    userId: string,
-): Promise<
-    Prisma.EventGetPayload<{
-        include: {
-            location: true;
-            tickets: { include: { event_participants: true } };
-            event_reserves: true;
-        };
-    }>
-> => {
-    const event = await prisma.event.findUniqueOrThrow({
-        where: {
-            id: eventId,
-        },
-        include: {
-            location: true,
-            tickets: {
-                include: {
-                    event_participants: true,
-                },
-            },
-            event_reserves: true,
-        },
-    });
-
-    // Only event hosts and admins can see event drafts and pending approval events
-    const loggedInUser = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { user_membership: true },
-    });
-    if (
-        event.status !== EventStatus.published &&
-        !isUserAdmin(loggedInUser) &&
-        event.host_id !== userId
-    ) {
-        throw new Error("You are not authorized to view this event");
-    }
-    return event;
-};
-
-export const getEventParticipants = async (
-    eventId: string,
-): Promise<
-    Prisma.EventParticipantGetPayload<{
-        include: { user: { select: { id: true; nickname: true } } };
-    }>[]
-> => {
-    const participants = await prisma.eventParticipant.findMany({
-        where: {
-            ticket: {
-                event_id: eventId,
-            },
-        },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-        },
-    });
-    return participants;
 };
 
 export const updateEvent = async (eventId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
 
     const validatedData = EventUpdateSchema.parse(Object.fromEntries(formData.entries()));
-    console.warn(
-        "Updating event with form data:",
-        Object.fromEntries(formData.entries()),
-        validatedData,
-    );
 
     // Sanitize rich text fields before saving to database
-    const sanitizedData = sanitizeFormData(validatedData);
+    const sanitizedData = sanitizeFormData(validatedData) as z.infer<typeof EventUpdateSchema>;
 
-    let notifyEventReservesPromise;
+    let notifyEventReservesPromise: Promise<void> | null = null;
     const eventToUpdate = await prisma.event.findUniqueOrThrow({
         where: { id: eventId },
         include: { tickets: { include: { product: true } }, host: true },
@@ -256,7 +139,10 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
         const eventParticipantsCount = (await getEventParticipants(eventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
-        if (eventParticipantsCount > sanitizedData.max_participants) {
+        if (
+            sanitizedData.max_participants &&
+            eventParticipantsCount > sanitizedData.max_participants
+        ) {
             throw new Error(
                 `The event has ${eventParticipantsCount} participants. Reduce the number of participants before lowering the maximum.`,
             );
@@ -264,8 +150,9 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
 
         // Add or remove the new number of available tickets to product stock
         // deltaMaxParticipants might be negative
-        const deltaMaxParticipants =
-            sanitizedData.max_participants - eventToUpdate.max_participants;
+        const deltaMaxParticipants = sanitizedData.max_participants
+            ? sanitizedData.max_participants - eventToUpdate.max_participants
+            : 0;
         if (Math.abs(deltaMaxParticipants)) {
             const productsToUpdate = eventToUpdate.tickets.map((ticket) => ticket.product);
             await tx.product.updateMany({
@@ -297,10 +184,15 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 ],
             });
+            if (!eventToUpdate.host)
+                throw new Error(
+                    `Event host not found in event ${eventId}. Failed to notify event host of event update.`,
+                );
             await sendMail(
                 [organizationSettings.event_manager_email],
                 "Event requires approval",
-                mailContent, eventToUpdate.host.email
+                mailContent,
+                eventToUpdate.host.email,
             );
         }
 
@@ -320,6 +212,10 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 ],
             });
+            if (!eventToUpdate.host)
+                throw new Error(
+                    `Event host not found in event ${eventId}. Failed to notify event host of event update.`,
+                );
             await sendMail([eventToUpdate.host.email], "Event published", mailContent);
         }
 
@@ -336,6 +232,15 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
             console.error("Failed to notify reserves in event of extra available tickets");
         }
     });
+};
+
+export const publishEvent = async (eventId: string): Promise<void> => {
+    const validatedEventId = UuidSchema.parse(eventId);
+    await prisma.event.update({
+        where: { id: validatedEventId },
+        data: { status: EventStatus.published },
+    });
+    revalidateTag(GlobalConstants.EVENT, "max");
 };
 
 export const cancelEvent = async (eventId: string): Promise<void> => {
@@ -397,6 +302,12 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 };
 
 export const cloneEvent = async (eventId: string, formData: FormData) => {
+    const loggedInUser = await getLoggedInUser();
+    // Ensure user is logged in
+    if (!loggedInUser) {
+        throw new Error("You must be logged in to clone an event");
+    }
+
     // Revalidate input with zod schema - don't trust the client
     const validatedData = CloneEventSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -416,8 +327,6 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         where: { event_id: eventId },
         include: { skill_badges: true },
     });
-
-    const loggedInUser = await getLoggedInUser();
 
     const eventClone = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Copy event itself with default values
@@ -473,6 +382,11 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
 
         // Add the event host as participant
         const volunteerTicket = clonedTickets.find((t) => t.type === TicketType.volunteer);
+        if (!volunteerTicket) {
+            throw new Error(
+                `Volunteer ticket not found in cloned tickets for cloned event ${createdEvent.id}`,
+            );
+        }
         await tx.eventParticipant.create({
             data: {
                 user: {
@@ -510,12 +424,14 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                         reviewer_id: loggedInUser.id,
                         // Create tasks as "To Do"
                         status: TaskStatus.toDo,
-                        start_time: moveTaskTimeForward(task.start_time),
+                        start_time: task.start_time
+                            ? moveTaskTimeForward(task.start_time)
+                            : createdEvent.start_time,
                         end_time: moveTaskTimeForward(task.end_time),
                         skill_badges: { createMany: { data: skillBadgesWithoutTaskId } },
                     },
                 });
-            })
+            }),
         );
         return createdEvent;
     });

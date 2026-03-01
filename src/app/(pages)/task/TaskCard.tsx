@@ -18,7 +18,6 @@ import { clientRedirect, isUserAdmin } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { FC, use, useState } from "react";
-import { Prisma } from "@prisma/client";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { ContactMemberSchema, TaskUpdateSchema } from "../../lib/zod-schemas";
@@ -33,6 +32,7 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import LanguageTranslations from "./LanguageTranslations";
 import RichTextField from "../../ui/form/RichTextField";
 import BookTaskButton from "../../ui/kanban-board/BookTaskButton";
+import { Prisma } from "../../../prisma/generated/client";
 
 interface TaskCardProps {
     taskPromise: Promise<
@@ -87,6 +87,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
 
     const contactMemberAction = async (formData: FormData) => {
         try {
+            if (!messageRecipientId) throw new Error("No message recipient specified");
             await contactTaskMember(messageRecipientId, formData, task.id);
             setMessageRecipientId(null);
             return LanguageTranslations.massageSentSuccess[language];
@@ -276,7 +277,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                     fullWidth
                                     onClick={() =>
                                         clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
-                                            [GlobalConstants.EVENT_ID]: task.event_id,
+                                            [GlobalConstants.EVENT_ID]: task.event_id as string,
                                         })
                                     }
                                     sx={{ minWidth: 80 }}
@@ -287,14 +288,14 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                             {task.assignee_id && (
                                 <Button
                                     fullWidth
-                                    onClick={() => setMessageRecipientId(task.assignee?.id)}
+                                    onClick={() => setMessageRecipientId(task.assignee_id)}
                                 >
                                     {LanguageTranslations.contactAssignee[language]}
                                 </Button>
                             )}
                             <Button
                                 fullWidth
-                                onClick={() => setMessageRecipientId(task.reviewer?.id)}
+                                onClick={() => setMessageRecipientId(task.reviewer_id)}
                             >
                                 {LanguageTranslations.contactReviewer[language]}
                             </Button>
@@ -304,11 +305,13 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                         {GlobalLanguageTranslations.edit[language]}
                                     </Button>
                                     <ConfirmButton
-                                        fullWidth
+                                        buttonProps={{
+                                            fullWidth: true,
+                                            color: "error",
+                                            variant: "outlined",
+                                            size: "small",
+                                        }}
                                         onClick={deleteTaskAction}
-                                        color="error"
-                                        variant="outlined"
-                                        size="small"
                                     >
                                         {GlobalLanguageTranslations.delete[language]}
                                     </ConfirmButton>

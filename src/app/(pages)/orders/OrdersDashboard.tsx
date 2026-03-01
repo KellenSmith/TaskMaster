@@ -4,7 +4,6 @@ import Datagrid, { ImplementedDatagridEntities } from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { OrderUpdateSchema } from "../../lib/zod-schemas";
 import { GridColDef, GridRowParams } from "@mui/x-data-grid";
-import { OrderStatus, Prisma } from "@prisma/client";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import { FieldLabels } from "../../ui/form/FieldCfg";
@@ -14,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { openResourceInNewTab } from "../../ui/utils";
 import OrdersReportPDF from "./OrdersReportPDF";
 import { pdf } from "@react-pdf/renderer";
+import { OrderStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface OrdersDashboardProps {
     ordersPromise: Promise<
@@ -28,7 +29,7 @@ interface OrdersDashboardProps {
 
 const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     const { language } = useUserContext();
-    const router = useRouter()
+    const router = useRouter();
 
     const getStatusConfig = (order: Prisma.OrderGetPayload<true>) => {
         switch (order.status) {
@@ -66,15 +67,16 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
         {
             field: GlobalConstants.NICKNAME,
             headerName: LanguageTranslations.nickname[language],
-            valueGetter: (_, order: ImplementedDatagridEntities) =>
-                (
-                    order as Prisma.OrderGetPayload<{
-                        include: {
-                            user: { select: { nickname: true } };
-                            order_items: { include: { product: true } };
-                        };
-                    }>
-                ).user.nickname,
+            valueGetter: (_, order: ImplementedDatagridEntities) => {
+                const typedOrder = order as Prisma.OrderGetPayload<{
+                    include: {
+                        user: { select: { nickname: true } };
+                        order_items: { include: { product: true } };
+                    };
+                }>;
+                if (!typedOrder.user) return "None";
+                return typedOrder.user.nickname;
+            },
         },
         {
             field: GlobalConstants.STATUS,
@@ -128,25 +130,29 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
     const onRowClick = (clickedRow: GridRowParams) => {
         const order = clickedRow.row as Prisma.OrderGetPayload<true>;
         clientRedirect(router, [GlobalConstants.ORDER], { order_id: order.id });
-    }
+    };
 
     const printOrdersReport = async (filteredRows: ImplementedDatagridEntities[]) => {
-        const orders = filteredRows as Prisma.OrderGetPayload<{ include: { order_items: { include: { product: true } } } }>[];
+        const orders = filteredRows as Prisma.OrderGetPayload<{
+            include: { order_items: { include: { product: true } } };
+        }>[];
         // Generate PDF blob
         const doc = <OrdersReportPDF orders={orders} language={language} />;
         const asPdf = await pdf(doc).toBlob();
         const url = URL.createObjectURL(asPdf);
         openResourceInNewTab(url);
-    }
+    };
 
     const filteredRowsActions = [
         {
-            action: async (filteredRows: ImplementedDatagridEntities[]) => printOrdersReport(filteredRows),
+            action: async (filteredRows: ImplementedDatagridEntities[]) =>
+                printOrdersReport(filteredRows),
             buttonLabel: LanguageTranslations.printReport[language],
-        }
-    ]
+        },
+    ];
 
     // TODO: If on mobile, minimize content
+    // TODO: Extend filter options
     return (
         <Stack sx={{ height: "100%" }}>
             <Datagrid
@@ -158,7 +164,6 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
             />
-
         </Stack>
     );
 };

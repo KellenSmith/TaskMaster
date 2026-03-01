@@ -1,4 +1,3 @@
-import { Language, Prisma, TaskStatus, TicketType, UserRole } from "@prisma/client";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserQualifiedForTask as isUserQualifiedForTask } from "../utils";
 import {
@@ -16,6 +15,8 @@ import {
     userFieldLabels,
 } from "./LanguageTranslations";
 import { CustomOptionProps } from "./AutocompleteWrapper";
+import { Language, TaskStatus, TicketType, UserRole } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 export const FieldLabels = {
     [GlobalConstants.ID]: {
@@ -138,7 +139,6 @@ export const RenderedFields = {
         GlobalConstants.PRICE,
         GlobalConstants.VAT_PERCENTAGE,
         GlobalConstants.STOCK,
-        GlobalConstants.UNLIMITED_STOCK,
         GlobalConstants.DESCRIPTION,
         GlobalConstants.IMAGE_URL,
     ],
@@ -155,7 +155,7 @@ export const RenderedFields = {
 RenderedFields[GlobalConstants.TICKET] = [
     GlobalConstants.TICKET_TYPE,
     ...RenderedFields[GlobalConstants.PRODUCT].filter(
-        (fieldId) => ![GlobalConstants.STOCK, GlobalConstants.UNLIMITED_STOCK].includes(fieldId),
+        (fieldId) => ![GlobalConstants.STOCK].includes(fieldId),
     ),
 ];
 RenderedFields[GlobalConstants.MEMBERSHIP] = [
@@ -209,7 +209,11 @@ export const RequiredFields = {
         GlobalConstants.REVIEWER,
     ],
     [GlobalConstants.SENDOUT]: [GlobalConstants.SUBJECT, GlobalConstants.CONTENT],
-    [GlobalConstants.PRODUCT]: [GlobalConstants.NAME, GlobalConstants.PRICE, GlobalConstants.VAT_PERCENTAGE],
+    [GlobalConstants.PRODUCT]: [
+        GlobalConstants.NAME,
+        GlobalConstants.PRICE,
+        GlobalConstants.VAT_PERCENTAGE,
+    ],
     [GlobalConstants.PARTICIPANT_USERS]: RenderedFields[GlobalConstants.PARTICIPANT_USERS],
     [GlobalConstants.RESERVE_USERS]: RenderedFields[GlobalConstants.RESERVE_USERS],
 };
@@ -263,11 +267,15 @@ export const richTextFields = [
 export const checkboxFields = [
     GlobalConstants.CONSENT_TO_NEWSLETTERS,
     GlobalConstants.CONSENT_GDPR,
-    GlobalConstants.UNLIMITED_STOCK,
     GlobalConstants.PAYEE_REF,
 ];
 
-export const priceFields = [GlobalConstants.PRICE, GlobalConstants.TOTAL_AMOUNT, GlobalConstants.VAT_AMOUNT, GlobalConstants.TOTAL_VAT_AMOUNT];
+export const priceFields = [
+    GlobalConstants.PRICE,
+    GlobalConstants.TOTAL_AMOUNT,
+    GlobalConstants.VAT_AMOUNT,
+    GlobalConstants.TOTAL_VAT_AMOUNT,
+];
 
 export const getUserSelectOptions = (
     users: Prisma.UserGetPayload<{

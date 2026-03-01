@@ -5,6 +5,7 @@ import {
     Card,
     CardContent,
     Checkbox,
+    CircularProgress,
     Divider,
     FormControlLabel,
     IconButton,
@@ -34,7 +35,7 @@ import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "../LanguageTranslations";
@@ -43,9 +44,12 @@ import { upload } from "@vercel/blob/client";
 interface FormProps {
     name: string;
     buttonLabel?: string;
-    action?: (fieldValues: object) => Promise<string>; // eslint-disable-line no-unused-vars
+    action?: (formData: FormData) => Promise<string>; // eslint-disable-line no-unused-vars
     validationSchema?: ZodType<object>;
-    defaultValues?: object;
+    // Allowed to be any because FormData can contain different types of values
+    // from any entity which use the Form component
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    defaultValues?: { [key: string]: any };
     customOptions?: { [key: string]: CustomOptionProps[] }; // Additional options for Autocomplete field , if needed
     customReadOnlyFields?: string[]; // Fields that should be read-only even if editMode is true
     customIncludedFields?: string[]; // Include extra fields which are not preconfigured in FieldCfg.ts
@@ -154,7 +158,9 @@ const Form: FC<FormProps> = ({
             }
             return formData;
         } catch (error) {
-            addNotification("File upload failed: " + error.message, "error");
+            if (error instanceof Error)
+                addNotification("File upload failed: " + error.message, "error");
+            throw error;
         }
     };
 
@@ -200,8 +206,11 @@ const Form: FC<FormProps> = ({
                 addNotification(submitResult, "success");
                 if (!(editable && !readOnly)) setEditMode(false);
             } catch (error) {
+                console.log("Error caught in Form submitForm:");
                 allowRedirectException(error);
-                addNotification(error.message, "error");
+                if (error && typeof error === "object" && "message" in error)
+                    addNotification(error.message as string, "error");
+                else throw error;
             }
         });
     };
@@ -211,8 +220,9 @@ const Form: FC<FormProps> = ({
 
     const getDefaultValue = (fieldId: string) => {
         if (defaultValues && fieldId in defaultValues) {
-            if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId]);
-            if (datePickerFields.includes(fieldId)) return dayjs.utc(defaultValues[fieldId]);
+            if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId] as number);
+            if (datePickerFields.includes(fieldId))
+                return dayjs.utc(defaultValues[fieldId] as Dayjs);
             return defaultValues[fieldId];
         }
 
@@ -232,7 +242,7 @@ const Form: FC<FormProps> = ({
                     fieldId={fieldId}
                     label={FieldLabels[fieldId][language] as string}
                     editMode={editMode}
-                    defaultValue={defaultValues?.[fieldId]}
+                    defaultValue={defaultValues?.[fieldId] as string | string[]}
                     customReadOnlyFields={customReadOnlyFields}
                     customOptions={customOptions[fieldId]}
                     required={requiredFields.includes(fieldId)}
@@ -246,7 +256,7 @@ const Form: FC<FormProps> = ({
                     name={fieldId}
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId][language] as string}
-                    defaultValue={getDefaultValue(fieldId)}
+                    defaultValue={getDefaultValue(fieldId) as Dayjs}
                     slotProps={{
                         textField: {
                             name: fieldId,
@@ -267,7 +277,7 @@ const Form: FC<FormProps> = ({
                         <Checkbox
                             name={fieldId}
                             disabled={!editMode || customReadOnlyFields.includes(fieldId)}
-                            defaultChecked={getDefaultValue(fieldId) || false}
+                            defaultChecked={(getDefaultValue(fieldId) as boolean) || false}
                         />
                     }
                     label={FieldLabels[fieldId][language] as string}
@@ -279,7 +289,7 @@ const Form: FC<FormProps> = ({
                     key={getFieldCompKey(fieldId)}
                     fieldId={fieldId}
                     editMode={editMode || customReadOnlyFields.includes(fieldId)}
-                    defaultValue={defaultValues?.[fieldId] || ""}
+                    defaultValue={(defaultValues?.[fieldId] as string) || ""}
                 />
             );
         }
@@ -349,6 +359,7 @@ const Form: FC<FormProps> = ({
                 {editMode && (
                     <Button type="submit" variant="contained" disabled={isPending}>
                         {buttonLabel || GlobalLanguageTranslations.save[language]}
+                        {isPending && <CircularProgress size={20} sx={{ marginLeft: 2 }} />}
                     </Button>
                 )}
             </CardContent>

@@ -1,7 +1,6 @@
 "use client";
 import { use, useState } from "react";
 import { Stack, Typography, useTheme, Button, Dialog, useMediaQuery } from "@mui/material";
-import { Prisma, TicketType } from "@prisma/client";
 import { useUserContext } from "../../context/UserContext";
 import { createAndRedirectToOrder } from "../../lib/order-actions";
 import { createEventTicket, deleteEventTicket, updateEventTicket } from "../../lib/ticket-actions";
@@ -15,6 +14,8 @@ import { useNotificationContext } from "../../context/NotificationContext";
 import ConfirmButton from "../../ui/ConfirmButton";
 import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
+import { TicketType } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface TicketShopProps {
     eventPromise: Promise<Prisma.EventGetPayload<true>>;
@@ -38,6 +39,8 @@ const TicketShop = ({
     goToOrganizeTab,
 }: TicketShopProps) => {
     const { user, language } = useUserContext();
+    if (!user) throw Error("You must be logged in to view the ticket shop");
+
     const { addNotification } = useNotificationContext();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -53,7 +56,7 @@ const TicketShop = ({
             quantity: 1,
         };
         try {
-            await createAndRedirectToOrder(user.id, [ticketOrderItems]);
+            await createAndRedirectToOrder([ticketOrderItems]);
         } catch (error) {
             allowRedirectException(error);
             addNotification(LanguageTranslations.failedTicketOrder[language], "error");
@@ -72,6 +75,7 @@ const TicketShop = ({
 
     const updateTicketAction = async (formData: FormData) => {
         try {
+            if (!editingTicketId) throw new Error("No ticket selected for editing");
             await updateEventTicket(editingTicketId, formData);
             setDialogOpen(false);
             setEditingTicketId(null);
@@ -108,9 +112,9 @@ const TicketShop = ({
     };
 
     const getFormDefaultValues = () => {
-        if (!editingTicketId) return null;
+        if (!editingTicketId) return undefined;
         const ticket = tickets.find((t) => t.product_id === editingTicketId);
-        if (!ticket) return null;
+        if (!ticket) return undefined;
         return { ...ticket, ...ticket.product };
     };
 
@@ -167,7 +171,7 @@ const TicketShop = ({
                                     </Button>
                                     {allowDeleteTicket(ticket) && (
                                         <ConfirmButton
-                                            color="error"
+                                            buttonProps={{ color: "error" }}
                                             onClick={() => deleteTicketAction(ticket.product_id)}
                                         >
                                             {GlobalLanguageTranslations.delete[language]}

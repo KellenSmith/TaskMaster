@@ -1,26 +1,22 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { UuidSchema } from "./zod-schemas";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../prisma/generated/client";
 
 export const addEventReserveWithTx = async (
     tx: Prisma.TransactionClient,
     userId: string,
     eventId: string,
 ) => {
-    // Validate ID formats
-    const validatedUserId = UuidSchema.parse(userId);
-    const validatedEventId = UuidSchema.parse(eventId);
-
     // Check that the user is not on the participant list
     const eventParticipant = await tx.eventParticipant.findFirst({
         where: {
-            user_id: validatedUserId,
+            user_id: userId,
             ticket: {
-                event_id: validatedEventId,
+                event_id: eventId,
             },
         },
     });
@@ -29,19 +25,19 @@ export const addEventReserveWithTx = async (
     await tx.eventReserve.upsert({
         where: {
             user_id_event_id: {
-                user_id: validatedUserId,
-                event_id: validatedEventId,
+                user_id: userId,
+                event_id: eventId,
             },
         },
         create: {
             user: {
                 connect: {
-                    id: validatedUserId,
+                    id: userId,
                 },
             },
             event: {
                 connect: {
-                    id: validatedEventId,
+                    id: eventId,
                 },
             },
         },
@@ -67,15 +63,11 @@ export const deleteEventReserveWithTx = async (
     userId: string,
     eventId: string,
 ) => {
-    // Validate ID formats
-    const validatedUserId = UuidSchema.parse(userId);
-    const validatedEventId = UuidSchema.parse(eventId);
-
     // Delete the event reserve entry if it exists (use deleteMany to avoid error)
     await tx.eventReserve.deleteMany({
         where: {
-            user_id: validatedUserId,
-            event_id: validatedEventId,
+            user_id: userId,
+            event_id: eventId,
         },
     });
     revalidateTag(GlobalConstants.RESERVE_USERS, "max");
@@ -91,38 +83,4 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         await deleteEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
-};
-
-export const getEventReserves = async (eventId: string) => {
-    // Validate event ID format
-    const validatedEventId = UuidSchema.parse(eventId);
-
-    return await prisma.eventReserve.findMany({
-        where: { event_id: validatedEventId },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    nickname: true,
-                },
-            },
-        },
-    });
-};
-
-export const getEventReservesEmails = async (eventId: string): Promise<string[]> => {
-    // Validate event ID format
-    const validatedEventId = UuidSchema.parse(eventId);
-
-    const reserves = await prisma.eventReserve.findMany({
-        where: { event_id: validatedEventId },
-        select: {
-            user: {
-                select: {
-                    email: true,
-                },
-            },
-        },
-    });
-    return reserves.map((reserve) => reserve.user.email);
 };

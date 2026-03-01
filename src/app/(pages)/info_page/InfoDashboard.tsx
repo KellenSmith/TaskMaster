@@ -2,7 +2,7 @@
 import { Stack } from "@mui/material";
 import React from "react";
 import TextContent from "../../ui/TextContent";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../prisma/generated/browser";
 
 interface InfoDashboardProps {
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;

@@ -3,7 +3,8 @@
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { ProductCreateSchema, TicketWithoutRelationsSchema, UuidSchema } from "./zod-schemas";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "../../prisma/prisma-client";
+import { deleteOldBlob } from "./organization-settings-actions";
 
 export const createEventTicket = async (eventId: string, formData: FormData) => {
     // Validate event ID format
@@ -56,6 +57,11 @@ export const updateEventTicket = async (ticketId: string, formData: FormData) =>
 
     const ticketFieldValues = TicketWithoutRelationsSchema.parse(formDataObject);
     const productFieldValues = ProductCreateSchema.parse(formDataObject);
+
+    const oldProduct = await prisma.product.findUniqueOrThrow({
+        where: { id: validatedTicketId },
+    });
+
     await prisma.ticket.update({
         where: {
             product_id: validatedTicketId,
@@ -69,6 +75,11 @@ export const updateEventTicket = async (ticketId: string, formData: FormData) =>
             },
         },
     });
+
+    // Delete old blob if image_url was provided in the update and differs from the old one
+    if ("image_url" in productFieldValues)
+        await deleteOldBlob(oldProduct.image_url, productFieldValues.image_url);
+
     revalidateTag(GlobalConstants.TICKET, "max");
 };
 
@@ -81,19 +92,4 @@ export const deleteEventTicket = async (ticketId: string) => {
         },
     });
     revalidateTag(GlobalConstants.TICKET, "max");
-};
-
-export const getEventTickets = async (eventId: string) => {
-    // Validate event ID format
-    const validatedEventId = UuidSchema.parse(eventId);
-
-    return await prisma.ticket.findMany({
-        where: {
-            event_id: validatedEventId,
-        },
-        include: {
-            product: true,
-            event_participants: true,
-        },
-    });
 };

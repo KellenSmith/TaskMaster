@@ -13,13 +13,13 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import { EventStatus, Language, Prisma } from "@prisma/client";
 import Form from "../../ui/form/Form";
 import {
     cancelEvent,
     cloneEvent,
     deleteEvent,
     getEventParticipants,
+    publishEvent,
     updateEvent,
 } from "../../lib/event-actions";
 import ConfirmButton from "../../ui/ConfirmButton";
@@ -41,6 +41,7 @@ import EventLanguageTranslations from "../profile/LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
+import { EventStatus, Language, Prisma } from "../../../prisma/generated/browser";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -49,16 +50,16 @@ interface IEventActions {
         }>
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
-    eventTagsPromise: Promise<string[]>;
+    eventTags: string[];
 }
 
-const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, eventTagsPromise }) => {
+const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, eventTags }) => {
     const theme = useTheme();
     const { organizationSettings } = useOrganizationSettingsContext();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
     const { user, language } = useUserContext();
-    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
-    const [dialogOpen, setDialogOpen] = useState(null);
+    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState<HTMLElement | null>(null);
+    const [dialogOpen, setDialogOpen] = useState<"event" | "sendout" | null>(null);
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const event = use(eventPromise);
@@ -66,7 +67,6 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     // TODO: It doesn't need to use locations if the user is not host or admin
     // Move host actions to separate component to optimize data fetching
     const locations = use(locationsPromise);
-    const eventTags = use(eventTagsPromise);
 
     const sendoutToOptions = {
         All: {
@@ -83,9 +83,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         },
     };
 
-    const [sendoutTo, setSendoutTo] = useState(sendoutToOptions.All[language]);
+    const [sendoutTo, setSendoutTo] = useState<string>(sendoutToOptions.All[language]);
 
-    const submitForApproval = () => {
+    const submitForApproval = async () => {
         startTransition(async () => {
             try {
                 const formData = new FormData();
@@ -99,12 +99,12 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         });
     };
 
-    const publishEvent = () => {
+    const publishAction = async () => {
         startTransition(async () => {
             try {
                 const formData = new FormData();
                 formData.append(GlobalConstants.STATUS, EventStatus.published);
-                await updateEvent(event.id, formData);
+                await publishEvent(event.id);
                 addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
             } catch {
@@ -113,7 +113,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         });
     };
 
-    const cancelAction = () =>
+    const cancelAction = async () =>
         startTransition(async () => {
             try {
                 await cancelEvent(event.id);
@@ -124,7 +124,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
             }
         });
 
-    const deleteAction = () => {
+    const deleteAction = async () => {
         startTransition(async () => {
             try {
                 await deleteEvent(event.id);
@@ -171,9 +171,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                     return (
                         <MenuItem key="statusAction">
                             <ConfirmButton
-                                color="success"
                                 confirmText={LanguageTranslations.areYouSureSubmitEvent[language]}
                                 onClick={submitForApproval}
+                                buttonProps={{ color: "success" }}
                             >
                                 {LanguageTranslations.submitEvent[language]}
                             </ConfirmButton>
@@ -183,9 +183,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 return (
                     <MenuItem key="statusAction">
                         <ConfirmButton
-                            color="success"
+                            buttonProps={{ color: "success" }}
                             confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
-                            onClick={publishEvent}
+                            onClick={publishAction}
                         >
                             {LanguageTranslations.publishEvent[language]}
                         </ConfirmButton>
@@ -197,9 +197,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                     return (
                         <MenuItem key="statusAction">
                             <ConfirmButton
-                                color="success"
+                                buttonProps={{ color: "success" }}
                                 confirmText={LanguageTranslations.areYouSurePublishEvent[language]}
-                                onClick={publishEvent}
+                                onClick={publishAction}
                             >
                                 {LanguageTranslations.publishEvent[language]}
                             </ConfirmButton>
@@ -217,7 +217,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 return (
                     <MenuItem key="statusAction">
                         <ConfirmButton
-                            color="error"
+                            buttonProps={{ color: "error" }}
                             confirmText={LanguageTranslations.areYouSureCancelEvent[language](
                                 getEventParticipantCount(event),
                             )}
@@ -246,21 +246,22 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
         if (getEventParticipantCount(event) <= 1) {
             ActionButtons.unshift(
                 <MenuItem key="delete">
-                    <ConfirmButton color="error" onClick={deleteAction}>
+                    <ConfirmButton buttonProps={{ color: "error" }} onClick={deleteAction}>
                         {LanguageTranslations.deleteEvent[language]}
                     </ConfirmButton>
                 </MenuItem>,
             );
         }
 
-        ActionButtons.unshift(getStatusActionButton());
+        const statusActionButton = getStatusActionButton();
+        if (statusActionButton) ActionButtons.unshift(statusActionButton);
 
         ActionButtons.unshift(
             <MenuItem key="edit">
                 <Button
                     onClick={() => {
                         closeActionMenu();
-                        setDialogOpen(GlobalConstants.EVENT);
+                        setDialogOpen("event");
                     }}
                 >
                     {LanguageTranslations.editEvent[language]}
@@ -270,7 +271,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 <Button
                     onClick={() => {
                         closeActionMenu();
-                        setDialogOpen(GlobalConstants.SENDOUT);
+                        setDialogOpen("sendout");
                     }}
                 >
                     {LanguageTranslations.sendMail[language]}
@@ -288,6 +289,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
 
     const updateEventById = async (formData: FormData) => {
         try {
+            // TODO: Allow reassigning host when updating event, currently host can only be assigned when creating event
             await updateEvent(event.id, formData);
             setDialogOpen(null);
             return GlobalLanguageTranslations.successfulSave[language];
