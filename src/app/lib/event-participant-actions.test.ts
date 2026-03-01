@@ -190,9 +190,6 @@ describe("event-participant-actions", () => {
 
     describe("addEventParticipant", () => {
         it("calls transaction wrapper with addEventParticipantWithTx", async () => {
-            const tx = prisma as any as TransactionClient;
-            vi.mocked(prisma.$transaction).mockImplementation(async (callback) => callback(tx));
-
             const mockTicket = {
                 product_id: ticketId,
                 event_id: eventId,
@@ -209,7 +206,7 @@ describe("event-participant-actions", () => {
             await eventParticipantActions.addEventParticipant(userId, ticketId);
 
             expect(vi.mocked(prisma.$transaction)).toHaveBeenCalled();
-            expect(tx.eventParticipant.create).toHaveBeenCalled();
+            expect(prisma.eventParticipant.create).toHaveBeenCalled();
         });
     });
 
@@ -286,7 +283,9 @@ describe("event-participant-actions", () => {
         const tx = prisma as any as TransactionClient;
 
         beforeEach(() => {
-            vi.mocked(prisma.$transaction).mockImplementation(async (callback) => callback(tx));
+            vi.mocked(prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx as any),
+            );
             tx.ticket.findFirstOrThrow.mockResolvedValue({
                 product_id: ticketId,
                 event_id: eventId,
