@@ -85,16 +85,6 @@ const OrdersReportPDF = ({ orders, language, startDate, endDate }: OrdersReportP
         <View key="report-details" style={styles.eventDetails}>
             <View style={styles.eventDetailRow}>
                 <Text style={styles.eventDetailLabel}>
-                    {LanguageTranslations.reportPeriod[language]}
-                </Text>
-                <Text>
-                    {startDate && endDate
-                        ? `${formatDate(startDate)} - ${formatDate(endDate)}`
-                        : LanguageTranslations.allOrders[language]}
-                </Text>
-            </View>
-            <View style={styles.eventDetailRow}>
-                <Text style={styles.eventDetailLabel}>
                     {LanguageTranslations.totalOrders[language]}
                 </Text>
                 <Text>{orders.length}</Text>
