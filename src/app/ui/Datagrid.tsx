@@ -5,13 +5,16 @@ import {
     DataGrid,
     GridColDef,
     useGridApiRef,
-    gridFilteredSortedRowEntriesSelector,
     GridFilterOperator,
     getGridDateOperators,
+    getGridStringOperators,
+    getGridNumericOperators,
+    getGridBooleanOperators,
     GridFilterInputValueProps,
+    GridFilterItem,
     GridRowParams,
 } from "@mui/x-data-grid";
-import React, { useEffect, useMemo, use, useState, useTransition } from "react";
+import React, { useEffect, useMemo, use, useState, useTransition, useCallback } from "react";
 import {
     checkboxFields,
     datePickerFields,
@@ -103,6 +106,7 @@ const Datagrid: React.FC<DatagridProps> = ({
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const apiRef = useGridApiRef();
+    const [activeFilterItems, setActiveFilterItems] = useState<GridFilterItem[]>([]);
     const { addNotification } = useNotificationContext();
     const datagridRows = use(dataGridRowsPromise);
     const [clickedRow, setClickedRow] = useState<ImplementedDatagridEntities | null>(null);
@@ -226,6 +230,66 @@ const Datagrid: React.FC<DatagridProps> = ({
     };
     const columns = useMemo(getColumns, [datagridRows, customColumns, language]);
 
+    const isFilterItemApplied = (item: GridFilterItem) => {
+        if (item.operator === "isEmpty" || item.operator === "isNotEmpty") {
+            return true;
+        }
+
+        if (Array.isArray(item.value)) {
+            return item.value.some(
+                (value) => value !== "" && value !== null && value !== undefined,
+            );
+        }
+
+        return item.value !== "" && item.value !== null && item.value !== undefined;
+    };
+
+    const getFilterOperatorsByType = useCallback((type?: string): GridFilterOperator[] => {
+        if (type === "date") return getDateFilterOperators();
+        if (type === "number") return getGridNumericOperators();
+        if (type === "boolean") return getGridBooleanOperators();
+        return getGridStringOperators();
+    }, []);
+
+    const filteredRows = useMemo(() => {
+        if (activeFilterItems.length === 0) return datagridRows;
+
+        return datagridRows.filter((row) => {
+            return activeFilterItems.every((item) => {
+                if (!item.field || !item.operator) {
+                    return true;
+                }
+
+                const column = columns.find((col) => col.field === item.field);
+                if (!column) {
+                    return true;
+                }
+
+                const operators =
+                    column.filterOperators && column.filterOperators.length > 0
+                        ? column.filterOperators
+                        : getFilterOperatorsByType(column.type);
+
+                const operator = operators.find((op) => op.value === item.operator);
+                if (!operator || !operator.getApplyFilterFn) {
+                    return true;
+                }
+
+                const applyFilterFn = operator.getApplyFilterFn(item, column as never);
+                if (!applyFilterFn) {
+                    return true;
+                }
+
+                const rawValue = (row as Record<string, unknown>)[item.field];
+                const cellValue = column.valueGetter
+                    ? column.valueGetter(rawValue as never, row, column, apiRef as never)
+                    : rawValue;
+
+                return applyFilterFn(cellValue, row, column, apiRef as never);
+            });
+        });
+    }, [activeFilterItems, apiRef, columns, datagridRows, getFilterOperatorsByType]);
+
     useEffect(() => {
         apiRef.current &&
             apiRef.current.autosizeColumns({
@@ -296,7 +360,7 @@ const Datagrid: React.FC<DatagridProps> = ({
         <Stack sx={{ height: "100%" }}>
             <DataGrid
                 apiRef={apiRef}
-                rows={datagridRows}
+                rows={filteredRows}
                 onRowClick={(row) =>
                     onRowClick
                         ? onRowClick(row)
@@ -311,6 +375,25 @@ const Datagrid: React.FC<DatagridProps> = ({
                     },
                 }}
                 autoPageSize
+                onFilterModelChange={(nextFilterModel) => {
+                    const nextFilterItem = nextFilterModel.items[0];
+
+                    setActiveFilterItems((previousItems) => {
+                        if (!nextFilterItem || !nextFilterItem.field) {
+                            return [];
+                        }
+
+                        const itemsWithoutCurrentField = previousItems.filter(
+                            (item) => item.field !== nextFilterItem.field,
+                        );
+
+                        if (!isFilterItemApplied(nextFilterItem)) {
+                            return itemsWithoutCurrentField;
+                        }
+
+                        return [...itemsWithoutCurrentField, nextFilterItem];
+                    });
+                }}
             />
             {createAction && (
                 <Button onClick={() => setAddNew(true)}>
@@ -322,9 +405,6 @@ const Datagrid: React.FC<DatagridProps> = ({
                     <Button
                         key={filteredRowsAction.buttonLabel}
                         onClick={() => {
-                            const filteredRows = gridFilteredSortedRowEntriesSelector(apiRef).map(
-                                (entry) => entry.model,
-                            );
                             filteredRowsAction.action(
                                 filteredRows as ImplementedDatagridEntities[],
                             );

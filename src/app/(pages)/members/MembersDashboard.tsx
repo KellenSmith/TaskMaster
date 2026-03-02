@@ -97,7 +97,11 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     });
 
     // PDF Document component
-    const MembersListPDF = () => (
+    const MembersListPDF = ({
+        filteredMembers,
+    }: {
+        filteredMembers: Prisma.UserGetPayload<true>[];
+    }) => (
         <Document>
             <Page size="A4" style={styles.page}>
                 <Text style={styles.header}>Members List</Text>
@@ -105,7 +109,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     <Text style={styles.headerCell}>Email</Text>
                     <Text style={styles.headerCell}>Nickname</Text>
                 </View>
-                {members
+                {filteredMembers
                     .sort((a, b) => a.email.localeCompare(b.email))
                     .map((member, idx) => (
                         <View style={styles.row} key={idx}>
@@ -117,13 +121,18 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         </Document>
     );
 
-    const printMembersList = async () => {
-        // Generate PDF blob
-        const doc = <MembersListPDF />;
-        const asPdf = await pdf(doc).toBlob();
-        const url = URL.createObjectURL(asPdf);
-        openResourceInNewTab(url);
-    };
+    const filteredRowsActions = [
+        {
+            action: async (filteredMembers: ImplementedDatagridEntities[]) => {
+                // Generate PDF blob
+                const doc = <MembersListPDF filteredMembers={filteredMembers as typeof members} />;
+                const asPdf = await pdf(doc).toBlob();
+                const url = URL.createObjectURL(asPdf);
+                openResourceInNewTab(url);
+            },
+            buttonLabel: LanguageTranslations.printMembersList[language],
+        },
+    ];
 
     const rowActions: RowActionProps[] = [
         {
@@ -255,6 +264,18 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             headerName: "Skill Badges",
             type: "string",
             sortable: true,
+            valueGetter: (_, member: ImplementedDatagridEntities) => {
+                if (members?.length === 0) return "None";
+                const userSkillBadgeNames = (member as (typeof members)[0]).skill_badges.map(
+                    (skillBadge) => {
+                        const badgeInfo = skillBadges.find(
+                            (badge) => badge.id === skillBadge.skill_badge_id,
+                        );
+                        return badgeInfo ? badgeInfo.name : "Unknown badge";
+                    },
+                );
+                return userSkillBadgeNames;
+            },
             sortComparator: (skillBadges1, skillBadges2) => {
                 return skillBadges1.length - skillBadges2.length;
             },
@@ -304,6 +325,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 updateAction={updateUser}
                 validationSchema={UserUpdateSchema}
                 rowActions={rowActions}
+                filteredRowsActions={filteredRowsActions}
                 customColumns={customColumns}
                 hiddenColumns={hiddenColumns}
                 getDefaultFormValues={(member: ImplementedDatagridEntities) =>
@@ -327,7 +349,6 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     ),
                 }}
             />
-            <Button onClick={printMembersList}>print members list</Button>
             <Dialog
                 open={!!addMembershipDialogOpen}
                 onClose={() => setAddMembershipDialogOpen(null)}

@@ -25,6 +25,14 @@ const LanguageTranslations = {
         [Language.english]: "Failed adding membership",
         [Language.swedish]: "Kunde inte lägga till medlemskap",
     },
+    printMembersList: {
+        [Language.english]: "Print filtered members list",
+        [Language.swedish]: "Skriv ut filtrerad medlemslista",
+    },
+    sendEmail: {
+        [Language.english]: "Send email to filtered members",
+        [Language.swedish]: "Skicka email till filtrerade medlemmar",
+    },
 };
 
 export default LanguageTranslations;

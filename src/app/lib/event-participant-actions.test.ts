@@ -6,7 +6,6 @@ import * as eventParticipantActions from "./event-participant-actions";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { getLoggedInUser, getUserLanguage } from "./user-helpers";
-import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { prisma } from "../../prisma/prisma-client";
