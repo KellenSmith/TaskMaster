@@ -37,26 +37,21 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
             case OrderStatus.paid:
             case OrderStatus.shipped:
                 return {
-                    status: order.status,
                     icon: Warning,
                     color: "warning.main",
                 };
             case OrderStatus.completed:
                 return {
-                    status: order.status,
                     icon: Check,
                     color: "success.main",
                 };
             case OrderStatus.cancelled:
                 return {
-                    status: order.status,
                     icon: Cancel,
                     color: "error.main",
                 };
-
             default:
                 return {
-                    status: order.status,
                     icon: Error,
                     color: "error.main",
                 };
@@ -82,14 +77,10 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
             field: GlobalConstants.STATUS,
             headerName: "Status",
             type: "string",
-            valueGetter: (_, order: Prisma.OrderGetPayload<true>) => {
-                const { status } = getStatusConfig(order);
-                return status;
-            },
             renderCell: (params) => {
                 const order: Prisma.OrderGetPayload<true> = params.row;
-                const { status, icon: Icon, color } = getStatusConfig(order);
-                const statusText = (FieldLabels[status][language] as string) || status;
+                const { icon: Icon, color } = getStatusConfig(order);
+                const statusText = (FieldLabels[order.status][language] as string) || order.status;
                 return (
                     <Stack
                         height="100%"

@@ -366,6 +366,14 @@ export const orderFieldLabels = {
         [Language.english]: "Pending",
         [Language.swedish]: "Avvaktande",
     },
+    [OrderStatus.paid]: {
+        [Language.english]: "Paid",
+        [Language.swedish]: "Betald",
+    },
+    [OrderStatus.shipped]: {
+        [Language.english]: "Shipped",
+        [Language.swedish]: "Skickad",
+    },
     [OrderStatus.completed]: {
         [Language.english]: "Completed",
         [Language.swedish]: "Komplett",
