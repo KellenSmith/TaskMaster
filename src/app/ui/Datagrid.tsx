@@ -13,9 +13,8 @@ import {
     GridFilterInputValueProps,
     GridFilterItem,
     GridRowParams,
-    GridFilterModel,
 } from "@mui/x-data-grid";
-import React, { useEffect, useMemo, use, useState, useTransition } from "react";
+import React, { useEffect, useMemo, use, useState, useTransition, useCallback } from "react";
 import {
     checkboxFields,
     datePickerFields,
@@ -245,12 +244,12 @@ const Datagrid: React.FC<DatagridProps> = ({
         return item.value !== "" && item.value !== null && item.value !== undefined;
     };
 
-    const getFilterOperatorsByType = (type?: string): GridFilterOperator[] => {
+    const getFilterOperatorsByType = useCallback((type?: string): GridFilterOperator[] => {
         if (type === "date") return getDateFilterOperators();
         if (type === "number") return getGridNumericOperators();
         if (type === "boolean") return getGridBooleanOperators();
         return getGridStringOperators();
-    };
+    }, []);
 
     const filteredRows = useMemo(() => {
         if (activeFilterItems.length === 0) return datagridRows;
@@ -289,7 +288,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 return applyFilterFn(cellValue, row, column, apiRef as never);
             });
         });
-    }, [activeFilterItems, apiRef, columns, datagridRows]);
+    }, [activeFilterItems, apiRef, columns, datagridRows, getFilterOperatorsByType]);
 
     useEffect(() => {
         apiRef.current &&
