@@ -1,12 +1,10 @@
-import { JSDOM } from "jsdom";
 import { richTextFields } from "../ui/form/FieldCfg";
-import DOMPurify from "dompurify";
-import type { Config } from "dompurify";
+import sanitizeHtml, { type IOptions } from "sanitize-html";
 
 // Rich text sanitization configuration
-const RICH_TEXT_CONFIG: Config = {
+const RICH_TEXT_CONFIG: IOptions = {
     // Allow common rich text elements
-    ALLOWED_TAGS: [
+    allowedTags: [
         "p",
         "br",
         "strong",
@@ -41,41 +39,27 @@ const RICH_TEXT_CONFIG: Config = {
     ],
 
     // Allow safe attributes
-    ALLOWED_ATTR: [
-        "href",
-        "target",
-        "rel",
-        "src",
-        "alt",
-        "width",
-        "height",
-        "title",
-        "class",
-        "colspan",
-        "rowspan",
-    ],
+    allowedAttributes: {
+        "*": ["title", "class"],
+        a: ["href", "target", "rel"],
+        img: ["src", "alt", "width", "height"],
+        td: ["colspan", "rowspan"],
+        th: ["colspan", "rowspan"],
+    },
 
     // Security configurations
-    ALLOW_DATA_ATTR: false,
-    ALLOW_UNKNOWN_PROTOCOLS: false,
-    ALLOW_SELF_CLOSE_IN_ATTR: false,
-
-    // URL validation
-    ALLOWED_URI_REGEXP:
-        /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
+    allowedSchemes: ["http", "https", "mailto", "tel", "callto", "sms", "cid", "xmpp"],
+    allowProtocolRelative: false,
 
     // Additional security
-    SANITIZE_DOM: true,
-    KEEP_CONTENT: true,
+    parser: {
+        lowerCaseTags: false,
+    },
 
     // Remove dangerous elements completely
-    FORBID_TAGS: ["script", "object", "embed", "style", "link", "meta", "title"],
-    FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur", "style"],
+    disallowedTagsMode: "discard",
+    nonBooleanAttributes: [],
 };
-
-// Create a server-side DOMPurify instance
-const { window } = new JSDOM("");
-const purify = DOMPurify(window as unknown as Window & typeof globalThis);
 
 /**
  * Sanitizes HTML content for rich text fields
@@ -87,16 +71,7 @@ export const sanitizeRichText = (html: string): string => {
         return "";
     }
 
-    // First pass: sanitize with our configuration
-    let sanitized = purify.sanitize(html, RICH_TEXT_CONFIG);
-
-    // Additional security: ensure no javascript: protocols snuck through
-    sanitized = sanitized.replace(/javascript:/gi, "");
-
-    // Remove any remaining script tags that might have been nested
-    sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
-
-    return sanitized.trim();
+    return sanitizeHtml(html, RICH_TEXT_CONFIG).trim();
 };
 
 /**
@@ -109,7 +84,7 @@ export const stripAllHtml = (html: string): string => {
         return "";
     }
 
-    return purify.sanitize(html, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} });
 };
 
 /**
