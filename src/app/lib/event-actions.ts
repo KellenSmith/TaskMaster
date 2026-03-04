@@ -41,7 +41,10 @@ export const getEventParticipants = async (
     return participants;
 };
 
-export const createEvent = async (userId: string, formData: FormData): Promise<void> => {
+export const createEvent = async (formData: FormData): Promise<void> => {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) throw new Error("Unauthorized");
+
     // Revalidate input with zod schema - don't trust the client
     const validatedData = EventCreateSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -67,7 +70,7 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
                 ...eventData,
                 host: {
                     connect: {
-                        id: userId,
+                        id: loggedInUser.id,
                     },
                 },
                 tickets: {
@@ -95,7 +98,7 @@ export const createEvent = async (userId: string, formData: FormData): Promise<v
         const volunteerTicket = createdEvent.tickets[0]; // Since we just created one ticket
         await tx.eventParticipant.create({
             data: {
-                user_id: userId,
+                user_id: loggedInUser.id,
                 ticket_id: volunteerTicket.product_id,
             },
         });
