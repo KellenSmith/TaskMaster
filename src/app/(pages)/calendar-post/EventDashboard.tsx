@@ -76,11 +76,14 @@ const EventDashboard = ({
     locationsPromise,
     eventTags,
 }: EventDashboardProps) => {
+    const { user, language } = useUserContext();
+
+    if (!user) return null;
+
     const theme = useTheme();
     const router = useRouter();
     const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
     const searchParams = useSearchParams();
-    const { user, language } = useUserContext();
     const event = use(eventPromise);
 
     // Tab is available if it has a label
@@ -102,12 +105,11 @@ const EventDashboard = ({
     }, [event, user]);
 
     // Get current tab from search params, default to details
-    const openTab = useMemo(
-        () => searchParams.get("tab") || eventTabs.details,
-        [searchParams, eventTabs],
-    );
-
-    if (!user) return null;
+    const openTab = useMemo(() => {
+        const tab = searchParams.get("tab") as string;
+        if (!(Object.values(eventTabs) as string[]).includes(tab)) return eventTabs.details;
+        return tab;
+    }, [searchParams, eventTabs]);
 
     const setOpenTab = (tab: string) =>
         clientRedirect(router, [GlobalConstants.CALENDAR_POST], {
