@@ -21,7 +21,7 @@ describe("AccordionRadioGroup", () => {
             <AccordionRadioGroup
                 title={overrides?.title ?? "Choose an option"}
                 value={overrides?.value ?? "Option B"}
-                setValue={overrides?.setValue ?? setValue}
+                setValue={(overrides?.setValue ?? setValue) as any}
                 valueOptions={overrides?.valueOptions ?? valueOptions}
             />,
         );
