@@ -97,6 +97,9 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
             <Box sx={{ flex: 1, minWidth: 0 }}>
                 <LocationCard
                     location={getSelectedLocation()}
+                    // TODO: Secure info by not fetching it at all for unauthorized users instead of just hiding it in the UI
+                    // this is done in the loader function of the route, but we also need to make sure that if the user is not authorized,
+                    // they can't see the secure fields even if they select a different location that has them.
                     renderedFields={
                         isUserAdmin(user) || isUserHost(user, event)
                             ? RenderedFields[GlobalConstants.LOCATION]
