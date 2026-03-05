@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import dayjs from "dayjs";
 import { Language } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/client";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface ParticipantListPDFProps {
     event: Prisma.EventGetPayload<true>;
@@ -58,9 +59,13 @@ const ParticipantListPDF = ({ event, eventParticipants, language }: ParticipantL
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                <Text style={styles.eventHeader}>Participant list</Text>
+                <Text style={styles.eventHeader}>
+                    {LanguageTranslations.participantList[language]}
+                </Text>
                 <View style={styles.eventDetailRow}>
-                    <Text style={styles.eventDetailLabel}>Printed:</Text>
+                    <Text style={styles.eventDetailLabel}>
+                        {LanguageTranslations.printed[language]}
+                    </Text>
                     <Text>{formatDate(dayjs.utc())}</Text>
                 </View>
                 {event && getEventDetails()}
