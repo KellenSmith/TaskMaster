@@ -78,6 +78,13 @@ export const routeTreeConfig: RouteConfigType[] = [
         role: UserRole.member,
         membershipRequired: false,
     },
+    // Authorization for info page is handled at page level based on info page config, so no auth requirements defined here
+    {
+        name: GlobalConstants.INFO_PAGE,
+        status: null,
+        role: null,
+        membershipRequired: false,
+    },
     {
         name: GlobalConstants.LOCATIONS,
         status: UserStatus.validated,
@@ -120,14 +127,12 @@ export const routeTreeConfig: RouteConfigType[] = [
         role: UserRole.admin,
         membershipRequired: true,
     },
-
     {
         name: GlobalConstants.SENDOUT,
         status: UserStatus.validated,
         role: UserRole.admin,
         membershipRequired: true,
     },
-
     {
         name: GlobalConstants.ORGANIZATION_SETTINGS,
         status: UserStatus.validated,

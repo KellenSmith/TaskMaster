@@ -8,13 +8,10 @@ import { prisma } from "../../../prisma/prisma-client";
 type NextAuthOptions = {
     session: { strategy: string };
     providers: Array<{
-        // eslint-disable-next-line no-unused-vars
         sendVerificationRequest: (args: { identifier: string; url: string }) => Promise<void>;
     }>;
     callbacks: {
-        // eslint-disable-next-line no-unused-vars
         jwt: (params: { token: JWT; user?: User | null }) => Promise<JWT>;
-        // eslint-disable-next-line no-unused-vars
         session: (params: { session: Session; token: JWT }) => Promise<Session>;
     };
 };

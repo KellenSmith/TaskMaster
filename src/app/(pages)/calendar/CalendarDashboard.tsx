@@ -33,7 +33,7 @@ interface CalendarDashboardProps {
 
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
     const { user, language } = useUserContext();
-    const [selectedDate, setSelectedDate] = useState(dayjs.utc().date(1));
+    const [selectedDate, setSelectedDate] = useState(dayjs().startOf("day").date(1));
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
     const events = use(eventsPromise);
@@ -57,7 +57,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             );
 
         try {
-            await createEvent(user.id, formData);
+            await createEvent(formData);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
@@ -66,19 +66,20 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
     };
 
     const getDaysInFirstWeekButNotInMonth = () => {
-        const firstDayOfFirstWeekInMonth = selectedDate.startOf("week");
-        const dayDiff = selectedDate.diff(firstDayOfFirstWeekInMonth, "day", true);
+        const firstDayOfMonth = selectedDate.startOf("day");
+        const firstDayOfFirstWeekInMonth = firstDayOfMonth.startOf("week");
+        const dayDiff = firstDayOfMonth.diff(firstDayOfFirstWeekInMonth, "day");
         const daysInFirstWeekButNotInMonth = [];
-        for (let i = 0; i < dayDiff - 1; i++) {
+        for (let i = 0; i < dayDiff; i++) {
             daysInFirstWeekButNotInMonth.push(firstDayOfFirstWeekInMonth.add(i, "d"));
         }
         return daysInFirstWeekButNotInMonth;
     };
 
     const getDaysInLastWeekButNotInMonth = () => {
-        const lastDayOfSelectedMonth = selectedDate.endOf("month");
+        const lastDayOfSelectedMonth = selectedDate.endOf("month").startOf("day");
         const lastDayOfLastWeekInMonth = lastDayOfSelectedMonth.endOf("week");
-        const dayDiff = lastDayOfLastWeekInMonth.diff(lastDayOfSelectedMonth, "day", true);
+        const dayDiff = lastDayOfLastWeekInMonth.diff(lastDayOfSelectedMonth, "day");
         const daysInLastWeekButNotInMonth = [];
         for (let i = 1; i <= dayDiff; i++) {
             daysInLastWeekButNotInMonth.push(lastDayOfSelectedMonth.add(i, "d"));
@@ -157,9 +158,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                                 size={isSmallScreen ? "small" : "medium"}
                                 onClick={() => setCreateOpen(true)}
                             >
-                                {isSmallScreen
-                                    ? LanguageTranslations.createEvent[language]
-                                    : LanguageTranslations.createEvent[language]}
+                                {LanguageTranslations.createEvent[language]}
                             </Button>
                         )}
                         <Stack direction="row">

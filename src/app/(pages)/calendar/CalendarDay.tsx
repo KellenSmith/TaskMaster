@@ -24,18 +24,16 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
 
     const shouldShowEvent = useCallback(
         (event: Prisma.EventGetPayload<true>) => {
-            const startTime = dayjs.utc(event.start_time);
-            let endTime = dayjs.utc(event.end_time);
+            // Show event if it starts or ends on the current day, or if it spans across the current day
 
-            // Count events ending before 04:00 as belonging to the day before
-            if (0 <= endTime.hour() && endTime.hour() <= 4) {
-                const newEndTime = endTime.subtract(1, "day").hour(23).minute(59);
-                if (newEndTime.isAfter(startTime)) endTime = newEndTime;
-            }
+            const eventStart = dayjs(event.start_time);
+            const eventEnd = dayjs(event.end_time);
 
-            const eventInDay = date.isBetween(startTime, endTime, "day", "[]");
-            if (!eventInDay) return false;
-            return true;
+            return (
+                eventStart.isSame(date, "day") ||
+                eventEnd.isSame(date, "day") ||
+                (eventStart.isBefore(date.startOf("day")) && eventEnd.isAfter(date.endOf("day")))
+            );
         },
         [date],
     );
