@@ -20,6 +20,7 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
       - run: pnpm lint
 
   type-check:
@@ -35,6 +36,7 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma-generate
       - run: pnpm tsc --noEmit
 
   test:
@@ -50,6 +52,7 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma-generate
       - run: pnpm test:coverage
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
