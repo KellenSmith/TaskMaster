@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import KanBanBoardMenu from "./KanBanBoardMenu";
+import KanBanBoardMenu, { filterOptions, getFilteredTasks } from "./KanBanBoardMenu";
 import NotificationContextProvider from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
 import { Language, TaskStatus } from "../../../prisma/generated/enums";
@@ -8,6 +8,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { pdf } from "@react-pdf/renderer";
 import { openResourceInNewTab } from "../utils";
+import GlobalConstants from "../../GlobalConstants";
 
 vi.mock("./DraggableTaskShifts", () => ({
     __esModule: true,
@@ -179,5 +180,140 @@ describe("KanBanBoardMenu", () => {
         expect(screen.getByRole("tab", { name: "Mina skift" })).toBeInTheDocument();
         expect(screen.getByRole("tab", { name: "Filter" })).toBeInTheDocument();
         expect(screen.getByText("Inga volontärskift bokade")).toBeInTheDocument();
+    });
+});
+
+describe("filterOptions", () => {
+    const tasks = [
+        makeTask({
+            id: "unassigned-1",
+            assignee_id: null,
+            reviewer_id: "reviewer-1",
+            tags: ["tag-a"],
+            status: TaskStatus.toDo,
+            start_time: new Date("2026-01-01T10:30:00.000Z"),
+            end_time: new Date("2026-01-01T11:00:00.000Z"),
+        }),
+        makeTask({
+            id: "mine-1",
+            assignee_id: "user-1",
+            reviewer_id: "other-reviewer",
+            tags: ["tag-b"],
+            status: TaskStatus.inProgress,
+            start_time: new Date("2026-01-01T10:31:00.000Z"),
+            end_time: new Date("2026-01-01T11:01:00.000Z"),
+        }),
+        makeTask({
+            id: "review-1",
+            assignee_id: "user-2",
+            reviewer_id: "user-1",
+            tags: ["tag-c", "tag-d"],
+            status: TaskStatus.done,
+            start_time: new Date("2026-01-01T10:29:00.000Z"),
+            end_time: new Date("2026-01-01T10:59:00.000Z"),
+        }),
+    ] as any[];
+
+    it("filters unassigned tasks", () => {
+        const result = filterOptions.unassigned({ tasks });
+        expect(result?.map((task) => task.id)).toEqual(["unassigned-1"]);
+    });
+
+    it("filters tasks assigned to the provided user", () => {
+        const result = filterOptions.assigned_to_me({ tasks, userId: "user-1" });
+        expect(result?.map((task) => task.id)).toEqual(["mine-1"]);
+    });
+
+    it("filters tasks that require the provided user's review", () => {
+        const result = filterOptions.for_me_to_review({ tasks, userId: "user-1" });
+        expect(result?.map((task) => task.id)).toEqual(["review-1"]);
+    });
+
+    it("filters begins_after inclusively to the minute", () => {
+        const result = filterOptions.begins_after({
+            tasks,
+            value: "2026-01-01T10:30:00.000Z",
+        });
+        expect(result?.map((task) => task.id)).toEqual(["unassigned-1", "mine-1"]);
+    });
+
+    it("filters ends_before inclusively to the minute", () => {
+        const result = filterOptions.ends_before({
+            tasks,
+            value: "2026-01-01T11:00:00.000Z",
+        });
+        expect(result?.map((task) => task.id)).toEqual(["unassigned-1", "review-1"]);
+    });
+
+    it("filters tasks by selected tags", () => {
+        const result = filterOptions.has_tag({ tasks, value: ["tag-d", "tag-x"] });
+        expect(result?.map((task) => task.id)).toEqual(["review-1"]);
+    });
+
+    it("filters tasks by selected statuses", () => {
+        const result = filterOptions[GlobalConstants.STATUS]({
+            tasks,
+            value: [TaskStatus.done, TaskStatus.toDo],
+        });
+        expect(result?.map((task) => task.id)).toEqual(["unassigned-1", "review-1"]);
+    });
+});
+
+describe("getFilteredTasks", () => {
+    const tasks = [
+        makeTask({
+            id: "task-a",
+            assignee_id: null,
+            reviewer_id: "user-2",
+            status: TaskStatus.toDo,
+        }),
+        makeTask({
+            id: "task-b",
+            assignee_id: "user-1",
+            reviewer_id: "user-2",
+            status: TaskStatus.inProgress,
+        }),
+        makeTask({
+            id: "task-c",
+            assignee_id: "user-2",
+            reviewer_id: "user-1",
+            status: TaskStatus.done,
+        }),
+    ] as any[];
+
+    it("returns all tasks unchanged when no filter is applied", () => {
+        const result = getFilteredTasks(null, tasks, "user-1");
+        expect(result).toBe(tasks);
+    });
+
+    it("combines multiple filter buckets as a union", () => {
+        const result = getFilteredTasks(
+            {
+                unassigned: true,
+                assigned_to_me: true,
+            } as any,
+            tasks,
+            "user-1",
+        );
+
+        expect(result.map((task) => task.id)).toEqual(["task-a", "task-b"]);
+    });
+
+    it("deduplicates tasks that match multiple filters", () => {
+        const overlappingTasks = [
+            makeTask({ id: "task-overlap", assignee_id: "user-1", reviewer_id: "user-1" }),
+        ] as any[];
+
+        const result = getFilteredTasks(
+            {
+                assigned_to_me: true,
+                for_me_to_review: true,
+            } as any,
+            overlappingTasks,
+            "user-1",
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe("task-overlap");
     });
 });
