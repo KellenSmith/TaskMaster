@@ -272,6 +272,14 @@ const LanguageTranslations = {
         [Language.english]: "Member is already registered",
         [Language.swedish]: "Medlemmen är redan registrerad",
     },
+    participantList: {
+        [Language.english]: "Participant List",
+        [Language.swedish]: "Deltagarlista",
+    },
+    printed: {
+        [Language.english]: "Printed",
+        [Language.swedish]: "Utskriven",
+    },
 };
 
 export default LanguageTranslations;

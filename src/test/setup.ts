@@ -11,8 +11,19 @@ import testdata from "./testdata";
 import { prisma } from "../prisma/prisma-client";
 import { Language } from "../prisma/generated/enums";
 import { Prisma } from "../prisma/generated/browser";
+import isoWeek from "dayjs/plugin/isoWeek";
+import "dayjs/locale/en-gb";
+import updateLocale from "dayjs/plugin/updateLocale";
 
-// Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
+const locale = "en-gb";
+dayjs.extend(isoWeek);
+dayjs.extend(updateLocale);
+dayjs.locale(locale);
+dayjs.updateLocale(locale, {
+    weekStart: 1,
+    weekdays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    weekdaysShort: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+});
 dayjs.extend(utc);
 
 // Extend vitest's expect method with testing-library methods

@@ -57,7 +57,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             );
 
         try {
-            await createEvent(user.id, formData);
+            await createEvent(formData);
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
@@ -157,9 +157,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                                 size={isSmallScreen ? "small" : "medium"}
                                 onClick={() => setCreateOpen(true)}
                             >
-                                {isSmallScreen
-                                    ? LanguageTranslations.createEvent[language]
-                                    : LanguageTranslations.createEvent[language]}
+                                {LanguageTranslations.createEvent[language]}
                             </Button>
                         )}
                         <Stack direction="row">

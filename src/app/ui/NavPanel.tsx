@@ -92,12 +92,12 @@ const NavPanel = () => {
 
     const hiddenRoutes = [
         GlobalConstants.LOGIN,
-        GlobalConstants.DASHBOARD,
         GlobalConstants.ORDER,
         GlobalConstants.TASK,
         GlobalConstants.APPLY,
         GlobalConstants.CALENDAR_POST,
         GlobalConstants.TICKET,
+        GlobalConstants.INFO_PAGE,
     ];
     !user && hiddenRoutes.push(GlobalConstants.HOME);
 

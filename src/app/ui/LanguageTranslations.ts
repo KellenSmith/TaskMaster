@@ -43,6 +43,10 @@ const LanguageTranslations = {
             [Language.english]: "Profile",
             [Language.swedish]: "Profil",
         },
+        [GlobalConstants.DASHBOARD]: {
+            [Language.english]: "Dashboard",
+            [Language.swedish]: "Översikt",
+        },
         [GlobalConstants.CALENDAR]: {
             [Language.english]: "Calendar",
             [Language.swedish]: "Kalender",

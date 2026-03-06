@@ -119,7 +119,7 @@ describe("event-actions", () => {
                 status: EventStatus.draft,
             });
 
-            await eventActions.createEvent(userId, formData);
+            await eventActions.createEvent(formData);
 
             expect(vi.mocked(prisma.location.findUniqueOrThrow)).toHaveBeenCalledWith({
                 where: { id: locationId },
@@ -171,7 +171,7 @@ describe("event-actions", () => {
                 status: EventStatus.draft,
             });
 
-            await expect(eventActions.createEvent(userId, formData)).rejects.toThrow(
+            await expect(eventActions.createEvent(formData)).rejects.toThrow(
                 "The location can't handle that many participants",
             );
         });
@@ -186,7 +186,7 @@ describe("event-actions", () => {
                 status: EventStatus.draft,
             });
 
-            await expect(eventActions.createEvent(userId, formData)).rejects.toThrow(
+            await expect(eventActions.createEvent(formData)).rejects.toThrow(
                 "Location ID is required",
             );
         });
@@ -203,7 +203,7 @@ describe("event-actions", () => {
                 status: EventStatus.draft,
             });
 
-            await eventActions.createEvent(userId, formData);
+            await eventActions.createEvent(formData);
 
             expect(vi.mocked(prisma.event.create)).toHaveBeenCalledWith(
                 expect.objectContaining({

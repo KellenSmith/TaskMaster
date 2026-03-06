@@ -4,12 +4,6 @@ import Dashboard from "./Dashboard";
 import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
 
-// Mocks
-vi.mock("../../ui/TextContent", () => ({
-    __esModule: true,
-    default: ({ id }: any) => <div data-testid="text-content">{id}</div>,
-}));
-
 const mockUser = { nickname: "TestUser", id: 1 };
 
 // Example props for Dashboard
