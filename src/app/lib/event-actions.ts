@@ -114,6 +114,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
 export const updateEvent = async (eventId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
 
+    const parsedEventId = UuidSchema.parse(eventId);
     const validatedData = EventUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
@@ -121,7 +122,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
 
     let notifyEventReservesPromise: Promise<void> | null = null;
     const eventToUpdate = await prisma.event.findUniqueOrThrow({
-        where: { id: eventId },
+        where: { id: parsedEventId },
         include: { tickets: { include: { product: true } }, host: true },
     });
 
@@ -139,7 +140,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
     }
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        const eventParticipantsCount = (await getEventParticipants(eventId)).length;
+        const eventParticipantsCount = (await getEventParticipants(parsedEventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
         if (
@@ -166,7 +167,8 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     },
                 },
             });
-            if (deltaMaxParticipants > 0) notifyEventReservesPromise = notifyEventReserves(eventId);
+            if (deltaMaxParticipants > 0)
+                notifyEventReservesPromise = notifyEventReserves(parsedEventId);
         }
 
         // Notify event manager if event is update to pending approval
@@ -182,14 +184,14 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     {
                         buttonName: "Go to event",
                         url: getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
-                            [GlobalConstants.EVENT_ID]: eventId,
+                            [GlobalConstants.EVENT_ID]: parsedEventId,
                         }),
                     },
                 ],
             });
             if (!eventToUpdate.host)
                 throw new Error(
-                    `Event host not found in event ${eventId}. Failed to notify event host of event update.`,
+                    `Event host not found in event ${parsedEventId}. Failed to notify event host of event update.`,
                 );
             await sendMail(
                 [organizationSettings.event_manager_email],
@@ -210,20 +212,20 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
                     {
                         buttonName: "Go to event",
                         url: getAbsoluteUrl([GlobalConstants.CALENDAR_POST], {
-                            [GlobalConstants.EVENT_ID]: eventId,
+                            [GlobalConstants.EVENT_ID]: parsedEventId,
                         }),
                     },
                 ],
             });
             if (!eventToUpdate.host)
                 throw new Error(
-                    `Event host not found in event ${eventId}. Failed to notify event host of event update.`,
+                    `Event host not found in event ${parsedEventId}. Failed to notify event host of event update.`,
                 );
             await sendMail([eventToUpdate.host.email], "Event published", mailContent);
         }
 
         await prisma.event.update({
-            where: { id: eventId },
+            where: { id: parsedEventId },
             data: sanitizedData,
         });
         revalidateTag(GlobalConstants.EVENT, "max");
@@ -305,6 +307,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
 };
 
 export const cloneEvent = async (eventId: string, formData: FormData) => {
+    const parsedEventId = UuidSchema.parse(eventId);
     const loggedInUser = await getLoggedInUser();
     // Ensure user is logged in
     if (!loggedInUser) {
@@ -320,14 +323,14 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         location_id,
         ...eventData
     } = await prisma.event.findUniqueOrThrow({
-        where: { id: eventId },
+        where: { id: parsedEventId },
     });
     const tickets = await prisma.ticket.findMany({
-        where: { event_id: eventId },
+        where: { event_id: parsedEventId },
         include: { product: true },
     });
     const tasks = await prisma.task.findMany({
-        where: { event_id: eventId },
+        where: { event_id: parsedEventId },
         include: { skill_badges: true },
     });
 
