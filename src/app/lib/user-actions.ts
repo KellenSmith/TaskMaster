@@ -12,7 +12,7 @@ import {
 } from "./zod-schemas";
 import { sendMail } from "./mail-service/mail-service";
 import { signIn, signOut } from "./auth/auth";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 import { getRelativeUrl } from "./utils";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-helpers";
 import { createElement } from "react";

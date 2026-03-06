@@ -8,7 +8,7 @@ import { revalidateTag } from "next/cache";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
 import { getLoggedInUser } from "./user-helpers";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 import { sanitizeFormData } from "./html-sanitizer";
 import { createElement } from "react";
 import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotificationTemplate";

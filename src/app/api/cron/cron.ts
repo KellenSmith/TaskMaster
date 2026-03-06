@@ -1,7 +1,7 @@
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
-import { getOrganizationSettings } from "../../lib/organization-settings-actions";
+import { getOrganizationSettings } from "../../lib/organization-settings-helpers";
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
 import { createElement } from "react";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";

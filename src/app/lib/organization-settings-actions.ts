@@ -5,18 +5,7 @@ import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 import { del } from "@vercel/blob";
-import { Prisma } from "../../prisma/generated/client";
-
-export const getOrganizationSettings = async (): Promise<
-    Prisma.OrganizationSettingsGetPayload<true>
-> => {
-    let orgSettings = await prisma.organizationSettings.findFirst();
-    if (!orgSettings) {
-        // Create using an explicit empty `data` so Prisma uses database defaults.
-        orgSettings = await prisma.organizationSettings.create({ data: {} });
-    }
-    return orgSettings;
-};
+import { getOrganizationSettings } from "./organization-settings-helpers";
 
 export const updateOrganizationSettings = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client

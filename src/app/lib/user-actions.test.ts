@@ -6,7 +6,7 @@ import { revalidateTag } from "next/cache";
 import * as userActions from "./user-actions";
 import { signIn, signOut } from "./auth/auth";
 import { sendMail } from "./mail-service/mail-service";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-helpers";
 import { buildFormData } from "../../test/test-helpers";
 import { prisma } from "../../prisma/prisma-client";
@@ -21,7 +21,7 @@ vi.mock("./auth/auth", () => ({
     signOut: vi.fn(),
 }));
 
-vi.mock("./organization-settings-actions", () => ({
+vi.mock("./organization-settings-helpers", () => ({
     getOrganizationSettings: vi.fn(),
 }));
 
