@@ -49,6 +49,8 @@ export default [
                 requestAnimationFrame: "readonly",
                 cancelAnimationFrame: "readonly",
                 ResizeObserver: "readonly",
+                Blob: "readonly",
+                getComputedStyle: "readonly",
                 HTMLElement: "readonly",
                 HTMLDivElement: "readonly",
                 HTMLFormElement: "readonly",
@@ -93,9 +95,11 @@ export default [
         },
     },
     {
-        files: ["**/*.test.ts", "**/**/*.test.tsx", "src/test/*.ts"],
+        files: ["**/*.test.ts", "**/*.test.tsx", "src/test/*.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unused-vars": "off",
+            "no-unused-vars": "off",
         },
     },
 ];
