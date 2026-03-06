@@ -102,7 +102,8 @@ describe("CalendarDashboard", () => {
         expect(await screen.findByText(prevMonth)).toBeInTheDocument();
     });
     it("renders calendar with correct days if large screen", async () => {
-        vi.setSystemTime(dayjs("2026-03-04").toDate()); // Mock system time to a fixed date for consistent testing
+        vi.useFakeTimers();
+        vi.setSystemTime(dayjs.utc("2026-03-04T12:00:00Z").toDate()); // Use explicit UTC instant for deterministic behavior
         await act(async () => {
             render(
                 <LocalizationContextProvider>
@@ -115,7 +116,7 @@ describe("CalendarDashboard", () => {
         });
 
         // Days in march 2026 (mocked system time) plus any days from previous/next month to fill the calendar grid
-        // Expect 23-28 februari, 1-31 mars, 1-4 april (total 42 cells in a 6x7 calendar grid)
+        // Expect 23-28 februari, 1-31 mars, 1-5 april (total 42 cells in a 6x7 calendar grid)
         const calendarCells = screen.getAllByText(new RegExp("^(?:[1-9]|[12][0-9]|3[01])$"));
         expect(calendarCells.length).toBe(42);
     });
