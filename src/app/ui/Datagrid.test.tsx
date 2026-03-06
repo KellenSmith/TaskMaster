@@ -1,17 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Datagrid, { ImplementedDatagridEntities } from "./Datagrid";
 import NotificationContextProvider from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
 import GlobalConstants from "../GlobalConstants";
 import { Language } from "../../prisma/generated/enums";
-
-const toFulfilledThenable = <T,>(value: T) =>
-    ({
-        status: "fulfilled",
-        value,
-        then: (onFulfilled?: (resolved: T) => unknown) => Promise.resolve(onFulfilled?.(value)),
-    }) as unknown as Promise<T>;
 
 const productRows = [
     {
@@ -34,16 +27,18 @@ const productRows = [
     },
 ] as any as ImplementedDatagridEntities[];
 
-const renderDatagrid = (props: Partial<React.ComponentProps<typeof Datagrid>> = {}) => {
-    return render(
-        <NotificationContextProvider>
-            <Datagrid
-                name={GlobalConstants.PRODUCT}
-                dataGridRowsPromise={toFulfilledThenable(productRows)}
-                {...props}
-            />
-        </NotificationContextProvider>,
-    );
+const renderDatagrid = async (props: Partial<React.ComponentProps<typeof Datagrid>> = {}) => {
+    await act(async () => {
+        render(
+            <NotificationContextProvider>
+                <Datagrid
+                    name={GlobalConstants.PRODUCT}
+                    dataGridRowsPromise={Promise.resolve(productRows)}
+                    {...props}
+                />
+            </NotificationContextProvider>,
+        );
+    });
 };
 
 describe("Datagrid", () => {
@@ -54,7 +49,7 @@ describe("Datagrid", () => {
     });
 
     it("renders the DataGrid with row data", async () => {
-        renderDatagrid();
+        await renderDatagrid();
 
         expect(await screen.findByText("Product Alpha")).toBeInTheDocument();
         expect(screen.getByRole("grid")).toHaveAttribute("aria-rowcount", "3");
@@ -62,7 +57,7 @@ describe("Datagrid", () => {
 
     it("calls custom onRowClick when provided", async () => {
         const onRowClick = vi.fn();
-        renderDatagrid({ onRowClick });
+        await renderDatagrid({ onRowClick });
 
         await userEvent.click(await screen.findByRole("gridcell", { name: "Product Alpha" }));
 
@@ -72,7 +67,7 @@ describe("Datagrid", () => {
 
     it("opens edit dialog on row click when updateAction is provided", async () => {
         const updateAction = vi.fn().mockResolvedValue(undefined);
-        renderDatagrid({ updateAction });
+        await renderDatagrid({ updateAction });
 
         await userEvent.click(await screen.findByRole("gridcell", { name: "Product Alpha" }));
 
@@ -90,7 +85,7 @@ describe("Datagrid", () => {
 
     it("supports creating a new row using the real form", async () => {
         const createAction = vi.fn().mockResolvedValue(undefined);
-        renderDatagrid({ createAction });
+        await renderDatagrid({ createAction });
 
         await userEvent.click(await screen.findByRole("button", { name: "Add New" }));
 
@@ -114,7 +109,7 @@ describe("Datagrid", () => {
     it("renders and executes filtered rows action", async () => {
         const filteredAction = vi.fn().mockResolvedValue(undefined);
 
-        renderDatagrid({
+        await renderDatagrid({
             filteredRowsActions: [{ action: filteredAction, buttonLabel: "Export visible" }],
         });
 
@@ -126,7 +121,7 @@ describe("Datagrid", () => {
 
     it("handles row action success and shows notification", async () => {
         const serverAction = vi.fn().mockResolvedValue("Action completed");
-        renderDatagrid({
+        await renderDatagrid({
             updateAction: vi.fn().mockResolvedValue(undefined),
             rowActions: [
                 {
@@ -149,7 +144,7 @@ describe("Datagrid", () => {
 
     it("uses confirmation flow for error-colored row actions", async () => {
         const serverAction = vi.fn().mockResolvedValue("Deleted");
-        renderDatagrid({
+        await renderDatagrid({
             updateAction: vi.fn().mockResolvedValue(undefined),
             rowActions: [
                 {

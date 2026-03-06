@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import KanBanBoard from "./KanBanBoard";
 import { useUserContext } from "../../context/UserContext";
@@ -43,13 +43,6 @@ vi.mock("../../lib/utils", async (importOriginal) => {
     };
 });
 
-const toFulfilledThenable = <T,>(value: T) =>
-    ({
-        status: "fulfilled",
-        value,
-        then: (onFulfilled?: (resolved: T) => unknown) => Promise.resolve(onFulfilled?.(value)),
-    }) as unknown as Promise<T>;
-
 const tasks = [
     {
         id: "task-1",
@@ -69,15 +62,18 @@ const event = {
     tickets: [],
 } as any;
 
-const renderKanban = (props: Partial<React.ComponentProps<typeof KanBanBoard>> = {}) =>
-    render(
-        <KanBanBoard
-            readOnly={true}
-            tasksPromise={toFulfilledThenable(tasks)}
-            skillBadgesPromise={toFulfilledThenable([])}
-            {...props}
-        />,
-    );
+const renderKanban = async (props: Partial<React.ComponentProps<typeof KanBanBoard>> = {}) => {
+    await act(async () => {
+        render(
+            <KanBanBoard
+                readOnly={true}
+                tasksPromise={Promise.resolve(tasks)}
+                skillBadgesPromise={Promise.resolve([])}
+                {...props}
+            />,
+        );
+    });
+};
 
 describe("KanBanBoard", () => {
     beforeEach(() => {
@@ -91,8 +87,8 @@ describe("KanBanBoard", () => {
         vi.mocked(isUserHost).mockReturnValue(false);
     });
 
-    it("renders non-event prompt and all status columns for non-admin/host", () => {
-        renderKanban();
+    it("renders non-event prompt and all status columns for non-admin/host", async () => {
+        await renderKanban();
 
         expect(
             screen.getByText(
@@ -105,8 +101,8 @@ describe("KanBanBoard", () => {
         expect(screen.getByTestId("column-done")).toBeInTheDocument();
     });
 
-    it("renders event prompt and defaults to toDo status for non-admin/host event board", () => {
-        renderKanban({ eventPromise: toFulfilledThenable(event) });
+    it("renders event prompt and defaults to toDo status for non-admin/host event board", async () => {
+        await renderKanban({ eventPromise: Promise.resolve(event) });
 
         expect(screen.getByText("Want to volunteer? Book a shift!")).toBeInTheDocument();
         expect(screen.getByTestId("column-toDo")).toBeInTheDocument();
@@ -115,10 +111,10 @@ describe("KanBanBoard", () => {
         expect(screen.queryByTestId("column-done")).not.toBeInTheDocument();
     });
 
-    it("does not pre-filter statuses for admin users", () => {
+    it("does not pre-filter statuses for admin users", async () => {
         vi.mocked(isUserAdmin).mockReturnValue(true);
 
-        renderKanban({ eventPromise: toFulfilledThenable(event) });
+        await renderKanban({ eventPromise: Promise.resolve(event) });
 
         expect(screen.getByTestId("column-toDo")).toBeInTheDocument();
         expect(screen.getByTestId("column-inProgress")).toBeInTheDocument();
@@ -126,8 +122,8 @@ describe("KanBanBoard", () => {
         expect(screen.getByTestId("column-done")).toBeInTheDocument();
     });
 
-    it("passes readOnly and filter props to each DroppableColumn", () => {
-        renderKanban({ readOnly: false });
+    it("passes readOnly and filter props to each DroppableColumn", async () => {
+        await renderKanban({ readOnly: false });
 
         expect(droppableColumnMock).toHaveBeenCalled();
         for (const call of droppableColumnMock.mock.calls) {
@@ -141,7 +137,7 @@ describe("KanBanBoard", () => {
     });
 
     it("updates rendered columns when menu applies a status filter", async () => {
-        renderKanban();
+        await renderKanban();
 
         await userEvent.click(screen.getByRole("button", { name: "set done filter" }));
 
@@ -151,13 +147,13 @@ describe("KanBanBoard", () => {
         expect(screen.queryByTestId("column-inReview")).not.toBeInTheDocument();
     });
 
-    it("renders swedish prompt when language is swedish", () => {
+    it("renders swedish prompt when language is swedish", async () => {
         vi.mocked(useUserContext).mockReturnValue({
             user: { id: "user-1", role: "member" },
             language: Language.swedish,
         } as any);
 
-        renderKanban();
+        await renderKanban();
 
         expect(
             screen.getByText(

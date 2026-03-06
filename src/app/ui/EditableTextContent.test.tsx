@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Suspense } from "react";
 import EditableTextContent from "./EditableTextContent";
 import { useUserContext } from "../context/UserContext";
@@ -16,21 +16,19 @@ const createTextContent = (translations: Array<{ language: Language; text: strin
         translations,
     }) as any;
 
-const toFulfilledThenable = <T,>(value: T) =>
-    ({
-        status: "fulfilled",
-        value,
-        then: (onFulfilled?: (resolved: T) => unknown) => Promise.resolve(onFulfilled?.(value)),
-    }) as unknown as Promise<T>;
-
-const renderEditableTextContent = (textContentPromise: Promise<any>) => {
-    render(
-        <NotificationContextProvider>
-            <Suspense fallback={<div>Loading text</div>}>
-                <EditableTextContent id="text-content-1" textContentPromise={textContentPromise} />
-            </Suspense>
-        </NotificationContextProvider>,
-    );
+const renderEditableTextContent = async (textContentPromise: Promise<any>) => {
+    await act(async () => {
+        render(
+            <NotificationContextProvider>
+                <Suspense fallback={<div>Loading text</div>}>
+                    <EditableTextContent
+                        id="text-content-1"
+                        textContentPromise={textContentPromise}
+                    />
+                </Suspense>
+            </NotificationContextProvider>,
+        );
+    });
 };
 
 describe("EditableTextContent", () => {
@@ -43,8 +41,8 @@ describe("EditableTextContent", () => {
     });
 
     it("renders the translation matching current language", async () => {
-        renderEditableTextContent(
-            toFulfilledThenable(
+        await renderEditableTextContent(
+            Promise.resolve(
                 createTextContent([
                     { language: Language.english, text: "<p>English content</p>" },
                     { language: Language.swedish, text: "<p>Svenskt innehåll</p>" },
@@ -63,8 +61,8 @@ describe("EditableTextContent", () => {
             editMode: false,
         } as any);
 
-        renderEditableTextContent(
-            toFulfilledThenable(
+        await renderEditableTextContent(
+            Promise.resolve(
                 createTextContent([
                     { language: Language.english, text: "<p>English content</p>" },
                     { language: Language.swedish, text: "<p>Svenskt innehåll</p>" },
@@ -78,8 +76,8 @@ describe("EditableTextContent", () => {
     });
 
     it("does not expose edit controls when website edit mode is disabled", async () => {
-        renderEditableTextContent(
-            toFulfilledThenable(
+        await renderEditableTextContent(
+            Promise.resolve(
                 createTextContent([{ language: Language.english, text: "<p>Read only</p>" }]),
             ),
         );
@@ -101,8 +99,8 @@ describe("EditableTextContent", () => {
             editMode: false,
         } as any);
 
-        renderEditableTextContent(
-            toFulfilledThenable(
+        await renderEditableTextContent(
+            Promise.resolve(
                 createTextContent([
                     { language: Language.english, text: "<p>Editable content</p>" },
                 ]),
