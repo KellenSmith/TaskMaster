@@ -18,11 +18,9 @@ interface OrdersReportPDFProps {
         };
     }>[];
     language: Language;
-    startDate?: Date | dayjs.Dayjs;
-    endDate?: Date | dayjs.Dayjs;
 }
 
-const OrdersReportPDF = ({ orders, language, startDate, endDate }: OrdersReportPDFProps) => {
+const OrdersReportPDF = ({ orders, language }: OrdersReportPDFProps) => {
     const headers = useMemo(
         () => [
             LanguageTranslations.product[language],
