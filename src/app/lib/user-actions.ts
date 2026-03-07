@@ -21,6 +21,9 @@ import MailTemplate from "./mail-service/mail-templates/MailTemplate";
 import { isUserAuthorized } from "./auth/auth-utils";
 import { UserRole, UserStatus } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import LanguageTranslations from "./LanguageTranslations";
+import { getUserLanguage } from "./user-helpers";
+import { getUniqueConstraintFields, prismaErrorCodes } from "../../prisma/prisma-error-codes";
 
 export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -60,23 +63,37 @@ export const createUser = async (formData: FormData): Promise<void> => {
     });
 };
 
-export const submitMemberApplication = async (formData: FormData) => {
+export const submitMemberApplication = async (formData: FormData): Promise<string | undefined> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = MembershipApplicationSchema.parse(Object.fromEntries(formData.entries()));
-
     const organizationSettings = await getOrganizationSettings();
+    const language = await getUserLanguage();
+    console.log(language);
 
     // Don't allow submitting an application if a message is prompted but not provided
-    if (
-        organizationSettings?.member_application_prompt &&
-        !validatedData.member_application_prompt
-    ) {
-        throw new Error("Application message required but not provided.");
-    }
+    if (organizationSettings?.member_application_prompt && !validatedData.member_application_prompt)
+        return LanguageTranslations.motivationRequired[language];
 
     const userFieldValues = UserCreateSchema.parse(validatedData);
 
-    await createUser(formData);
+    try {
+        await createUser(formData);
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === prismaErrorCodes.uniqueConstraintViolation) {
+                const fields = getUniqueConstraintFields(error.meta);
+                if (fields.includes(GlobalConstants.EMAIL)) {
+                    // Log in (send login link) instead of showing a duplicate email error message
+                    await login(formData);
+                    return;
+                }
+                if (fields.includes(GlobalConstants.NICKNAME))
+                    return LanguageTranslations.nicknameAlreadyExists[language];
+            }
+        }
+        throw error;
+    }
+
     await signIn("email", {
         email: userFieldValues.email,
         redirect: false,

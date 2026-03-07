@@ -24,12 +24,14 @@ const ApplyPage = () => {
     const shouldIncludeApplicationPrompt = !!organizationSettings.member_application_prompt;
 
     const submitApplication = async (formData: FormData) => {
+        let errorMsg: string | undefined;
         try {
-            await submitMemberApplication(formData);
-            return LanguageTranslations.applicationSubmitted[language];
+            errorMsg = await submitMemberApplication(formData);
+            if (!errorMsg) return LanguageTranslations.applicationSubmitted[language];
         } catch {
             throw new Error(LanguageTranslations.failedApplicationSubmit[language]);
         }
+        throw new Error(errorMsg);
     };
 
     return (
