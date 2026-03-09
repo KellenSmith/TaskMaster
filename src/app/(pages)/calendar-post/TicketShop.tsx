@@ -64,25 +64,34 @@ const TicketShop = ({
     };
 
     const createTicketAction = async (formData: FormData) => {
+        let errorMsg: string | undefined;
         try {
-            await createEventTicket(event.id, formData);
-            setDialogOpen(false);
-            return GlobalLanguageTranslations.successfulSave[language];
+            errorMsg = await createEventTicket(event.id, formData);
+            if (!errorMsg) {
+                setDialogOpen(false);
+                return GlobalLanguageTranslations.successfulSave[language];
+            }
         } catch {
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            errorMsg = GlobalLanguageTranslations.failedSave[language];
         }
+        throw new Error(errorMsg);
     };
 
     const updateTicketAction = async (formData: FormData) => {
+        if (!editingTicketId) throw new Error(LanguageTranslations.noTicketSelected[language]);
+
+        let errorMsg: string | undefined;
         try {
-            if (!editingTicketId) throw new Error("No ticket selected for editing");
-            await updateEventTicket(editingTicketId, formData);
-            setDialogOpen(false);
-            setEditingTicketId(null);
-            return GlobalLanguageTranslations.successfulSave[language];
+            errorMsg = await updateEventTicket(editingTicketId, formData);
+            if (!errorMsg) {
+                setDialogOpen(false);
+                setEditingTicketId(null);
+                return GlobalLanguageTranslations.successfulSave[language];
+            }
         } catch {
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            errorMsg = GlobalLanguageTranslations.failedSave[language];
         }
+        throw new Error(errorMsg);
     };
 
     const allowDeleteTicket = (ticket: Prisma.TicketGetPayload<true>) => {

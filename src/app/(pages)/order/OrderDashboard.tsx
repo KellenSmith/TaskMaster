@@ -27,12 +27,15 @@ const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     // Check payment status immediately
     useEffect(() => {
         startTransition(async () => {
+            let errorMsg: string | undefined;
             try {
                 if (!user) throw new Error("User not logged in");
-                await checkPaymentStatus(user.id, order.id);
+                errorMsg = await checkPaymentStatus(user.id, order.id);
+                if (!errorMsg) return;
             } catch {
-                addNotification(LanguageTranslations.failedCheckOrderStatus[language], "error");
+                errorMsg = LanguageTranslations.failedCheckOrderStatus[language];
             }
+            addNotification(errorMsg, "error");
         });
         // Check payment status once upon render
         // eslint-disable-next-line react-hooks/exhaustive-deps

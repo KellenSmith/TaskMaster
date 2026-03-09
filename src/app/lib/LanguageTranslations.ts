@@ -27,6 +27,19 @@ const LanguageTranslations = {
         [Language.english]:
             "Failed to log in. If you are not already a member, you can apply for membership.",
     },
+    swedbankPayNotConfigured: {
+        [Language.english]: "Swedbank Pay is not configured. Products and orders can only be free.",
+        [Language.swedish]:
+            "Swedbank Pay är inte konfigurerad. Produkter och beställningar kan endast vara gratis.",
+    },
+    onlyPendingOrders: {
+        [Language.english]: "Only pending orders can be paid for",
+        [Language.swedish]: "Endast avvaktande beställningar kan betalas",
+    },
+    noPaymentInitiated: {
+        [Language.english]: "No payment initiated for non-pending order",
+        [Language.swedish]: "Ingen betalning initierad för icke avvaktande beställning",
+    },
 };
 
 export default LanguageTranslations;

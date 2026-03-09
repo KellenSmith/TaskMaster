@@ -142,6 +142,14 @@ const LanguageTranslations = {
         [Language.english]: "An unexpected error occurred",
         [Language.swedish]: "Ett oväntat fel inträffade",
     },
+    noUpdateActionProvided: {
+        [Language.english]: "No update action provided",
+        [Language.swedish]: "Ingen uppdateringsfunktion angiven",
+    },
+    noRowSelected: {
+        [Language.english]: "No row selected",
+        [Language.swedish]: "Ingen rad vald",
+    },
 };
 
 export default LanguageTranslations;
