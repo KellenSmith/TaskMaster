@@ -12,7 +12,7 @@ vi.mock("next/headers", () => ({
         get: vi.fn().mockReturnValue("test-agent"),
     }),
 }));
-vi.mock("./organization-settings-actions", () => ({
+vi.mock("./organization-settings-helpers", () => ({
     getOrganizationSettings: vi
         .fn()
         .mockResolvedValue({ logo_url: "logo", terms_of_purchase_english_url: "terms" }),
@@ -21,7 +21,7 @@ vi.mock("./user-helpers", () => ({ getUserLanguage: vi.fn().mockResolvedValue(La
 
 import { redirectToSwedbankPayment, isOrderpaid, capturePaymentFunds } from "./payment-helpers";
 import { getUserLanguage } from "./user-helpers";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 
 const baseOrder = {
     id: "order-uuid",

@@ -5,7 +5,7 @@ import { buildFormData } from "../../test/test-helpers";
 import * as eventActions from "./event-actions";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
 import { getLoggedInUser } from "./user-helpers";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 import { isUserAdmin, serverRedirect } from "./utils";
 import dayjs from "dayjs";
 import { prisma } from "../../prisma/prisma-client";
@@ -21,7 +21,7 @@ vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 
-vi.mock("./organization-settings-actions", () => ({
+vi.mock("./organization-settings-helpers", () => ({
     getOrganizationSettings: vi.fn(),
 }));
 

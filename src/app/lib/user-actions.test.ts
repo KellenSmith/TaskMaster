@@ -3,32 +3,40 @@ import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
-import * as userActions from "./user-actions";
 import { signIn, signOut } from "./auth/auth";
 import { sendMail } from "./mail-service/mail-service";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 import { getMembershipProduct, renewUserMembership } from "./user-membership-helpers";
 import { buildFormData } from "../../test/test-helpers";
 import { prisma } from "../../prisma/prisma-client";
-import { UserRole, UserStatus } from "../../prisma/generated/enums";
+import { Language, UserRole, UserStatus } from "../../prisma/generated/enums";
+import { Prisma } from "../../prisma/generated/client";
+import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
+
+vi.mock("./user-helpers", () => ({
+    getUserLanguage: vi.fn(),
+}));
+import * as userActions from "./user-actions";
+import { getUserLanguage } from "./user-helpers";
 
 vi.mock("./mail-service/mail-service", () => ({
     sendMail: vi.fn(),
 }));
-
 vi.mock("./auth/auth", () => ({
     signIn: vi.fn(),
     signOut: vi.fn(),
 }));
-
-vi.mock("./organization-settings-actions", () => ({
+vi.mock("./organization-settings-helpers", () => ({
     getOrganizationSettings: vi.fn(),
 }));
-
 vi.mock("./user-membership-helpers", () => ({
     getMembershipProduct: vi.fn(),
     renewUserMembership: vi.fn(),
 }));
+
+beforeEach(() => {
+    vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
+});
 
 describe("user-actions", () => {
     describe("createUser", () => {
@@ -115,15 +123,17 @@ describe("user-actions", () => {
 
     describe("submitMemberApplication", () => {
         it("requires application prompt when organization setting is set", async () => {
+            vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
             vi.mocked(getOrganizationSettings).mockResolvedValue({
                 member_application_prompt: "Tell us more",
             } as any);
 
             const formData = buildFormData({ email: "apply@example.com" });
 
-            await expect(userActions.submitMemberApplication(formData)).rejects.toThrow(
-                "Application message required but not provided.",
-            );
+            const errorMsg = await userActions.submitMemberApplication(formData);
+
+            expect(errorMsg).toBe("Motivation required.");
+
             expect(vi.mocked(signIn)).not.toHaveBeenCalled();
         });
 
@@ -184,6 +194,98 @@ describe("user-actions", () => {
             expect(errorSpy).toHaveBeenCalled();
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.USER, "max");
             errorSpy.mockRestore();
+        });
+
+        it("logs in existing user and returns undefined when email already exists", async () => {
+            vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
+            vi.mocked(getOrganizationSettings).mockResolvedValue({
+                member_application_prompt: null,
+            } as any);
+            const tx = mockContext.prisma as any as TransactionClient;
+            vi.mocked(mockContext.prisma.user.count).mockResolvedValue(1);
+
+            const duplicateEmailError = new Prisma.PrismaClientKnownRequestError(
+                "Unique constraint failed",
+                {
+                    code: prismaErrorCodes.uniqueConstraintViolation,
+                    clientVersion: "7.4.2",
+                },
+            );
+            (duplicateEmailError as any).meta = {
+                driverAdapterError: {
+                    cause: {
+                        constraint: { fields: [GlobalConstants.EMAIL] },
+                    },
+                },
+            };
+            vi.mocked(tx.user.create).mockRejectedValue(duplicateEmailError);
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
+            );
+            vi.mocked(prisma.user.findUniqueOrThrow).mockResolvedValue({
+                id: "user-1",
+                email: "apply@example.com",
+                user_membership: {
+                    id: "membership-1",
+                    user_id: "user-1",
+                    membership_id: "membership-basic",
+                },
+            } as any);
+
+            const formData = buildFormData({
+                email: "apply@example.com",
+                member_application_prompt: "I want to join",
+            });
+
+            await expect(userActions.submitMemberApplication(formData)).resolves.toBeUndefined();
+
+            expect(vi.mocked(signIn)).toHaveBeenCalledWith("email", {
+                email: "apply@example.com",
+                callback: "/login",
+                redirectTo: "/",
+                redirect: false,
+            });
+            expect(vi.mocked(sendMail)).not.toHaveBeenCalled();
+        });
+
+        it("returns nickname conflict message when nickname already exists", async () => {
+            vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
+            vi.mocked(getOrganizationSettings).mockResolvedValue({
+                member_application_prompt: null,
+            } as any);
+            const tx = mockContext.prisma as any as TransactionClient;
+            vi.mocked(mockContext.prisma.user.count).mockResolvedValue(1);
+
+            const duplicateNicknameError = new Prisma.PrismaClientKnownRequestError(
+                "Unique constraint failed",
+                {
+                    code: prismaErrorCodes.uniqueConstraintViolation,
+                    clientVersion: "7.4.2",
+                },
+            );
+            (duplicateNicknameError as any).meta = {
+                driverAdapterError: {
+                    cause: {
+                        constraint: { fields: [GlobalConstants.NICKNAME] },
+                    },
+                },
+            };
+            vi.mocked(tx.user.create).mockRejectedValue(duplicateNicknameError);
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
+            );
+
+            const formData = buildFormData({
+                email: "apply@example.com",
+                nickname: "taken-name",
+                member_application_prompt: "I want to join",
+            });
+
+            const result = await userActions.submitMemberApplication(formData);
+
+            expect(result).toBe("A user with this nickname already exists.");
+            expect(vi.mocked(signIn)).not.toHaveBeenCalled();
+            expect(vi.mocked(sendMail)).not.toHaveBeenCalled();
         });
     });
 
@@ -333,6 +435,28 @@ describe("user-actions", () => {
 
             await expect(userActions.login(formData)).rejects.toThrow();
             expect(prisma.user.findUniqueOrThrow).not.toHaveBeenCalled();
+        });
+
+        it("re-throws generic errors", async () => {
+            vi.mocked(prisma.user.findUniqueOrThrow).mockRejectedValue(new Error("Database down"));
+            const formData = buildFormData({ email: "member@example.com" });
+
+            await expect(userActions.login(formData)).rejects.toThrow("Database down");
+        });
+
+        it("returns failed login message when user is not found", async () => {
+            const notFoundError = new Prisma.PrismaClientKnownRequestError("Not found", {
+                code: prismaErrorCodes.resultNotFound,
+                clientVersion: "7.4.2",
+            });
+            vi.mocked(prisma.user.findUniqueOrThrow).mockRejectedValue(notFoundError);
+            const formData = buildFormData({ email: "member@example.com" });
+
+            const result = await userActions.login(formData);
+
+            expect(result).toBe(
+                "Failed to log in. If you are not already a member, you can apply for membership.",
+            );
         });
     });
 

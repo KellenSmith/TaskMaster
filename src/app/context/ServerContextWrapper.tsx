@@ -1,6 +1,6 @@
 import { ReactNode, FC } from "react";
 import ContextWrapper from "./ContextWrapper";
-import { getOrganizationSettings } from "../lib/organization-settings-actions";
+import { getOrganizationSettings } from "../lib/organization-settings-helpers";
 import { getLoggedInUser } from "../lib/user-helpers";
 import { prisma } from "../../prisma/prisma-client";
 import { userHasRolePrivileges } from "../lib/auth/auth-utils";

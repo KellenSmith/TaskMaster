@@ -15,15 +15,16 @@ type ProcessBatchResult = {
 
 // Processes a single batch for the oldest pending/running job or a specific jobId
 export async function processNextNewsletterBatch(jobId?: string): Promise<ProcessBatchResult> {
-    const job = jobId
-        ? await prisma.newsletterJob.findUnique({ where: { id: jobId } })
+    const parsedJobId = jobId ? UuidSchema.parse(jobId) : null;
+    const job = parsedJobId
+        ? await prisma.newsletterJob.findUnique({ where: { id: parsedJobId } })
         : await prisma.newsletterJob.findFirst({
               where: { status: { in: ["pending", "running"] } },
               orderBy: { created_at: "asc" },
           });
 
     if (!job) return { processed: 0, done: true };
-    if (job.lastRunAt && job.lastRunAt.getTime() - Date.now() < NEWSLETTER_PROCESS_INTERVAL)
+    if (job.lastRunAt && Date.now() - job.lastRunAt.getTime() < NEWSLETTER_PROCESS_INTERVAL)
         return {
             processed: 0,
             done: false,

@@ -77,7 +77,7 @@ export const updateEventTicket = async (ticketId: string, formData: FormData) =>
     });
 
     // Delete old blob if image_url was provided in the update and differs from the old one
-    if ("image_url" in productFieldValues)
+    if (GlobalConstants.IMAGE_URL in productFieldValues)
         await deleteOldBlob(oldProduct.image_url, productFieldValues.image_url);
 
     revalidateTag(GlobalConstants.TICKET, "max");

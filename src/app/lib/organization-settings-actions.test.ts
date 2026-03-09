@@ -4,22 +4,19 @@ import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { del } from "@vercel/blob";
 import * as orgActions from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 
 vi.mock("@vercel/blob", () => ({
     del: vi.fn(),
 }));
 
 describe("organization-settings-actions", () => {
-    beforeEach(() => {
-        vi.mocked(del).mockReset();
-    });
-
     describe("getOrganizationSettings", () => {
         it("returns existing organization settings when found", async () => {
             const existing = { id: "org-1", logo_url: null } as any;
             mockContext.prisma.organizationSettings.findFirst.mockResolvedValue(existing);
 
-            const result = await orgActions.getOrganizationSettings();
+            const result = await getOrganizationSettings();
 
             expect(mockContext.prisma.organizationSettings.findFirst).toHaveBeenCalledTimes(1);
             expect(mockContext.prisma.organizationSettings.create).not.toHaveBeenCalled();
@@ -31,7 +28,7 @@ describe("organization-settings-actions", () => {
             mockContext.prisma.organizationSettings.findFirst.mockResolvedValue(null);
             mockContext.prisma.organizationSettings.create.mockResolvedValue(created);
 
-            const result = await orgActions.getOrganizationSettings();
+            const result = await getOrganizationSettings();
 
             expect(mockContext.prisma.organizationSettings.create).toHaveBeenCalledWith({
                 data: {},

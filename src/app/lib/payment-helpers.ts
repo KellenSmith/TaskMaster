@@ -9,7 +9,7 @@ import {
 } from "./payment-types";
 import { getAbsoluteUrl } from "./utils";
 import GlobalConstants from "../GlobalConstants";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 import { getUserLanguage } from "./user-helpers";
 import { redirect } from "next/navigation";
 
