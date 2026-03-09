@@ -29,8 +29,9 @@ const LanguageTranslations = {
             "Failed to log in. If you are not already a member, you can apply for membership.",
     },
     swedbankPayNotConfigured: {
-        [Language.english]: "Swedbank Pay is not configured",
-        [Language.swedish]: "Swedbank Pay är inte konfigurerad",
+        [Language.english]: "Swedbank Pay is not configured. Products and orders can only be free.",
+        [Language.swedish]:
+            "Swedbank Pay är inte konfigurerad. Produkter och beställningar kan endast vara gratis.",
     },
     onlyPendingOrders: {
         [Language.english]: "Only pending orders can be paid for",

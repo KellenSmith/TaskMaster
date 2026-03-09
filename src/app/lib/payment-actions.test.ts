@@ -103,7 +103,7 @@ describe("redirectToOrderPayment", () => {
 
         const result = await redirectToOrderPayment(baseOrder.id);
 
-        expect(result).toBe("Swedbank Pay is not configured");
+        expect(result).toContain("Swedbank Pay is not configured");
         expect(redirectToSwedbankPayment).not.toHaveBeenCalled();
     });
 });
@@ -205,7 +205,7 @@ describe("checkPaymentStatus", () => {
 
         const result = await checkPaymentStatus(baseOrder.user_id, baseOrder.id);
 
-        expect(result).toBe("Swedbank Pay is not configured");
+        expect(result).toContain("Swedbank Pay is not configured");
         expect(isOrderpaid).not.toHaveBeenCalled();
     });
 });
