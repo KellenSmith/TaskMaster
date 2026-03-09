@@ -1,3 +1,4 @@
+import { no } from "zod/locales";
 import { Language } from "../../prisma/generated/enums";
 
 const LanguageTranslations = {
@@ -26,6 +27,18 @@ const LanguageTranslations = {
             "Kund inte logga in. Om du inte redan är medlem kan du ansöka om medlemskap.",
         [Language.english]:
             "Failed to log in. If you are not already a member, you can apply for membership.",
+    },
+    swedbankPayNotConfigured: {
+        [Language.english]: "Cannot create paid product when Swedbank Pay is not configured",
+        [Language.swedish]: "Kan inte skapa betald produkt när Swedbank Pay inte är konfigurerad",
+    },
+    onlyPendingOrders: {
+        [Language.english]: "Only pending orders can be paid for",
+        [Language.swedish]: "Endast avvaktande beställningar kan betalas",
+    },
+    noPaymentInitiated: {
+        [Language.english]: "No payment initiated for non-pending order",
+        [Language.swedish]: "Ingen betalning initierad för icke avvaktande beställning",
     },
 };
 

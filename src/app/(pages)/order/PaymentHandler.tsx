@@ -38,7 +38,8 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
             return;
         }
         try {
-            await redirectToOrderPayment(order.id);
+            const errorMsg = await redirectToOrderPayment(order.id);
+            if (errorMsg) addNotification(errorMsg, "error");
         } catch (error) {
             allowRedirectException(error);
             // Show notification for all other errors

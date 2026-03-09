@@ -74,6 +74,8 @@ If the server actions is used as a Form.tsx action prop, recieve the returned er
 ```ts
 "use client";
 
+import { updateSomething } from "../lib/some-actions";
+
 let errorMsg: string | undefined;
 try {
     errorMsg = await updateSomething(formData);
@@ -83,6 +85,25 @@ try {
     errorMsg = GlobalLanguageTranslations.failedSave[language];
 }
 throw new Error(errorMsg);
+```
+
+If the server action is used in a different context, e.g. as a button action or useEffect, handle the returned error through a notification.
+```ts
+"use client";
+
+import {startTransition} from "react";
+import {updateSomething} from "../lib/some-actions";
+
+startTransition(async () => {
+    let errorMsg: string | undefined;
+    try {
+        errorMsg = await updateSomething(arg);
+        if (!errorMsg) return;
+    } catch {
+        errorMsg = LanguageTranslations.failedUpdate[language];
+    }
+    addNotification(errorMsg, "error");
+});
 ```
 
 Use this as a behavioral template. Exact implementation details may vary by action.
