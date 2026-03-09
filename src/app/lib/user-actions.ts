@@ -68,7 +68,6 @@ export const submitMemberApplication = async (formData: FormData): Promise<strin
     const validatedData = MembershipApplicationSchema.parse(Object.fromEntries(formData.entries()));
     const organizationSettings = await getOrganizationSettings();
     const language = await getUserLanguage();
-    console.log(language);
 
     // Don't allow submitting an application if a message is prompted but not provided
     if (organizationSettings?.member_application_prompt && !validatedData.member_application_prompt)
@@ -189,26 +188,37 @@ export const deleteUser = async (userId: string): Promise<void> => {
     revalidateTag(GlobalConstants.EVENT, "max");
 };
 
-export const login = async (formData: FormData): Promise<void> => {
+export const login = async (formData: FormData): Promise<string | undefined> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = LoginSchema.parse(Object.fromEntries(formData.entries()));
 
     // Only let existing members log in from this route
-    const existingUser = await prisma.user.findUniqueOrThrow({
-        where: { email: validatedData.email },
-        include: { user_membership: true },
-    });
-    let redirectTo: string;
-    if (isUserAuthorized(existingUser, GlobalConstants.DASHBOARD))
-        redirectTo = getRelativeUrl([GlobalConstants.DASHBOARD]);
-    else redirectTo = getRelativeUrl([GlobalConstants.HOME]);
+    try {
+        const existingUser = await prisma.user.findUniqueOrThrow({
+            where: { email: validatedData.email },
+            include: { user_membership: true },
+        });
+        let redirectTo: string;
+        if (isUserAuthorized(existingUser, GlobalConstants.DASHBOARD))
+            redirectTo = getRelativeUrl([GlobalConstants.DASHBOARD]);
+        else redirectTo = getRelativeUrl([GlobalConstants.HOME]);
 
-    await signIn("email", {
-        email: existingUser.email,
-        callback: getRelativeUrl([GlobalConstants.LOGIN]),
-        redirectTo: redirectTo,
-        redirect: false,
-    });
+        await signIn("email", {
+            email: existingUser.email,
+            callback: getRelativeUrl([GlobalConstants.LOGIN]),
+            redirectTo: redirectTo,
+            redirect: false,
+        });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === prismaErrorCodes.resultNotFound) {
+                const language = await getUserLanguage();
+                // Don't reveal whether the email exists for security, just show a generic message
+                return LanguageTranslations.failedLogin[language];
+            }
+        }
+        throw error;
+    }
 };
 
 export const logOut = async (): Promise<void> => {

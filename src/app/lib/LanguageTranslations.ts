@@ -21,6 +21,12 @@ const LanguageTranslations = {
         [Language.english]: "A user with this nickname already exists.",
         [Language.swedish]: "En användare med detta smeknamn finns redan.",
     },
+    failedLogin: {
+        [Language.swedish]:
+            "Kund inte logga in. Om du inte redan är medlem kan du ansöka om medlemskap.",
+        [Language.english]:
+            "Failed to log in. If you are not already a member, you can apply for membership.",
+    },
 };
 
 export default LanguageTranslations;

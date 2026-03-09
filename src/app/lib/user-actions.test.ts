@@ -34,6 +34,10 @@ vi.mock("./user-membership-helpers", () => ({
     renewUserMembership: vi.fn(),
 }));
 
+beforeEach(() => {
+    vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
+});
+
 describe("user-actions", () => {
     describe("createUser", () => {
         it("creates the first user as validated admin and renews membership", async () => {
@@ -431,6 +435,28 @@ describe("user-actions", () => {
 
             await expect(userActions.login(formData)).rejects.toThrow();
             expect(prisma.user.findUniqueOrThrow).not.toHaveBeenCalled();
+        });
+
+        it("re-throws generic errors", async () => {
+            vi.mocked(prisma.user.findUniqueOrThrow).mockRejectedValue(new Error("Database down"));
+            const formData = buildFormData({ email: "member@example.com" });
+
+            await expect(userActions.login(formData)).rejects.toThrow("Database down");
+        });
+
+        it("returns failed login message when user is not found", async () => {
+            const notFoundError = new Prisma.PrismaClientKnownRequestError("Not found", {
+                code: prismaErrorCodes.resultNotFound,
+                clientVersion: "7.4.2",
+            });
+            vi.mocked(prisma.user.findUniqueOrThrow).mockRejectedValue(notFoundError);
+            const formData = buildFormData({ email: "member@example.com" });
+
+            const result = await userActions.login(formData);
+
+            expect(result).toBe(
+                "Failed to log in. If you are not already a member, you can apply for membership.",
+            );
         });
     });
 

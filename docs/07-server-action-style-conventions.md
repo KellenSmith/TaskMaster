@@ -37,12 +37,13 @@ All functions in `*-actions.ts` must defensively handle input.
 
 ## Error Handling And Localization
 
-When a function fails, return an error message in the user's language.
+When a function fails, return an error message in the user's language to describe an expected error.
 
 - Resolve user language with `getUserLanguage()`.
 - Produce localized error text based on that language.
 - Do not return hard-coded English-only errors from action boundaries.
 - Keep error messages user-safe and actionable.
+- Rethrow unexpected errors for global handling/logging instead of returning them as user-facing messages.
 
 ## Recommended Pattern
 
@@ -59,9 +60,12 @@ export const updateSomething = async (formData: FormData): Promise<void | string
         // 2) Sanitize
         // 3) Perform mutation
         return;
-    } catch {
-        const language = await getUserLanguage();
-        return Languagetranslations.somethingWentWrong[language];
+    } catch (error) {
+        if (error instanceof SomeExpectedError) {
+            const language = await getUserLanguage();
+            return Languagetranslations.somethingWentWrong[language];
+        }
+        throw error; // rethrow unexpected errors for global handling/logging
     }
 };
 ```

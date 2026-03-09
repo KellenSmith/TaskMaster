@@ -29,7 +29,7 @@ const ApplyPage = () => {
             errorMsg = await submitMemberApplication(formData);
             if (!errorMsg) return LanguageTranslations.applicationSubmitted[language];
         } catch {
-            throw new Error(LanguageTranslations.failedApplicationSubmit[language]);
+            errorMsg = LanguageTranslations.failedApplicationSubmit[language];
         }
         throw new Error(errorMsg);
     };
