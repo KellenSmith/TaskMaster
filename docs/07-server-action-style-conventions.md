@@ -70,6 +70,21 @@ export const updateSomething = async (formData: FormData): Promise<void | string
 };
 ```
 
+If the server actions is used as a Form.tsx action prop, recieve the returned error message in the client and throw it as an error to trigger error handling UI in the Form.tsx component:
+```ts
+"use client";
+
+let errorMsg: string | undefined;
+try {
+    errorMsg = await updateSomething(formData);
+    if (!errorMsg)
+        return GlobalLanguageTranslations.successfulSave[language];
+} catch {
+    errorMsg = GlobalLanguageTranslations.failedSave[language];
+}
+throw new Error(errorMsg);
+```
+
 Use this as a behavioral template. Exact implementation details may vary by action.
 
 ## Checklist For New Actions

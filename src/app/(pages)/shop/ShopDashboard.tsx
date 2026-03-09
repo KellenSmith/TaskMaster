@@ -111,24 +111,39 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     };
 
     const createProductAction = async (formData: FormData) => {
-        if (openTab === implementedTabs.memberships) {
-            await createMembershipProduct(formData);
-        } else {
-            await createProduct(formData);
+        let errorMsg: string | undefined;
+        try {
+            if (openTab === implementedTabs.memberships)
+                errorMsg = await createMembershipProduct(formData);
+            else errorMsg = await createProduct(formData);
+
+            if (!errorMsg) {
+                setDialogOpen(false);
+                return GlobalLanguageTranslations.successfulSave[language];
+            }
+        } catch (error) {
+            errorMsg = GlobalLanguageTranslations.failedSave[language];
         }
-        setDialogOpen(false);
-        return GlobalLanguageTranslations.successfulSave[language];
+        throw new Error(errorMsg);
     };
 
     const updateProductAction = async (formData: FormData) => {
-        if (openTab === implementedTabs.memberships) {
-            await updateMembershipProduct(editingProductId!, formData);
-        } else {
-            await updateProduct(editingProductId!, formData);
+        let errorMsg: string | undefined;
+        try {
+            if (openTab === implementedTabs.memberships) {
+                errorMsg = await updateMembershipProduct(editingProductId!, formData);
+            } else {
+                errorMsg = await updateProduct(editingProductId!, formData);
+            }
+            if (!errorMsg) {
+                setDialogOpen(false);
+                setEditingProductId(null);
+                return GlobalLanguageTranslations.successfulSave[language];
+            }
+        } catch {
+            errorMsg = GlobalLanguageTranslations.failedSave[language];
         }
-        setDialogOpen(false);
-        setEditingProductId(null);
-        return GlobalLanguageTranslations.successfulSave[language];
+        throw new Error(errorMsg);
     };
 
     const deleteProductAction = async (productId: string) => {
