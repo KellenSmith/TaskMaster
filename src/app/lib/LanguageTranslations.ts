@@ -1,4 +1,3 @@
-import { no } from "zod/locales";
 import { Language } from "../../prisma/generated/enums";
 
 const LanguageTranslations = {

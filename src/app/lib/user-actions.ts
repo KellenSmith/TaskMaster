@@ -120,7 +120,7 @@ export const submitMemberApplication = async (formData: FormData): Promise<strin
     revalidateTag(GlobalConstants.USER, "max");
 };
 
-export const updateUser = async (userId: string, formData: FormData): Promise<void> => {
+export const updateUser = async (userId: string, formData: FormData): Promise<undefined> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
     // Revalidate input with zod schema - don't trust the client

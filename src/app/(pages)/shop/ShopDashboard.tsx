@@ -121,7 +121,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
                 setDialogOpen(false);
                 return GlobalLanguageTranslations.successfulSave[language];
             }
-        } catch (error) {
+        } catch {
             errorMsg = GlobalLanguageTranslations.failedSave[language];
         }
         throw new Error(errorMsg);
