@@ -4,9 +4,13 @@ import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import { buildFormData } from "../../test/test-helpers";
 import * as ticketActions from "./ticket-actions";
+import { getUserLanguage } from "./user-helpers";
 
 vi.mock("./organization-settings-actions", () => ({
     deleteOldBlob: vi.fn(),
+}));
+vi.mock("./user-helpers", () => ({
+    getUserLanguage: vi.fn(),
 }));
 
 const eventId = "550e8400-e29b-41d4-a716-446655440000";
