@@ -7,6 +7,22 @@ set -euo pipefail
 echo "==> Refreshing dnf metadata"
 dnf -y makecache --refresh
 
+# Log current Amazon Linux release so build output shows the starting point.
+echo "==> Current Amazon Linux release"
+rpm -q amazon-linux-release || true
+
+# PostgreSQL 17 is supported on newer Amazon Linux 2023 releases.
+# Upgrade to the latest available AL2023 release stream before package install.
+echo "==> Upgrading Amazon Linux 2023 release stream"
+if ! dnf -y upgrade --releasever=latest; then
+	echo "Release-stream upgrade with --releasever=latest failed; falling back to normal upgrade."
+	dnf -y upgrade
+fi
+
+# Show final release after upgrade for troubleshooting and auditability.
+echo "==> Amazon Linux release after upgrade"
+rpm -q amazon-linux-release || true
+
 # Bring base packages up to date before installing new tools.
 echo "==> Updating installed packages"
 dnf -y update
