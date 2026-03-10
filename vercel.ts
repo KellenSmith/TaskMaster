@@ -1,6 +1,6 @@
 import { type VercelConfig } from "@vercel/config/v1";
 
-export const vercelConfig: VercelConfig = {
+const vercelConfig: VercelConfig = {
     buildCommand: "pnpm build",
     framework: "nextjs",
     devCommand: "pnpm dev",
@@ -11,3 +11,5 @@ export const vercelConfig: VercelConfig = {
         },
     ],
 };
+
+export default vercelConfig;
