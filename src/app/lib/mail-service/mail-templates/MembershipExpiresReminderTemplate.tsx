@@ -1,7 +1,7 @@
 import { Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
-import { getOrganizationSettings } from "../../organization-settings-actions";
+import { getOrganizationSettings } from "../../organization-settings-helpers";
 
 const MembershipExpiresReminderTemplate: FC = async () => {
     const organizationSettings = await getOrganizationSettings();

@@ -23,12 +23,13 @@ export const createLocation = async (
 
 export const updateLocation = async (locationId: string, formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
+    const parsedLocationId = UuidSchema.parse(locationId);
     const validatedData = LocationUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
 
-    await prisma.location.update({ where: { id: locationId }, data: sanitizedData });
+    await prisma.location.update({ where: { id: parsedLocationId }, data: sanitizedData });
     revalidateTag(GlobalConstants.LOCATION, "max");
     revalidateTag(GlobalConstants.EVENT, "max");
 };

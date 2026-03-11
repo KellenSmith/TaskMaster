@@ -12,16 +12,21 @@ vi.mock("next/headers", () => ({
         get: vi.fn().mockReturnValue("test-agent"),
     }),
 }));
-vi.mock("./organization-settings-actions", () => ({
+vi.mock("./organization-settings-helpers", () => ({
     getOrganizationSettings: vi
         .fn()
         .mockResolvedValue({ logo_url: "logo", terms_of_purchase_english_url: "terms" }),
 }));
 vi.mock("./user-helpers", () => ({ getUserLanguage: vi.fn().mockResolvedValue(Language.english) }));
 
-import { redirectToSwedbankPayment, isOrderpaid, capturePaymentFunds } from "./payment-helpers";
+import {
+    redirectToSwedbankPayment,
+    isOrderpaid,
+    capturePaymentFunds,
+    isSwedbankPayConfigured,
+} from "./payment-helpers";
 import { getUserLanguage } from "./user-helpers";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 
 const baseOrder = {
     id: "order-uuid",
@@ -42,6 +47,40 @@ const baseOrder = {
 };
 
 global.fetch = vi.fn();
+
+describe("isSwedbankPayConfigured", () => {
+    it("returns true when all required Swedbank Pay env vars are set", () => {
+        process.env.SWEDBANK_PAY_ACCESS_TOKEN = "token";
+        process.env.SWEDBANK_PAY_PAYEE_ID = "payee-id";
+        process.env.SWEDBANK_BASE_URL = "https://api.example.com";
+
+        expect(isSwedbankPayConfigured()).toBe(true);
+    });
+
+    it("returns false when access token is missing", () => {
+        process.env.SWEDBANK_PAY_ACCESS_TOKEN = "";
+        process.env.SWEDBANK_PAY_PAYEE_ID = "payee-id";
+        process.env.SWEDBANK_BASE_URL = "https://api.example.com";
+
+        expect(isSwedbankPayConfigured()).toBe(false);
+    });
+
+    it("returns false when payee id is missing", () => {
+        process.env.SWEDBANK_PAY_ACCESS_TOKEN = "token";
+        process.env.SWEDBANK_PAY_PAYEE_ID = "";
+        process.env.SWEDBANK_BASE_URL = "https://api.example.com";
+
+        expect(isSwedbankPayConfigured()).toBe(false);
+    });
+
+    it("returns false when base url is missing", () => {
+        process.env.SWEDBANK_PAY_ACCESS_TOKEN = "token";
+        process.env.SWEDBANK_PAY_PAYEE_ID = "payee-id";
+        process.env.SWEDBANK_BASE_URL = "";
+
+        expect(isSwedbankPayConfigured()).toBe(false);
+    });
+});
 
 describe("redirectToSwedbankPayment", () => {
     it("throws if Swedbank API fails", async () => {

@@ -98,7 +98,11 @@ export const getEmailPayload = async (
     const domain = senderEmail.split("@")[1];
     const htmlContent = typeof mailContent === "string" ? mailContent : await render(mailContent);
     const strippedTextContent = htmlContent
+        // Remove HTML tags
         .replace(/<[^>]*>/g, "")
+        // Remove any remaining angle brackets to avoid partial tag patterns
+        .replace(/[<>]/g, " ")
+        // Normalize whitespace
         .replace(/\s+/g, " ")
         .trim();
     const payload: EmailPayload = {
