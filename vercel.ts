@@ -1,7 +1,7 @@
 import { type VercelConfig } from "@vercel/config/v1";
 
 const vercelConfig: VercelConfig = {
-    buildCommand: "pnpm backup:db && pnpm build", // TODO: :if-production
+    buildCommand: "pnpm backup:db:if-production && pnpm build",
     framework: "nextjs",
     devCommand: "pnpm dev",
     installCommand: "bash scripts/install-postgresql17.sh && pnpm install",
