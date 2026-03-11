@@ -10,7 +10,7 @@ import { Img, Heading } from "@react-email/components";
 // so we must create the mock during the hoisting phase which happens before imports.
 const getOrganizationSettingsMock = vi.hoisted(() => vi.fn());
 
-vi.mock("../organization-settings-actions", () => ({
+vi.mock("../organization-settings-helpers", () => ({
     getOrganizationSettings: getOrganizationSettingsMock,
 }));
 

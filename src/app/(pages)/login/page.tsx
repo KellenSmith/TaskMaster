@@ -15,12 +15,14 @@ const LoginPage: FC = () => {
     const router = useRouter();
 
     const loginAction = async (formData: FormData) => {
+        let errorMsg: string | undefined;
         try {
-            await login(formData);
-            return LanguageTranslations.loggingIn[language];
+            errorMsg = await login(formData);
+            if (!errorMsg) return LanguageTranslations.loggingIn[language];
         } catch {
-            throw new Error(LanguageTranslations.failedLogin[language]);
+            errorMsg = LanguageTranslations.failedLogin[language];
         }
+        throw new Error(errorMsg);
     };
 
     return (

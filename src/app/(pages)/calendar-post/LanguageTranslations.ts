@@ -280,6 +280,10 @@ const LanguageTranslations = {
         [Language.english]: "Printed",
         [Language.swedish]: "Utskriven",
     },
+    noTicketSelected: {
+        [Language.english]: "No ticket selected for editing",
+        [Language.swedish]: "Ingen biljett vald för redigering",
+    },
 };
 
 export default LanguageTranslations;

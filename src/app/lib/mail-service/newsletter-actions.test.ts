@@ -149,15 +149,46 @@ describe("newsletter-actions", () => {
     });
 
     it("retrieves job by id when provided", async () => {
+        const jobId = "550e8400-e29b-41d4-a716-446655440000";
         mockContext.prisma.newsletterJob.findUnique.mockResolvedValue(buildJob());
         transportSendMail.mockResolvedValue({ accepted: 2 });
 
-        await processNextNewsletterBatch("job-1");
+        await processNextNewsletterBatch(jobId);
 
         expect(mockContext.prisma.newsletterJob.findUnique).toHaveBeenCalledWith({
-            where: { id: "job-1" },
+            where: { id: jobId },
         });
         expect(mockContext.prisma.newsletterJob.findFirst).not.toHaveBeenCalled();
+    });
+
+    it("processes a job when lastRunAt is stale", async () => {
+        mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(
+            buildJob({
+                lastRunAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                recipients: ["a@example.com", "b@example.com", "c@example.com"],
+            }),
+        );
+        transportSendMail.mockResolvedValue({ accepted: 2 });
+
+        const result = await processNextNewsletterBatch();
+
+        expect(transportSendMail).toHaveBeenCalledTimes(1);
+        expect(mockContext.prisma.newsletterJob.update).toHaveBeenCalledWith({
+            where: { id: "job-1" },
+            data: expect.objectContaining({
+                cursor: 2,
+                status: "running",
+            }),
+        });
+        expect(result).toEqual({
+            processed: 2,
+            done: false,
+        });
+    });
+
+    it("rejects processNextNewsletterBatch when job id is invalid", async () => {
+        await expect(processNextNewsletterBatch("not-a-uuid")).rejects.toThrow();
+        expect(mockContext.prisma.newsletterJob.findUnique).not.toHaveBeenCalled();
     });
 
     it("handles rate limit errors without failing the job", async () => {

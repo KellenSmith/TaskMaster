@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createElement } from "react";
-import { getOrganizationSettings } from "../../lib/organization-settings-actions";
+import { getOrganizationSettings } from "../../lib/organization-settings-helpers";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
@@ -20,7 +20,7 @@ vi.mock("../../lib/mail-service/mail-service", () => ({
 vi.mock("../../lib/mail-service/newsletter-actions", () => ({
     processNextNewsletterBatch: vi.fn(),
 }));
-vi.mock("../../lib/organization-settings-actions", () => ({
+vi.mock("../../lib/organization-settings-helpers", () => ({
     getOrganizationSettings: vi.fn(),
 }));
 
