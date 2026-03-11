@@ -5,6 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "next dev --turbopack --experimental-https",
+        "backup:db": "bash scripts/backup-db.sh",
+        "backup:db:if-production": "if [ \"${VERCEL:-}\" = \"1\" ] && [ \"${VERCEL_ENV:-}\" = \"production\" ]; then pnpm backup:db; else echo 'Skipping DB backup (not a production Vercel deploy).'; fi",
         "build": "pnpm prisma-generate && pnpm prisma migrate deploy && next build",
         "analyze": "powershell -Command \"$env:ANALYZE='true'; next build\"",
         "start": "next start",
