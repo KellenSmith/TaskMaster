@@ -7,7 +7,7 @@ const vercelConfig: VercelConfig = {
     installCommand: "bash scripts/install-postgresql17.sh && pnpm install",
     git: {
         deploymentEnabled: {
-            "210-automate-resource-provisioning-with-terraform": false,
+            dev: false,
             master: false,
         },
     },
