@@ -6,10 +6,7 @@ const vercelConfig: VercelConfig = {
     devCommand: "pnpm dev",
     installCommand: "bash scripts/install-postgresql17.sh && pnpm install",
     git: {
-        deploymentEnabled: {
-            dev: false,
-            master: false,
-        },
+        deploymentEnabled: false,
     },
     crons: [
         {
