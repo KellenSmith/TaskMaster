@@ -5,6 +5,12 @@ const vercelConfig: VercelConfig = {
     framework: "nextjs",
     devCommand: "pnpm dev",
     installCommand: "bash scripts/install-postgresql17.sh && pnpm install",
+    git: {
+        deploymentEnabled: {
+            "210-automate-resource-provisioning-with-terraform": false,
+            master: false,
+        },
+    },
     crons: [
         {
             path: "/api/cron",
