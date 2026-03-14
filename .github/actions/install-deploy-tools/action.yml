@@ -1,0 +1,17 @@
+name: 'Install Deploy Tools'
+description: 'Installs all CLI tools required for setup-new-customer.sh'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+      shell: bash
+    - name: Install expect
+      run: sudo apt-get install -y expect
+      shell: bash
+    - name: Install openssl
+      run: sudo apt-get install -y openssl
+      shell: bash
+    - name: Install Vercel CLI
+      run: sudo apt-get install -y vercel
+      shell: bash

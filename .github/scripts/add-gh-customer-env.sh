@@ -11,7 +11,7 @@
 set -euo pipefail
 
 ENV_NAME="${1:-demo}"
-VARS_FILE="${2:-scripts/customer-vars.json}"
+VARS_FILE="${2:-scripts/secrets/customer-vars.json}"
 REPO="$(git config --get remote.origin.url | sed -E 's#.*github.com[:/](.+)\.git#\1#')"
 
 if [ ! -f "$VARS_FILE" ]; then
@@ -42,10 +42,10 @@ SECRET_VALUE=$(cat "$VARS_FILE")
 printf '%s' "$SECRET_VALUE" | gh secret set CUSTOMER_VARS --env "$ENV_NAME" --repo "$REPO"
 
 echo "Triggering pipeline on dev branch"
-gh workflow run --repo "$REPO" --ref 210-automate-resource-provisioning-with-terraform
-# TODO: uncomment
-# echo "Triggering pipeline on master branch"
-# gh workflow run --repo "$REPO" --ref master
+gh workflow run --repo "$REPO" --ref dev
+
+echo "Triggering pipeline on master branch"
+gh workflow run --repo "$REPO" --ref master
 
 
 echo "Done."

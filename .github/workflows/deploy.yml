@@ -1,0 +1,30 @@
+on:
+  workflow_run:
+    workflows: ["Quality Assurance"]
+    types:
+      - completed
+    branches: [master, dev]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        customer_environment: [demo]
+    environment: ${{ matrix.customer_environment }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-deploy-tools
+      - name: Set VERCEL_TARGET master=>production, dev=>preview
+        run: |
+          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
+            echo "VERCEL_TARGET=production" >> $GITHUB_ENV
+            echo "GLOBAL_VARS=${{secrets.PRODUCTION_VARS}}" >> $GITHUB_ENV
+          else
+            echo "VERCEL_TARGET=preview" >> $GITHUB_ENV
+            echo "GLOBAL_VARS=${{secrets.PREVIEW_VARS}}" >> $GITHUB_ENV
+          fi
+      - name: Deploy to customer environment
+        run: |
+          bash .github/scripts/deploy-to-customer-env.sh
+          "${{ secrets.CUSTOMER_VARS }}" "$GLOBAL_VARS" "$VERCEL_TARGET"
