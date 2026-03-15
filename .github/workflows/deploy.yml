@@ -3,7 +3,6 @@ on:
     workflows: ["Quality Assurance"]
     types:
       - completed
-    branches: [master, dev]
 
 jobs:
   set-global-vars:
