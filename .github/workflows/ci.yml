@@ -70,10 +70,11 @@ jobs:
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
       customer_environments: ${{ steps.set-vars.outputs.customer_environments }}
     steps:
+      - uses: actions/checkout@v3
       - id: check-pr
         name: Check for open PR to dev
         run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          BRANCH="${{ github.ref_name }}"
           # Only check for PR if not master or dev branch
           if [[ "$BRANCH" != "master" && "$BRANCH" != "dev" ]]; then
             PR_COUNT=$(gh pr list --base dev --head "$BRANCH" --state open --json number --jq 'length')
@@ -88,8 +89,8 @@ jobs:
         name: Set global vars, Vercel target, and customer environments
         run: |
           # Extract branch and event type from the triggering workflow_run event
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          EVENT="${{ github.event.workflow_run.event }}"
+          BRANCH="${{ github.ref_name }}"
+          EVENT="${{ github.event_name }}"
           # Default to preview
           VERCEL_TARGET="preview"
           GLOBAL_VARS="${{ secrets.PREVIEW_VARS }}"
