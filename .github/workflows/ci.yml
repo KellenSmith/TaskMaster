@@ -89,16 +89,15 @@ jobs:
       - id: set-vars
         name: Set global vars, Vercel target, and customer environments
         run: |
-          # Extract branch and event type from the triggering workflow_run event
           # Default to preview
           VERCEL_TARGET="preview"
-          GLOBAL_VARS="${{ secrets.PREVIEW_VARS }}"
+          GLOBAL_VARS_B64="$(echo '${{ secrets.PREVIEW_VARS }}' | base64 -w0)"
           # If master branch and not a pull_request, set to production
           if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
             VERCEL_TARGET="production"
-            GLOBAL_VARS="${{ secrets.PRODUCTION_VARS }}"
+            GLOBAL_VARS_B64="$(echo '${{ secrets.PRODUCTION_VARS }}' | base64 -w0)"
           fi
-          echo "global_vars=$GLOBAL_VARS" >> $GITHUB_OUTPUT
+          echo "global_vars=$GLOBAL_VARS_B64" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           # Define customer environments as a JSON array (edit as needed)
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
@@ -127,9 +126,10 @@ jobs:
       - uses: ./.github/actions/install_deploy_tools
       - name: Set up customer environment variables
         run: |
+          GLOBAL_VARS_JSON=$(echo "${{ needs.set-global-vars.outputs.global_vars }}" | base64 -d)
           bash .github/scripts/set_customer_env_vars.sh \
             "${{ secrets.CUSTOMER_VARS }}" \
-            "${{ needs.set-global-vars.outputs.global_vars }}" \
+            "$GLOBAL_VARS_JSON" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
@@ -143,8 +143,10 @@ jobs:
       - uses: ./.github/actions/install_deploy_tools
       - name: Deploy to customer environment
         run: |
+          GLOBAL_VARS_JSON=$(echo "${{ needs.set-global-vars.outputs.global_vars }}" | base64 -d)
           bash .github/scripts/provision_customer_rdb.sh \
             "${{ secrets.CUSTOMER_VARS }}" \
+            "$GLOBAL_VARS_JSON" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-blob:
     needs: [set-global-vars, set-up-customer-project]
@@ -158,8 +160,10 @@ jobs:
       - uses: ./.github/actions/install_deploy_tools
       - name: Deploy to customer environment
         run: |
+          GLOBAL_VARS_JSON=$(echo "${{ needs.set-global-vars.outputs.global_vars }}" | base64 -d)
           bash .github/scripts/provision_customer_blob.sh \
             "${{ secrets.CUSTOMER_VARS }}" \
+            "$GLOBAL_VARS_JSON" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   deploy-to-customer-env:
     needs: [set-global-vars, set-up-customer-project, set-customer-env-vars, provision-customer-rdb, provision-customer-blob]
@@ -173,6 +177,8 @@ jobs:
       - uses: ./.github/actions/install_deploy_tools
       - name: Deploy to customer environment
         run: |
+          GLOBAL_VARS_JSON=$(echo "${{ needs.set-global-vars.outputs.global_vars }}" | base64 -d)
           bash .github/scripts/deploy_to_customer_env.sh \
             "${{ secrets.CUSTOMER_VARS }}" \
+            "$GLOBAL_VARS_JSON" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
