@@ -69,7 +69,7 @@ jobs:
         BRANCH: ${{ github.head_ref || github.ref_name }}
         EVENT: ${{ github.event_name }}
     outputs:
-      global_vars_b64: ${{ steps.set-vars.outputs.global_vars }}
+      global_vars_b64: ${{ steps.set-vars.outputs.global_vars_b64 }}
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
       customer_environments: ${{ steps.set-vars.outputs.customer_environments }}
     steps:
