@@ -16,13 +16,19 @@ jobs:
       - id: set-vars
         name: Set global vars, Vercel target, and customer environments
         run: |
-          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
-            echo "global_vars=${{ secrets.PRODUCTION_VARS }}" >> $GITHUB_OUTPUT
-            echo "vercel_target=production" >> $GITHUB_OUTPUT
-          else
-            echo "global_vars=${{ secrets.PREVIEW_VARS }}" >> $GITHUB_OUTPUT
-            echo "vercel_target=preview" >> $GITHUB_OUTPUT
+          # Extract branch and event type from the triggering workflow_run event
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          EVENT="${{ github.event.workflow_run.event }}"
+          # Default to preview
+          VERCEL_TARGET="preview"
+          GLOBAL_VARS="${{ secrets.PREVIEW_VARS }}"
+          # If master branch and not a pull_request, set to production
+          if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
+            VERCEL_TARGET="production"
+            GLOBAL_VARS="${{ secrets.PRODUCTION_VARS }}"
           fi
+          echo "global_vars=$GLOBAL_VARS" >> $GITHUB_OUTPUT
+          echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           # Define customer environments as a JSON array (edit as needed)
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
   set-up-customer-project:
