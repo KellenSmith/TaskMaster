@@ -125,8 +125,6 @@ jobs:
       - uses: ./.github/actions/install_deploy_tools
       - name: Set up customer environment variables
         run: |
-          CUSTOMER_VARS_JSON=
-          GLOBAL_VARS_JSON=
           bash .github/scripts/set_customer_env_vars.sh \
             ${{ secrets.CUSTOMER_VARS_B64 }} \
             ${{ needs.set-global-vars.outputs.global_vars_b64 }} \
@@ -173,7 +171,6 @@ jobs:
       - uses: ./.github/actions/install_deploy_tools
       - name: Deploy to customer environment
         run: |
-          GLOBAL_VARS_JSON=$(echo "" | base64 -d)
           bash .github/scripts/deploy_to_customer_env.sh \
             ${{ secrets.CUSTOMER_VARS_B64 }} \
             "${{ needs.set-global-vars.outputs.global_vars_b64 }}" \
