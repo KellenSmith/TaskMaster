@@ -9,6 +9,9 @@ GLOBAL_VARS_B64="$2"
 GLOBAL_VARS_JSON=$(echo "$GLOBAL_VARS_B64" | base64 -d)
 VERCEL_TARGET="$3"
 
+echo "Decoded customer vars JSON: $CUSTOMER_VARS_JSON"
+echo "Decoded global vars JSON: $GLOBAL_VARS_JSON"
+
 valid_environments="production preview"
 if ! printf '%s' "$valid_environments" | grep -qw "$VERCEL_TARGET"; then
     echo "Error: Invalid environment '$VERCEL_TARGET'. Valid options are: $valid_environments." >&2
