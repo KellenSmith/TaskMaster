@@ -6,6 +6,8 @@ source "$(dirname "$0")/utils.sh"
 CUSTOMER_VARS_B64="$1"
 CUSTOMER_VARS_JSON=$(echo "$CUSTOMER_VARS_B64" | base64 -d)
 GLOBAL_VARS_B64="$2"
+echo "GLOBAL_VARS_B64 raw: $GLOBAL_VARS_B64"
+echo -n "$GLOBAL_VARS_B64" | base64 -d || echo "base64 decode failed"
 GLOBAL_VARS_JSON=$(echo "$GLOBAL_VARS_B64" | base64 -d)
 VERCEL_TARGET="$3"
 
