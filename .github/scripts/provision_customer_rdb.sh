@@ -14,14 +14,12 @@ PROJECT_NAME="$(get_project_name "$ORG_NAME")"
 DB_REGION=$(extract_json_value "$CUSTOMER_VARS_JSON" '.DB_REGION')
 DB_NAME="${PROJECT_NAME}-db-${VERCEL_TARGET}"
 
-local resources_json
 resources_json=$(vercel integration list --format=json --non-interactive --token "$VERCEL_ACCESS_TOKEN")
 if printf '%s' "$resources_json" | jq -e --arg name "$DB_NAME" '(.resources // []) | any(.name == $name or .resource.name == $name)' >/dev/null; then
     echo "Prisma Postgres ${DB_NAME} already provisioned. Continuing setup."
     return 0
 fi
 
-local integration_output
 integration_output=$(vercel integration add prisma/prisma-postgres \
     --non-interactive \
     --token "$VERCEL_ACCESS_TOKEN" \

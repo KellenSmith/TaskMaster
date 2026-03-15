@@ -126,9 +126,9 @@ jobs:
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \
-            ${{ secrets.CUSTOMER_VARS_B64 }} \
-            ${{ needs.set-global-vars.outputs.global_vars_b64 }} \
-            ${{ needs.set-global-vars.outputs.vercel_target }}
+            "${{ secrets.CUSTOMER_VARS_B64 }}" \
+            "${{ needs.set-global-vars.outputs.global_vars_b64 }}" \
+            "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
@@ -142,8 +142,8 @@ jobs:
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/provision_customer_rdb.sh \
-            ${{ secrets.CUSTOMER_VARS_B64 }} \
-            ${{ needs.set-global-vars.outputs.vercel_target }}
+            "${{ secrets.CUSTOMER_VARS_B64 }}" \
+            "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-blob:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
@@ -157,8 +157,8 @@ jobs:
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/provision_customer_blob.sh \
-            ${{ secrets.CUSTOMER_VARS_B64 }} \
-            ${{ needs.set-global-vars.outputs.vercel_target }}
+            "${{ secrets.CUSTOMER_VARS_B64 }}" \
+            "${{ needs.set-global-vars.outputs.vercel_target }}"
   deploy-to-customer-env:
     needs: [set-global-vars, set-up-customer-project, set-customer-env-vars, provision-customer-rdb, provision-customer-blob]
     runs-on: ubuntu-latest
