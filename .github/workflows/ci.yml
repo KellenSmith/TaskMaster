@@ -69,7 +69,7 @@ jobs:
         BRANCH: ${{ github.head_ref || github.ref_name }}
         EVENT: ${{ github.event_name }}
     outputs:
-      test_g_val: ${{ steps.set-vars.outputs.test_g_val }}
+      common_vars_b64: ${{ steps.set-vars.outputs.common_vars_b64 }}
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
       customer_environments: ${{ steps.set-vars.outputs.customer_environments }}
     steps:
@@ -98,12 +98,13 @@ jobs:
           fi
           echo "DEBUG: GLOBAL_VARS_B64 length ${#GLOBAL_VARS_B64}"
           echo "DEBUG: GLOBAL_VARS_B64 value: $GLOBAL_VARS_B64"
-          echo "test_g_val=$GLOBAL_VARS_B64" >> $GITHUB_OUTPUT
-          echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
+          # Use printf to avoid trailing newlines in output
+          printf "common_vars_b64=%s\n" "$GLOBAL_VARS_B64" >> "$GITHUB_OUTPUT"
+          printf "vercel_target=%s\n" "$VERCEL_TARGET" >> "$GITHUB_OUTPUT"
           # Define customer environments as a JSON array (edit as needed)
-          echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
+          echo 'customer_environments=["demo", "proteus"]' >> "$GITHUB_OUTPUT"
       - run: echo "GITHUB_OUTPUT file content:" && cat $GITHUB_OUTPUT
-      - run: echo " ${{ steps.set-vars.outputs.test_g_val }}"
+      - run: echo " ${{ steps.set-vars.outputs.common_vars_b64 }}"
   set-up-customer-project:
     needs: set-global-vars
     runs-on: ubuntu-latest
@@ -127,13 +128,13 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
       - run: echo "${{ needs.set-global-vars.outputs.vercel_target }}"
-      - run: echo "${{ needs.set-global-vars.outputs.test_g_val }}" | wc -c
+      - run: echo "${{ needs.set-global-vars.outputs.common_vars_b64 }}" | wc -c
       - run: echo "${{ secrets.CUSTOMER_VARS_B64 }}" | wc -c
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \
             "${{ secrets.CUSTOMER_VARS_B64 }}" \
-            "${{ needs.set-global-vars.outputs.test_g_val }}" \
+            "${{ needs.set-global-vars.outputs.common_vars_b64 }}" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
@@ -179,5 +180,5 @@ jobs:
         run: |
           bash .github/scripts/deploy_to_customer_env.sh \
             ${{ secrets.CUSTOMER_VARS_B64 }} \
-            "${{ needs.set-global-vars.outputs.test_g_val }}" \
+            "${{ needs.set-global-vars.outputs.common_vars_b64 }}" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
