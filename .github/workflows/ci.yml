@@ -85,6 +85,7 @@ jobs:
               exit 78
             fi
           fi
+      - run: echo "${{ secrets.PREVIEW_VARS_B64 }}" | wc -c
       - id: set-vars
         name: Set global vars, Vercel target, and customer environments
         run: |
@@ -122,7 +123,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: echo "${{ needs.set-global-vars.outputs.global_vars_b64 }}" | wc -c
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \

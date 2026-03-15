@@ -8,8 +8,8 @@ if ! command -v gh >/dev/null 2>&1; then
     exit 1
 fi
 
-PRODUCTION_VARS_FILE=".github/secrets/production-vars.json"
-PREVIEW_VARS_FILE=".github/secrets/preview-vars.json"
+PRODUCTION_VARS_FILE=".github/secrets/production_vars.json"
+PREVIEW_VARS_FILE=".github/secrets/preview_vars.json"
 REPO="$(git config --get remote.origin.url | sed -E 's#.*github.com[:/](.+)\.git#\1#')"
 
 echo "Uploading secret PRODUCTION_VARS"
