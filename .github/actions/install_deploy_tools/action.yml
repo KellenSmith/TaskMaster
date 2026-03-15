@@ -12,6 +12,10 @@ runs:
     - name: Install openssl
       run: sudo apt-get install -y openssl
       shell: bash
+    - name: Install pnpm to access vercel cli
+      uses: pnpm/action-setup@v2
+      with:
+        version: 10.17.1
     - name: Install Vercel CLI
-      run: sudo apt-get install -y vercel
+      run: pnpm install -g vercel
       shell: bash

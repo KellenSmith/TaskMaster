@@ -21,7 +21,6 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-
       - run: pnpm lint
 
   type-check:
