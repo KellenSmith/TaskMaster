@@ -46,7 +46,7 @@ yarn-error.log*
 
 # Customer deployment data
 .github/secrets/*
-!.github/secrets/customer-vars.example.json
+!.github/secrets/customer_vars.example.json
 
 # typescript
 *.tsbuildinfo
