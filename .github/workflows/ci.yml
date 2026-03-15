@@ -74,7 +74,7 @@ jobs:
       - id: check-pr
         name: Check for open PR to dev
         run: |
-          BRANCH="${{ github.ref_name }}"
+          BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           # Only check for PR if not master or dev branch
           if [[ "$BRANCH" != "master" && "$BRANCH" != "dev" ]]; then
             PR_COUNT=$(gh pr list --base dev --head "$BRANCH" --state open --json number --jq 'length')
