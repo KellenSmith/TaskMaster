@@ -102,6 +102,8 @@ jobs:
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           # Define customer environments as a JSON array (edit as needed)
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
+      - run: echo "GITHUB_OUTPUT file content:" && cat $GITHUB_OUTPUT
+      - run: echo " ${{ steps.set-vars.outputs.global_vars_b64 }}"
   set-up-customer-project:
     needs: set-global-vars
     runs-on: ubuntu-latest
