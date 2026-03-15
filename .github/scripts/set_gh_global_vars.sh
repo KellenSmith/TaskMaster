@@ -14,9 +14,12 @@ REPO="$(git config --get remote.origin.url | sed -E 's#.*github.com[:/](.+)\.git
 
 echo "Uploading secret PRODUCTION_VARS"
 PRODUCTION_VARS_VALUE=$(cat "$PRODUCTION_VARS_FILE")
-printf '%s' "$PRODUCTION_VARS_VALUE" | gh secret set PRODUCTION_VARS --repo "$REPO"
+# Convert to base64 to ensure it can be safely transmitted as a string, then decode in GitHub Actions workflow
+PRODUCTION_VARS_VALUE_B64=$(printf '%s' "$PRODUCTION_VARS_VALUE" | base64 -w 0)
+printf '%s' "$PRODUCTION_VARS_VALUE_B64" | gh secret set PRODUCTION_VARS_B64 --repo "$REPO"
 echo "Uploading secret PREVIEW_VARS"
 PREVIEW_VARS_VALUE=$(cat "$PREVIEW_VARS_FILE")
-printf '%s' "$PREVIEW_VARS_VALUE" | gh secret set PREVIEW_VARS --repo "$REPO"
+PREVIEW_VARS_VALUE_B64=$(printf '%s' "$PREVIEW_VARS_VALUE" | base64 -w 0)
+printf '%s' "$PREVIEW_VARS_VALUE_B64" | gh secret set PREVIEW_VARS_B64 --repo "$REPO"
 
 echo "Done."

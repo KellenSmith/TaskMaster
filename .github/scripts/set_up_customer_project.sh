@@ -12,7 +12,8 @@ done
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-CUSTOMER_VARS_JSON="${1}"
+CUSTOMER_VARS_B64="$1"
+CUSTOMER_VARS_JSON=$(echo "$CUSTOMER_VARS_B64" | base64 -d)
 
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.VERCEL_ACCESS_TOKEN')

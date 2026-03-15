@@ -3,9 +3,11 @@ set -euo pipefail
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-CUSTOMER_VARS_JSON="${1}"
-GLOBAL_VARS_JSON="${2}"
-VERCEL_TARGET="${3}"
+CUSTOMER_VARS_B64= "$1"
+CUSTOMER_VARS_JSON=$(echo "$CUSTOMER_VARS_B64" | base64 -d)
+GLOBAL_VARS_B64="$2"
+GLOBAL_VARS_JSON=$(echo "$GLOBAL_VARS_B64" | base64 -d)
+VERCEL_TARGET="$3"
 
 valid_environments="production preview"
 if ! printf '%s' "$valid_environments" | grep -qw "$VERCEL_TARGET"; then
