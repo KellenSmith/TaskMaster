@@ -98,11 +98,10 @@ jobs:
           fi
           echo "DEBUG: GLOBAL_VARS_B64 length ${#GLOBAL_VARS_B64}"
           echo "DEBUG: GLOBAL_VARS_B64 value: $GLOBAL_VARS_B64"
-          # Use printf to avoid trailing newlines in output
-          printf "common_vars_b64=%s\n" "$GLOBAL_VARS_B64" >> "$GITHUB_OUTPUT"
-          printf "vercel_target=%s\n" "$VERCEL_TARGET" >> "$GITHUB_OUTPUT"
+          echo "common_vars_b64=$GLOBAL_VARS_B64" >> $GITHUB_OUTPUT
+          echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           # Define customer environments as a JSON array (edit as needed)
-          echo 'customer_environments=["demo", "proteus"]' >> "$GITHUB_OUTPUT"
+          echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
       - run: echo "GITHUB_OUTPUT file content:" && cat $GITHUB_OUTPUT
       - run: echo " ${{ steps.set-vars.outputs.common_vars_b64 }}"
   set-up-customer-project:
