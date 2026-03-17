@@ -98,8 +98,8 @@ jobs:
             VERCEL_TARGET="production"
             COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
-          # Encrypt COMMON_VARS using ENCRYPTION_KEY
-          ENCRYPTED_COMMON_VARS=$(echo "$COMMON_VARS" | openssl enc -aes-256-cbc -a -salt -pass env:ENCRYPTION_KEY)
+          # Encrypt COMMON_VARS using ENCRYPTION_KEY, then base64 encode for safe output
+          ENCRYPTED_COMMON_VARS=$(echo "$COMMON_VARS" | openssl enc -aes-256-cbc -a -salt -pbkdf2 -pass env:ENCRYPTION_KEY | base64 -w 0)
           echo "encrypted_common_vars=$ENCRYPTED_COMMON_VARS" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
@@ -127,7 +127,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
       - run: |
-          echo "${{ needs.set-global-vars.outputs.encrypted_common_vars }}" | openssl enc -aes-256-cbc -d -a -pass env:ENCRYPTION_KEY > common_vars.json
+          echo "${{ needs.set-global-vars.outputs.encrypted_common_vars }}" | base64 -d | openssl enc -aes-256-cbc -d -a -pbkdf2 -pass env:ENCRYPTION_KEY > common_vars.json
         env:
           ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       - name: Set up customer environment variables
