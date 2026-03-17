@@ -97,9 +97,8 @@ jobs:
             COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
           # Export each key from the JSON as an environment variable
-          echo "$COMMON_VARS" | jq -r 'to_entries|map("export \(.key)=\(.value|tostring)")|.[]' >> $GITHUB_ENV
           COMMON_VARS_B64=$(printf '%s' "$COMMON_VARS" | base64 -w 0 | tr -d '\n' | xargs)
-          echo "common_vars_b64=$COMMON_VARS_B64" >> $GITHUB_OUTPUT
+          echo "common_vars_b64=$COMMON_VARS" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
   set-up-customer-project:
@@ -113,6 +112,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
       - run: echo "${{ secrets.CUSTOMER_VARS }}"
+      - run: echo "${{ needs.set-global-vars.outputs.common_vars_b64 }}"
+      - run: echo "${{ needs.set-global-vars.outputs.vercel_target }}"
       - name: Set up customer project and github link
         run: bash .github/scripts/set_up_customer_project.sh "${{ secrets.CUSTOMER_VARS }}"
   set-customer-env-vars:
@@ -125,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: echo "${{ needs.set-global-vars.outputs.common_vars_b64 }}" \
+      - run: echo "${{ needs.set-global-vars.outputs.common_vars_b64 }}"
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \
