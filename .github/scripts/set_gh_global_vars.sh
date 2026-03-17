@@ -14,9 +14,7 @@ REPO="$(git config --get remote.origin.url | sed -E 's#.*github.com[:/](.+)\.git
 
 echo "Uploading secret PRODUCTION_VARS"
 PRODUCTION_VARS_VALUE=$(cat "$PRODUCTION_VARS_FILE")
-# Convert to base64, remove all newlines, and trim whitespace to ensure a single-line string
-PRODUCTION_VARS_VALUE_B64=$(printf '%s' "$PRODUCTION_VARS_VALUE" | base64 -w 0 | tr -d '\n' | xargs)
-printf '%s' "$PRODUCTION_VARS_VALUE_B64" | gh secret set PRODUCTION_VARS_B64 --repo "$REPO"
+printf '%s' "$PRODUCTION_VARS_VALUE" | gh secret set PRODUCTION_VARS --repo "$REPO"
 
 echo "Uploading secret PREVIEW_VARS"
 PREVIEW_VARS_VALUE=$(cat "$PREVIEW_VARS_FILE")
