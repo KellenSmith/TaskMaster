@@ -90,16 +90,17 @@ jobs:
         run: |
           # Default to preview
           VERCEL_TARGET="preview"
-          COMMON_VARS=${{ secrets.PREVIEW_VARS }}
+          COMMON_VARS='${{ secrets.PREVIEW_VARS }}'
           # If master branch and not a pull_request, set to production
           if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
             VERCEL_TARGET="production"
-            COMMON_VARS=${{ secrets.PRODUCTION_VARS }}
+            COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
+          # Export each key from the JSON as an environment variable
+          echo "$COMMON_VARS" | jq -r 'to_entries|map("export \(.key)=\(.value|tostring)")|.[]' >> $GITHUB_ENV
           COMMON_VARS_B64=$(printf '%s' "$COMMON_VARS" | base64 -w 0 | tr -d '\n' | xargs)
           echo "common_vars_b64=$COMMON_VARS_B64" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
-          # Define customer environments as a JSON array (edit as needed)
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
   set-up-customer-project:
     needs: set-global-vars
