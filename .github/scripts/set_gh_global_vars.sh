@@ -20,4 +20,8 @@ echo "Uploading secret PREVIEW_VARS"
 PREVIEW_VARS_VALUE=$(cat "$PREVIEW_VARS_FILE")
 printf '%s' "$PREVIEW_VARS_VALUE" | gh secret set PREVIEW_VARS --repo "$REPO"
 
+echo "Upload encryption keys for secrets to use in workflows"
+ENCRYPTION_KEY=$(cat ".github/secrets/encryption_key.txt")
+printf '%s' "$ENCRYPTION_KEY" | gh secret set ENCRYPTION_KEY --repo "$REPO"
+
 echo "Done."
