@@ -69,7 +69,7 @@ jobs:
         BRANCH: ${{ github.head_ref || github.ref_name }}
         EVENT: ${{ github.event_name }}
     outputs:
-      common_vars_b64: ${{ steps.set-vars.outputs.common_vars_b64 }}
+      encrypted_common_vars: ${{ steps.set-vars.outputs.common_vars_b64 }}
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
       customer_environments: ${{ steps.set-vars.outputs.customer_environments }}
     steps:
@@ -87,6 +87,8 @@ jobs:
           fi
       - id: set-vars
         name: Set global vars, Vercel target, and customer environments
+        env:
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
         run: |
           # Default to preview
           VERCEL_TARGET="preview"
@@ -97,8 +99,8 @@ jobs:
             COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
           # Encrypt COMMON_VARS using ENCRYPTION_KEY
-          COMMON_VARS_B64=$(echo "$COMMON_VARS" | openssl enc -aes-256-cbc -a -salt -pass pass:"${{ secrets.ENCRYPTION_KEY }}")
-          echo "common_vars_b64=$COMMON_VARS_B64" >> $GITHUB_OUTPUT
+          ENCRYPTED_COMMON_VARS=$(echo "$COMMON_VARS" | openssl enc -aes-256-cbc -a -salt -pass env:ENCRYPTION_KEY)
+          echo "encrypted_common_vars=$ENCRYPTED_COMMON_VARS" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
   set-up-customer-project:
@@ -124,13 +126,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: echo "${{ needs.set-global-vars.outputs.common_vars_b64 }}"
+      - run: |
+          echo "${{ needs.set-global-vars.outputs.encrypted_common_vars }}" | openssl enc -aes-256-cbc -d -a -pass env:ENCRYPTION_KEY > common_vars.json
+        env:
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       - name: Set up customer environment variables
         run: |
-          COMMON_VARS="$(echo "${{ needs.set-global-vars.outputs.common_vars_b64 }}" | openssl enc -aes-256-cbc -d -a -pass pass:"${{ secrets.ENCRYPTION_KEY }}")"
           bash .github/scripts/set_customer_env_vars.sh \
             "${{ secrets.CUSTOMER_VARS }}" \
-            "$COMMON_VARS" \
+            "$(cat common_vars.json)" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
