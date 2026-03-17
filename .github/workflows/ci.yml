@@ -90,15 +90,15 @@ jobs:
         run: |
           # Default to preview
           VERCEL_TARGET="preview"
-          GLOBAL_VARS_B64=${{ secrets.PREVIEW_VARS_B64 }}
+          COMMON_VARS_B64=${{ secrets.PREVIEW_VARS_B64 }}
           # If master branch and not a pull_request, set to production
           if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
             VERCEL_TARGET="production"
-            GLOBAL_VARS_B64=${{ secrets.PRODUCTION_VARS_B64 }}
+            COMMON_VARS_B64=${{ secrets.PRODUCTION_VARS_B64 }}
           fi
-          echo "DEBUG: GLOBAL_VARS_B64 length ${#GLOBAL_VARS_B64}"
-          echo "DEBUG: GLOBAL_VARS_B64 value: $GLOBAL_VARS_B64"
-          echo "common_vars_b64=$GLOBAL_VARS_B64" >> $GITHUB_OUTPUT
+          echo "DEBUG: COMMON_VARS_B64 length ${#COMMON_VARS_B64}"
+          echo "DEBUG: COMMON_VARS_B64 value: $COMMON_VARS_B64"
+          echo "common_vars_b64=$COMMON_VARS_B64" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           # Define customer environments as a JSON array (edit as needed)
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
