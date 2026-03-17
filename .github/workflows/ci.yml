@@ -96,14 +96,10 @@ jobs:
             VERCEL_TARGET="production"
             COMMON_VARS_B64=${{ secrets.PRODUCTION_VARS_B64 }}
           fi
-          echo "DEBUG: COMMON_VARS_B64 length ${#COMMON_VARS_B64}"
-          echo "DEBUG: COMMON_VARS_B64 value: $COMMON_VARS_B64"
           echo "common_vars_b64=$COMMON_VARS_B64" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           # Define customer environments as a JSON array (edit as needed)
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
-      - run: echo "GITHUB_OUTPUT file content:" && cat $GITHUB_OUTPUT
-      - run: echo " ${{ steps.set-vars.outputs.common_vars_b64 }}"
   set-up-customer-project:
     needs: set-global-vars
     runs-on: ubuntu-latest
@@ -126,9 +122,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: echo "${{ needs.set-global-vars.outputs.vercel_target }}"
-      - run: echo "${{ needs.set-global-vars.outputs.common_vars_b64 }}" | wc -c
-      - run: echo "${{ secrets.CUSTOMER_VARS_B64 }}" | wc -c
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \
