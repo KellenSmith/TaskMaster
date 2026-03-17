@@ -20,7 +20,6 @@ printf '%s' "$PRODUCTION_VARS_VALUE_B64" | gh secret set PRODUCTION_VARS_B64 --r
 
 echo "Uploading secret PREVIEW_VARS"
 PREVIEW_VARS_VALUE=$(cat "$PREVIEW_VARS_FILE")
-PREVIEW_VARS_VALUE_B64=$(printf '%s' "$PREVIEW_VARS_VALUE" | base64 -w 0 | tr -d '\n' | xargs)
-printf '%s' "$PREVIEW_VARS_VALUE_B64" | gh secret set PREVIEW_VARS_B64 --repo "$REPO"
+printf '%s' "$PREVIEW_VARS_VALUE" | gh secret set PREVIEW_VARS --repo "$REPO"
 
 echo "Done."

@@ -37,11 +37,9 @@ fi
 # Upload secret to environment
 echo "Uploading secret CUSTOMER_VARS to environment $ENV_NAME"
 SECRET_VALUE=$(cat "$VARS_FILE")
-# Convert to base64 to ensure it can be safely transmitted as a string, then decode in GitHub Actions workflow
-SECRET_VALUE_B64=$(printf '%s' "$SECRET_VALUE" | base64 -w 0 | tr -d '\n' | xargs)
 # Use gh CLI to set secret (requires GitHub CLI v2.0+)
 # Note: gh secret set supports --env for environments
-printf '%s' "$SECRET_VALUE_B64" | gh secret set CUSTOMER_VARS_B64 --env "$ENV_NAME" --repo "$REPO"
+printf '%s' "$SECRET_VALUE" | gh secret set CUSTOMER_VARS --env "$ENV_NAME" --repo "$REPO"
 
 echo "Triggering pipeline on dev branch"
 gh workflow run --repo "$REPO" --ref dev

@@ -90,12 +90,13 @@ jobs:
         run: |
           # Default to preview
           VERCEL_TARGET="preview"
-          COMMON_VARS_B64=${{ secrets.PREVIEW_VARS_B64 }}
+          COMMON_VARS=${{ secrets.PREVIEW_VARS }}
           # If master branch and not a pull_request, set to production
           if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
             VERCEL_TARGET="production"
-            COMMON_VARS_B64=${{ secrets.PRODUCTION_VARS_B64 }}
+            COMMON_VARS=${{ secrets.PRODUCTION_VARS }}
           fi
+          COMMON_VARS_B64=$(printf '%s' "$COMMON_VARS" | base64 -w 0 | tr -d '\n' | xargs)
           echo "common_vars_b64=$COMMON_VARS_B64" >> $GITHUB_OUTPUT
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           # Define customer environments as a JSON array (edit as needed)
@@ -111,7 +112,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
       - name: Set up customer project and github link
-        run: bash .github/scripts/set_up_customer_project.sh "${{ secrets.CUSTOMER_VARS_B64 }}"
+        run: bash .github/scripts/set_up_customer_project.sh "${{ secrets.COMMON_VARS }}"
   set-customer-env-vars:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
@@ -125,7 +126,7 @@ jobs:
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \
-            "${{ secrets.CUSTOMER_VARS_B64 }}" \
+            "${{ secrets.COMMON_VARS }}" \
             "${{ needs.set-global-vars.outputs.common_vars_b64 }}" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-rdb:
@@ -141,7 +142,7 @@ jobs:
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/provision_customer_rdb.sh \
-            "${{ secrets.CUSTOMER_VARS_B64 }}" \
+            "${{ secrets.COMMON_VARS }}" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-blob:
     needs: [set-global-vars, set-up-customer-project]
@@ -156,7 +157,7 @@ jobs:
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/provision_customer_blob.sh \
-            "${{ secrets.CUSTOMER_VARS_B64 }}" \
+            "${{ secrets.COMMON_VARS }}" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
   deploy-to-customer-env:
     needs: [set-global-vars, set-up-customer-project, set-customer-env-vars, provision-customer-rdb, provision-customer-blob]
@@ -171,6 +172,6 @@ jobs:
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/deploy_to_customer_env.sh \
-            ${{ secrets.CUSTOMER_VARS_B64 }} \
+            "${{ secrets.COMMON_VARS }}" \
             "${{ needs.set-global-vars.outputs.common_vars_b64 }}" \
             "${{ needs.set-global-vars.outputs.vercel_target }}"
