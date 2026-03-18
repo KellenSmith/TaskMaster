@@ -25,12 +25,17 @@ fi
 
 bash .github/scripts/set_up_customer_project.sh "${VERCEL_TARGET}"
 
+# Check that .vercel/project.json exists and contains the correct project name
+if [ ! -f .vercel/project.json ]; then
+    echo "Error: .vercel/project.json not found. Please ensure the project is set up correctly." >&2
+    exit 1
+fi
+
 # Run the following scripts in parallel and exit 1 if any fail
 pids=()
 bash .github/scripts/set_customer_env_vars.sh "${VERCEL_TARGET}" & pids+=("$!")
 bash .github/scripts/provision_customer_rdb.sh "${VERCEL_TARGET}" & pids+=("$!")
 bash .github/scripts/provision_customer_blob.sh "${VERCEL_TARGET}" & pids+=("$!")
-bash .github/scripts/deploy_to_customer_env.sh "${VERCEL_TARGET}" & pids+=("$!")
 
 # Wait for all background jobs and check exit codes
 exit_code=0
@@ -42,3 +47,5 @@ if [ $exit_code -ne 0 ]; then
     echo "One or more provisioning steps failed." >&2
     exit 1
 fi
+
+bash .github/scripts/deploy_to_customer_env.sh "${VERCEL_TARGET}"

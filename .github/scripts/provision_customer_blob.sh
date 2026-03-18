@@ -13,16 +13,6 @@ ORG_NAME=$(extract_json_value "$CUSTOMER_VARS_JSON" 'NEXT_PUBLIC_ORG_NAME')
 PROJECT_NAME="$(get_project_name "$ORG_NAME")"
 BLOB_REGION=$(extract_json_value "$CUSTOMER_VARS_JSON" 'BLOB_REGION')
 
-# Clean up generated .vercel dir and .env.local file to avoid conflict
-if [ -d ".vercel" ]; then
-    rm -rf .vercel
-    echo "Removed existing .vercel directory."
-fi
-if [ -f ".env.local" ]; then
-    rm -f .env.local
-    echo "Removed existing .env.local file."
-fi
-
 env_var_exists() {
     local var_name="$1"
     local env_vars_json
@@ -58,6 +48,16 @@ provision_vercel_blob_store() {
             for the token name. This is required to ensure the token is created with the correct permissions and added to the correct environment."
     fi
 
+    # Clean up generated .vercel dir and .env.local file to avoid conflict
+    if [ -d ".vercel" ]; then
+        rm -rf .vercel
+        echo "Removed existing .vercel directory."
+    fi
+    if [ -f ".env.local" ]; then
+        rm -f .env.local
+        echo "Removed existing .env.local file."
+    fi
+
     vercel blob create-store "$blob_store_name" --token "$VERCEL_ACCESS_TOKEN" --region "$BLOB_REGION"  --access "$access" --non-interactive
 
     echo "The ${access} blob store \"${blob_store_name}\" has been created. \
@@ -69,7 +69,6 @@ provision_vercel_blob_store() {
     if [ "$token_prefix" != "BLOB" ]; then
         echo "Use the prefix ${token_prefix} for the blob read write token."
     fi
-
 
     exit 1
 }
