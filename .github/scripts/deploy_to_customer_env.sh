@@ -6,13 +6,7 @@ set -euo pipefail
 source "$(dirname "$0")/utils.sh"
 
 # Read customer_vars.json file for CUSTOMER_VARS_JSON
-if [ -f customer_vars.json ]; then
-    CUSTOMER_VARS_JSON=$(cat customer_vars.json)
-    echo "Customer variables JSON loaded from customer_vars.json."
-else
-    echo "Error: customer_vars.json file not found!" >&2
-    exit 1
-fi
+CUSTOMER_VARS_JSON="${1}"
 VERCEL_TARGET="${2}"
 
 # Authenticate to vercel using the customer's access token

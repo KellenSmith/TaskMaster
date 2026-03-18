@@ -91,13 +91,10 @@ jobs:
         run: |
           # Default to preview
           VERCEL_TARGET="preview"
-          COMMON_VARS='${{ secrets.PREVIEW_VARS }}'
           # If master branch and not a pull_request, set to production
           if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
             VERCEL_TARGET="production"
-            COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
-          echo "$COMMON_VARS" >> common_vars.json
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
   set-up-customer-project:
@@ -123,11 +120,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
+      - name: Find preview or production common vars
+        run: |
+          VERCEL_TARGET="${{ needs.set-global-vars.outputs.vercel_target }}"
+          COMMON_VARS='${{ secrets.PREVIEW_VARS }}'
+          # If master branch and not a pull_request, set to production
+          if [[ "$VERCEL_TARGET" == "production" ]]; then
+            COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
+          fi
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \
           "${{ secrets.CUSTOMER_VARS }}" \
-          "${{ needs.set-global-vars.outputs.vercel_target }}"
+          "$COMMON_VARS" \
+          "$VERCEL_TARGET"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest

@@ -4,16 +4,8 @@ set -euo pipefail
 source "$(dirname "$0")/utils.sh"
 
 CUSTOMER_VARS_JSON="${1}"
-VERCEL_TARGET="${2}"
-
-# Read common_vars.json file for COMMON_VARS_JSON
-if [ -f common_vars.json ]; then
-    COMMON_VARS_JSON=$(cat common_vars.json)
-    echo "Common variables JSON loaded from common_vars.json."
-else
-    echo "Error: common_vars.json file not found!" >&2
-    exit 1
-fi
+COMMON_VARS_JSON="${2}"
+VERCEL_TARGET="${3}"
 
 echo "Decoded customer vars JSON: $CUSTOMER_VARS_JSON"
 echo "Decoded global vars JSON: $COMMON_VARS_JSON"
