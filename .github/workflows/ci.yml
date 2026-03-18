@@ -107,7 +107,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_customer_vars
+      - uses: ./.github/actions/decode_vars_to_file
         with:
           CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - run: echo "${{secrets.CUSTOMER_VARS}}"
