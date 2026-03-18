@@ -91,6 +91,7 @@ jobs:
     environment: ${{ matrix.customer_environment }}
     steps:
       - uses: actions/checkout@v3
+      - uses: ./.github/actions/install_deploy_tools
       - id: check-pr
         name: Check for open PR to dev
         run: |
@@ -102,7 +103,6 @@ jobs:
               exit 78
             fi
           fi
-      - uses: ./.github/actions/install_deploy_tools
       - uses: ./.github/actions/decode_vars_to_file
         with:
           CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
