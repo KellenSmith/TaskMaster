@@ -114,6 +114,8 @@ jobs:
       - run: echo "${{secrets.CUSTOMER_VARS}}" | base64 -d
       - run: echo "${{secrets.PREVIEW_VARS}}"
       - run: echo "${{secrets.PREVIEW_VARS}}" | base64 -d
+      - name: Debug customer_vars.json
+        run: cat customer_vars.json
       - name: Set up customer project and github link
         run: bash .github/scripts/set_up_customer_project.sh
   set-customer-env-vars:
@@ -126,7 +128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_customer_vars
+      - uses: ./.github/actions/decode_vars_to_file
         with:
           CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Find preview or production common vars
@@ -137,8 +139,10 @@ jobs:
           if [[ "$VERCEL_TARGET" == "production" ]]; then
             COMMON_VARS_B64='${{ secrets.PRODUCTION_VARS }}'
           fi
-          COMMON_VARS_JSON=$(echo "$COMMON_VARS_B64" | base64 --decode)
-          printf '%s' "$COMMON_VARS_JSON" > common_vars.json
+      - uses: ./.github/actions/decode_vars_to_file
+        with:
+          CUSTOMER_VARS_B64: "$COMMON_VARS_B64"
+          FILE_PATH: common_vars.json
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh "$VERCEL_TARGET"
@@ -152,7 +156,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_customer_vars
+      - uses: ./.github/actions/decode_vars_to_file
         with:
             CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Deploy to customer environment
@@ -168,7 +172,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_customer_vars
+      - uses: ./.github/actions/decode_vars_to_file
         with:
             CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Deploy to customer environment
@@ -184,7 +188,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_customer_vars
+      - uses: ./.github/actions/decode_vars_to_file
         with:
             CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Deploy to customer environment

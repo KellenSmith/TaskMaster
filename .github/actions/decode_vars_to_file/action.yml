@@ -4,6 +4,10 @@ inputs:
   CUSTOMER_VARS_B64:
     description: 'Base 64 encoded string of customer vars JSON'
     required: true
+  FILE_PATH:
+    description: 'Path to write the decoded JSON to'
+    required: false
+    default: 'customer_vars.json'
 runs:
   using: 'composite'
   steps:
@@ -13,5 +17,5 @@ runs:
       run: CUSTOMER_VARS_JSON=$(echo "$CUSTOMER_VARS_B64" | base64 --decode)
       shell: bash
     - name: Write decoded CUSTOMER_VARS to file
-      run: printf '%s' "$CUSTOMER_VARS_JSON" > customer_vars.json
+      run: printf '%s' "$CUSTOMER_VARS_JSON" > "${{ inputs.FILE_PATH }}"
       shell: bash
