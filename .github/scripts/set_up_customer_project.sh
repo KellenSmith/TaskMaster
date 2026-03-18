@@ -17,6 +17,8 @@ if [ ! -f customer_vars.json ]; then
     exit 1
 fi
 CUSTOMER_VARS_JSON=$(cat customer_vars.json)
+echo "Customer vars: $CUSTOMER_VARS_JSON"
+echo "Customer vars json size: $(echo -n "$CUSTOMER_VARS_JSON" | wc -c) bytes"
 
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
