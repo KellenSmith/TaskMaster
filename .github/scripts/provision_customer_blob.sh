@@ -7,11 +7,11 @@ CUSTOMER_VARS_JSON="${1}"
 VERCEL_TARGET="${2}"
 
 # Authenticate to vercel using the customer's access token
-VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.VERCEL_ACCESS_TOKEN')
+VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
 
-ORG_NAME=$(extract_json_value "$CUSTOMER_VARS_JSON" '.NEXT_PUBLIC_ORG_NAME')
+ORG_NAME=$(extract_json_value "$CUSTOMER_VARS_JSON" 'NEXT_PUBLIC_ORG_NAME')
 PROJECT_NAME="$(get_project_name "$ORG_NAME")"
-BLOB_REGION=$(extract_json_value "$CUSTOMER_VARS_JSON" '.BLOB_REGION')
+BLOB_REGION=$(extract_json_value "$CUSTOMER_VARS_JSON" 'BLOB_REGION')
 
 # Clean up generated .vercel dir and .env.local file to avoid conflict
 if [ -d ".vercel" ]; then

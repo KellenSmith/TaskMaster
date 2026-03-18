@@ -10,7 +10,7 @@ CUSTOMER_VARS_JSON="${1}"
 VERCEL_TARGET="${2}"
 
 # Authenticate to vercel using the customer's access token
-VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.VERCEL_ACCESS_TOKEN')
+VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
 
 -------------------------------------------------------------------------------------
 

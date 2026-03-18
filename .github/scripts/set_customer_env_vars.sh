@@ -17,27 +17,27 @@ if ! printf '%s' "$valid_environments" | grep -qw "$VERCEL_TARGET"; then
 fi
 
 # Authenticate to vercel using the customer's access token
-VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.VERCEL_ACCESS_TOKEN')
+VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
 
-EMAIL=$(extract_json_value "$CUSTOMER_VARS_JSON" '.EMAIL')
-EMAIL_PASSWORD=$(extract_json_value "$CUSTOMER_VARS_JSON" '.EMAIL_PASSWORD')
-SMTP_HOST=$(extract_json_value "$CUSTOMER_VARS_JSON" '.SMTP_HOST')
-SMTP_PORT=$(extract_json_value "$CUSTOMER_VARS_JSON" '.SMTP_PORT')
+EMAIL=$(extract_json_value "$CUSTOMER_VARS_JSON" 'EMAIL')
+EMAIL_PASSWORD=$(extract_json_value "$CUSTOMER_VARS_JSON" 'EMAIL_PASSWORD')
+SMTP_HOST=$(extract_json_value "$CUSTOMER_VARS_JSON" 'SMTP_HOST')
+SMTP_PORT=$(extract_json_value "$CUSTOMER_VARS_JSON" 'SMTP_PORT')
 
-GOOGLE_SITE_VERIFICATION=$(extract_json_value "$CUSTOMER_VARS_JSON" '.GOOGLE_SITE_VERIFICATION' true)
-NEXT_PUBLIC_ORG_DESCRIPTION=$(extract_json_value "$CUSTOMER_VARS_JSON" '.NEXT_PUBLIC_ORG_DESCRIPTION' true)
-NEXT_PUBLIC_SEO_KEYWORDS=$(extract_json_value "$CUSTOMER_VARS_JSON" '.NEXT_PUBLIC_SEO_KEYWORDS' true)
+GOOGLE_SITE_VERIFICATION=$(extract_json_value "$CUSTOMER_VARS_JSON" 'GOOGLE_SITE_VERIFICATION' true)
+NEXT_PUBLIC_ORG_DESCRIPTION=$(extract_json_value "$CUSTOMER_VARS_JSON" 'NEXT_PUBLIC_ORG_DESCRIPTION' true)
+NEXT_PUBLIC_SEO_KEYWORDS=$(extract_json_value "$CUSTOMER_VARS_JSON" 'NEXT_PUBLIC_SEO_KEYWORDS' true)
 
 
-SWEDBANK_BASE_URL=$(extract_json_value "$COMMON_VARS_JSON" '.SWEDBANK_BASE_URL')
+SWEDBANK_BASE_URL=$(extract_json_value "$COMMON_VARS_JSON" 'SWEDBANK_BASE_URL')
 # If VERCEL_TARGET=production, take SWEDBANK_PAY_ACCESS_TOKEN and SWEDBANK_PAY_PAYEE_ID
 # from customer vars, else from global vars
 if [ "$VERCEL_TARGET" = "production" ]; then
-    SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.SWEDBANK_PAY_ACCESS_TOKEN' true)
-    SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$CUSTOMER_VARS_JSON" '.SWEDBANK_PAY_PAYEE_ID' true)
+    SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'SWEDBANK_PAY_ACCESS_TOKEN' true)
+    SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$CUSTOMER_VARS_JSON" 'SWEDBANK_PAY_PAYEE_ID' true)
 else
-    SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$COMMON_VARS_JSON" '.SWEDBANK_PAY_ACCESS_TOKEN')
-    SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$COMMON_VARS_JSON" '.SWEDBANK_PAY_PAYEE_ID')
+    SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$COMMON_VARS_JSON" 'SWEDBANK_PAY_ACCESS_TOKEN')
+    SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$COMMON_VARS_JSON" 'SWEDBANK_PAY_PAYEE_ID')
 fi
 
 generate_secret() {
