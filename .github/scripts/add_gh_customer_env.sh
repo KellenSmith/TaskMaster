@@ -11,7 +11,7 @@
 set -euo pipefail
 
 ENV_NAME="${1:-demo}"
-VARS_FILE="${2:-scripts/secrets/customer-vars.json}"
+VARS_FILE="${2}"
 REPO="$(git config --get remote.origin.url | sed -E 's#.*github.com[:/](.+)\.git#\1#')"
 
 if [ ! -f "$VARS_FILE" ]; then

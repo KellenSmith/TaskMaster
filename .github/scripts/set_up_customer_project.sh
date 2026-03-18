@@ -13,6 +13,7 @@ done
 source "$(dirname "$0")/utils.sh"
 
 CUSTOMER_VARS_JSON="$1"
+echo "Customer variables JSON: $CUSTOMER_VARS_JSON"
 
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.VERCEL_ACCESS_TOKEN')
