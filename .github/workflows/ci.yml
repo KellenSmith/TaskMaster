@@ -70,7 +70,25 @@ jobs:
         EVENT: ${{ github.event_name }}
     outputs:
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
-      customer_environments: ${{ steps.set-vars.outputs.customer_environments }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-vars
+        name: Set global vars, Vercel target, and customer environments
+        run: |
+          # Default to preview
+          VERCEL_TARGET="preview"
+          # If master branch and not a pull_request, set to production
+          if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
+            VERCEL_TARGET="production"
+          fi
+          echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
+  deploy:
+    needs: [set-global-vars]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        customer_environment: ["demo", "proteus"]
+    environment: ${{ matrix.customer_environment }}
     steps:
       - uses: actions/checkout@v3
       - id: check-pr
@@ -84,28 +102,6 @@ jobs:
               exit 78
             fi
           fi
-      - id: set-vars
-        name: Set global vars, Vercel target, and customer environments
-        env:
-          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-        run: |
-          # Default to preview
-          VERCEL_TARGET="preview"
-          # If master branch and not a pull_request, set to production
-          if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
-            VERCEL_TARGET="production"
-          fi
-          echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
-          echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
-  deploy:
-    needs: [set-global-vars]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        customer_environment: ${{ fromJson(needs.set-global-vars.outputs.customer_environments) }}
-    environment: ${{ matrix.customer_environment }}
-    steps:
-      - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
       - uses: ./.github/actions/decode_vars_to_file
         with:

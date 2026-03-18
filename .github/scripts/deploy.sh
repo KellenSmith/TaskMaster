@@ -28,8 +28,8 @@ bash .github/scripts/set_up_customer_project.sh "${VERCEL_TARGET}"
 # Run the following scripts in parallel and exit 1 if any fail
 pids=()
 bash .github/scripts/set_customer_env_vars.sh "${VERCEL_TARGET}" & pids+=("$!")
-bash .github/scripts/provision-customer-rdb.sh "${VERCEL_TARGET}" & pids+=("$!")
-bash .github/scripts/provision-customer-blob.sh "${VERCEL_TARGET}" & pids+=("$!")
+bash .github/scripts/provision_customer_rdb.sh "${VERCEL_TARGET}" & pids+=("$!")
+bash .github/scripts/provision_customer_blob.sh "${VERCEL_TARGET}" & pids+=("$!")
 bash .github/scripts/deploy_to_customer_env.sh "${VERCEL_TARGET}" & pids+=("$!")
 
 # Wait for all background jobs and check exit codes
