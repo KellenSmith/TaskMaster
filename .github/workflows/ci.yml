@@ -113,9 +113,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: echo "${{ secrets.CUSTOMER_VARS }}"
+      - run: echo '${{ secrets.CUSTOMER_VARS }}'
       - name: Set up customer project and github link
-        run: bash .github/scripts/set_up_customer_project.sh "${{ secrets.CUSTOMER_VARS }}"
+        run: |
+          CUSTOMER_VARS_JSON=$(echo '${{ secrets.CUSTOMER_VARS }}' | jq -c .)
+          bash .github/scripts/set_up_customer_project.sh "$CUSTOMER_VARS_JSON"
   set-customer-env-vars:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
