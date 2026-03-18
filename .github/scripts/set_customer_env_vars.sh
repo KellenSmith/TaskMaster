@@ -15,9 +15,6 @@ fi
 COMMON_VARS_JSON=$(cat common_vars.json)
 VERCEL_TARGET="${1}"
 
-echo "Decoded customer vars JSON: $CUSTOMER_VARS_JSON"
-echo "Decoded global vars JSON: $COMMON_VARS_JSON"
-
 valid_environments="production preview"
 if ! printf '%s' "$valid_environments" | grep -qw "$VERCEL_TARGET"; then
     echo "Error: Invalid environment '$VERCEL_TARGET'. Valid options are: $valid_environments." >&2

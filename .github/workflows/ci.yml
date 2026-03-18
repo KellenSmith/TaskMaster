@@ -139,7 +139,7 @@ jobs:
           FILE_PATH: common_vars.json
       - name: Set up customer environment variables
         run: |
-          bash .github/scripts/set_customer_env_vars.sh "$VERCEL_TARGET"
+          bash .github/scripts/set_customer_env_vars.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
