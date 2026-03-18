@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: echo common_vars.json
+      - run: echo "$(cat common_vars.json)"
       - name: Set up customer project and github link
         run: bash .github/scripts/set_up_customer_project.sh "${{ secrets.CUSTOMER_VARS }}"
   set-customer-env-vars:
