@@ -133,10 +133,7 @@ jobs:
           if [[ "$VERCEL_TARGET" == "production" ]]; then
             COMMON_VARS_B64='${{ secrets.PRODUCTION_VARS }}'
           fi
-      - uses: ./.github/actions/decode_vars_to_file
-        with:
-          CUSTOMER_VARS_B64: "$COMMON_VARS_B64"
-          FILE_PATH: common_vars.json
+          echo "$COMMON_VARS_B64" | base64 --decode > "common_vars.json"
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
