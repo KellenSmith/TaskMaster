@@ -107,8 +107,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - name: "Write customer vars to file"
-        run: printf '%s' "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
+      - uses: ./.github/actions/decode_customer_vars
+        with:
+          CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Set up customer project and github link
         run: bash .github/scripts/set_up_customer_project.sh
   set-customer-env-vars:
@@ -121,17 +122,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
+      - uses: ./.github/actions/decode_customer_vars
+        with:
+          CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Find preview or production common vars
         run: |
           VERCEL_TARGET="${{ needs.set-global-vars.outputs.vercel_target }}"
-          COMMON_VARS='${{ secrets.PREVIEW_VARS }}'
+          COMMON_VARS_B64='${{ secrets.PREVIEW_VARS }}'
           # If master branch and not a pull_request, set to production
           if [[ "$VERCEL_TARGET" == "production" ]]; then
-            COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
+            COMMON_VARS_B64='${{ secrets.PRODUCTION_VARS }}'
           fi
-          printf '%s' "$COMMON_VARS" > common_vars.json
-      - name: "Write customer vars to file"
-        run: printf '%s' "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
+          COMMON_VARS_JSON=$(echo "$COMMON_VARS_B64" | base64 --decode)
+          printf '%s' "$COMMON_VARS_JSON" > common_vars.json
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh "$VERCEL_TARGET"
@@ -145,8 +148,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - name: "Write customer vars to file"
-        run: printf '%s' "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
+      - uses: ./.github/actions/decode_customer_vars
+        with:
+            CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/provision_customer_rdb.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
@@ -160,8 +164,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - name: "Write customer vars to file"
-        run: printf '%s' "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
+      - uses: ./.github/actions/decode_customer_vars
+        with:
+            CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/provision_customer_blob.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
@@ -175,8 +180,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - name: "Write customer vars to file"
-        run: printf '%s' "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
+      - uses: ./.github/actions/decode_customer_vars
+        with:
+            CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
       - name: Deploy to customer environment
         run: |
           bash .github/scripts/deploy_to_customer_env.sh "${{ needs.set-global-vars.outputs.vercel_target }}"

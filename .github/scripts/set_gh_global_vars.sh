@@ -19,7 +19,8 @@ if [ $? -ne 0 ]; then
     echo "Error: Failed to compact JSON in $PRODUCTION_VARS_FILE. Please check the file for syntax errors." >&2
     exit 1
 fi
-printf '%s' "$PRODUCTION_VARS_VALUE" | gh secret set PRODUCTION_VARS --repo "$REPO"
+PRODUCTION_VARS_VALUE_B64=$(printf '%s' "$PRODUCTION_VARS_VALUE" | base64 -w 0)
+printf '%s' "$PRODUCTION_VARS_VALUE_B64" | gh secret set PRODUCTION_VARS --repo "$REPO"
 
 
 echo "Uploading secret PREVIEW_VARS (compacted JSON)"
@@ -28,10 +29,7 @@ if [ $? -ne 0 ]; then
     echo "Error: Failed to compact JSON in $PREVIEW_VARS_FILE. Please check the file for syntax errors." >&2
     exit 1
 fi
-printf '%s' "$PREVIEW_VARS_VALUE" | gh secret set PREVIEW_VARS --repo "$REPO"
-
-echo "Upload encryption keys for secrets to use in workflows"
-ENCRYPTION_KEY=$(cat ".github/secrets/encryption_key.txt")
-printf '%s' "$ENCRYPTION_KEY" | gh secret set ENCRYPTION_KEY --repo "$REPO"
+PREVIEW_VARS_VALUE_B64=$(printf '%s' "$PREVIEW_VARS_VALUE" | base64 -w 0)
+printf '%s' "$PREVIEW_VARS_VALUE_B64" | gh secret set PREVIEW_VARS --repo "$REPO"
 
 echo "Done."

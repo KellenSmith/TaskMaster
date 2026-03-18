@@ -1,0 +1,17 @@
+name: 'Decode Customer Vars'
+description: 'Get the current secret.CUSTOMER_VARS, decode it from base 64 and write the JSON value to a file.'
+inputs:
+  CUSTOMER_VARS_B64:
+    description: 'Base 64 encoded string of customer vars JSON'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - run: CUSTOMER_VARS_B64="${{ inputs.CUSTOMER_VARS_B64 }}"
+      shell: bash
+    - name: Decode CUSTOMER_VARS from base 64
+      run: CUSTOMER_VARS_JSON=$(echo "$CUSTOMER_VARS_B64" | base64 --decode)
+      shell: bash
+    - name: Write decoded CUSTOMER_VARS to file
+      run: printf '%s' "$CUSTOMER_VARS_JSON" > customer_vars.json
+      shell: bash

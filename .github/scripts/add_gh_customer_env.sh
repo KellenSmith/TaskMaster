@@ -41,7 +41,9 @@ if [ $? -ne 0 ]; then
     echo "Error: Failed to compact JSON in $VARS_FILE. Please check the file for syntax errors." >&2
     exit 1
 fi
-printf '%s' "$SECRET_VALUE" | gh secret set CUSTOMER_VARS --env "$ENV_NAME" --repo "$REPO"
+# Encode the secret value in base64 to ensure it is safely transmitted, then decode it in the workflow before use
+SECRET_VALUE_B64=$(printf '%s' "$SECRET_VALUE" | base64 -w 0)
+printf '%s' "$SECRET_VALUE_B64" | gh secret set CUSTOMER_VARS --env "$ENV_NAME" --repo "$REPO"
 
 echo "Triggering pipeline on dev branch"
 gh workflow run --repo "$REPO" --ref dev
