@@ -129,7 +129,7 @@ jobs:
           if [[ "$VERCEL_TARGET" == "production" ]]; then
             COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
-          echo "$COMMON_VARS" > common_vars.json
+          printf '%s' "$COMMON_VARS" > common_vars.json
       - name: "Write customer vars to file"
         run: printf '%s' "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
       - name: Set up customer environment variables
