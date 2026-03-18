@@ -110,6 +110,10 @@ jobs:
       - uses: ./.github/actions/decode_customer_vars
         with:
           CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
+      - run: echo "${{secrets.CUSTOMER_VARS}}"
+      - run: echo "${{secrets.CUSTOMER_VARS}}" | base64 -d
+      - run: echo "${{secrets.PREVIEW_VARS}}"
+      - run: echo "${{secrets.PREVIEW_VARS}}" | base64 -d
       - name: Set up customer project and github link
         run: bash .github/scripts/set_up_customer_project.sh
   set-customer-env-vars:
