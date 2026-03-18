@@ -3,15 +3,20 @@ set -euo pipefail
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-CUSTOMER_VARS_JSON="$1"
-GLOBAL_VARS_B64="$2"
-echo "Global variables (base64): $GLOBAL_VARS_B64"
-GLOBAL_VARS_JSON=$(echo "$GLOBAL_VARS_B64" | base64 -d)
-echo "Global variables JSON: $GLOBAL_VARS_JSON"
-VERCEL_TARGET="$3"
+CUSTOMER_VARS_JSON="${1}"
+VERCEL_TARGET="${2}"
+
+# Read common_vars.json file for COMMON_VARS_JSON
+if [ -f common_vars.json ]; then
+    COMMON_VARS_JSON=$(cat common_vars.json)
+    echo "Common variables JSON loaded from common_vars.json."
+else
+    echo "Error: common_vars.json file not found!" >&2
+    exit 1
+fi
 
 echo "Decoded customer vars JSON: $CUSTOMER_VARS_JSON"
-echo "Decoded global vars JSON: $GLOBAL_VARS_JSON"
+echo "Decoded global vars JSON: $COMMON_VARS_JSON"
 
 valid_environments="production preview"
 if ! printf '%s' "$valid_environments" | grep -qw "$VERCEL_TARGET"; then
@@ -32,15 +37,15 @@ NEXT_PUBLIC_ORG_DESCRIPTION=$(extract_json_value "$CUSTOMER_VARS_JSON" '.NEXT_PU
 NEXT_PUBLIC_SEO_KEYWORDS=$(extract_json_value "$CUSTOMER_VARS_JSON" '.NEXT_PUBLIC_SEO_KEYWORDS' true)
 
 
-SWEDBANK_BASE_URL=$(extract_json_value "$GLOBAL_VARS_JSON" '.SWEDBANK_BASE_URL')
+SWEDBANK_BASE_URL=$(extract_json_value "$COMMON_VARS_JSON" '.SWEDBANK_BASE_URL')
 # If VERCEL_TARGET=production, take SWEDBANK_PAY_ACCESS_TOKEN and SWEDBANK_PAY_PAYEE_ID
 # from customer vars, else from global vars
 if [ "$VERCEL_TARGET" = "production" ]; then
     SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.SWEDBANK_PAY_ACCESS_TOKEN' true)
     SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$CUSTOMER_VARS_JSON" '.SWEDBANK_PAY_PAYEE_ID' true)
 else
-    SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$GLOBAL_VARS_JSON" '.SWEDBANK_PAY_ACCESS_TOKEN')
-    SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$GLOBAL_VARS_JSON" '.SWEDBANK_PAY_PAYEE_ID')
+    SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$COMMON_VARS_JSON" '.SWEDBANK_PAY_ACCESS_TOKEN')
+    SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$COMMON_VARS_JSON" '.SWEDBANK_PAY_PAYEE_ID')
 fi
 
 generate_secret() {

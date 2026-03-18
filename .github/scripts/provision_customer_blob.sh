@@ -3,8 +3,8 @@ set -euo pipefail
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-CUSTOMER_VARS_JSON="$1"
-VERCEL_TARGET="$2"
+CUSTOMER_VARS_JSON="${1}"
+VERCEL_TARGET="${2}"
 
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" '.VERCEL_ACCESS_TOKEN')

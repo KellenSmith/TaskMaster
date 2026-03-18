@@ -69,7 +69,6 @@ jobs:
         BRANCH: ${{ github.head_ref || github.ref_name }}
         EVENT: ${{ github.event_name }}
     outputs:
-      encrypted_common_vars: ${{ steps.set-vars.outputs.common_vars_b64 }}
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
       customer_environments: ${{ steps.set-vars.outputs.customer_environments }}
     steps:
@@ -98,9 +97,7 @@ jobs:
             VERCEL_TARGET="production"
             COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
-          # Encrypt COMMON_VARS using ENCRYPTION_KEY, then base64 encode for safe output
-          ENCRYPTED_COMMON_VARS=$(echo "$COMMON_VARS" | openssl enc -aes-256-cbc -a -salt -pbkdf2 -pass env:ENCRYPTION_KEY | base64 -w 0)
-          echo "encrypted_common_vars=$ENCRYPTED_COMMON_VARS" >> $GITHUB_OUTPUT
+          echo "$COMMON_VARS" >> common_vars.json
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
   set-up-customer-project:
@@ -113,11 +110,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: echo '${{ secrets.CUSTOMER_VARS }}'
+      - run: echo common_vars.json
       - name: Set up customer project and github link
-        run: |
-          CUSTOMER_VARS_JSON=$(echo '${{ secrets.CUSTOMER_VARS }}' | jq -c .)
-          bash .github/scripts/set_up_customer_project.sh "$CUSTOMER_VARS_JSON"
+        run: bash .github/scripts/set_up_customer_project.sh "${{ secrets.CUSTOMER_VARS }}"
   set-customer-env-vars:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
@@ -128,16 +123,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
-      - run: |
-          echo "${{ needs.set-global-vars.outputs.encrypted_common_vars }}" | base64 -d | openssl enc -aes-256-cbc -d -a -pbkdf2 -pass env:ENCRYPTION_KEY > common_vars.json
-        env:
-          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       - name: Set up customer environment variables
         run: |
           bash .github/scripts/set_customer_env_vars.sh \
-            "${{ secrets.CUSTOMER_VARS }}" \
-            "$(cat common_vars.json)" \
-            "${{ needs.set-global-vars.outputs.vercel_target }}"
+          "${{ secrets.CUSTOMER_VARS }}" \
+          "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
