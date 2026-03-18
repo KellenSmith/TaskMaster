@@ -34,16 +34,13 @@ else
     echo "Environment $ENV_NAME already exists."
 fi
 
-# Upload secret to environment
-echo "Uploading secret CUSTOMER_VARS to environment $ENV_NAME"
-SECRET_VALUE=$(cat "$VARS_FILE")
-# Make sure the SECRET_VALUE is a valid JSON string by trying to parse it with jq
-if ! echo "$SECRET_VALUE" | jq empty >/dev/null 2>&1; then
-    echo "Error: The content of $VARS_FILE is not a valid JSON string." >&2
+# Upload secret to environment (compact JSON to single line)
+echo "Uploading secret CUSTOMER_VARS to environment $ENV_NAME (compacted JSON)"
+SECRET_VALUE=$(jq -c . "$VARS_FILE")
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to compact JSON in $VARS_FILE. Please check the file for syntax errors." >&2
     exit 1
 fi
-# Use gh CLI to set secret (requires GitHub CLI v2.0+)
-# Note: gh secret set supports --env for environments
 printf '%s' "$SECRET_VALUE" | gh secret set CUSTOMER_VARS --env "$ENV_NAME" --repo "$REPO"
 
 echo "Triggering pipeline on dev branch"
