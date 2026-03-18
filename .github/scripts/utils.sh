@@ -5,6 +5,8 @@ extract_json_value() {
     local key="$2"
     local allow_empty="${3:-false}"
     local value
+    echo "Extracting key '$key' from JSON. Allow empty: $allow_empty"
+    echo "JSON content: $json"
     if value=$(echo "$json" | jq -er "$key"); then
         if { [ -z "$value" ] || [ "$value" = "null" ]; } && [ "$allow_empty" != "true" ]; then
             echo "Error: Required key $key is empty or null in JSON." >&2
