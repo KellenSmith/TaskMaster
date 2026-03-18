@@ -17,14 +17,14 @@ if [ ! -f customer_vars.json ]; then
     exit 1
 fi
 CUSTOMER_VARS_JSON=$(cat customer_vars.json)
-echo "Customer vars: $CUSTOMER_VARS_JSON"
-echo "Customer vars json size: $(echo -n "$CUSTOMER_VARS_JSON" | wc -c) bytes"
 
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
 
 ORG_NAME=$(extract_json_value "$CUSTOMER_VARS_JSON" 'NEXT_PUBLIC_ORG_NAME')
 PROJECT_NAME="$(get_project_name "$ORG_NAME")"
+
+echo "Using project name: $PROJECT_NAME"
 
 # Create a new project for the customer on the format "<org name>-taskmaster"
 # if it does not already exist
