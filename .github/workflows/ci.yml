@@ -64,10 +64,6 @@ jobs:
   set-global-vars:
     runs-on: ubuntu-latest
     needs: [lint, type-check, test]
-    env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BRANCH: ${{ github.head_ref || github.ref_name }}
-        EVENT: ${{ github.event_name }}
     outputs:
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
     steps:
@@ -89,6 +85,10 @@ jobs:
       matrix:
         customer_environment: ["demo", "proteus"]
     environment: ${{ matrix.customer_environment }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      EVENT: ${{ github.event_name }}
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
