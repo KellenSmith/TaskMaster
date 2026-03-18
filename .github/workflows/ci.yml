@@ -97,7 +97,7 @@ jobs:
           fi
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
-  set-customer-env-vars:
+  deploy:
     needs: [set-global-vars]
     runs-on: ubuntu-latest
     strategy:
