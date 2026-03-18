@@ -37,10 +37,14 @@ NEXT_PUBLIC_SEO_KEYWORDS=$(extract_json_value "$CUSTOMER_VARS_JSON" 'NEXT_PUBLIC
 SWEDBANK_BASE_URL=$(extract_json_value "$COMMON_VARS_JSON" 'SWEDBANK_BASE_URL')
 # If VERCEL_TARGET=production, take SWEDBANK_PAY_ACCESS_TOKEN and SWEDBANK_PAY_PAYEE_ID
 # from customer vars, else from global vars
+echo "Common vars: $COMMON_VARS_JSON"
+
 if [ "$VERCEL_TARGET" = "production" ]; then
+    echo "Using Swedbank Pay credentials from customer vars for production environment."
     SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'SWEDBANK_PAY_ACCESS_TOKEN' true)
     SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$CUSTOMER_VARS_JSON" 'SWEDBANK_PAY_PAYEE_ID' true)
 else
+    echo "Using Swedbank Pay credentials from global vars for non-production environment."
     SWEDBANK_PAY_ACCESS_TOKEN=$(extract_json_value "$COMMON_VARS_JSON" 'SWEDBANK_PAY_ACCESS_TOKEN')
     SWEDBANK_PAY_PAYEE_ID=$(extract_json_value "$COMMON_VARS_JSON" 'SWEDBANK_PAY_PAYEE_ID')
 fi
