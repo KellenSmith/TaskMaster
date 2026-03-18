@@ -1,21 +1,9 @@
 # usr/bin/env bash
 set -eo pipefail
 
-# Check for required CLI tools
-for tool in vercel openssl gh; do
-    if ! command -v "$tool" >/dev/null 2>&1; then
-        echo "Error: $tool is required but not installed. Please install it and rerun." >&2
-        exit 1
-    fi
-done
-
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-if [ ! -f customer_vars.json ]; then
-    echo "Error: customer_vars.json file not found!" >&2
-    exit 1
-fi
 CUSTOMER_VARS_JSON=$(cat customer_vars.json)
 
 # Authenticate to vercel using the customer's access token

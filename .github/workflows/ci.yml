@@ -97,23 +97,8 @@ jobs:
           fi
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
           echo 'customer_environments=["demo", "proteus"]' >> $GITHUB_OUTPUT
-  set-up-customer-project:
-    needs: set-global-vars
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        customer_environment: ${{ fromJson(needs.set-global-vars.outputs.customer_environments) }}
-    environment: ${{ matrix.customer_environment }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_vars_to_file
-        with:
-          CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
-      - name: Set up customer project and github link
-        run: bash .github/scripts/set_up_customer_project.sh
   set-customer-env-vars:
-    needs: [set-global-vars, set-up-customer-project]
+    needs: [set-global-vars]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -136,52 +121,4 @@ jobs:
           echo "$COMMON_VARS_B64" | base64 --decode > "common_vars.json"
       - name: Set up customer environment variables
         run: |
-          bash .github/scripts/set_customer_env_vars.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
-  provision-customer-rdb:
-    needs: [set-global-vars, set-up-customer-project]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        customer_environment: ${{ fromJson(needs.set-global-vars.outputs.customer_environments) }}
-    environment: ${{ matrix.customer_environment }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_vars_to_file
-        with:
-            CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
-      - name: Deploy to customer environment
-        run: |
-          bash .github/scripts/provision_customer_rdb.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
-  provision-customer-blob:
-    needs: [set-global-vars, set-up-customer-project]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        customer_environment: ${{ fromJson(needs.set-global-vars.outputs.customer_environments) }}
-    environment: ${{ matrix.customer_environment }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_vars_to_file
-        with:
-            CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
-      - name: Deploy to customer environment
-        run: |
-          bash .github/scripts/provision_customer_blob.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
-  deploy-to-customer-env:
-    needs: [set-global-vars, set-up-customer-project, set-customer-env-vars, provision-customer-rdb, provision-customer-blob]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        customer_environment: ${{ fromJson(needs.set-global-vars.outputs.customer_environments) }}
-    environment: ${{ matrix.customer_environment }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/install_deploy_tools
-      - uses: ./.github/actions/decode_vars_to_file
-        with:
-            CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
-      - name: Deploy to customer environment
-        run: |
-          bash .github/scripts/deploy_to_customer_env.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
+          bash .github/scripts/deploy.sh "${{ needs.set-global-vars.outputs.vercel_target }}"

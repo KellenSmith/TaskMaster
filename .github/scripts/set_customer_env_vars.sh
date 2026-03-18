@@ -15,12 +15,6 @@ fi
 COMMON_VARS_JSON=$(cat common_vars.json)
 VERCEL_TARGET="${1}"
 
-valid_environments="production preview"
-if ! printf '%s' "$valid_environments" | grep -qw "$VERCEL_TARGET"; then
-    echo "Error: Invalid environment '$VERCEL_TARGET'. Valid options are: $valid_environments." >&2
-    exit 1
-fi
-
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
 
