@@ -3,9 +3,17 @@ set -euo pipefail
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-CUSTOMER_VARS_JSON="${1}"
-COMMON_VARS_JSON="${2}"
-VERCEL_TARGET="${3}"
+if [ ! -f customer_vars.json ]; then
+    echo "Error: customer_vars.json file not found!" >&2
+    exit 1
+fi
+CUSTOMER_VARS_JSON=$(cat customer_vars.json)
+if [ ! -f common_vars.json ]; then
+    echo "Error: common_vars.json file not found!" >&2
+    exit 1
+fi
+COMMON_VARS_JSON=$(cat common_vars.json)
+VERCEL_TARGET="${1}"
 
 echo "Decoded customer vars JSON: $CUSTOMER_VARS_JSON"
 echo "Decoded global vars JSON: $COMMON_VARS_JSON"

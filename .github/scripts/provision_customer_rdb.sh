@@ -3,8 +3,12 @@ set -euo pipefail
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-CUSTOMER_VARS_JSON="${1}"
-VERCEL_TARGET="${2}"
+if [ ! -f customer_vars.json ]; then
+    echo "Error: customer_vars.json file not found!" >&2
+    exit 1
+fi
+CUSTOMER_VARS_JSON=$(cat customer_vars.json)
+VERCEL_TARGET="${1}"
 
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
@@ -16,7 +20,7 @@ DB_NAME="${PROJECT_NAME}-db-${VERCEL_TARGET}"
 resources_json=$(vercel integration list --format=json --non-interactive --token "$VERCEL_ACCESS_TOKEN")
 if printf '%s' "$resources_json" | jq -e --arg name "$DB_NAME" '(.resources // []) | any(.name == $name or .resource.name == $name)' >/dev/null; then
     echo "Prisma Postgres ${DB_NAME} already provisioned. Continuing setup."
-    return 0
+    exit 0
 fi
 
 integration_output=$(vercel integration add prisma/prisma-postgres \

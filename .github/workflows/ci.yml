@@ -107,8 +107,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
+      - name: "Write customer vars to file"
+        run: echo "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
       - name: Set up customer project and github link
-        run: bash .github/scripts/set_up_customer_project.sh "${{ secrets.CUSTOMER_VARS }}"
+        run: bash .github/scripts/set_up_customer_project.sh
   set-customer-env-vars:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
@@ -127,12 +129,12 @@ jobs:
           if [[ "$VERCEL_TARGET" == "production" ]]; then
             COMMON_VARS='${{ secrets.PRODUCTION_VARS }}'
           fi
+          echo "$COMMON_VARS" > common_vars.json
+      - name: "Write customer vars to file"
+        run: echo "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
       - name: Set up customer environment variables
         run: |
-          bash .github/scripts/set_customer_env_vars.sh \
-          "${{ secrets.CUSTOMER_VARS }}" \
-          "$COMMON_VARS" \
-          "$VERCEL_TARGET"
+          bash .github/scripts/set_customer_env_vars.sh "$VERCEL_TARGET"
   provision-customer-rdb:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
@@ -143,11 +145,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
+      - name: "Write customer vars to file"
+        run: echo "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
       - name: Deploy to customer environment
         run: |
-          bash .github/scripts/provision_customer_rdb.sh \
-            "${{ secrets.CUSTOMER_VARS }}" \
-            "${{ needs.set-global-vars.outputs.vercel_target }}"
+          bash .github/scripts/provision_customer_rdb.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
   provision-customer-blob:
     needs: [set-global-vars, set-up-customer-project]
     runs-on: ubuntu-latest
@@ -158,11 +160,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
+      - name: "Write customer vars to file"
+        run: echo "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
       - name: Deploy to customer environment
         run: |
-          bash .github/scripts/provision_customer_blob.sh \
-            "${{ secrets.CUSTOMER_VARS }}" \
-            "${{ needs.set-global-vars.outputs.vercel_target }}"
+          bash .github/scripts/provision_customer_blob.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
   deploy-to-customer-env:
     needs: [set-global-vars, set-up-customer-project, set-customer-env-vars, provision-customer-rdb, provision-customer-blob]
     runs-on: ubuntu-latest
@@ -173,8 +175,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
+      - name: "Write customer vars to file"
+        run: echo "${{ secrets.CUSTOMER_VARS }}" > customer_vars.json
       - name: Deploy to customer environment
         run: |
-          bash .github/scripts/deploy_to_customer_env.sh \
-            "${{ secrets.CUSTOMER_VARS }}" \
-            "${{ needs.set-global-vars.outputs.vercel_target }}"
+          bash .github/scripts/deploy_to_customer_env.sh "${{ needs.set-global-vars.outputs.vercel_target }}"

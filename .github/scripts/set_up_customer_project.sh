@@ -12,7 +12,11 @@ done
 # Source the util functions from their own file
 source "$(dirname "$0")/utils.sh"
 
-CUSTOMER_VARS_JSON="${1}"
+if [ ! -f customer_vars.json ]; then
+    echo "Error: customer_vars.json file not found!" >&2
+    exit 1
+fi
+CUSTOMER_VARS_JSON=$(cat customer_vars.json)
 
 # Authenticate to vercel using the customer's access token
 VERCEL_ACCESS_TOKEN=$(extract_json_value "$CUSTOMER_VARS_JSON" 'VERCEL_ACCESS_TOKEN')
