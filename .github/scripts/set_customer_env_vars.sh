@@ -63,12 +63,12 @@ add_customer_var_to_environments() {
 }
 
 # Generate secrets for the project and set them as environment variables if they don't already exist.
-if ! env_var_exists "AUTH_SECRET" >/dev/null; then
+if ! env_var_exists "AUTH_SECRET" "$VERCEL_TARGET" >/dev/null; then
     add_customer_var_to_environments "AUTH_SECRET" "$(generate_secret)" --sensitive
 else
     echo "AUTH_SECRET environment variable already exists. Skipping generation of new secret."
 fi
-if ! env_var_exists "CRON_SECRET" >/dev/null; then
+if ! env_var_exists "CRON_SECRET" "$VERCEL_TARGET" >/dev/null; then
     add_customer_var_to_environments "CRON_SECRET" "$(generate_secret)" --sensitive
 else
     echo "CRON_SECRET environment variable already exists. Skipping generation of new secret."

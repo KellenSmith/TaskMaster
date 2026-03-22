@@ -27,7 +27,7 @@ provision_vercel_blob_store() {
         exit 1
     fi
 
-    if env_var_exists "$token_name" >/dev/null; then
+    if env_var_exists "$token_name" "$VERCEL_TARGET" >/dev/null; then
         echo "$token_name environment variable already exists. Skipping blob store provisioning."
         return 0
     fi
