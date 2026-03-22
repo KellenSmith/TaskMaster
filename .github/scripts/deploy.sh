@@ -33,19 +33,7 @@ fi
 
 # Run the following scripts in parallel and exit 1 if any fail
 pids=()
-bash .github/scripts/set_customer_env_vars.sh "${VERCEL_TARGET}" & pids+=("$!")
-bash .github/scripts/provision_customer_rdb.sh "${VERCEL_TARGET}" & pids+=("$!")
-bash .github/scripts/provision_customer_blob.sh "${VERCEL_TARGET}" & pids+=("$!")
-
-# Wait for all background jobs and check exit codes
-exit_code=0
-for pid in "${pids[@]}"; do
-    wait "$pid" || exit_code=1
-done
-
-if [ $exit_code -ne 0 ]; then
-    echo "One or more provisioning steps failed." >&2
-    exit 1
-fi
-
+bash .github/scripts/set_customer_env_vars.sh "${VERCEL_TARGET}"
+bash .github/scripts/provision_customer_rdb.sh "${VERCEL_TARGET}"
+bash .github/scripts/provision_customer_blob.sh "${VERCEL_TARGET}"
 bash .github/scripts/deploy_to_customer_env.sh "${VERCEL_TARGET}"
