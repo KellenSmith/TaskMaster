@@ -115,6 +115,6 @@ jobs:
             COMMON_VARS_B64='${{ secrets.PRODUCTION_VARS }}'
           fi
           echo "$COMMON_VARS_B64" | base64 --decode > "common_vars.json"
-      - name: Set up customer environment variables
+      - name: Deploy to Vercel env
         run: |
           bash .github/scripts/deploy.sh "${{ needs.set-global-vars.outputs.vercel_target }}"
