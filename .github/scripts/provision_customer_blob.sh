@@ -13,13 +13,6 @@ ORG_NAME=$(extract_json_value "$CUSTOMER_VARS_JSON" 'NEXT_PUBLIC_ORG_NAME')
 PROJECT_NAME="$(get_project_name "$ORG_NAME")"
 BLOB_REGION=$(extract_json_value "$CUSTOMER_VARS_JSON" 'BLOB_REGION')
 
-env_var_exists() {
-    local var_name="$1"
-    local env_vars_json
-    env_vars_json=$(vercel env ls --format=json --non-interactive --token "$VERCEL_ACCESS_TOKEN")
-    printf '%s' "$env_vars_json" | jq -e --arg name "$var_name" '(.envs // []) | any(.key == $name)' >/dev/null
-}
-
 valid_blob_access_levels="public private"
 
 provision_vercel_blob_store() {

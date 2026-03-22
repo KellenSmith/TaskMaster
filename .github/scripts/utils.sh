@@ -39,3 +39,14 @@ get_project_name() {
     fi
     printf '%s' "$project_name"
 }
+
+env_var_exists() {
+    local var_name="$1"
+    local env_vars_json
+    env_vars_json=$(vercel env ls --format=json --non-interactive --token "$VERCEL_ACCESS_TOKEN")
+    if printf '%s' "$env_vars_json" | jq -e --arg name "$var_name" '(.envs // []) | any(.key == $name)' >/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
