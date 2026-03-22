@@ -31,8 +31,6 @@ if [ ! -f .vercel/project.json ]; then
     exit 1
 fi
 
-# Run the following scripts in parallel and exit 1 if any fail
-pids=()
 bash .github/scripts/set_customer_env_vars.sh "${VERCEL_TARGET}"
 bash .github/scripts/provision_customer_rdb.sh "${VERCEL_TARGET}"
 bash .github/scripts/provision_customer_blob.sh "${VERCEL_TARGET}"
