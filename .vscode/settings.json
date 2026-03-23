@@ -18,10 +18,10 @@
     "editor.tabCompletion": "on",
     "editor.acceptSuggestionOnCommitCharacter": false,
     "editor.acceptSuggestionOnEnter": "on",
-    "typescript.preferences.includePackageJsonAutoImports": "on",
-    "typescript.suggest.autoImports": true,
-    "typescript.suggest.paths": true,
-    "typescript.preferences.importModuleSpecifier": "relative",
+    "js/ts.preferences.includePackageJsonAutoImports": "on",
+    "js/ts.suggest.autoImports": true,
+    "js/ts.suggest.paths": true,
+    "js/ts.preferences.importModuleSpecifier": "relative",
     "emmet.includeLanguages": {
         "typescript": "typescriptreact"
     },
@@ -35,5 +35,8 @@
     },
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
-    "files.trimFinalNewlines": true
+    "files.trimFinalNewlines": true,
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }

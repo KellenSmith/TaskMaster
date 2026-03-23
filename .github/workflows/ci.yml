@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [master, dev]
   pull_request:
@@ -20,7 +21,6 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-
       - run: pnpm lint
 
   type-check:
@@ -61,3 +61,60 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+  set-global-vars:
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test]
+    outputs:
+      vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-vars
+        name: Set global vars, Vercel target, and customer environments
+        run: |
+          # Default to preview
+          VERCEL_TARGET="preview"
+          # If master branch and not a pull_request, set to production
+          if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
+            VERCEL_TARGET="production"
+          fi
+          echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
+  deploy:
+    needs: [set-global-vars]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        customer_environment: ["demo", "clubwish", "proteus"]
+    environment: ${{ matrix.customer_environment }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      EVENT: ${{ github.event_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install_deploy_tools
+      - id: check-pr
+        name: Check for open PR to dev
+        run: |
+          # Only check for PR if not master or dev branch
+          if [[ "$BRANCH" != "master" && "$BRANCH" != "dev" ]]; then
+            PR_COUNT=$(gh pr list --base dev --head "$BRANCH" --state open --json number --jq 'length')
+            if [[ "$PR_COUNT" -eq 0 ]]; then
+              echo "No open PR from $BRANCH to dev. Skipping workflow."
+              exit 78
+            fi
+          fi
+      - uses: ./.github/actions/decode_vars_to_file
+        with:
+          CUSTOMER_VARS_B64: ${{ secrets.CUSTOMER_VARS }}
+      - name: Find preview or production common vars
+        run: |
+          VERCEL_TARGET="${{ needs.set-global-vars.outputs.vercel_target }}"
+          COMMON_VARS_B64='${{ secrets.PREVIEW_VARS }}'
+          # If master branch and not a pull_request, set to production
+          if [[ "$VERCEL_TARGET" == "production" ]]; then
+            COMMON_VARS_B64='${{ secrets.PRODUCTION_VARS }}'
+          fi
+          echo "$COMMON_VARS_B64" | base64 --decode > "common_vars.json"
+      - name: Deploy to Vercel env
+        run: |
+          bash .github/scripts/deploy.sh "${{ needs.set-global-vars.outputs.vercel_target }}"

@@ -44,6 +44,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Customer deployment data
+.github/secrets/*
+!.github/secrets/customer_vars.example.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
