@@ -69,7 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ticketInfoPromise }) => {
                             >{`${formatDate(eventParticipant.ticket.event.start_time)} - ${formatDate(eventParticipant.ticket.event.end_time)}`}</Typography>
                             <CardMedia sx={{ display: "flex", justifyContent: "center" }}>
                                 <Image
-                                    src={getAbsoluteUrl([
+                                    src={getRelativeUrl([
                                         "api",
                                         "ticket-qrcode",
                                         eventParticipant.id,
