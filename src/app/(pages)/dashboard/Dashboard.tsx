@@ -5,7 +5,7 @@ import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import { Card, CardHeader, CardMedia, Stack, Typography } from "@mui/material";
 import Image from "next/image";
-import { clientRedirect, getAbsoluteUrl, getRelativeUrl } from "../../lib/utils";
+import { clientRedirect, getRelativeUrl } from "../../lib/utils";
 import Link from "next/link";
 import GlobalConstants from "../../GlobalConstants";
 import LanguageTranslations from "./LanguageTranslations";
