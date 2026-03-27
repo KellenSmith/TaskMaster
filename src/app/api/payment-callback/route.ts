@@ -83,7 +83,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         // Process the payment check as normal
         if (!order.user_id) throw new Error("Order has no associated user");
-        await checkPaymentStatus(order.user_id, orderId);
+        const errorMsg = await checkPaymentStatus(order.user_id, orderId);
+        if (errorMsg) throw new Error(`Payment check failed: ${errorMsg}`);
         console.log(`Order ${orderId} status verified and updated via GET request`);
 
         return new NextResponse("OK", { status: 200 });

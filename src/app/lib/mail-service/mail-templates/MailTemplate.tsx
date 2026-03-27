@@ -3,7 +3,7 @@ import { Html, Head, Body, Container, Heading, Button, Img } from "@react-email/
 import mailTheme from "../mail-theme";
 import { getAbsoluteUrl } from "../../utils";
 import GlobalConstants from "../../../GlobalConstants";
-import { getOrganizationSettings } from "../../organization-settings-actions";
+import { getOrganizationSettings } from "../../organization-settings-helpers";
 
 export const renderHtml = (html: string | undefined) => {
     if (!html) return null;

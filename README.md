@@ -69,3 +69,7 @@ Create a new file in the root folder called ".env" and ask Kellen for the conten
 - Environment variables: `docs/02-environment.md` (+ see `.env.example`)
 - Architecture overview: `docs/03-architecture.md`
 - Testing: `docs/04-testing.md`
+- User Scenarios: `docs/05-user-scenarios.md`
+- User acceptance test flows: `docs/06-user-acceptance-test-flows.md`
+- Server action style conventions: `docs/07-server-action-style-conventions.md`
+- Deployment: `docs/08-deployment.md`

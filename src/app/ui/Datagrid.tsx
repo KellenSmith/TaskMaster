@@ -72,7 +72,7 @@ interface DatagridProps {
     updateAction?: (
         rowId: string, // eslint-disable-line no-unused-vars
         fieldValues: FormData, // eslint-disable-line no-unused-vars
-    ) => Promise<void>;
+    ) => Promise<string | undefined>;
     // eslint-disable-next-line no-unused-vars
     createAction?: (fieldValues: FormData) => Promise<void>;
     filteredRowsActions?: FilteredRowsActionProps[];
@@ -310,21 +310,26 @@ const Datagrid: React.FC<DatagridProps> = ({
     };
 
     const updateRow = async (fieldValues: FormData) => {
+        if (!updateAction) throw new Error(LanguageTranslations.noUpdateActionProvided[language]);
+        if (!clickedRow) throw new Error(LanguageTranslations.noRowSelected[language]);
+
+        let errorMsg: string | undefined;
         try {
-            if (!updateAction) throw new Error("No update action provided");
-            if (!clickedRow) throw new Error("No row selected");
-            await updateAction(clickedRow.id, fieldValues);
-            setClickedRow(null);
-            return GlobalLanguageTranslations.successfulSave[language];
+            errorMsg = await updateAction(clickedRow.id, fieldValues);
+            if (!errorMsg) {
+                setClickedRow(null);
+                return GlobalLanguageTranslations.successfulSave[language];
+            }
         } catch {
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            errorMsg = GlobalLanguageTranslations.failedSave[language];
         }
+        throw new Error(errorMsg);
     };
 
     const handleRowAction = (rowAction: RowActionProps) => {
         startTransition(async () => {
             try {
-                if (!clickedRow) throw new Error("No row selected");
+                if (!clickedRow) throw new Error(LanguageTranslations.noRowSelected[language]);
                 const result = await rowAction.serverAction(clickedRow);
                 setClickedRow(null);
                 addNotification(result, "success");

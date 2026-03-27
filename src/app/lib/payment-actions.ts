@@ -2,15 +2,16 @@
 
 import { prisma } from "../../prisma/prisma-client";
 import { isUserAdmin } from "./utils";
-import { getLoggedInUser } from "./user-helpers";
+import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import { UuidSchema } from "./zod-schemas";
 import { progressOrder } from "./order-helpers";
-import { isOrderpaid, redirectToSwedbankPayment } from "./payment-helpers";
+import { isOrderpaid, redirectToSwedbankPayment, isSwedbankPayConfigured } from "./payment-helpers";
 import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { OrderStatus } from "../../prisma/generated/enums";
+import LanguageTranslations from "./LanguageTranslations";
 
-export const redirectToOrderPayment = async (orderId: string): Promise<void> => {
+export const redirectToOrderPayment = async (orderId: string): Promise<string | undefined> => {
     const validatedOrderId = UuidSchema.parse(orderId);
 
     const order = await prisma.order.findUniqueOrThrow({
@@ -24,11 +25,11 @@ export const redirectToOrderPayment = async (orderId: string): Promise<void> => 
     // Only allow paying for own orders
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser || order.user_id !== loggedInUser.id) {
-        throw new Error("Unauthorized to pay for this order");
+        return LanguageTranslations.unauthorized[await getUserLanguage()];
     }
     // Only allow payment for pending orders
     if (order.status !== OrderStatus.pending) {
-        throw new Error("Only pending orders can be paid for");
+        return LanguageTranslations.onlyPendingOrders[await getUserLanguage()];
     }
     // Free order - no payment needed - process immediately
     if (order.total_amount === 0) {
@@ -37,10 +38,16 @@ export const redirectToOrderPayment = async (orderId: string): Promise<void> => 
         return;
     }
 
+    if (!isSwedbankPayConfigured())
+        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
+
     await redirectToSwedbankPayment(order);
 };
 
-export const checkPaymentStatus = async (userId: string, orderId: string): Promise<void> => {
+export const checkPaymentStatus = async (
+    userId: string,
+    orderId: string,
+): Promise<string | undefined> => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedOrderId = UuidSchema.parse(orderId);
 
@@ -59,7 +66,7 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
     // Only allow admins to check other users' orders
     const loggedInUser = await getLoggedInUser();
     if (!isUserAdmin(loggedInUser) && order.user_id !== validatedUserId) {
-        throw new Error("Unauthorized to check payment status for this order");
+        return LanguageTranslations.unauthorized[await getUserLanguage()];
     }
     // Do nothing to cancelled or completed orders
     if (order.status === OrderStatus.cancelled || order.status === OrderStatus.completed) {
@@ -71,11 +78,17 @@ export const checkPaymentStatus = async (userId: string, orderId: string): Promi
         revalidateTag(GlobalConstants.ORDER, "max");
         return;
     }
+
+    // Orders with price > 0 should not be possible when Swedbank Pay is not configured,
+    // but check just in case to avoid processing payments without proper setup.
+    if (!isSwedbankPayConfigured())
+        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
+
     if (!order.payment_request_id) {
         // This should not happen - an order without payment request ID is either pending,
         // cancelled or free which are handled above. Log and throw error if it does.
         if (order.status !== OrderStatus.pending)
-            throw new Error("No payment initiated for non-pending order");
+            return LanguageTranslations.noPaymentInitiated[await getUserLanguage()];
         // No payment initiated, nothing to check
         return;
     }

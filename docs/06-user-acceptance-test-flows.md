@@ -20,6 +20,7 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 - The user is granted a free yearly membership.
 - The user is assigned the role "admin".
 - Membership details are visible on the profile page.
+- All menu items are visible, including admins only items.
 
 **Post-condition:**
 - Log out.
@@ -51,7 +52,7 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 3. Validate the new member's membership application.
 4. Log out.
 5. Log in with the new member's account.
-6. Go to the profile page and verify that the membership status is updated to valid (green).
+6. Go to the profile page and verify that the membership status is updated to valid.
 
 **Expected Results:**
 - The new member's membership is validated and the status is updated to expired (red) in the members list.
@@ -156,11 +157,12 @@ This document outlines the most recommended test flows for a User Acceptance Tes
    - Type: "standard"
    - Price: 100
 8. Go to the participant tab in the event and verify that the member is on the participant list.
-9. Log out and log in with the eventParticipant account.
+9. Send the event for approval.
 10. Log out and log in with the admin account.
-11. Publish the event.
-12. Log out and log in with the eventParticipant account.
-13. Go to the calendar page and verify that the event is visible.
+11. Approve the event.
+12. Publish the event.
+13. Log out and log in with the eventParticipant account.
+14. Go to the calendar page and verify that the event is visible.
 
 **Expected Results:**
 - Created tasks have start and end time set to the event start and end time by default.
@@ -203,7 +205,7 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 5. Submit the event for approval.
 6. Log out.
 7. Log in with the admin account.
-8. Navigate to the calendar page and approve the pending event.
+8. Navigate to the calendar page and publish the pending event.
 
 **Expected Results:**
 - The pending event is submitted for approval and visible to the member as a draft in the calendar.

@@ -55,10 +55,11 @@ export const createAndRedirectToOrder = async (
 };
 
 export const cancelOrder = async (orderId: string): Promise<void> => {
+    const parsedOrderId = UuidSchema.parse(orderId);
     // Only allow admins or order owners to cancel orders
     const loggedInUser = await getLoggedInUser();
     const order = await prisma.order.findUniqueOrThrow({
-        where: { id: orderId },
+        where: { id: parsedOrderId },
         select: { user_id: true, status: true },
     });
     if (!loggedInUser) throw new Error("User must be logged in to cancel an order");
@@ -70,7 +71,7 @@ export const cancelOrder = async (orderId: string): Promise<void> => {
         throw new Error("Only pending orders can be cancelled");
 
     await prisma.order.update({
-        where: { id: orderId },
+        where: { id: parsedOrderId },
         data: { status: OrderStatus.cancelled },
     });
     revalidateTag(GlobalConstants.ORDER, "max");

@@ -9,9 +9,17 @@ import {
 } from "./payment-types";
 import { getAbsoluteUrl } from "./utils";
 import GlobalConstants from "../GlobalConstants";
-import { getOrganizationSettings } from "./organization-settings-actions";
+import { getOrganizationSettings } from "./organization-settings-helpers";
 import { getUserLanguage } from "./user-helpers";
 import { redirect } from "next/navigation";
+
+export const isSwedbankPayConfigured = (): boolean => {
+    return (
+        !!process.env.SWEDBANK_PAY_ACCESS_TOKEN &&
+        !!process.env.SWEDBANK_PAY_PAYEE_ID &&
+        !!process.env.SWEDBANK_BASE_URL
+    );
+};
 
 const makeSwedbankApiRequest = async (url: string, body?: unknown) => {
     return await fetch(url, {

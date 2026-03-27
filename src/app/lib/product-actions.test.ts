@@ -6,6 +6,8 @@ import { buildFormData } from "../../test/test-helpers";
 import * as productActions from "./product-actions";
 import { sanitizeFormData } from "./html-sanitizer";
 import { deleteOldBlob } from "./organization-settings-actions";
+import { isSwedbankPayConfigured } from "./payment-helpers";
+import { getUserLanguage } from "./user-helpers";
 
 vi.mock("./html-sanitizer", () => ({
     sanitizeFormData: vi.fn(),
@@ -17,6 +19,10 @@ vi.mock("./organization-settings-actions", () => ({
 
 vi.mock("./utils", () => ({
     getAbsoluteUrl: vi.fn().mockReturnValue("https://example.com/order?id=123"),
+}));
+vi.mock("./payment-helpers", () => ({ isSwedbankPayConfigured: vi.fn() }));
+vi.mock("./user-helpers", () => ({
+    getUserLanguage: vi.fn(),
 }));
 
 const productId = "550e8400-e29b-41d4-a716-446655440000";
@@ -43,6 +49,7 @@ describe("product-actions", () => {
             };
 
             vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
+            vi.mocked(isSwedbankPayConfigured).mockReturnValue(true);
             mockContext.prisma.product.create.mockResolvedValue({ id: productId } as any);
 
             const formData = buildFormData(baseProductForm);
@@ -73,6 +80,7 @@ describe("product-actions", () => {
             };
 
             vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
+            vi.mocked(isSwedbankPayConfigured).mockReturnValue(true);
             mockContext.prisma.membership.create.mockResolvedValue({
                 product_id: productId,
             } as any);
@@ -114,6 +122,7 @@ describe("product-actions", () => {
             };
 
             vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
+            vi.mocked(isSwedbankPayConfigured).mockReturnValue(true);
             mockContext.prisma.membership.update.mockResolvedValue({
                 product_id: productId,
             } as any);
@@ -213,6 +222,7 @@ describe("product-actions", () => {
             };
 
             vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
+            vi.mocked(isSwedbankPayConfigured).mockReturnValue(true);
             mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue({
                 id: productId,
                 image_url: oldImageUrl,
@@ -285,6 +295,7 @@ describe("product-actions", () => {
             };
 
             vi.mocked(sanitizeFormData).mockReturnValue(sanitized as any);
+            vi.mocked(isSwedbankPayConfigured).mockReturnValue(true);
             mockContext.prisma.product.findUniqueOrThrow.mockResolvedValue({
                 id: productId,
                 image_url: "https://blob.vercel-storage.com/old.png",
