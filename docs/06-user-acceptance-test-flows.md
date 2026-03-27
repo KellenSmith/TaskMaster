@@ -226,6 +226,7 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 
 **Expected Results:**
 - The ticket is purchased successfully and visible in the event's ticket tab.
+- The ticket QR-code is visible and scannable on the dashboard page.
 - An email confirmation is sent to the participant.
 
 ## 12. Volunteer for an event
