@@ -73,8 +73,8 @@ jobs:
         run: |
           # Default to preview
           VERCEL_TARGET="preview"
-          # If master branch and not a pull_request, set to production
-          if [[ "$BRANCH" == "master" && "$EVENT" != "pull_request" ]]; then
+          # If master branch, set to production
+          if [[ "$BRANCH" == "master" ]]; then
             VERCEL_TARGET="production"
           fi
           echo "vercel_target=$VERCEL_TARGET" >> $GITHUB_OUTPUT
