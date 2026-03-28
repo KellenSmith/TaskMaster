@@ -66,6 +66,9 @@ jobs:
     needs: [lint, type-check, test]
     outputs:
       vercel_target: ${{ steps.set-vars.outputs.vercel_target }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v3
       - id: set-vars
@@ -88,7 +91,6 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BRANCH: ${{ github.head_ref || github.ref_name }}
-      EVENT: ${{ github.event_name }}
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install_deploy_tools
