@@ -17,6 +17,7 @@ import {
     useTheme,
     useMediaQuery,
     Link,
+    Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -224,20 +225,26 @@ const NavPanel = () => {
                             alignItems: "center",
                         }}
                     >
-                        <Image
-                            priority={true}
-                            src={organizationSettings?.logo_url || "/images/taskmaster-logo.svg"}
-                            alt={process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
-                            title={process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
-                            height={40}
-                            width={200}
-                            style={{ cursor: "pointer" }}
-                            onClick={() =>
-                                clientRedirect(router, [
-                                    user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
-                                ])
-                            }
-                        />
+                        {organizationSettings?.logo_url ? (
+                            <Image
+                                priority={true}
+                                src={organizationSettings.logo_url}
+                                alt={process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
+                                title={process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
+                                height={40}
+                                width={200}
+                                style={{ cursor: "pointer" }}
+                                onClick={() =>
+                                    clientRedirect(router, [
+                                        user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
+                                    ])
+                                }
+                            />
+                        ) : (
+                            <Typography variant="h5">
+                                {process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
+                            </Typography>
+                        )}
                     </Box>
                     <LanguageMenu />
                 </Toolbar>

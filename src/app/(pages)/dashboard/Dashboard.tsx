@@ -5,7 +5,7 @@ import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import { Card, CardHeader, CardMedia, Stack, Typography } from "@mui/material";
 import Image from "next/image";
-import { clientRedirect, getAbsoluteUrl, getRelativeUrl } from "../../lib/utils";
+import { clientRedirect, getRelativeUrl } from "../../lib/utils";
 import Link from "next/link";
 import GlobalConstants from "../../GlobalConstants";
 import LanguageTranslations from "./LanguageTranslations";
@@ -69,7 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ticketInfoPromise }) => {
                             >{`${formatDate(eventParticipant.ticket.event.start_time)} - ${formatDate(eventParticipant.ticket.event.end_time)}`}</Typography>
                             <CardMedia sx={{ display: "flex", justifyContent: "center" }}>
                                 <Image
-                                    src={getAbsoluteUrl([
+                                    src={getRelativeUrl([
                                         "api",
                                         "ticket-qrcode",
                                         eventParticipant.id,

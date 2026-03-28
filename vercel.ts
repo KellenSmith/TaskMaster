@@ -5,6 +5,9 @@ const vercelConfig: VercelConfig = {
     framework: "nextjs",
     devCommand: "pnpm dev",
     installCommand: "bash scripts/install-postgresql17.sh && pnpm install",
+    git: {
+        deploymentEnabled: false,
+    },
     crons: [
         {
             path: "/api/cron",

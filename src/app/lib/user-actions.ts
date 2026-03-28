@@ -239,6 +239,7 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
         const mailContent = createElement(MailTemplate, {
             html: `Your membership has been validated. You can now log in and access member features.`,
         });
+        // TODO: Invalidate the validated user's session to refresh their permissions and membership status on their next login
         await sendMail([validatedUser.email], `Your membership has been validated`, mailContent);
     });
 
