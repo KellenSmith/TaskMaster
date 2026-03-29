@@ -148,7 +148,7 @@ const OrdersReportPDF = ({ orders, language }: OrdersReportPDFProps) => {
                     <Text style={styles.eventDetailLabel}>
                         {LanguageTranslations.printed[language]}
                     </Text>
-                    <Text>{formatDate(dayjs.utc())}</Text>
+                    <Text>{formatDate(dayjs())}</Text>
                 </View>
                 {getReportDetails()}
                 <View style={styles.table}>

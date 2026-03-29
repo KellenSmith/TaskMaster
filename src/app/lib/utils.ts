@@ -56,7 +56,7 @@ export const isMembershipExpired = (
 ): boolean => {
     if (!user) return true;
     const membershipExpiresAt = user.user_membership?.expires_at;
-    return !membershipExpiresAt || dayjs.utc().isAfter(dayjs.utc(membershipExpiresAt));
+    return !membershipExpiresAt || dayjs().isAfter(dayjs(membershipExpiresAt));
 };
 
 export const isUserAdmin = (

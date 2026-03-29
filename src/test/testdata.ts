@@ -1,9 +1,6 @@
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { UserRole } from "../prisma/generated/enums";
 import { Prisma } from "../prisma/generated/client";
-
-dayjs.extend(utc);
 
 const testdata = {
     env: {
@@ -38,12 +35,12 @@ const testdata = {
         role: UserRole.member,
         consent_to_newsletters: true,
         phone: "123-456-7890",
-        created_at: dayjs.utc().subtract(1, "year").toDate(),
+        created_at: dayjs().subtract(1, "year").toDate(),
         user_membership: {
             id: "test-membership-id",
             membership_id: "test-membership-id",
             user_id: "test-user-id",
-            expires_at: dayjs.utc().add(1, "year").toDate(),
+            expires_at: dayjs().add(1, "year").toDate(),
         },
         skill_badges: [],
     } as unknown as Prisma.UserGetPayload<{

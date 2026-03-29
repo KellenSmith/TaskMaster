@@ -30,9 +30,7 @@ describe("user-membership-actions", () => {
 
             await membershipActions.addUserMembership(testUserId, formData);
 
-            const expectedExpiresAt = dayjs
-                .utc("12/02/2026 10:00", "DD/MM/YYYY HH:mm", true)
-                .format();
+            const expectedExpiresAt = dayjs("12/02/2026 10:00", "DD/MM/YYYY HH:mm", true).format();
 
             expect(mockContext.prisma.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId, membership_id: "membership-1" },

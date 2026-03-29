@@ -44,7 +44,7 @@ describe("user-membership-helpers", () => {
 
             await membershipActions.renewUserMembership(tx as any, testUserId, "membership-1");
 
-            const expectedExpiresAt = dayjs.utc("2026-02-12T00:00:00Z").add(365, "d").toISOString();
+            const expectedExpiresAt = dayjs("2026-02-12T00:00:00Z").add(365, "d").toISOString();
 
             expect(tx.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId },
@@ -80,10 +80,7 @@ describe("user-membership-helpers", () => {
 
             await membershipActions.renewUserMembership(tx as any, testUserId, "membership-1");
 
-            const expectedExpiresAt = dayjs
-                .utc("2026-03-01T00:00:00.000Z")
-                .add(365, "d")
-                .toISOString();
+            const expectedExpiresAt = dayjs("2026-03-01T00:00:00.000Z").add(365, "d").toISOString();
 
             expect(tx.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId },

@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { getOrganizationSettings } from "../../lib/organization-settings-helpers";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
 import { prisma } from "../../../prisma/prisma-client";
-import dayjs from "dayjs";
+import * as dayjs from "dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import {
     expiringMembershipMaintenance,
@@ -27,9 +27,9 @@ vi.mock("../../lib/organization-settings-helpers", () => ({
 const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-const mockedNow = dayjs.utc();
+const mockedNow = dayjs.default();
 beforeEach(() => {
-    vi.spyOn(dayjs, "utc").mockReturnValue(mockedNow);
+    vi.spyOn(dayjs, "default").mockReturnValue(mockedNow);
 });
 
 describe("cron jobs", () => {
@@ -50,7 +50,7 @@ describe("cron jobs", () => {
                 where: {
                     user_membership: null,
                     created_at: {
-                        lt: dayjs.utc().subtract(mockPurgeDays, "d").toDate(),
+                        lt: dayjs.default().subtract(mockPurgeDays, "d").toDate(),
                     },
                 },
             });
@@ -65,7 +65,7 @@ describe("cron jobs", () => {
                 subtract: vi.fn().mockReturnThis(),
                 toDate: vi.fn().mockReturnValue(new Date("2026-01-01T00:00:00.000Z")),
             };
-            vi.spyOn(dayjs, "utc").mockReturnValue(mockDayjs as any);
+            vi.spyOn(dayjs, "default").mockReturnValue(mockDayjs as any);
             await purgeStaleMembershipApplications();
             expect(prisma.user.deleteMany).toHaveBeenCalledWith(
                 expect.objectContaining({

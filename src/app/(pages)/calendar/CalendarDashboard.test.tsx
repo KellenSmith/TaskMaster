@@ -30,15 +30,15 @@ const events = [
     {
         id: "1",
         title: "Event 1",
-        start_time: dayjs.utc("2026-03-10").toDate(),
-        end_time: dayjs.utc("2026-03-10").add(1, "hour").toDate(),
+        start_time: dayjs("2026-03-10").toDate(),
+        end_time: dayjs("2026-03-10").add(1, "hour").toDate(),
         tags: ["Tag1", "Tag2"],
     },
     {
         id: "2",
         title: "Event 2",
-        start_time: dayjs.utc("2026-03-15").toDate(),
-        end_time: dayjs.utc("2026-03-15").add(1, "hour").toDate(),
+        start_time: dayjs("2026-03-15").toDate(),
+        end_time: dayjs("2026-03-15").add(1, "hour").toDate(),
         tags: ["Tag2", "Tag3"],
     },
 ];
@@ -103,7 +103,7 @@ describe("CalendarDashboard", () => {
     });
     it("renders calendar with correct days if large screen", async () => {
         vi.useFakeTimers();
-        vi.setSystemTime(dayjs.utc("2026-03-04T12:00:00Z").toDate()); // Use explicit UTC instant for deterministic behavior
+        vi.setSystemTime(dayjs("2026-03-04T12:00:00Z").toDate()); // Use explicit UTC instant for deterministic behavior
         await act(async () => {
             render(
                 <LocalizationContextProvider>

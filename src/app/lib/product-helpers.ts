@@ -25,7 +25,7 @@ export const getAvailableProductStock = async (
     const reservedStock = product.order_items.reduce((acc, item) => {
         if (
             item.order.status === OrderStatus.pending &&
-            dayjs.utc(item.order.created_at).isAfter(dayjs.utc().subtract(30, "minute"))
+            dayjs(item.order.created_at).isAfter(dayjs().subtract(30, "minute"))
         )
             return acc + item.quantity;
         return acc;

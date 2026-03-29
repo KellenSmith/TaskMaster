@@ -78,15 +78,15 @@ const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
         eventTitle && eventStart && eventEnd && ticketType && eventParticipantNickname,
     );
 
-    const now = dayjs.utc();
-    const startWindow = eventStart ? dayjs.utc(eventStart).subtract(1, "hour") : null;
-    const endWindow = eventEnd ? dayjs.utc(eventEnd).add(1, "hour") : null;
+    const now = dayjs();
+    const startWindow = eventStart ? dayjs(eventStart).subtract(1, "hour") : null;
+    const endWindow = eventEnd ? dayjs(eventEnd).add(1, "hour") : null;
     const isWithinWindow = Boolean(
         startWindow && endWindow && now.isAfter(startWindow) && now.isBefore(endWindow),
     );
     const alreadyCheckedIn =
         !!eventParticipant.checked_in_at &&
-        dayjs.utc(eventParticipant.checked_in_at).isBefore(now.subtract(10, "seconds"));
+        dayjs(eventParticipant.checked_in_at).isBefore(now.subtract(10, "seconds"));
 
     useEffect(() => {
         // If missing props, show as invalid (red)

@@ -82,12 +82,12 @@ describe("utils", () => {
             expect(isMembershipExpired(noMembership)).toBe(true);
 
             const expired = {
-                user_membership: { expires_at: dayjs.utc().subtract(1, "day").toDate() },
+                user_membership: { expires_at: dayjs().subtract(1, "day").toDate() },
             } as any;
             expect(isMembershipExpired(expired)).toBe(true);
 
             const valid = {
-                user_membership: { expires_at: dayjs.utc().add(1, "day").toDate() },
+                user_membership: { expires_at: dayjs().add(1, "day").toDate() },
             } as any;
             expect(isMembershipExpired(valid)).toBe(false);
         });
@@ -97,15 +97,15 @@ describe("utils", () => {
         it("identifies admins with valid membership", () => {
             const admin = {
                 role: UserRole.admin,
-                user_membership: { expires_at: dayjs.utc().add(1, "day").toDate() },
+                user_membership: { expires_at: dayjs().add(1, "day").toDate() },
             } as any;
             const member = {
                 role: UserRole.member,
-                user_membership: { expires_at: dayjs.utc().add(1, "day").toDate() },
+                user_membership: { expires_at: dayjs().add(1, "day").toDate() },
             } as any;
             const expiredAdmin = {
                 role: UserRole.admin,
-                user_membership: { expires_at: dayjs.utc().subtract(1, "day").toDate() },
+                user_membership: { expires_at: dayjs().subtract(1, "day").toDate() },
             } as any;
 
             expect(isUserAdmin(admin)).toBe(true);

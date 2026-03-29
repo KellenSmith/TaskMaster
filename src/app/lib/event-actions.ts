@@ -343,9 +343,8 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                     status: EventStatus.draft,
                     title: `${eventData.title} (Clone)`,
                     start_time: validatedData.start_time,
-                    end_time: dayjs
-                        .utc(validatedData.start_time)
-                        .add(dayjs.utc(eventData.end_time).diff(eventData.start_time))
+                    end_time: dayjs(validatedData.start_time)
+                        .add(dayjs(eventData.end_time).diff(eventData.start_time))
                         .toISOString(),
                 },
                 host: {
@@ -406,9 +405,8 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
 
         // Copy tasks
         const moveTaskTimeForward = (taskTime: Date) =>
-            dayjs
-                .utc(taskTime)
-                .add(dayjs.utc(validatedData.start_time).diff(dayjs.utc(eventData.start_time)))
+            dayjs(taskTime)
+                .add(dayjs(validatedData.start_time).diff(dayjs(eventData.start_time)))
                 .toISOString();
 
         await Promise.all(

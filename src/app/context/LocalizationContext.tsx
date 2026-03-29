@@ -4,11 +4,11 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import "dayjs/locale/en-gb";
+import "dayjs/locale/sv";
 import updateLocale from "dayjs/plugin/updateLocale";
 import { ReactNode, FC } from "react";
 
-const locale = "en-gb";
+const locale = "sv";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);

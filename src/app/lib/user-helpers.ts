@@ -38,7 +38,7 @@ export const getActiveMembers = async (): Promise<
         where: {
             user_membership: {
                 expires_at: {
-                    gt: dayjs.utc().toISOString(),
+                    gt: dayjs().toISOString(),
                 },
             },
         },

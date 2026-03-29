@@ -116,10 +116,10 @@ const DroppableColumn = ({
     };
 
     const getTaskDefaultStartTime = (): Date =>
-        (event ? dayjs.utc(event.start_time) : dayjs.utc().minute(0)).toDate();
+        (event ? dayjs(event.start_time) : dayjs().minute(0)).toDate();
 
     const getTaskDefaultEndTime = (): Date =>
-        (event ? dayjs.utc(event.end_time) : dayjs.utc().minute(0)).toDate();
+        (event ? dayjs(event.end_time) : dayjs().minute(0)).toDate();
 
     const openCreateTaskDialog = (shiftProps: Prisma.TaskGetPayload<true> | null) => {
         if (!user) return;

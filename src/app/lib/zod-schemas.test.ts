@@ -48,7 +48,7 @@ import {
 } from "../../prisma/generated/enums";
 
 const validDate = "03/02/2026 14:30";
-const expectedDate = dayjs.utc(validDate, "DD/MM/YYYY HH:mm").format();
+const expectedDate = dayjs(validDate, "DD/MM/YYYY HH:mm").format();
 
 const baseProduct = {
     name: "Test Product",

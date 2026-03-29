@@ -3,16 +3,16 @@ import DashboardPage from "./page";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../../GlobalConstants";
-import dayjs from "dayjs";
+import * as dayjs from "dayjs";
 import * as utils from "../../lib/utils";
 
 vi.mock("../../lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 
-const mockedNow = dayjs.utc();
+const mockedNow = dayjs.default();
 beforeEach(() => {
-    vi.spyOn(dayjs, "utc").mockReturnValue(mockedNow);
+    vi.spyOn(dayjs, "default").mockReturnValue(mockedNow);
     vi.mocked(getLoggedInUser).mockReset();
     vi.mocked(prisma.eventParticipant.findMany).mockReset();
 });

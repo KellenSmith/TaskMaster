@@ -3,7 +3,6 @@ import { expect, afterEach, vi, beforeEach, afterAll } from "vitest";
 import { cleanup } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { mockContext } from "./mocks/prismaMock";
-import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import type { Transporter } from "nodemailer";
 import { getMailTransport } from "../app/lib/mail-service/mail-transport";
@@ -24,7 +23,6 @@ dayjs.updateLocale(locale, {
     weekdays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
     weekdaysShort: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 });
-dayjs.extend(utc);
 
 // Extend vitest's expect method with testing-library methods
 expect.extend(matchers);

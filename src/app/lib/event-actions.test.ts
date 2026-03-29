@@ -657,10 +657,8 @@ describe("event-actions", () => {
         });
 
         it("adjusts end time based on original duration", async () => {
-            const originalDuration = dayjs
-                .utc(mockEvent.end_time)
-                .diff(dayjs.utc(mockEvent.start_time));
-            const newStartTime = dayjs.utc("2024-07-15T09:00:00Z");
+            const originalDuration = dayjs(mockEvent.end_time).diff(dayjs(mockEvent.start_time));
+            const newStartTime = dayjs("2024-07-15T09:00:00Z");
             const expectedEndTime = newStartTime.add(originalDuration).toISOString();
 
             const formData = buildFormData({

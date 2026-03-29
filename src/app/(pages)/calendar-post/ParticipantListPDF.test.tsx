@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { Language } from "../../../prisma/generated/enums";
+import dayjs from "dayjs";
 
 // Mock @react-pdf/renderer components to render as simple HTML elements since react-pdf uses its own rendering system that doesn't work in a JSDOM environment.
 // This allows us to test the content structure without needing to render an actual PDF.
@@ -31,8 +32,8 @@ type EventParticipantLike = {
 
 const baseEvent: EventLike = {
     title: "Cleanup Day",
-    start_time: "2026-03-10T09:00:00.000Z",
-    end_time: "2026-03-10T11:00:00.000Z",
+    start_time: dayjs("2026/03/10 09:00").toISOString(),
+    end_time: dayjs("2026/03/10 11:00").toISOString(),
 };
 
 const baseParticipants: EventParticipantLike[] = [
@@ -75,7 +76,7 @@ describe("ParticipantListPDF", () => {
     it("renders formatted event time interval", () => {
         renderParticipantListPDF();
 
-        expect(screen.getByText("2026/03/10 09:00 - 2026/03/10 11:00")).toBeInTheDocument();
+        expect(screen.getByText(`2026/03/10 09:00 - 2026/03/10 11:00`)).toBeInTheDocument();
     });
 
     it("renders english table headers", () => {
