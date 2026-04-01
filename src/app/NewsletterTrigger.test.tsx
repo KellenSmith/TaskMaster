@@ -11,8 +11,6 @@ vi.mock("./lib/mail-service/newsletter-actions", () => ({
 describe("NewsletterTrigger", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.useFakeTimers();
-        vi.setSystemTime(1000000); // Arbitrary fixed time
     });
 
     it("should call processNextNewsletterBatch on mount", () => {

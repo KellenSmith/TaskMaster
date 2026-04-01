@@ -55,7 +55,6 @@ import dayjs from "dayjs";
 dayjs.extend(utc);
 
 const NavPanel = () => {
-    console.log(dayjs().format(), dayjs(new Date()).format(), dayjs.utc().format()); // Log current date to verify that dayjs is working correctly
     const [drawerOpen, setDrawerOpen] = useState(false);
     const isIOSDevice = useMemo(
         () => typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent),

@@ -102,8 +102,6 @@ describe("CalendarDashboard", () => {
         expect(await screen.findByText(prevMonth)).toBeInTheDocument();
     });
     it("renders calendar with correct days if large screen", async () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(dayjs("2026-03-04T12:00:00Z").toDate()); // Use explicit UTC instant for deterministic behavior
         await act(async () => {
             render(
                 <LocalizationContextProvider>

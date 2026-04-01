@@ -85,6 +85,7 @@ afterAll(() => {
 
 beforeEach(() => {
     vi.resetAllMocks();
+
     // Provide stable env defaults for tests
     process.env = { ...originalEnv, ...testdata.env };
     // Reassert mockimplementation for mail transport before each test
@@ -94,10 +95,13 @@ beforeEach(() => {
     vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         return await callback(mockContext.prisma as any);
     });
+    vi.mock("dayjs", () => {
+        const actualDayjs = vi.importActual("dayjs");
+        return actualDayjs;
+    });
 });
 
 // Clear up after each test
 afterEach(() => {
     cleanup();
-    vi.useRealTimers();
 });
