@@ -102,6 +102,8 @@ describe("CalendarDashboard", () => {
         expect(await screen.findByText(prevMonth)).toBeInTheDocument();
     });
     it("renders calendar with correct days if large screen", async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2026-03-15")); // Mock system time to a fixed date for consistent testing
         await act(async () => {
             render(
                 <LocalizationContextProvider>
@@ -117,8 +119,12 @@ describe("CalendarDashboard", () => {
         // Expect 23-28 februari, 1-31 mars, 1-5 april (total 42 cells in a 6x7 calendar grid)
         const calendarCells = screen.getAllByText(new RegExp("^(?:[1-9]|[12][0-9]|3[01])$"));
         expect(calendarCells.length).toBe(42);
+
+        vi.useRealTimers();
     });
     it("renders only days with events if small screen", async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2026-03-15")); // Mock system time to a fixed date for consistent testing
         vi.mocked(useMediaQuery).mockReturnValue(true); // Mock small screen
 
         await act(async () => {
@@ -141,6 +147,8 @@ describe("CalendarDashboard", () => {
         expect(
             screen.queryAllByText(new RegExp("^(?!(?:10|15)$)(?:[1-9]|[12][0-9]|3[01])$")).length,
         ).toBe(0);
+
+        vi.useRealTimers();
     });
     it("renders swedish translations if language is set to swedish", async () => {
         vi.mocked(useUserContext).mockReturnValue({
