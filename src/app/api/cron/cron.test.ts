@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { getOrganizationSettings } from "../../lib/organization-settings-helpers";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
 import { prisma } from "../../../prisma/prisma-client";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import {
     expiringMembershipMaintenance,
@@ -27,9 +27,13 @@ vi.mock("../../lib/organization-settings-helpers", () => ({
 const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-const mockedNow = dayjs.default();
 beforeEach(() => {
-    vi.spyOn(dayjs, "default").mockReturnValue(mockedNow);
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+});
+afterEach(() => {
+    vi.useRealTimers();
+    vi.useRealTimers();
 });
 
 describe("cron jobs", () => {
@@ -50,7 +54,7 @@ describe("cron jobs", () => {
                 where: {
                     user_membership: null,
                     created_at: {
-                        lt: dayjs.default().subtract(mockPurgeDays, "d").toDate(),
+                        lt: dayjs().subtract(mockPurgeDays, "d").toDate(),
                     },
                 },
             });
@@ -61,11 +65,7 @@ describe("cron jobs", () => {
         it("uses default threshold if orgSettings.purge_members_after_days_unvalidated is undefined", async () => {
             vi.mocked(getOrganizationSettings).mockResolvedValue({} as any);
             vi.mocked(prisma.user.deleteMany).mockResolvedValue({ count: 1 });
-            const mockDayjs = {
-                subtract: vi.fn().mockReturnThis(),
-                toDate: vi.fn().mockReturnValue(new Date("2026-01-01T00:00:00.000Z")),
-            };
-            vi.spyOn(dayjs, "default").mockReturnValue(mockDayjs as any);
+
             await purgeStaleMembershipApplications();
             expect(prisma.user.deleteMany).toHaveBeenCalledWith(
                 expect.objectContaining({
