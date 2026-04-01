@@ -35,8 +35,8 @@ describe("Dashboard", () => {
         expect(screen.getByText(/Sample Event/i)).toBeInTheDocument();
         // Ticket card location
         expect(screen.getByText(/Main Hall/i)).toBeInTheDocument();
-        // Event start and end time
-        expect(screen.getByText("2026/02/22 10:00 - 2026/02/22 12:00")).toBeInTheDocument();
+        // Event start and end time (UTC+1 locale [sv])
+        expect(screen.getByText("2026/02/22 11:00 - 2026/02/22 13:00")).toBeInTheDocument();
         // QR image alt
         expect(screen.getByAltText(/QR code for ticket ep-1/i)).toBeInTheDocument();
     });

@@ -47,8 +47,8 @@ import {
     UserRole,
 } from "../../prisma/generated/enums";
 
-const validDate = "03/02/2026 14:30";
-const expectedDate = dayjs(validDate, "DD/MM/YYYY HH:mm").format();
+const validDate = "2026-02-03 14:30";
+const expectedDate = dayjs(validDate, "YYYY-MM-DD HH:mm").format();
 
 const baseProduct = {
     name: "Test Product",
