@@ -26,11 +26,15 @@ describe("NewsletterTrigger", () => {
     });
 
     it("should call processNextNewsletterBatch again after the interval passes", async () => {
+        vi.useFakeTimers();
+
         const { rerender } = render(<NewsletterTrigger />);
         expect(newsletterActions.processNextNewsletterBatch).toHaveBeenCalledTimes(1);
         vi.advanceTimersByTime(NEWSLETTER_PROCESS_INTERVAL + 1);
         rerender(<NewsletterTrigger />);
         expect(newsletterActions.processNextNewsletterBatch).toHaveBeenCalledTimes(2);
+
+        vi.useRealTimers();
     });
 
     it("should ignore errors from processNextNewsletterBatch", () => {

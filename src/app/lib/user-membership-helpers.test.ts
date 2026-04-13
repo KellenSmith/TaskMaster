@@ -25,6 +25,9 @@ describe("user-membership-helpers", () => {
 
     describe("renewUserMembership", () => {
         it("creates a new expiry when expired or membership changes", async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date("2026-02-12T00:00:00Z"));
+
             const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.membership.findUniqueOrThrow).mockResolvedValue({
                 duration: 365,
@@ -56,6 +59,8 @@ describe("user-membership-helpers", () => {
                 },
             });
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.USER, "max");
+
+            vi.useRealTimers();
         });
 
         it("extends expiry when membership is active and unchanged", async () => {
