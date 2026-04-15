@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import CalendarDashboard from "./CalendarDashboard";
 import userEvent from "@testing-library/user-event";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import LocalizationContextProvider from "../../context/LocalizationContext";
 import { useMediaQuery } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";

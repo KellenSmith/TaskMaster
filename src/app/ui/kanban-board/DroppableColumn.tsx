@@ -15,7 +15,7 @@ import Form from "../form/Form";
 import { Dispatch, SetStateAction, use, useMemo, useState } from "react";
 import { Add } from "@mui/icons-material";
 import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import z from "zod";
 import { TaskCreateSchema, TaskFilterSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";

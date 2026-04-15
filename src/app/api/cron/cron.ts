@@ -1,5 +1,5 @@
 import { prisma } from "../../../prisma/prisma-client";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import { getOrganizationSettings } from "../../lib/organization-settings-helpers";
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";

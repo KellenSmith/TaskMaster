@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import localeData from "dayjs/plugin/localeData";
 import { Language } from "../../../prisma/generated/enums";
 

@@ -3,7 +3,7 @@
 import { FC, use, useMemo, useCallback } from "react";
 import { Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import CalendarEvent from "./CalendarEvent";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";

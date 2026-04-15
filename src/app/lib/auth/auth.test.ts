@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session, User } from "next-auth";
 import type { JWT } from "@auth/core/jwt";
-import dayjs from "dayjs";
+import dayjs from "../dayjs";
 import { UserRole, UserStatus } from "../../../prisma/generated/enums";
 import { prisma } from "../../../prisma/prisma-client";
 

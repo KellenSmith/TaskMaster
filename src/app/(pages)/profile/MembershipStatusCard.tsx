@@ -4,7 +4,7 @@ import { isMembershipExpired } from "../../lib/utils";
 import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import { formatDate } from "../../ui/utils";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserStatus } from "../../../prisma/generated/enums";
 

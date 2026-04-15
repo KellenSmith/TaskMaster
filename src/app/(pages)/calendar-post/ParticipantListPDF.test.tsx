@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { Language } from "../../../prisma/generated/enums";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 
 // Mock @react-pdf/renderer components to render as simple HTML elements since react-pdf uses its own rendering system that doesn't work in a JSDOM environment.
 // This allows us to test the content structure without needing to render an actual PDF.

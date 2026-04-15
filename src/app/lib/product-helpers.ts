@@ -1,6 +1,6 @@
 "use server";
 
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { OrderStatus, Prisma } from "../../prisma/generated/client";
 import { renewUserMembership } from "./user-membership-helpers";
 import { addEventParticipantWithTx } from "./event-participant-actions";

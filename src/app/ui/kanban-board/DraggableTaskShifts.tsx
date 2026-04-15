@@ -13,7 +13,7 @@ import { formatDate } from "../utils";
 import { ExpandMore } from "@mui/icons-material";
 import { getEarliestStartTime, sortTasks } from "../../(pages)/calendar-post/event-utils";
 import DraggableTask from "./DraggableTask";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";

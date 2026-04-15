@@ -1,7 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { formatDate } from "../utils";
 import { getGroupedAndSortedTasks } from "../../(pages)/calendar-post/event-utils";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { styles } from "../pdf-styles";
 import { Prisma } from "../../../prisma/generated/browser";
 

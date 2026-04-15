@@ -81,10 +81,6 @@ beforeEach(() => {
     vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         return await callback(mockContext.prisma as any);
     });
-    vi.mock("dayjs", () => {
-        const actualDayjs = vi.importActual("dayjs");
-        return actualDayjs;
-    });
 });
 
 // Clear up after each test

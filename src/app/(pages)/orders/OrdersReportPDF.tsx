@@ -2,7 +2,7 @@ import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { styles } from "../../ui/pdf-styles";
 import { formatDate, formatPrice } from "../../ui/utils";
 import { useMemo } from "react";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import LanguageTranslations from "./LanguageTranslations";
 import { Language } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/client";

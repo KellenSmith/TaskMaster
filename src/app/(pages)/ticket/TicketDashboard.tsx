@@ -5,7 +5,7 @@ import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
 import { useEffect, useState } from "react";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
 import { isUserAdmin } from "../../lib/utils";

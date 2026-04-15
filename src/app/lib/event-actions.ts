@@ -6,7 +6,7 @@ import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-se
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { getLoggedInUser } from "./user-helpers";
 import { getOrganizationSettings } from "./organization-settings-helpers";
 import { sanitizeFormData } from "./html-sanitizer";

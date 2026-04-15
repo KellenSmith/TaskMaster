@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "../lib/dayjs";
 import { describe, expect, it, vi } from "vitest";
 import { Language } from "../../prisma/generated/enums";
 import {
@@ -27,17 +27,17 @@ const makeOrganizationSettings = (overrides: Record<string, unknown> = {}) =>
 describe("ui/utils", () => {
     describe("formatDate", () => {
         it("formats ISO date strings in UTC+2", () => {
-            expect(formatDate("2026-02-03T10:30:00Z")).toBe("2026/02/03 10:30");
+            expect(formatDate("2026-02-03T10:30:00")).toBe("2026/02/03 10:30");
         });
 
         it("formats Date objects in UTC+2", () => {
-            const date = new Date("2026-04-05T06:07:00Z");
+            const date = new Date("2026-04-05T06:07:00");
 
             expect(formatDate(date)).toBe("2026/04/05 06:07");
         });
 
         it("formats Dayjs objects in UTC+2", () => {
-            const date = dayjs("2026-09-10T11:12:00Z");
+            const date = dayjs("2026-09-10T11:12:00");
 
             expect(formatDate(date)).toBe("2026/09/10 11:12");
         });

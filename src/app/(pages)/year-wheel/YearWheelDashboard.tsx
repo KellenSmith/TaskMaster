@@ -9,7 +9,7 @@ import {
     Button,
 } from "@mui/material";
 
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { use, useState, useRef, PointerEvent } from "react";
 import YearWheelEvent from "./YearWheelEvent";
 import YearWheelMarker from "./YearWheelMarker";

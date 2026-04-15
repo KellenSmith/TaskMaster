@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import {
     clientRedirect,
     getAbsoluteUrl,

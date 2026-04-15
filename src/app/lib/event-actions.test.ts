@@ -7,7 +7,7 @@ import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-se
 import { getLoggedInUser } from "./user-helpers";
 import { getOrganizationSettings } from "./organization-settings-helpers";
 import { isUserAdmin, serverRedirect } from "./utils";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { prisma } from "../../prisma/prisma-client";
 import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enums";
 

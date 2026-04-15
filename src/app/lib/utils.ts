@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { redirect } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { UserRole } from "../../prisma/generated/enums";

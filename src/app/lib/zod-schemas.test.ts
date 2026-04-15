@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import {
     AddEventParticipantSchema,
     AddEventReserveSchema,

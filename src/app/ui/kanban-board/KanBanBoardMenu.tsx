@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import LanguageTranslations, { menuTabs } from "./LanguageTranslations";
 import { useNotificationContext } from "../../context/NotificationContext";

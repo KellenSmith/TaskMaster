@@ -1,6 +1,5 @@
 import { z } from "zod";
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
+import dayjs from "./dayjs";
 import {
     EventStatus,
     OrderStatus,
@@ -10,8 +9,6 @@ import {
 } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 
-dayjs.extend(customParseFormat);
-
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
@@ -19,7 +16,7 @@ const stringToISODate = z
         message: "Invalid date",
     })
     .transform((val) =>
-        val ? dayjs(val, "YYYY-MM-DD HH:mm", "sv", true).format() : "",
+        val ? dayjs(val, "YYYY-MM-DD HH:mm", process.env.NEXT_PUBLIC_LOCALE, true).format() : "",
     ) as z.ZodType<string>;
 
 const priceSchema = z.coerce

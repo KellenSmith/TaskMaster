@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { getOrganizationSettings } from "../../lib/organization-settings-helpers";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
 import { prisma } from "../../../prisma/prisma-client";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import {
     expiringMembershipMaintenance,

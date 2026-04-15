@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { EventStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
 

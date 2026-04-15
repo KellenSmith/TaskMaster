@@ -7,7 +7,7 @@ import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { formatDate } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { Prisma } from "../../prisma/generated/client";

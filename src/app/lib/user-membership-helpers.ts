@@ -1,7 +1,7 @@
 "use server";
 
 import GlobalConstants from "../GlobalConstants";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { prisma } from "../../prisma/prisma-client";
 import { isMembershipExpired } from "./utils";
 import { revalidateTag } from "next/cache";

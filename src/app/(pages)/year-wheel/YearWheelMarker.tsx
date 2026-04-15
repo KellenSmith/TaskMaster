@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "../../lib/dayjs";
 import { Box, useTheme } from "@mui/material";
 
 interface Props {

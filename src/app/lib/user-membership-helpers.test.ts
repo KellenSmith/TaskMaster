@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";

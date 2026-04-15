@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import { revalidateTag } from "next/cache";
@@ -25,12 +25,12 @@ describe("user-membership-actions", () => {
             mockContext.prisma.userMembership.upsert.mockResolvedValue({} as any);
 
             const formData = buildFormData({
-                expires_at: "12/02/2026 10:00",
+                expires_at: "2026-02-12 10:00",
             });
 
             await membershipActions.addUserMembership(testUserId, formData);
 
-            const expectedExpiresAt = dayjs("12/02/2026 10:00", "DD/MM/YYYY HH:mm", true).format();
+            const expectedExpiresAt = dayjs("2026-02-12 10:00", "YYYY-MM-DD HH:mm", true).format();
 
             expect(mockContext.prisma.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId, membership_id: "membership-1" },
