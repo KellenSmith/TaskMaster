@@ -245,7 +245,15 @@ const NavPanel = () => {
                                 }
                             />
                         ) : (
-                            <Typography variant="h5">
+                            <Typography
+                                variant="h5"
+                                sx={{ cursor: "pointer" }}
+                                onClick={() =>
+                                    clientRedirect(router, [
+                                        user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
+                                    ])
+                                }
+                            >
                                 {process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
                             </Typography>
                         )}
@@ -376,6 +384,7 @@ const NavPanel = () => {
                         <ListItem>
                             <Link
                                 textTransform="capitalize"
+                                // TODO: remove if no doc uploaded
                                 href={
                                     getTermsOfMembershipUrl(organizationSettings, language) ??
                                     undefined
