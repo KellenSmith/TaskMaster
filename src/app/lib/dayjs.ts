@@ -7,7 +7,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
 export const locale = process.env.NEXT_PUBLIC_LOCALE || "sv";
-export const timezoneName = process.env.NEXT_PUBLIC_TIMEZONE || "Europe/Stockholm";
+export const timezoneName = process.env.NEXT_PUBLIC_TIMEZONE || "Etc/GMT-1";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
