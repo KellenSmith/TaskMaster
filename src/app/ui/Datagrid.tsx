@@ -32,7 +32,7 @@ import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { Prisma } from "../../prisma/generated/browser";
-import dayjs, { Dayjs } from "../lib/dayjs";
+import dayjs from "../lib/dayjs";
 
 export interface RowActionProps {
     name: string;
