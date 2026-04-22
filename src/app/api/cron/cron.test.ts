@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { getOrganizationSettings } from "../../lib/organization-settings-helpers";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
 import { prisma } from "../../../prisma/prisma-client";
-import dayjs from "../../lib/dayjs";
+import dayjs, { Dayjs } from "../../lib/dayjs";
 import { sendMail } from "../../lib/mail-service/mail-service";
 import {
     expiringMembershipMaintenance,
@@ -29,7 +29,7 @@ const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+    vi.setSystemTime(dayjs("2026-01-01T00:00:00.000").toDate());
 });
 afterEach(() => {
     vi.useRealTimers();

@@ -7,6 +7,7 @@ import { UuidSchema } from "../zod-schemas";
 import { getEmailPayload, isRateLimitError } from "./mail-service";
 import { getMailTransport } from "./mail-transport";
 import { NEWSLETTER_PROCESS_INTERVAL } from "../../NewsletterTrigger";
+import dayjs from "../dayjs";
 
 type ProcessBatchResult = {
     processed: number;
@@ -75,7 +76,7 @@ export async function processNextNewsletterBatch(jobId?: string): Promise<Proces
                 data: {
                     cursor: newCursor,
                     status: "running",
-                    lastRunAt: new Date(),
+                    lastRunAt: dayjs().toDate(),
                     error: null,
                 },
             });
@@ -103,7 +104,7 @@ export async function processNextNewsletterBatch(jobId?: string): Promise<Proces
             data: {
                 status: "failed",
                 error: (error as Error)?.message || String(error),
-                lastRunAt: new Date(),
+                lastRunAt: dayjs().toDate(),
             },
         });
         return {

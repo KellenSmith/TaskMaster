@@ -1,3 +1,4 @@
+import dayjs from "./dayjs";
 import { mockContext } from "../../test/mocks/prismaMock";
 import { TransactionClient } from "../../test/types/test-types";
 import { addEventParticipantWithTx } from "./event-participant-actions";
@@ -132,7 +133,7 @@ describe("product-helpers", () => {
         });
 
         it("returns correct available stock when some is reserved", async () => {
-            const now = new Date();
+            const now = dayjs().toDate();
             const product = {
                 stock: 10,
                 order_items: [
@@ -157,7 +158,7 @@ describe("product-helpers", () => {
         });
 
         it("returns 0 if reserved stock >= total stock", async () => {
-            const now = new Date();
+            const now = dayjs().toDate();
             const product = {
                 stock: 5,
                 order_items: [
@@ -181,8 +182,8 @@ describe("product-helpers", () => {
         });
 
         it("ignores expired pending orders for reservation", async () => {
-            const now = new Date();
-            const oldDate = new Date(Date.now() - 31 * 60 * 1000); // 31 minutes ago
+            const now = dayjs().toDate();
+            const oldDate = dayjs().subtract(31, "minutes").toDate(); // 31 minutes ago
             const product = {
                 stock: 10,
                 order_items: [

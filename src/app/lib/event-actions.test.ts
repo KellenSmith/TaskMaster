@@ -583,8 +583,8 @@ describe("event-actions", () => {
             description: "Event description",
             host_id: "original-host",
             location_id: locationId,
-            start_time: new Date("2024-06-15T09:00:00Z"),
-            end_time: new Date("2024-06-15T17:00:00Z"),
+            start_time: dayjs("2024-06-15T09:00:00").toDate(),
+            end_time: dayjs("2024-06-15T17:00:00").toDate(),
             max_participants: 20,
             full_ticket_price: 50,
             status: EventStatus.published,
@@ -610,8 +610,8 @@ describe("event-actions", () => {
                 id: taskId,
                 name: "Setup",
                 event_id: eventId,
-                start_time: new Date("2024-06-15T08:00:00Z"),
-                end_time: new Date("2024-06-15T09:00:00Z"),
+                start_time: dayjs("2024-06-15T08:00:00").toDate(),
+                end_time: dayjs("2024-06-15T09:00:00").toDate(),
                 assignee_id: null,
                 reviewer_id: "original-host",
                 status: TaskStatus.toDo,
@@ -658,7 +658,7 @@ describe("event-actions", () => {
 
         it("adjusts end time based on original duration", async () => {
             const originalDuration = dayjs(mockEvent.end_time).diff(dayjs(mockEvent.start_time));
-            const newStartTime = dayjs("2024-07-15T09:00:00+02:00");
+            const newStartTime = dayjs("2024-07-15T09:00:00");
             const expectedEndTime = newStartTime.add(originalDuration).toISOString();
 
             const formData = buildFormData({

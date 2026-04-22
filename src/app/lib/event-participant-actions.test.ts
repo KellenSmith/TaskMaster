@@ -314,8 +314,8 @@ describe("event-participant-actions", () => {
 
         const mockEvent = {
             id: eventId,
-            start_time: dayjs("2024-06-15T09:00:00Z").toDate(),
-            end_time: dayjs("2024-06-15T17:00:00Z").toDate(),
+            start_time: dayjs("2024-06-15T09:00:00").toDate(),
+            end_time: dayjs("2024-06-15T17:00:00").toDate(),
         };
 
         beforeEach(() => {

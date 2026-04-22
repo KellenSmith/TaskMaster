@@ -6,6 +6,7 @@ import { Language } from "../../../prisma/generated/enums";
 import { formatDate } from "../../ui/utils";
 import { taskFieldLabels } from "../../ui/form/LanguageTranslations";
 import LocalizationContextProvider from "../../context/LocalizationContext";
+import dayjs from "../../lib/dayjs";
 
 vi.mock("@mui/material", async (importOriginal) => {
     const actual = (await importOriginal()) as any;
@@ -24,8 +25,8 @@ type EventDetailsLike = {
 };
 
 const baseEvent: EventDetailsLike = {
-    start_time: new Date("2026-06-01T10:00:00Z"),
-    end_time: new Date("2026-06-01T12:00:00Z"),
+    start_time: dayjs("2026-06-01T10:00:00").toDate(),
+    end_time: dayjs("2026-06-01T12:00:00").toDate(),
     description: "Event description",
     tags: ["Before", "During"],
     location: {
@@ -70,8 +71,8 @@ describe("EventDetails", () => {
 
     it("renders formatted start and end date values", async () => {
         const event = await renderEventDetails({
-            start_time: new Date("2026-08-10T09:15:00Z"),
-            end_time: new Date("2026-08-10T11:45:00Z"),
+            start_time: dayjs("2026-08-10T09:15:00").toDate(),
+            end_time: dayjs("2026-08-10T11:45:00").toDate(),
         });
 
         const datesBlock = screen.getByText(

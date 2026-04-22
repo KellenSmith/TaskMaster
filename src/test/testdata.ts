@@ -62,8 +62,8 @@ const testdata = {
         id: "event-1234-5678",
         title: "Summer Coding Workshop",
         location: "Tech Hub, Downtown",
-        start_time: new Date("2024-06-15T09:00:00Z"),
-        end_time: new Date("2024-06-15T17:00:00Z"),
+        start_time: dayjs("2024-06-15T09:00:00").toDate(),
+        end_time: dayjs("2024-06-15T17:00:00").toDate(),
         description: "Learn coding basics in this one-day workshop",
         max_participants: 20,
         full_ticket_price: 50,
@@ -79,7 +79,7 @@ const testdata = {
     reserveInEvent: {
         user_id: "1234-5678-9abc-def0",
         event_id: "event-1234-5678",
-        queueing_since: new Date("2024-01-15T12:00:00Z"),
+        queueing_since: dayjs("2024-01-15T12:00:00").toDate(),
     },
 
     task: {
@@ -90,8 +90,8 @@ const testdata = {
         name: "Prepare Workshop Materials",
         status: "in progress",
         tags: ["preparation", "documentation"],
-        start_time: new Date("2024-06-14T09:00:00Z"),
-        end_time: new Date("2024-06-14T17:00:00Z"),
+        start_time: dayjs("2024-06-14T09:00:00").toDate(),
+        end_time: dayjs("2024-06-14T17:00:00").toDate(),
         description: "Create and organize workshop materials for participants",
     },
 
@@ -100,8 +100,8 @@ const testdata = {
         name: "Test Product",
         description: "A test product for testing",
         price: 99.99,
-        created_at: new Date("2024-01-01T00:00:00Z"),
-        updated_at: new Date("2024-01-01T00:00:00Z"),
+        created_at: dayjs("2024-01-01T00:00:00").toDate(),
+        updated_at: dayjs("2024-01-01T00:00:00").toDate(),
         stock: 0,
         image_url: "",
     },
@@ -117,8 +117,8 @@ const testdata = {
 
     order: {
         id: "order-1234-5678",
-        created_at: new Date("2024-01-01T00:00:00Z"),
-        updated_at: new Date("2024-01-01T00:00:00Z"),
+        created_at: dayjs("2024-01-01T00:00:00").toDate(),
+        updated_at: dayjs("2024-01-01T00:00:00").toDate(),
         status: "pending",
         total_amount: 149.98,
         user_id: "1234-5678-9abc-def0",
@@ -134,8 +134,8 @@ const testdata = {
                     name: "Test Product",
                     description: "A test product for testing",
                     price: 99.99,
-                    created_at: new Date("2024-01-01T00:00:00Z"),
-                    updated_at: new Date("2024-01-01T00:00:00Z"),
+                    created_at: dayjs("2024-01-01T00:00:00").toDate(),
+                    updated_at: dayjs("2024-01-01T00:00:00").toDate(),
                     membership: {
                         duration: 365,
                     },

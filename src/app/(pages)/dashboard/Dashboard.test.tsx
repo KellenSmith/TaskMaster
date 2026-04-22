@@ -3,6 +3,7 @@ import { vi, describe, it, expect } from "vitest";
 import Dashboard from "./Dashboard";
 import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
+import dayjs from "../../lib/dayjs";
 
 const mockUser = { nickname: "TestUser", id: 1 };
 
@@ -13,8 +14,8 @@ const ticketInfoPromise = Promise.resolve([
         ticket: {
             event: {
                 title: "Sample Event",
-                start_time: new Date("2026-02-22T10:00:00Z"),
-                end_time: new Date("2026-02-22T12:00:00Z"),
+                start_time: dayjs("2026-02-22T10:00:00").toDate(),
+                end_time: dayjs("2026-02-22T12:00:00").toDate(),
                 location: { name: "Main Hall" },
             },
             user: { id: 1, nickname: "TestUser" },
@@ -36,7 +37,7 @@ describe("Dashboard", () => {
         // Ticket card location
         expect(screen.getByText(/Main Hall/i)).toBeInTheDocument();
         // Event start and end time in Europe/Stockholm timezone (CET = UTC+1 in February)
-        expect(screen.getByText("2026/02/22 11:00 - 2026/02/22 13:00")).toBeInTheDocument();
+        expect(screen.getByText("2026/02/22 10:00 - 2026/02/22 12:00")).toBeInTheDocument();
         // QR image alt
         expect(screen.getByAltText(/QR code for ticket ep-1/i)).toBeInTheDocument();
     });

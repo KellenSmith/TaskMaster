@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { prisma } from "../../../prisma/prisma-client";
+import dayjs from "../../lib/dayjs";
 
 const getClientIp = (request: NextRequest): string | null => {
     // Try multiple headers for better IP detection
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Simple rate limiting: skip if updated very recently (prevents spam)
-        const timeSinceLastUpdate = Date.now() - new Date(order.updated_at).getTime();
+        const timeSinceLastUpdate = Date.now() - dayjs(order.updated_at).toDate().getTime();
         if (timeSinceLastUpdate < 10000) {
             // 10 seconds cooldown
             console.log(`Order ${orderId} updated recently, rate limiting callback`);

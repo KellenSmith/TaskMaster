@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import CalendarDashboard from "./CalendarDashboard";
 import userEvent from "@testing-library/user-event";
-import dayjs from "../../lib/dayjs";
+import dayjs, { Dayjs } from "../../lib/dayjs";
 import LocalizationContextProvider from "../../context/LocalizationContext";
 import { useMediaQuery } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";
@@ -103,7 +103,7 @@ describe("CalendarDashboard", () => {
     });
     it("renders calendar with correct days if large screen", async () => {
         vi.useFakeTimers();
-        vi.setSystemTime(new Date("2026-03-15")); // Mock system time to a fixed date for consistent testing
+        vi.setSystemTime(dayjs("2026-03-15").toDate()); // Mock system time to a fixed date for consistent testing
         await act(async () => {
             render(
                 <LocalizationContextProvider>
@@ -124,7 +124,7 @@ describe("CalendarDashboard", () => {
     });
     it("renders only days with events if small screen", async () => {
         vi.useFakeTimers();
-        vi.setSystemTime(new Date("2026-03-15")); // Mock system time to a fixed date for consistent testing
+        vi.setSystemTime(dayjs("2026-03-15").toDate()); // Mock system time to a fixed date for consistent testing
         vi.mocked(useMediaQuery).mockReturnValue(true); // Mock small screen
 
         await act(async () => {

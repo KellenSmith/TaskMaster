@@ -1,4 +1,4 @@
-import dayjs from "../lib/dayjs";
+import dayjs, { Dayjs } from "../lib/dayjs";
 import { describe, expect, it, vi } from "vitest";
 import { Language } from "../../prisma/generated/enums";
 import {
@@ -31,7 +31,7 @@ describe("ui/utils", () => {
         });
 
         it("formats Date objects in UTC+2", () => {
-            const date = new Date("2026-04-05T06:07:00");
+            const date = dayjs("2026-04-05T06:07:00").toDate();
 
             expect(formatDate(date)).toBe("2026/04/05 06:07");
         });

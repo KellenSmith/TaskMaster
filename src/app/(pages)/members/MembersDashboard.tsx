@@ -33,6 +33,7 @@ import { addUserMembership } from "../../lib/user-membership-actions";
 import { openResourceInNewTab } from "../../ui/utils";
 import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
+import dayjs from "../../lib/dayjs";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
@@ -256,7 +257,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                         };
                     }>
                 ).user_membership?.expires_at;
-                return expiresAt ? new Date(expiresAt) : null;
+                return expiresAt ? dayjs(expiresAt).toDate() : null;
             },
         },
         {

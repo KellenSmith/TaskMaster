@@ -248,7 +248,7 @@ export const checkInEventParticipant = async (
                 id: validatedEventParticipantId,
             },
             data: {
-                checked_in_at: new Date(),
+                checked_in_at: dayjs().toDate(),
             },
         });
     } catch (error) {

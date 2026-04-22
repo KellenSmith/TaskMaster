@@ -6,6 +6,7 @@ import * as mailService from "./mail-service";
 import { getMailTransport } from "./mail-transport";
 import { revalidateTag } from "next/cache";
 import type { Transporter } from "nodemailer";
+import dayjs from "../dayjs";
 
 const buildJob = (overrides: Partial<Record<string, any>> = {}) => ({
     id: "job-1",
@@ -16,8 +17,8 @@ const buildJob = (overrides: Partial<Record<string, any>> = {}) => ({
     cursor: 0,
     status: "pending",
     replyTo: null,
-    created_at: new Date(),
-    updated_at: new Date(),
+    created_at: dayjs().toDate(),
+    updated_at: dayjs().toDate(),
     ...overrides,
 });
 
@@ -164,7 +165,7 @@ describe("newsletter-actions", () => {
     it("processes a job when lastRunAt is stale", async () => {
         mockContext.prisma.newsletterJob.findFirst.mockResolvedValue(
             buildJob({
-                lastRunAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                lastRunAt: dayjs().subtract(24, "hours").toDate(),
                 recipients: ["a@example.com", "b@example.com", "c@example.com"],
             }),
         );
