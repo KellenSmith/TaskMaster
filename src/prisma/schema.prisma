@@ -13,6 +13,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// NOTE: Time zone convention: all DateTime fields in this schema are stored and interpreted as UTC.
+
 // Newsletter job queue for paced bulk sending
 enum NewsletterJobStatus {
   pending
