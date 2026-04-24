@@ -7,7 +7,7 @@ import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-se
 import { getLoggedInUser } from "./user-helpers";
 import { getOrganizationSettings } from "./organization-settings-helpers";
 import { isUserAdmin, serverRedirect } from "./utils";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { prisma } from "../../prisma/prisma-client";
 import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enums";
 
@@ -112,8 +112,8 @@ describe("event-actions", () => {
                 title: "Summer Festival",
                 description: "A fun event",
                 location_id: locationId,
-                start_time: "15/06/2024 09:00",
-                end_time: "15/06/2024 17:00",
+                start_time: "2024-06-15 09:00",
+                end_time: "2024-06-15 17:00",
                 max_participants: "20",
                 full_ticket_price: "50",
                 status: EventStatus.draft,
@@ -165,8 +165,8 @@ describe("event-actions", () => {
                 title: "Big Event",
                 location_id: locationId,
                 max_participants: "20",
-                start_time: "15/06/2024 09:00",
-                end_time: "15/06/2024 17:00",
+                start_time: "2024-06-15 09:00",
+                end_time: "2024-06-15 17:00",
                 full_ticket_price: "0",
                 status: EventStatus.draft,
             });
@@ -180,8 +180,8 @@ describe("event-actions", () => {
             const formData = buildFormData({
                 title: "Event Without Location",
                 max_participants: "10",
-                start_time: "15/06/2024 09:00",
-                end_time: "15/06/2024 17:00",
+                start_time: "2024-06-15 09:00",
+                end_time: "2024-06-15 17:00",
                 full_ticket_price: "0",
                 status: EventStatus.draft,
             });
@@ -197,8 +197,8 @@ describe("event-actions", () => {
                 description: "<script>alert('xss')</script><p>Safe content</p>",
                 location_id: locationId,
                 max_participants: "10",
-                start_time: "15/06/2024 09:00",
-                end_time: "15/06/2024 17:00",
+                start_time: "2024-06-15 09:00",
+                end_time: "2024-06-15 17:00",
                 full_ticket_price: "0",
                 status: EventStatus.draft,
             });
@@ -583,8 +583,8 @@ describe("event-actions", () => {
             description: "Event description",
             host_id: "original-host",
             location_id: locationId,
-            start_time: new Date("2024-06-15T09:00:00Z"),
-            end_time: new Date("2024-06-15T17:00:00Z"),
+            start_time: dayjs("2024-06-15T09:00:00").toDate(),
+            end_time: dayjs("2024-06-15T17:00:00").toDate(),
             max_participants: 20,
             full_ticket_price: 50,
             status: EventStatus.published,
@@ -610,8 +610,8 @@ describe("event-actions", () => {
                 id: taskId,
                 name: "Setup",
                 event_id: eventId,
-                start_time: new Date("2024-06-15T08:00:00Z"),
-                end_time: new Date("2024-06-15T09:00:00Z"),
+                start_time: dayjs("2024-06-15T08:00:00").toDate(),
+                end_time: dayjs("2024-06-15T09:00:00").toDate(),
                 assignee_id: null,
                 reviewer_id: "original-host",
                 status: TaskStatus.toDo,
@@ -637,7 +637,7 @@ describe("event-actions", () => {
 
         it("clones event with new start time and adds logged-in user as host", async () => {
             const formData = buildFormData({
-                start_time: "15/07/2024 09:00",
+                start_time: "2024-07-15 09:00",
             });
 
             await eventActions.cloneEvent(eventId, formData);
@@ -646,7 +646,7 @@ describe("event-actions", () => {
                 data: expect.objectContaining({
                     title: "Original Event (Clone)",
                     status: EventStatus.draft,
-                    start_time: "2024-07-15T09:00:00Z",
+                    start_time: dayjs("2024-07-15T09:00:00").format(),
                     host: { connect: { id: userId } },
                 }),
             });
@@ -657,14 +657,12 @@ describe("event-actions", () => {
         });
 
         it("adjusts end time based on original duration", async () => {
-            const originalDuration = dayjs
-                .utc(mockEvent.end_time)
-                .diff(dayjs.utc(mockEvent.start_time));
-            const newStartTime = dayjs.utc("2024-07-15T09:00:00Z");
+            const originalDuration = dayjs(mockEvent.end_time).diff(dayjs(mockEvent.start_time));
+            const newStartTime = dayjs("2024-07-15T09:00:00");
             const expectedEndTime = newStartTime.add(originalDuration).toISOString();
 
             const formData = buildFormData({
-                start_time: "15/07/2024 09:00",
+                start_time: "2024-07-15 09:00",
             });
 
             await eventActions.cloneEvent(eventId, formData);
@@ -678,7 +676,7 @@ describe("event-actions", () => {
 
         it("clones tickets and adds host as participant", async () => {
             const formData = buildFormData({
-                start_time: "20/08/2024 10:00",
+                start_time: "2024-08-20 10:00",
             });
 
             await eventActions.cloneEvent(eventId, formData);
@@ -704,7 +702,7 @@ describe("event-actions", () => {
 
         it("clones tasks with adjusted times and resets status", async () => {
             const formData = buildFormData({
-                start_time: "20/08/2024 10:00",
+                start_time: "2024-08-20 10:00",
             });
 
             await eventActions.cloneEvent(eventId, formData);
@@ -734,7 +732,7 @@ describe("event-actions", () => {
             vi.mocked(getLoggedInUser).mockResolvedValue(null);
 
             const formData = buildFormData({
-                start_time: "15/07/2024 09:00",
+                start_time: "2024-07-15 09:00",
             });
 
             await expect(eventActions.cloneEvent(eventId, formData)).rejects.toThrow(
@@ -749,7 +747,7 @@ describe("event-actions", () => {
             } as any);
 
             const formData = buildFormData({
-                start_time: "15/07/2024 09:00",
+                start_time: "2024-07-15 09:00",
             });
 
             await expect(eventActions.cloneEvent(eventId, formData)).rejects.toThrow(
@@ -765,7 +763,7 @@ describe("event-actions", () => {
             vi.mocked(prisma.task.findMany).mockResolvedValue([taskWithoutStartTime] as any);
 
             const formData = buildFormData({
-                start_time: "15/07/2024 09:00",
+                start_time: "2024-07-15 09:00",
             });
 
             await eventActions.cloneEvent(eventId, formData);

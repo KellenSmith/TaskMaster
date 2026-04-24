@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Dispatch, FormEvent, SetStateAction, use, useMemo, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import LanguageTranslations, { menuTabs } from "./LanguageTranslations";
 import { useNotificationContext } from "../../context/NotificationContext";
@@ -48,14 +48,14 @@ export const filterOptions = {
     begins_after: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter(
             (task) =>
-                dayjs.utc(task.start_time).isAfter(dayjs.utc(value as string), "minute") ||
-                dayjs.utc(task.start_time).isSame(dayjs.utc(value as string), "minute"),
+                dayjs(task.start_time).isAfter(dayjs(value as string), "minute") ||
+                dayjs(task.start_time).isSame(dayjs(value as string), "minute"),
         ),
     ends_before: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter(
             (task) =>
-                dayjs.utc(task.end_time).isBefore(dayjs.utc(value as string), "minute") ||
-                dayjs.utc(task.end_time).isSame(dayjs.utc(value as string), "minute"),
+                dayjs(task.end_time).isBefore(dayjs(value as string), "minute") ||
+                dayjs(task.end_time).isSame(dayjs(value as string), "minute"),
         ),
     has_tag: ({ tasks, value }: FilterFunctionProps) =>
         tasks?.filter((task) => task.tags.some((tag) => (value as string[])?.includes(tag))),
@@ -155,7 +155,7 @@ const KanBanBoardMenu = ({
                     key={fieldId}
                     name={fieldId}
                     label={label}
-                    defaultValue={filterValue ? dayjs.utc(filterValue) : null}
+                    defaultValue={filterValue ? dayjs(filterValue) : null}
                     slotProps={{
                         textField: {
                             name: fieldId,

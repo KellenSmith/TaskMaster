@@ -6,6 +6,7 @@ import * as orderActions from "./order-actions";
 import { getLoggedInUser } from "./user-helpers";
 import { serverRedirect } from "./utils";
 import { OrderStatus, UserRole } from "../../prisma/generated/enums";
+import dayjs from "./dayjs";
 
 vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
@@ -40,7 +41,7 @@ describe("order-actions", () => {
                         quantity: 1,
                         order: {
                             status: OrderStatus.pending,
-                            created_at: new Date(),
+                            created_at: dayjs().toDate(),
                         },
                     },
                 ],
@@ -123,7 +124,7 @@ describe("order-actions", () => {
                         quantity: 2,
                         order: {
                             status: OrderStatus.pending,
-                            created_at: new Date(),
+                            created_at: dayjs().toDate(),
                         },
                     },
                 ],
@@ -138,7 +139,7 @@ describe("order-actions", () => {
                         quantity: 1,
                         order: {
                             status: OrderStatus.pending,
-                            created_at: new Date(),
+                            created_at: dayjs().toDate(),
                         },
                     },
                 ],
@@ -226,7 +227,7 @@ describe("order-actions", () => {
                         quantity: 1,
                         order: {
                             status: OrderStatus.pending,
-                            created_at: new Date(),
+                            created_at: dayjs().toDate(),
                         },
                     },
                 ],
@@ -261,7 +262,7 @@ describe("order-actions", () => {
                         quantity: 1,
                         order: {
                             status: OrderStatus.pending,
-                            created_at: new Date(),
+                            created_at: dayjs().toDate(),
                         },
                     },
                 ],

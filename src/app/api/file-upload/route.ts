@@ -1,6 +1,7 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { auth } from "../../lib/auth/auth";
+import dayjs from "../../lib/dayjs";
 
 // ✅ SECURITY: File upload configuration
 const UPLOAD_CONFIG = {
@@ -124,7 +125,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                     tokenPayload: JSON.stringify({
                         userId: session.user.id,
                         originalFilename: pathname,
-                        uploadTime: new Date().toISOString(),
+                        uploadTime: dayjs().toISOString(),
                         clientPayload: clientPayload,
                     }),
                 };
@@ -135,7 +136,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                     blobUrl: blob.url,
                     filename: blob.pathname,
                     userId: session.user.id,
-                    uploadTime: new Date().toISOString(),
+                    uploadTime: dayjs().toISOString(),
                 });
 
                 // Optional: Store upload metadata in database for tracking
@@ -149,7 +150,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         console.error("File upload failed:", {
             error: error instanceof Error ? error.message : String(error),
             userId: session.user.id,
-            timestamp: new Date().toISOString(),
+            timestamp: dayjs().toISOString(),
         });
 
         // ✅ SECURITY: Return generic error to prevent information disclosure

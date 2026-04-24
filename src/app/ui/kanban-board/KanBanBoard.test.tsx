@@ -4,6 +4,7 @@ import KanBanBoard from "./KanBanBoard";
 import { useUserContext } from "../../context/UserContext";
 import { isUserAdmin, isUserHost } from "../../lib/utils";
 import { Language, TaskStatus } from "../../../prisma/generated/enums";
+import dayjs from "../../lib/dayjs";
 
 const droppableColumnMock = vi.fn();
 const kanbanMenuMock = vi.fn();
@@ -48,8 +49,8 @@ const tasks = [
         id: "task-1",
         name: "Task 1",
         status: TaskStatus.toDo,
-        start_time: new Date("2026-01-01T10:00:00.000Z"),
-        end_time: new Date("2026-01-01T11:00:00.000Z"),
+        start_time: dayjs("2026-01-01T10:00:00.000").toDate(),
+        end_time: dayjs("2026-01-01T11:00:00.000").toDate(),
         assignee_id: null,
         reviewer_id: "user-1",
         tags: [],

@@ -7,7 +7,7 @@ import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
-import dayjs from "dayjs";
+import dayjs from "./dayjs";
 import { formatDate } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { Prisma } from "../../prisma/generated/client";
@@ -226,11 +226,7 @@ export const checkInEventParticipant = async (
 
         if (eventParticipant.checked_in_at) {
             // Consider already checked in if checked_in_at is set and is before now minus 10 seconds (to account for small delays)
-            if (
-                dayjs
-                    .utc(eventParticipant.checked_in_at)
-                    .isBefore(dayjs.utc().subtract(10, "seconds"))
-            )
+            if (dayjs(eventParticipant.checked_in_at).isBefore(dayjs().subtract(10, "seconds")))
                 return (
                     LanguageTranslations.alreadyCheckedIn[language] +
                     " " +
@@ -240,7 +236,7 @@ export const checkInEventParticipant = async (
         }
 
         // Dont check in if not within one hour of event opening hours
-        const now = dayjs.utc();
+        const now = dayjs();
         const eventStart = dayjs(eventParticipant.ticket.event.start_time);
         const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
         if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {
@@ -252,7 +248,7 @@ export const checkInEventParticipant = async (
                 id: validatedEventParticipantId,
             },
             data: {
-                checked_in_at: new Date(),
+                checked_in_at: dayjs().toDate(),
             },
         });
     } catch (error) {

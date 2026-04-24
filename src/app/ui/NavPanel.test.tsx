@@ -9,6 +9,7 @@ import { logOut } from "../lib/user-actions";
 import { createInfoPage, deleteInfoPage, updateInfoPage } from "../lib/info-page-actions";
 import GlobalConstants from "../GlobalConstants";
 import NotificationContextProvider from "../context/NotificationContext";
+import dayjs from "../lib/dayjs";
 
 vi.mock("next/navigation", () => ({
     useRouter: vi.fn(() => ({ push: vi.fn() })),
@@ -34,7 +35,7 @@ const createUser = (overrides: Record<string, unknown> = {}) =>
         role: UserRole.member,
         status: UserStatus.validated,
         user_membership: {
-            expires_at: new Date("2099-01-01T00:00:00.000Z"),
+            expires_at: dayjs("2099-01-01T00:00:00.000"),
         },
         ...overrides,
     }) as any;

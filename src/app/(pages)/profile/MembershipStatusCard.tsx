@@ -4,7 +4,7 @@ import { isMembershipExpired } from "../../lib/utils";
 import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import { formatDate } from "../../ui/utils";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserStatus } from "../../../prisma/generated/enums";
 
@@ -118,7 +118,7 @@ const MembershipStatusCard = () => {
                                             {LanguageTranslations.membershipExpires[language]}
                                         </Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                            {formatDate(dayjs.utc(user.user_membership.expires_at))}
+                                            {formatDate(dayjs(user.user_membership.expires_at))}
                                         </Typography>
                                     </Stack>
                                 </Stack>

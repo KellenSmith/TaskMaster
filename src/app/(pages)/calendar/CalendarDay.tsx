@@ -3,16 +3,13 @@
 import { FC, use, useMemo, useCallback } from "react";
 import { Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import CalendarEvent from "./CalendarEvent";
-import dayjs from "dayjs";
-import isBetween from "dayjs/plugin/isBetween";
+import dayjs, { Dayjs } from "../../lib/dayjs";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { Prisma } from "../../../prisma/generated/browser";
 
-dayjs.extend(isBetween);
-
 interface CalendarDayProps {
-    date: dayjs.Dayjs;
+    date: Dayjs;
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
 }
 
@@ -52,7 +49,7 @@ const CalendarDay: FC<CalendarDayProps> = ({ date, eventsPromise }) => {
         return (
             <Stack spacing={0.5}>
                 {eventsForDay
-                    .sort((a, b) => dayjs.utc(a.start_time).unix() - dayjs.utc(b.start_time).unix())
+                    .sort((a, b) => dayjs(a.start_time).unix() - dayjs(b.start_time).unix())
                     .map((event) => (
                         <CalendarEvent key={event.id} event={event} />
                     ))}

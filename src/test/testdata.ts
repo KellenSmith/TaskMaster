@@ -1,9 +1,6 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from "../app/lib/dayjs";
 import { UserRole } from "../prisma/generated/enums";
 import { Prisma } from "../prisma/generated/client";
-
-dayjs.extend(utc);
 
 const testdata = {
     env: {
@@ -38,12 +35,12 @@ const testdata = {
         role: UserRole.member,
         consent_to_newsletters: true,
         phone: "123-456-7890",
-        created_at: dayjs.utc().subtract(1, "year").toDate(),
+        created_at: dayjs().subtract(1, "year").toDate(),
         user_membership: {
             id: "test-membership-id",
             membership_id: "test-membership-id",
             user_id: "test-user-id",
-            expires_at: dayjs.utc().add(1, "year").toDate(),
+            expires_at: dayjs().add(1, "year").toDate(),
         },
         skill_badges: [],
     } as unknown as Prisma.UserGetPayload<{
@@ -64,8 +61,8 @@ const testdata = {
         id: "event-1234-5678",
         title: "Summer Coding Workshop",
         location: "Tech Hub, Downtown",
-        start_time: new Date("2024-06-15T09:00:00Z"),
-        end_time: new Date("2024-06-15T17:00:00Z"),
+        start_time: dayjs("2024-06-15T09:00:00").toDate(),
+        end_time: dayjs("2024-06-15T17:00:00").toDate(),
         description: "Learn coding basics in this one-day workshop",
         max_participants: 20,
         full_ticket_price: 50,
@@ -81,7 +78,7 @@ const testdata = {
     reserveInEvent: {
         user_id: "1234-5678-9abc-def0",
         event_id: "event-1234-5678",
-        queueing_since: new Date("2024-01-15T12:00:00Z"),
+        queueing_since: dayjs("2024-01-15T12:00:00").toDate(),
     },
 
     task: {
@@ -92,8 +89,8 @@ const testdata = {
         name: "Prepare Workshop Materials",
         status: "in progress",
         tags: ["preparation", "documentation"],
-        start_time: new Date("2024-06-14T09:00:00Z"),
-        end_time: new Date("2024-06-14T17:00:00Z"),
+        start_time: dayjs("2024-06-14T09:00:00").toDate(),
+        end_time: dayjs("2024-06-14T17:00:00").toDate(),
         description: "Create and organize workshop materials for participants",
     },
 
@@ -102,8 +99,8 @@ const testdata = {
         name: "Test Product",
         description: "A test product for testing",
         price: 99.99,
-        created_at: new Date("2024-01-01T00:00:00Z"),
-        updated_at: new Date("2024-01-01T00:00:00Z"),
+        created_at: dayjs("2024-01-01T00:00:00").toDate(),
+        updated_at: dayjs("2024-01-01T00:00:00").toDate(),
         stock: 0,
         image_url: "",
     },
@@ -119,8 +116,8 @@ const testdata = {
 
     order: {
         id: "order-1234-5678",
-        created_at: new Date("2024-01-01T00:00:00Z"),
-        updated_at: new Date("2024-01-01T00:00:00Z"),
+        created_at: dayjs("2024-01-01T00:00:00").toDate(),
+        updated_at: dayjs("2024-01-01T00:00:00").toDate(),
         status: "pending",
         total_amount: 149.98,
         user_id: "1234-5678-9abc-def0",
@@ -136,8 +133,8 @@ const testdata = {
                     name: "Test Product",
                     description: "A test product for testing",
                     price: 99.99,
-                    created_at: new Date("2024-01-01T00:00:00Z"),
-                    updated_at: new Date("2024-01-01T00:00:00Z"),
+                    created_at: dayjs("2024-01-01T00:00:00").toDate(),
+                    updated_at: dayjs("2024-01-01T00:00:00").toDate(),
                     membership: {
                         duration: 365,
                     },

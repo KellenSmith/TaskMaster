@@ -108,8 +108,8 @@ const buildProps = (eventOverrides: Partial<EventInput> = {}) => ({
 
 const buildCompleteEventOverrides = () => ({
     location_id: "loc-1",
-    start_time: new Date("2026-06-01T10:00:00Z"),
-    end_time: new Date("2026-06-01T12:00:00Z"),
+    start_time: "2026-06-01 10:00",
+    end_time: "2026-06-01 12:00",
     max_participants: 10,
     fullTicketPrice: 5000,
     description: "Event description",

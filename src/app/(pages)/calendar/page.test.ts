@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { UserRole } from "../../../prisma/generated/enums";
 import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";

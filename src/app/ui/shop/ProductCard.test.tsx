@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import ProductCard from "./ProductCard";
 import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
+import dayjs from "dayjs";
 
 const makeProduct = (overrides: Record<string, unknown> = {}) =>
     ({
@@ -13,8 +14,8 @@ const makeProduct = (overrides: Record<string, unknown> = {}) =>
         stock: 10,
         image_url: "",
         vat_percentage: 25,
-        created_at: new Date("2025-01-01T00:00:00.000Z"),
-        updated_at: new Date("2025-01-02T00:00:00.000Z"),
+        created_at: dayjs("2025-01-01T00:00:00.000").toDate(),
+        updated_at: dayjs("2025-01-02T00:00:00.000").toDate(),
         ...overrides,
     }) as any;
 

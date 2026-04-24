@@ -3,28 +3,12 @@ import { expect, afterEach, vi, beforeEach, afterAll } from "vitest";
 import { cleanup } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { mockContext } from "./mocks/prismaMock";
-import utc from "dayjs/plugin/utc";
-import dayjs from "dayjs";
 import type { Transporter } from "nodemailer";
 import { getMailTransport } from "../app/lib/mail-service/mail-transport";
 import testdata from "./testdata";
 import { prisma } from "../prisma/prisma-client";
 import { Language } from "../prisma/generated/enums";
 import { Prisma } from "../prisma/generated/browser";
-import isoWeek from "dayjs/plugin/isoWeek";
-import "dayjs/locale/en-gb";
-import updateLocale from "dayjs/plugin/updateLocale";
-
-const locale = "en-gb";
-dayjs.extend(isoWeek);
-dayjs.extend(updateLocale);
-dayjs.locale(locale);
-dayjs.updateLocale(locale, {
-    weekStart: 1,
-    weekdays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-    weekdaysShort: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-});
-dayjs.extend(utc);
 
 // Extend vitest's expect method with testing-library methods
 expect.extend(matchers);
@@ -87,6 +71,7 @@ afterAll(() => {
 
 beforeEach(() => {
     vi.resetAllMocks();
+
     // Provide stable env defaults for tests
     process.env = { ...originalEnv, ...testdata.env };
     // Reassert mockimplementation for mail transport before each test
@@ -101,5 +86,4 @@ beforeEach(() => {
 // Clear up after each test
 afterEach(() => {
     cleanup();
-    vi.useRealTimers();
 });

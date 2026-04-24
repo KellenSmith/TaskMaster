@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { clientRedirect } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../../ui/utils";
+import dayjs from "../../lib/dayjs";
 
 vi.mock("../../lib/utils", async (importOriginal) => {
     const actual = (await importOriginal()) as object;
@@ -48,8 +49,8 @@ type CalendarEventLike = {
 const baseEvent: CalendarEventLike = {
     id: "event-1234",
     title: "Summer Coding Workshop",
-    start_time: new Date("2026-06-15T09:00:00Z"),
-    end_time: new Date("2026-06-15T17:00:00Z"),
+    start_time: dayjs("2026-06-15T09:00:00").toDate(),
+    end_time: dayjs("2026-06-15T17:00:00").toDate(),
     status: EventStatus.published,
     tags: [],
 };
@@ -207,8 +208,8 @@ describe("CalendarEvent", () => {
         setUserAgent("Mozilla/5.0 (X11; Linux x86_64)");
 
         const event = renderCalendarEvent({
-            start_time: new Date("2026-08-01T10:30:00Z"),
-            end_time: new Date("2026-08-01T12:45:00Z"),
+            start_time: dayjs("2026-08-01T10:30:00").toDate(),
+            end_time: dayjs("2026-08-01T12:45:00").toDate(),
         });
         const expectedTitle = `${formatDate(event.start_time)} - ${formatDate(event.end_time)}`;
 

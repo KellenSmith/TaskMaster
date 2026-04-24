@@ -105,7 +105,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Updated Task Name",
                 description: "Updated description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 status: TaskStatus.inReview,
             });
 
@@ -133,7 +133,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Task",
                 description: "Desc",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 assignee_id: userId,
                 reviewer_id: reviewerId,
             });
@@ -160,7 +160,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Task",
                 description: "Desc",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 skill_badges: `${badgeId1},${badgeId2}`,
             });
 
@@ -190,7 +190,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Updated Task Name",
                 description: "Updated description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 status: TaskStatus.inReview,
             });
 
@@ -217,7 +217,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Updated Task Name",
                 description: "Updated description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 status: TaskStatus.inProgress,
             });
 
@@ -248,7 +248,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Updated Task Name",
                 description: "Updated description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 status: TaskStatus.toDo,
             });
 
@@ -268,7 +268,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Updated Task Name",
                 description: "Updated description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 status: TaskStatus.inReview,
             });
 
@@ -281,7 +281,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "Task",
                 description: "Desc",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
             });
 
             await expect(taskActions.updateTaskById("invalid-uuid", formData)).rejects.toThrow();
@@ -303,7 +303,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "New Task",
                 description: "Task description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 assignee_id: "null",
                 reviewer_id: reviewerId,
             });
@@ -328,7 +328,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "New Task",
                 description: "Task description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 assignee_id: userId,
                 reviewer_id: reviewerId,
             });
@@ -351,7 +351,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "New Task",
                 description: "Task description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 assignee_id: "null",
                 reviewer_id: reviewerId,
                 event_id: eventId,
@@ -374,7 +374,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "New Task",
                 description: "Task description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 assignee_id: "null",
                 reviewer_id: reviewerId,
                 skill_badges: `${badgeId1},${badgeId2}`,
@@ -401,7 +401,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "New Task",
                 description: "Task description",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 assignee_id: "null",
                 reviewer_id: reviewerId,
                 tags: "urgent,important",
@@ -424,7 +424,7 @@ describe("task-actions", () => {
             const formData = buildFormData({
                 name: "New Task",
                 description: "<script>alert('xss')</script><p>Safe content</p>",
-                end_time: "15/06/2024 17:00",
+                end_time: "2024-06-15 17:00",
                 assignee_id: "null",
                 reviewer_id: reviewerId,
             });
