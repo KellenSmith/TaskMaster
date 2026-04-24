@@ -6,12 +6,8 @@ import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { getRelativeUrl } from "../../lib/utils";
 import { Info, OpenInNew } from "@mui/icons-material";
-import isBetween from "dayjs/plugin/isBetween";
-import dayjs from "../../lib/dayjs";
 import BookTaskButton from "./BookTaskButton";
 import { Prisma } from "../../../prisma/generated/client";
-
-dayjs.extend(isBetween);
 
 interface DraggableTaskProps {
     readOnly: boolean;

@@ -16,7 +16,6 @@ const testdata = {
         NEXT_PUBLIC_ORG_DESCRIPTION: "Test org",
         NEXT_PUBLIC_ORG_NAME: "TaskMaster",
         NEXT_PUBLIC_SEO_KEYWORDS: "test,seo",
-        NEXT_PUBLIC_LOCALE: "sv",
         SMTP_HOST: "smtp.test",
         SMTP_PORT: "587",
         SWEDBANK_BASE_URL: "https://api.example.com",

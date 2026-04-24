@@ -646,7 +646,7 @@ describe("event-actions", () => {
                 data: expect.objectContaining({
                     title: "Original Event (Clone)",
                     status: EventStatus.draft,
-                    start_time: "2024-07-15T09:00:00+02:00",
+                    start_time: dayjs("2024-07-15T09:00:00").format(),
                     host: { connect: { id: userId } },
                 }),
             });

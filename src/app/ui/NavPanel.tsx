@@ -50,10 +50,6 @@ import {
 import ConfirmButton from "./ConfirmButton";
 import { Prisma } from "../../prisma/generated/browser";
 
-import utc from "dayjs/plugin/utc";
-import dayjs from "../lib/dayjs";
-dayjs.extend(utc);
-
 const NavPanel = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const isIOSDevice = useMemo(
