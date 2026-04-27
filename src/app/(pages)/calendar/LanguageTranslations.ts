@@ -1,5 +1,9 @@
-import { weekDaysShort } from "../../lib/dayjs";
+import dayjs from "dayjs";
+import localeData from "dayjs/plugin/localeData";
 import { Language } from "../../../prisma/generated/enums";
+
+// ensure localeData plugin is loaded before calling weekdaysShort()
+dayjs.extend(localeData);
 
 const LanguageTranslations = {
     locationCapacityExceeded: {
@@ -17,7 +21,7 @@ const LanguageTranslations = {
         [Language.swedish]: "Skapa utkast",
     },
     weekDaysShort: {
-        [Language.english]: weekDaysShort(),
+        [Language.english]: dayjs.weekdaysShort(),
         [Language.swedish]: ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"],
     },
     locationNotFound: {

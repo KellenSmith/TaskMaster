@@ -1,9 +1,13 @@
-import dayjs, { Dayjs } from "../lib/dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 
+// Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
+dayjs.extend(utc);
+
 export const formatDate = (date: string | Date | Dayjs): string =>
-    dayjs(date).format("YYYY/MM/DD HH:mm");
+    dayjs.utc(date).format("YYYY/MM/DD HH:mm");
 export const formatPrice = (price: number): number => price / 100;
 
 export const openResourceInNewTab = (resourceUrl: string) => {
@@ -76,8 +80,8 @@ export const userHasSkillBadge = (
     }>,
 ) => {
     const subscriptionToken = user.user_membership?.subscription_token as SubscriptionToken;
-    const expiryDate = dayjs(subscriptionToken?.expiryDate, "MM/YYYY");
-    return expiryDate.isValid() && expiryDate.isAfter(dayjs());
+    const expiryDate = dayjs.utc(subscriptionToken?.expiryDate, "MM/YYYY");
+    return expiryDate.isValid() && expiryDate.isAfter(dayjs.utc());
 }; */
 
 export const isUserQualifiedForTask = (

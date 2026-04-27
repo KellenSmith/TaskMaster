@@ -9,7 +9,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { pdf } from "@react-pdf/renderer";
 import { openResourceInNewTab } from "../utils";
 import GlobalConstants from "../../GlobalConstants";
-import dayjs, { Dayjs } from "../../lib/dayjs";
 
 vi.mock("./DraggableTaskShifts", () => ({
     __esModule: true,
@@ -45,8 +44,8 @@ const makeTask = (overrides: Record<string, unknown> = {}) =>
         tags: ["tag-a"],
         assignee_id: "user-1",
         reviewer_id: "user-1",
-        start_time: dayjs("2026-01-01T10:00:00.000").toDate(),
-        end_time: dayjs("2026-01-01T11:00:00.000").toDate(),
+        start_time: new Date("2026-01-01T10:00:00.000Z"),
+        end_time: new Date("2026-01-01T11:00:00.000Z"),
         ...overrides,
     }) as any;
 
@@ -122,7 +121,7 @@ describe("KanBanBoardMenu", () => {
                 makeTask({
                     id: "task-2",
                     name: "Setup",
-                    start_time: dayjs("2026-01-01T12:00:00.000").toDate(),
+                    start_time: new Date("2026-01-01T12:00:00.000Z"),
                 }),
                 makeTask({ id: "task-3", name: "Cleanup" }),
             ],
@@ -192,8 +191,8 @@ describe("filterOptions", () => {
             reviewer_id: "reviewer-1",
             tags: ["tag-a"],
             status: TaskStatus.toDo,
-            start_time: dayjs("2026-01-01T10:30:00.000").toDate(),
-            end_time: dayjs("2026-01-01T11:00:00.000").toDate(),
+            start_time: new Date("2026-01-01T10:30:00.000Z"),
+            end_time: new Date("2026-01-01T11:00:00.000Z"),
         }),
         makeTask({
             id: "mine-1",
@@ -201,8 +200,8 @@ describe("filterOptions", () => {
             reviewer_id: "other-reviewer",
             tags: ["tag-b"],
             status: TaskStatus.inProgress,
-            start_time: dayjs("2026-01-01T10:31:00.000").toDate(),
-            end_time: dayjs("2026-01-01T11:01:00.000").toDate(),
+            start_time: new Date("2026-01-01T10:31:00.000Z"),
+            end_time: new Date("2026-01-01T11:01:00.000Z"),
         }),
         makeTask({
             id: "review-1",
@@ -210,8 +209,8 @@ describe("filterOptions", () => {
             reviewer_id: "user-1",
             tags: ["tag-c", "tag-d"],
             status: TaskStatus.done,
-            start_time: dayjs("2026-01-01T10:29:00.000").toDate(),
-            end_time: dayjs("2026-01-01T10:59:00.000").toDate(),
+            start_time: new Date("2026-01-01T10:29:00.000Z"),
+            end_time: new Date("2026-01-01T10:59:00.000Z"),
         }),
     ] as any[];
 
@@ -233,7 +232,7 @@ describe("filterOptions", () => {
     it("filters begins_after inclusively to the minute", () => {
         const result = filterOptions.begins_after({
             tasks,
-            value: "2026-01-01T10:30:00.000",
+            value: "2026-01-01T10:30:00.000Z",
         });
         expect(result?.map((task) => task.id)).toEqual(["unassigned-1", "mine-1"]);
     });
@@ -241,7 +240,7 @@ describe("filterOptions", () => {
     it("filters ends_before inclusively to the minute", () => {
         const result = filterOptions.ends_before({
             tasks,
-            value: "2026-01-01T11:00:00.000",
+            value: "2026-01-01T11:00:00.000Z",
         });
         expect(result?.map((task) => task.id)).toEqual(["unassigned-1", "review-1"]);
     });

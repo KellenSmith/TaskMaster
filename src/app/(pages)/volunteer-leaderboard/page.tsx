@@ -3,21 +3,20 @@ import { FC } from "react";
 import { prisma } from "../../../prisma/prisma-client";
 import VolunteerLeaderboardClient from "./VolunteerLeaderboardClient";
 import { Prisma } from "../../../prisma/generated/client";
-import dayjs from "../../lib/dayjs";
 
 interface VolunteerLeaderboardProps {
     searchParams: Promise<{ [year: string]: string }>;
 }
 
 const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchParams }) => {
-    const year = (await searchParams)?.year || dayjs().toDate().getFullYear().toString();
+    const year = (await searchParams)?.year || new Date().getFullYear().toString();
 
     const volunteerTasksForYear: Prisma.TaskGetPayload<{ include: { assignee: true } }>[] =
         await prisma.task.findMany({
             where: {
                 start_time: {
-                    gte: dayjs(`${year}-01-01`).toDate(),
-                    lt: dayjs(`${parseInt(year) + 1}-01-01`).toDate(),
+                    gte: new Date(`${year}-01-01`),
+                    lt: new Date(`${parseInt(year) + 1}-01-01`),
                 },
                 NOT: {
                     assignee: null,
@@ -36,7 +35,7 @@ const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchP
         );
         const totalHours = tasksForAssignee.reduce((sum, task) => {
             const hours = task.start_time
-                ? dayjs(task.end_time).diff(dayjs(task.start_time), "hours", true)
+                ? (task.end_time.getTime() - task.start_time.getTime()) / (1000 * 60 * 60)
                 : 0;
             return sum + hours;
         }, 0);

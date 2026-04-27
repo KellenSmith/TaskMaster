@@ -15,7 +15,7 @@ import Form from "../form/Form";
 import { Dispatch, SetStateAction, use, useMemo, useState } from "react";
 import { Add } from "@mui/icons-material";
 import { getUserSelectOptions, stringsToSelectOptions } from "../form/FieldCfg";
-import dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 import z from "zod";
 import { TaskCreateSchema, TaskFilterSchema } from "../../lib/zod-schemas";
 import { useNotificationContext } from "../../context/NotificationContext";
@@ -116,10 +116,10 @@ const DroppableColumn = ({
     };
 
     const getTaskDefaultStartTime = (): Date =>
-        (event ? dayjs(event.start_time) : dayjs().minute(0)).toDate();
+        (event ? dayjs.utc(event.start_time) : dayjs.utc().minute(0)).toDate();
 
     const getTaskDefaultEndTime = (): Date =>
-        (event ? dayjs(event.end_time) : dayjs().minute(0)).toDate();
+        (event ? dayjs.utc(event.end_time) : dayjs.utc().minute(0)).toDate();
 
     const openCreateTaskDialog = (shiftProps: Prisma.TaskGetPayload<true> | null) => {
         if (!user) return;

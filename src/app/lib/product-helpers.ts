@@ -1,6 +1,6 @@
 "use server";
 
-import dayjs from "./dayjs";
+import dayjs from "dayjs";
 import { OrderStatus, Prisma } from "../../prisma/generated/client";
 import { renewUserMembership } from "./user-membership-helpers";
 import { addEventParticipantWithTx } from "./event-participant-actions";
@@ -25,7 +25,7 @@ export const getAvailableProductStock = async (
     const reservedStock = product.order_items.reduce((acc, item) => {
         if (
             item.order.status === OrderStatus.pending &&
-            dayjs(item.order.created_at).isAfter(dayjs().subtract(30, "minute"))
+            dayjs.utc(item.order.created_at).isAfter(dayjs.utc().subtract(30, "minute"))
         )
             return acc + item.quantity;
         return acc;

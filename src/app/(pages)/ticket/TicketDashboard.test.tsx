@@ -1,7 +1,7 @@
 import { act, render, screen } from "@testing-library/react";
 import TicketDashboard from "./TicketDashboard";
 import { EventStatus, Language, TicketType, UserRole } from "../../../prisma/generated/enums";
-import dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 import { formatDate } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
 import { useUserContext } from "../../context/UserContext";

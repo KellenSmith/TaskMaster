@@ -11,7 +11,7 @@ import {
     useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 import CalendarDay from "./CalendarDay";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form from "../../ui/form/Form";

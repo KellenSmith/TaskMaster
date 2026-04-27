@@ -2,6 +2,7 @@ import HomePage from "./page";
 import { vi, describe, it, expect } from "vitest";
 import { getLoggedInUser } from "./lib/user-helpers";
 import { getTextContent } from "./lib/text-content-actions";
+import dayjs from "dayjs";
 import { ReactElement } from "react";
 
 vi.mock("./lib/user-helpers", () => ({
@@ -10,6 +11,10 @@ vi.mock("./lib/user-helpers", () => ({
 vi.mock("./lib/text-content-actions", () => ({
     getTextContent: vi.fn(),
 }));
+const mockedNow = dayjs.utc();
+beforeEach(() => {
+    vi.spyOn(dayjs, "utc").mockReturnValue(mockedNow);
+});
 
 describe("HomePage", () => {
     it("renders TextContent for logged-out user", async () => {

@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import CalendarDashboard from "./CalendarDashboard";
 import userEvent from "@testing-library/user-event";
-import dayjs, { Dayjs } from "../../lib/dayjs";
+import dayjs from "dayjs";
 import LocalizationContextProvider from "../../context/LocalizationContext";
 import { useMediaQuery } from "@mui/material";
 import { useUserContext } from "../../context/UserContext";
@@ -30,15 +30,15 @@ const events = [
     {
         id: "1",
         title: "Event 1",
-        start_time: dayjs("2026-03-10").toDate(),
-        end_time: dayjs("2026-03-10").add(1, "hour").toDate(),
+        start_time: dayjs.utc("2026-03-10").toDate(),
+        end_time: dayjs.utc("2026-03-10").add(1, "hour").toDate(),
         tags: ["Tag1", "Tag2"],
     },
     {
         id: "2",
         title: "Event 2",
-        start_time: dayjs("2026-03-15").toDate(),
-        end_time: dayjs("2026-03-15").add(1, "hour").toDate(),
+        start_time: dayjs.utc("2026-03-15").toDate(),
+        end_time: dayjs.utc("2026-03-15").add(1, "hour").toDate(),
         tags: ["Tag2", "Tag3"],
     },
 ];
@@ -103,7 +103,7 @@ describe("CalendarDashboard", () => {
     });
     it("renders calendar with correct days if large screen", async () => {
         vi.useFakeTimers();
-        vi.setSystemTime(dayjs("2026-03-15").toDate()); // Mock system time to a fixed date for consistent testing
+        vi.setSystemTime(dayjs.utc("2026-03-04T12:00:00Z").toDate()); // Use explicit UTC instant for deterministic behavior
         await act(async () => {
             render(
                 <LocalizationContextProvider>
@@ -119,12 +119,8 @@ describe("CalendarDashboard", () => {
         // Expect 23-28 februari, 1-31 mars, 1-5 april (total 42 cells in a 6x7 calendar grid)
         const calendarCells = screen.getAllByText(new RegExp("^(?:[1-9]|[12][0-9]|3[01])$"));
         expect(calendarCells.length).toBe(42);
-
-        vi.useRealTimers();
     });
     it("renders only days with events if small screen", async () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(dayjs("2026-03-15").toDate()); // Mock system time to a fixed date for consistent testing
         vi.mocked(useMediaQuery).mockReturnValue(true); // Mock small screen
 
         await act(async () => {
@@ -147,8 +143,6 @@ describe("CalendarDashboard", () => {
         expect(
             screen.queryAllByText(new RegExp("^(?!(?:10|15)$)(?:[1-9]|[12][0-9]|3[01])$")).length,
         ).toBe(0);
-
-        vi.useRealTimers();
     });
     it("renders swedish translations if language is set to swedish", async () => {
         vi.mocked(useUserContext).mockReturnValue({

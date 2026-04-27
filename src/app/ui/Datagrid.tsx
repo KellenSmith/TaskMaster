@@ -32,7 +32,6 @@ import GlobalLanguageTranslations from "../GlobalLanguageTranslations";
 import { useUserContext } from "../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { Prisma } from "../../prisma/generated/browser";
-import dayjs from "../lib/dayjs";
 
 export interface RowActionProps {
     name: string;
@@ -141,8 +140,8 @@ const Datagrid: React.FC<DatagridProps> = ({
                     return null;
                 }
 
-                const start = dayjs(startDate).toDate();
-                const end = dayjs(endDate).toDate();
+                const start = new Date(startDate);
+                const end = new Date(endDate);
 
                 // Set start to beginning of day and end to end of day
                 start.setHours(0, 0, 0, 0);
@@ -150,7 +149,7 @@ const Datagrid: React.FC<DatagridProps> = ({
 
                 return (value) => {
                     if (!value) return false;
-                    const cellDate = dayjs(value).toDate();
+                    const cellDate = new Date(value);
                     return cellDate >= start && cellDate <= end;
                 };
             },
@@ -213,7 +212,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 type: getColumnType(key),
                 ...(datePickerFields.includes(key) && {
                     filterOperators: getDateFilterOperators(),
-                    valueGetter: (value) => (value ? dayjs(value).toDate() : null),
+                    valueGetter: (value) => (value ? new Date(value) : null),
                 }),
                 valueFormatter: (value) => {
                     if (datePickerFields.includes(key)) {

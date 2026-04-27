@@ -1,4 +1,3 @@
-import dayjs from "../../lib/dayjs";
 import { EventStatus } from "../../../prisma/generated/enums";
 import {
     doDateRangesOverlap,
@@ -27,8 +26,8 @@ const makeTask = (
 ) => ({
     id,
     name,
-    start_time: dayjs(startIso).toDate(),
-    end_time: dayjs(endIso).toDate(),
+    start_time: new Date(startIso),
+    end_time: new Date(endIso),
     assignee_id: assigneeId ?? null,
 });
 
@@ -113,7 +112,7 @@ describe("event-utils", () => {
     describe("isUserVolunteer", () => {
         it("returns true when user is assigned to any task", () => {
             const tasks = [
-                makeTask("1", "A", "2026-01-01T10:00:00", "2026-01-01T11:00:00", "user-2"),
+                makeTask("1", "A", "2026-01-01T10:00:00Z", "2026-01-01T11:00:00Z", "user-2"),
             ];
 
             expect(isUserVolunteer({ id: "user-2" } as any, tasks as any)).toBe(true);
@@ -121,7 +120,7 @@ describe("event-utils", () => {
 
         it("returns false when user is not assigned or user is null", () => {
             const tasks = [
-                makeTask("1", "A", "2026-01-01T10:00:00", "2026-01-01T11:00:00", "user-2"),
+                makeTask("1", "A", "2026-01-01T10:00:00Z", "2026-01-01T11:00:00Z", "user-2"),
             ];
 
             expect(isUserVolunteer({ id: "user-1" } as any, tasks as any)).toBe(false);
@@ -148,9 +147,9 @@ describe("event-utils", () => {
     describe("getEarliestStartTime/getEarliestEndTime", () => {
         it("returns earliest start and end times across tasks", () => {
             const tasks = [
-                makeTask("1", "A", "2026-02-01T12:00:00", "2026-02-01T16:00:00"),
-                makeTask("2", "B", "2026-02-01T09:00:00", "2026-02-01T18:00:00"),
-                makeTask("3", "C", "2026-02-01T10:00:00", "2026-02-01T11:00:00"),
+                makeTask("1", "A", "2026-02-01T12:00:00Z", "2026-02-01T16:00:00Z"),
+                makeTask("2", "B", "2026-02-01T09:00:00Z", "2026-02-01T18:00:00Z"),
+                makeTask("3", "C", "2026-02-01T10:00:00Z", "2026-02-01T11:00:00Z"),
             ];
 
             const earliestStart = getEarliestStartTime(tasks as any);
@@ -158,30 +157,30 @@ describe("event-utils", () => {
 
             expect(earliestStart).not.toBeNull();
             expect(earliestEnd).not.toBeNull();
-            expect(earliestStart).toStrictEqual(dayjs("2026-02-01T09:00:00.000").toDate());
-            expect(earliestEnd).toStrictEqual(dayjs("2026-02-01T11:00:00.000").toDate());
+            expect(earliestStart?.toISOString()).toBe("2026-02-01T09:00:00.000Z");
+            expect(earliestEnd?.toISOString()).toBe("2026-02-01T11:00:00.000Z");
         });
     });
 
     describe("sortTasks", () => {
         it("sorts by start time when start-time difference is more than one minute", () => {
-            const earlier = makeTask("1", "A", "2026-01-01T10:00:00", "2026-01-01T12:00:00");
-            const later = makeTask("2", "B", "2026-01-01T10:03:00", "2026-01-01T11:00:00");
+            const earlier = makeTask("1", "A", "2026-01-01T10:00:00Z", "2026-01-01T12:00:00Z");
+            const later = makeTask("2", "B", "2026-01-01T10:03:00Z", "2026-01-01T11:00:00Z");
 
             expect(sortTasks(earlier as any, later as any)).toBeLessThan(0);
             expect(sortTasks(later as any, earlier as any)).toBeGreaterThan(0);
         });
 
         it("falls back to end time when starts are within one minute", () => {
-            const earlierEnd = makeTask("1", "A", "2026-01-01T10:00:00", "2026-01-01T10:30:00");
-            const laterEnd = makeTask("2", "B", "2026-01-01T10:00:30", "2026-01-01T10:45:00");
+            const earlierEnd = makeTask("1", "A", "2026-01-01T10:00:00Z", "2026-01-01T10:30:00Z");
+            const laterEnd = makeTask("2", "B", "2026-01-01T10:00:30Z", "2026-01-01T10:45:00Z");
 
             expect(sortTasks(earlierEnd as any, laterEnd as any)).toBeLessThan(0);
         });
 
         it("falls back to name when start/end are within one minute", () => {
-            const alpha = makeTask("1", "Alpha", "2026-01-01T10:00:00", "2026-01-01T10:30:00");
-            const beta = makeTask("2", "Beta", "2026-01-01T10:00:30", "2026-01-01T10:30:30");
+            const alpha = makeTask("1", "Alpha", "2026-01-01T10:00:00Z", "2026-01-01T10:30:00Z");
+            const beta = makeTask("2", "Beta", "2026-01-01T10:00:30Z", "2026-01-01T10:30:30Z");
 
             expect(sortTasks(alpha as any, beta as any)).toBeLessThan(0);
         });
@@ -190,9 +189,9 @@ describe("event-utils", () => {
     describe("getTasksSortedByTime", () => {
         it("sorts by start time, then end time, then name", () => {
             const tasks = [
-                makeTask("3", "Bravo", "2026-01-01T10:00:00", "2026-01-01T11:00:00"),
-                makeTask("2", "Alpha", "2026-01-01T10:00:00", "2026-01-01T10:30:00"),
-                makeTask("1", "Zulu", "2026-01-01T09:00:00", "2026-01-01T09:30:00"),
+                makeTask("3", "Bravo", "2026-01-01T10:00:00Z", "2026-01-01T11:00:00Z"),
+                makeTask("2", "Alpha", "2026-01-01T10:00:00Z", "2026-01-01T10:30:00Z"),
+                makeTask("1", "Zulu", "2026-01-01T09:00:00Z", "2026-01-01T09:30:00Z"),
             ];
 
             const sorted = getTasksSortedByTime(tasks as any);
@@ -202,8 +201,8 @@ describe("event-utils", () => {
 
         it("sorts the provided array in place", () => {
             const tasks = [
-                makeTask("2", "Beta", "2026-01-01T10:00:00", "2026-01-01T11:00:00"),
-                makeTask("1", "Alpha", "2026-01-01T09:00:00", "2026-01-01T10:00:00"),
+                makeTask("2", "Beta", "2026-01-01T10:00:00Z", "2026-01-01T11:00:00Z"),
+                makeTask("1", "Alpha", "2026-01-01T09:00:00Z", "2026-01-01T10:00:00Z"),
             ];
 
             const originalReference = tasks;
@@ -217,9 +216,9 @@ describe("event-utils", () => {
     describe("getGroupedAndSortedTasks", () => {
         it("groups by task name and sorts groups by earliest task timing", () => {
             const tasks = [
-                makeTask("1", "Setup", "2026-01-01T12:00:00", "2026-01-01T13:00:00"),
-                makeTask("2", "Cleanup", "2026-01-01T10:00:00", "2026-01-01T11:00:00"),
-                makeTask("3", "Setup", "2026-01-01T09:00:00", "2026-01-01T09:30:00"),
+                makeTask("1", "Setup", "2026-01-01T12:00:00Z", "2026-01-01T13:00:00Z"),
+                makeTask("2", "Cleanup", "2026-01-01T10:00:00Z", "2026-01-01T11:00:00Z"),
+                makeTask("3", "Setup", "2026-01-01T09:00:00Z", "2026-01-01T09:30:00Z"),
             ];
 
             const grouped = getGroupedAndSortedTasks(tasks as any);
@@ -234,9 +233,9 @@ describe("event-utils", () => {
     describe("getSortedEvents", () => {
         it("sorts events by start time and uses title as tie-breaker", () => {
             const events = [
-                { id: "2", title: "Beta", start_time: dayjs("2026-03-01T09:00:00").toDate() },
-                { id: "3", title: "Alpha", start_time: dayjs("2026-03-01T09:00:00").toDate() },
-                { id: "1", title: "Gamma", start_time: dayjs("2026-02-01T09:00:00").toDate() },
+                { id: "2", title: "Beta", start_time: new Date("2026-03-01T09:00:00Z") },
+                { id: "3", title: "Alpha", start_time: new Date("2026-03-01T09:00:00Z") },
+                { id: "1", title: "Gamma", start_time: new Date("2026-02-01T09:00:00Z") },
             ];
 
             const sorted = getSortedEvents(events as any);
@@ -283,26 +282,26 @@ describe("event-utils", () => {
 
     describe("doDateRangesOverlap", () => {
         it("returns true when ranges overlap", () => {
-            const start1 = dayjs("2026-04-01T10:00:00").toDate();
-            const end1 = dayjs("2026-04-01T12:00:00").toDate();
-            const start2 = dayjs("2026-04-01T11:00:00").toDate();
-            const end2 = dayjs("2026-04-01T13:00:00").toDate();
+            const start1 = new Date("2026-04-01T10:00:00Z");
+            const end1 = new Date("2026-04-01T12:00:00Z");
+            const start2 = new Date("2026-04-01T11:00:00Z");
+            const end2 = new Date("2026-04-01T13:00:00Z");
 
             expect(doDateRangesOverlap(start1, end1, start2, end2)).toBe(true);
         });
 
         it("returns false when ranges only touch at boundary", () => {
-            const start1 = dayjs("2026-04-01T10:00:00").toDate();
-            const end1 = dayjs("2026-04-01T12:00:00").toDate();
-            const start2 = dayjs("2026-04-01T12:00:00").toDate();
-            const end2 = dayjs("2026-04-01T13:00:00").toDate();
+            const start1 = new Date("2026-04-01T10:00:00Z");
+            const end1 = new Date("2026-04-01T12:00:00Z");
+            const start2 = new Date("2026-04-01T12:00:00Z");
+            const end2 = new Date("2026-04-01T13:00:00Z");
 
             expect(doDateRangesOverlap(start1, end1, start2, end2)).toBe(false);
         });
 
         it("returns false when one or more inputs are missing", () => {
-            const start = dayjs("2026-04-01T10:00:00").toDate();
-            const end = dayjs("2026-04-01T12:00:00").toDate();
+            const start = new Date("2026-04-01T10:00:00Z");
+            const end = new Date("2026-04-01T12:00:00Z");
 
             expect(doDateRangesOverlap(null, end, start, end)).toBe(false);
             expect(doDateRangesOverlap(start, null, start, end)).toBe(false);

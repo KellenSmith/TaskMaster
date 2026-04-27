@@ -3,7 +3,7 @@ import TicketPage from "./page";
 import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { UserRole } from "../../../prisma/generated/enums";
-import dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 
 // Mock child component to not have to call contexts and other dependencies
 vi.mock("./TicketDashboard", () => ({

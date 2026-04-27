@@ -1,5 +1,5 @@
 import * as colors from "@mui/material/colors";
-import * as dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 import { getSortedEvents, getTasksSortedByTime } from "../calendar-post/event-utils";
 import CircleSector from "./CircleSector";
 import { Prisma } from "../../../prisma/generated/client";
@@ -23,8 +23,8 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
     const getTotalDuration = (ev: typeof event) => {
         return (
             (dayjs
-                .default(getLatestTaskEndTime(ev))
-                .diff(dayjs.default(getEarliestTaskStartTime(ev)), "milliseconds") /
+                .utc(getLatestTaskEndTime(ev))
+                .diff(dayjs.utc(getEarliestTaskStartTime(ev)), "milliseconds") /
                 (365 * 24 * 60 * 60 * 1000)) *
             100
         );
@@ -32,18 +32,18 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
 
     const totalDuration = getTotalDuration(event);
     const eventDuration =
-        (dayjs.default(event.end_time).diff(dayjs.default(event.start_time), "milliseconds") /
+        (dayjs.utc(event.end_time).diff(dayjs.utc(event.start_time), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
 
     const taskStartOffset =
         (dayjs
-            .default(getEarliestTaskStartTime(event))
-            .diff(dayjs.default().startOf("year"), "milliseconds") /
+            .utc(getEarliestTaskStartTime(event))
+            .diff(dayjs.utc().startOf("year"), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
     const eventStartOffset =
-        (dayjs.default(event.start_time).diff(dayjs.default().startOf("year"), "milliseconds") /
+        (dayjs.utc(event.start_time).diff(dayjs.utc().startOf("year"), "milliseconds") /
             (365 * 24 * 60 * 60 * 1000)) *
         100;
 
@@ -57,17 +57,13 @@ const YearWheelEvent = ({ event, events }: YearWheelEventProps) => {
             const currentLatestTaskEndTime = getLatestTaskEndTime(event);
 
             if (
-                dayjs
-                    .default(earliestTaskStartTime)
-                    .isAfter(dayjs.default(currentEarliestTaskStartTime)) &&
-                dayjs.default(latestTaskEndTime).isBefore(dayjs.default(currentLatestTaskEndTime))
+                dayjs.utc(earliestTaskStartTime).isAfter(dayjs.utc(currentEarliestTaskStartTime)) &&
+                dayjs.utc(latestTaskEndTime).isBefore(dayjs.utc(currentLatestTaskEndTime))
             )
                 return true;
             if (
-                dayjs
-                    .default(latestTaskEndTime)
-                    .isAfter(dayjs.default(currentEarliestTaskStartTime)) &&
-                dayjs.default(latestTaskEndTime).isBefore(dayjs.default(currentLatestTaskEndTime))
+                dayjs.utc(latestTaskEndTime).isAfter(dayjs.utc(currentEarliestTaskStartTime)) &&
+                dayjs.utc(latestTaskEndTime).isBefore(dayjs.utc(currentLatestTaskEndTime))
             )
                 return true;
             return false;

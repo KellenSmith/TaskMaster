@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import dayjs from "./dayjs";
+import dayjs from "dayjs";
 import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
@@ -26,7 +26,7 @@ describe("user-membership-helpers", () => {
     describe("renewUserMembership", () => {
         it("creates a new expiry when expired or membership changes", async () => {
             vi.useFakeTimers();
-            vi.setSystemTime(dayjs("2026-02-12T00:00:00").toDate());
+            vi.setSystemTime(new Date("2026-02-12T00:00:00Z"));
 
             const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.membership.findUniqueOrThrow).mockResolvedValue({
@@ -34,17 +34,17 @@ describe("user-membership-helpers", () => {
             } as any);
             vi.mocked(tx.userMembership.findUnique).mockResolvedValue({
                 membership_id: "membership-1",
-                expires_at: "2025-01-01T00:00:00.000",
+                expires_at: "2025-01-01T00:00:00.000Z",
             } as any);
             vi.mocked(tx.user.findUniqueOrThrow).mockResolvedValue({
                 id: testUserId,
-                user_membership: { expires_at: "2025-01-01T00:00:00.000" },
+                user_membership: { expires_at: "2025-01-01T00:00:00.000Z" },
             } as any);
             vi.mocked(isMembershipExpired).mockReturnValue(true);
 
             await membershipActions.renewUserMembership(tx as any, testUserId, "membership-1");
 
-            const expectedExpiresAt = dayjs("2026-02-12T00:00:00").add(365, "d").toISOString();
+            const expectedExpiresAt = dayjs.utc("2026-02-12T00:00:00Z").add(365, "d").toISOString();
 
             expect(tx.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId },
@@ -70,17 +70,20 @@ describe("user-membership-helpers", () => {
             } as any);
             vi.mocked(tx.userMembership.findUnique).mockResolvedValue({
                 membership_id: "membership-1",
-                expires_at: "2026-03-01T00:00:00.000",
+                expires_at: "2026-03-01T00:00:00.000Z",
             } as any);
             vi.mocked(tx.user.findUniqueOrThrow).mockResolvedValue({
                 id: testUserId,
-                user_membership: { expires_at: "2026-03-01T00:00:00.000" },
+                user_membership: { expires_at: "2026-03-01T00:00:00.000Z" },
             } as any);
             vi.mocked(isMembershipExpired).mockReturnValue(false);
 
             await membershipActions.renewUserMembership(tx as any, testUserId, "membership-1");
 
-            const expectedExpiresAt = dayjs("2026-03-01T00:00:00.000").add(365, "d").toISOString();
+            const expectedExpiresAt = dayjs
+                .utc("2026-03-01T00:00:00.000Z")
+                .add(365, "d")
+                .toISOString();
 
             expect(tx.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId },

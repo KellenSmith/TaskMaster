@@ -1,4 +1,4 @@
-import dayjs from "./dayjs";
+import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { UserRole } from "../../prisma/generated/enums";
@@ -56,7 +56,7 @@ export const isMembershipExpired = (
 ): boolean => {
     if (!user) return true;
     const membershipExpiresAt = user.user_membership?.expires_at;
-    return !membershipExpiresAt || dayjs().isAfter(dayjs(membershipExpiresAt));
+    return !membershipExpiresAt || dayjs.utc().isAfter(dayjs.utc(membershipExpiresAt));
 };
 
 export const isUserAdmin = (

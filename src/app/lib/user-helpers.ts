@@ -2,7 +2,7 @@
 
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
-import dayjs from "./dayjs";
+import dayjs from "dayjs";
 import { cookies } from "next/headers";
 import { auth } from "./auth/auth";
 import { Language } from "../../prisma/generated/enums";
@@ -38,7 +38,7 @@ export const getActiveMembers = async (): Promise<
         where: {
             user_membership: {
                 expires_at: {
-                    gt: dayjs().toISOString(),
+                    gt: dayjs.utc().toISOString(),
                 },
             },
         },

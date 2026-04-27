@@ -1,4 +1,4 @@
-import dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 import { EventStatus, UserRole } from "../../../prisma/generated/enums";
 import { getActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 import EventPage from "./page";

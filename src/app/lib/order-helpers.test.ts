@@ -7,7 +7,6 @@ import { processOrderItems } from "./order-item-helpers";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
 import { capturePaymentFunds } from "./payment-helpers";
 import { prisma } from "../../prisma/prisma-client";
-import dayjs from "./dayjs";
 
 vi.mock("../GlobalConstants", () => ({
     default: { ORDER: "ORDER" },
@@ -37,7 +36,7 @@ const baseUser = {
     pronoun: null,
     phone: null,
     consent_to_newsletters: false,
-    created_at: dayjs().toDate(),
+    created_at: new Date(),
 };
 const baseOrder = {
     id: "order-1",
@@ -46,8 +45,8 @@ const baseOrder = {
     total_vat_amount: 25,
     payment_request_id: null,
     payee_ref: null,
-    created_at: dayjs().toDate(),
-    updated_at: dayjs().toDate(),
+    created_at: new Date(),
+    updated_at: new Date(),
     user_id: baseUser.id,
     user: baseUser,
     order_items: [

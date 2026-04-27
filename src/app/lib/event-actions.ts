@@ -6,7 +6,7 @@ import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-se
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { getAbsoluteUrl, isUserAdmin, serverRedirect } from "./utils";
-import dayjs from "./dayjs";
+import dayjs from "dayjs";
 import { getLoggedInUser } from "./user-helpers";
 import { getOrganizationSettings } from "./organization-settings-helpers";
 import { sanitizeFormData } from "./html-sanitizer";
@@ -343,8 +343,9 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
                     status: EventStatus.draft,
                     title: `${eventData.title} (Clone)`,
                     start_time: validatedData.start_time,
-                    end_time: dayjs(validatedData.start_time)
-                        .add(dayjs(eventData.end_time).diff(eventData.start_time))
+                    end_time: dayjs
+                        .utc(validatedData.start_time)
+                        .add(dayjs.utc(eventData.end_time).diff(eventData.start_time))
                         .toISOString(),
                 },
                 host: {
@@ -405,8 +406,9 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
 
         // Copy tasks
         const moveTaskTimeForward = (taskTime: Date) =>
-            dayjs(taskTime)
-                .add(dayjs(validatedData.start_time).diff(dayjs(eventData.start_time)))
+            dayjs
+                .utc(taskTime)
+                .add(dayjs.utc(validatedData.start_time).diff(dayjs.utc(eventData.start_time)))
                 .toISOString();
 
         await Promise.all(

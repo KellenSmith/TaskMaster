@@ -4,7 +4,7 @@ import GlobalConstants from "../../GlobalConstants";
 import { formatDate } from "../../ui/utils";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useMemo } from "react";
-import dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 import { Language } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
@@ -66,7 +66,7 @@ const ParticipantListPDF = ({ event, eventParticipants, language }: ParticipantL
                     <Text style={styles.eventDetailLabel}>
                         {LanguageTranslations.printed[language]}
                     </Text>
-                    <Text>{formatDate(dayjs())}</Text>
+                    <Text>{formatDate(dayjs.utc())}</Text>
                 </View>
                 {event && getEventDetails()}
                 <View style={styles.table}>

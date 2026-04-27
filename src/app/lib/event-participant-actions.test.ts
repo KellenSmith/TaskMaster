@@ -6,7 +6,7 @@ import * as eventParticipantActions from "./event-participant-actions";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import { deleteEventReserveWithTx } from "./event-reserve-actions";
 import { getLoggedInUser, getUserLanguage } from "./user-helpers";
-import dayjs from "./dayjs";
+import dayjs from "dayjs";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { prisma } from "../../prisma/prisma-client";
 import { Language, UserRole } from "../../prisma/generated/enums";
@@ -291,8 +291,8 @@ describe("event-participant-actions", () => {
             } as any);
             tx.event.findUniqueOrThrow.mockResolvedValue({
                 id: eventId,
-                start_time: dayjs().add(1, "day").toDate(),
-                end_time: dayjs().add(1, "day").add(2, "hours").toDate(),
+                start_time: dayjs.utc().add(1, "day").toDate(),
+                end_time: dayjs.utc().add(1, "day").add(2, "hours").toDate(),
             } as any);
             vi.mocked(notifyEventReserves).mockResolvedValue();
         });
@@ -314,8 +314,8 @@ describe("event-participant-actions", () => {
 
         const mockEvent = {
             id: eventId,
-            start_time: dayjs("2024-06-15T09:00:00").toDate(),
-            end_time: dayjs("2024-06-15T17:00:00").toDate(),
+            start_time: dayjs("2024-06-15T09:00:00Z").toDate(),
+            end_time: dayjs("2024-06-15T17:00:00Z").toDate(),
         };
 
         beforeEach(() => {
@@ -375,7 +375,7 @@ describe("event-participant-actions", () => {
     });
 
     describe("checkInEventParticipant", () => {
-        const now = dayjs();
+        const now = dayjs.utc();
         const eventStartTime = now.subtract(30, "minutes").toDate();
         const eventEndTime = now.add(1, "hour").toDate();
 

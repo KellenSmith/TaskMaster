@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import CalendarDay from "./CalendarDay";
-import dayjs from "../../lib/dayjs";
+import dayjs from "dayjs";
 import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
 import { useMediaQuery } from "@mui/material";

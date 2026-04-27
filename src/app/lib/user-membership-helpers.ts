@@ -1,7 +1,7 @@
 "use server";
 
 import GlobalConstants from "../GlobalConstants";
-import dayjs from "./dayjs";
+import dayjs from "dayjs";
 import { prisma } from "../../prisma/prisma-client";
 import { isMembershipExpired } from "./utils";
 import { revalidateTag } from "next/cache";
@@ -23,10 +23,11 @@ export const renewUserMembership = async (
         include: { user_membership: true },
     });
 
-    let newExpiryDate = dayjs().add(membership.duration, "d").toISOString();
+    let newExpiryDate = dayjs.utc().add(membership.duration, "d").toISOString();
     // If the membership is the same, extend the expiration date
     if (!isMembershipExpired(user) && userMembership?.membership_id === membershipId)
-        newExpiryDate = dayjs(userMembership.expires_at)
+        newExpiryDate = dayjs
+            .utc(userMembership.expires_at)
             .add(membership.duration, "d")
             .toISOString();
 

@@ -3,7 +3,6 @@ import { getLoggedInUser } from "../../lib/user-helpers";
 import Dashboard from "./Dashboard";
 import { serverRedirect } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
-import dayjs from "../../lib/dayjs";
 
 const DashboardPage = async () => {
     const loggedInUser = await getLoggedInUser();
@@ -15,7 +14,7 @@ const DashboardPage = async () => {
             ticket: {
                 event: {
                     end_time: {
-                        gt: dayjs().toDate(), // Only get tickets for events that haven't ended yet
+                        gt: new Date(), // Only get tickets for events that haven't ended yet
                     },
                 },
             },
