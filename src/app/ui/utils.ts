@@ -1,9 +1,9 @@
-import dayjs, { Dayjs } from "../lib/dayjs";
+import { Dayjs, formatUTCForBrowserLocalDisplay } from "../lib/dayjs";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 
 export const formatDate = (date: string | Date | Dayjs): string =>
-    dayjs(date).format("YYYY/MM/DD HH:mm");
+    formatUTCForBrowserLocalDisplay(date);
 export const formatPrice = (price: number): number => price / 100;
 
 export const openResourceInNewTab = (resourceUrl: string) => {

@@ -76,7 +76,9 @@ describe("ParticipantListPDF", () => {
     it("renders formatted event time interval", () => {
         renderParticipantListPDF();
 
-        expect(screen.getByText(`2026/03/10 09:00 - 2026/03/10 11:00`)).toBeInTheDocument();
+        // baseEvent stores UTC times: dayjs("2026/03/10 09:00").toISOString() creates UTC 09:00
+        // When displayed in Stockholm (UTC+1), this becomes 10:00
+        expect(screen.getByText(`2026/03/10 10:00 - 2026/03/10 12:00`)).toBeInTheDocument();
     });
 
     it("renders english table headers", () => {

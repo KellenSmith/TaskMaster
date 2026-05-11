@@ -10,6 +10,8 @@ import localeData from "dayjs/plugin/localeData";
 
 export const locale = process.env.NEXT_PUBLIC_LOCALE || "sv";
 export const timezoneName = "UTC";
+export const organizationInputTimezone = process.env.NEXT_PUBLIC_ORG_TIMEZONE || "Europe/Stockholm";
+export const dateTimeInputFormat = "YYYY-MM-DD HH:mm";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
@@ -28,6 +30,25 @@ dayjs.updateLocale(locale, {
 dayjs.tz.setDefault(timezoneName);
 
 export const weekDaysShort = dayjs.weekdaysShort;
+
+export const isValidOrganizationDateTimeInput = (value: string): boolean =>
+    dayjs(value, dateTimeInputFormat, true).isValid();
+
+export const parseOrganizationDateTimeInputToUTC = (value: string): string =>
+    dayjs.tz(value, dateTimeInputFormat, organizationInputTimezone).utc().format();
+
+export const formatUTCForBrowserLocalDisplay = (
+    value: string | Date | dayjs.Dayjs,
+    format = "YYYY/MM/DD HH:mm",
+): string => dayjs.utc(value).local().format(format);
+
+export const convertUTCToLocalDayjs = (value: string | Date | dayjs.Dayjs): dayjs.Dayjs =>
+    dayjs.utc(value).local();
+
+export const formatDateTimeForSubmission = (
+    value: dayjs.Dayjs,
+    format = dateTimeInputFormat,
+): string => value.format(format);
 
 export type { Dayjs } from "dayjs";
 export default dayjs.utc;

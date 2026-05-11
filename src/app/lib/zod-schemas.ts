@@ -1,5 +1,5 @@
 import { z } from "zod";
-import dayjs from "./dayjs";
+import { isValidOrganizationDateTimeInput, parseOrganizationDateTimeInputToUTC } from "./dayjs";
 import {
     EventStatus,
     OrderStatus,
@@ -12,12 +12,10 @@ import { Prisma } from "../../prisma/generated/client";
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
-    .refine((val) => !val || dayjs(val, "YYYY-MM-DD HH:mm", true).isValid(), {
+    .refine((val) => !val || isValidOrganizationDateTimeInput(val), {
         message: "Invalid date",
     })
-    .transform((val) =>
-        val ? dayjs(val, "YYYY-MM-DD HH:mm", true).format() : "",
-    ) as z.ZodType<string>;
+    .transform((val) => (val ? parseOrganizationDateTimeInputToUTC(val) : "")) as z.ZodType<string>;
 
 const priceSchema = z.coerce
     .number()

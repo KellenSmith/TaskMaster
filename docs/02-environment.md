@@ -28,6 +28,7 @@ See `.env.example` for a template you can copy.
 
 - NEXT_PUBLIC_ORG_NAME: Overrides organization name in UI
 - NEXT_PUBLIC_ORG_DESCRIPTION: Meta description override
+- NEXT_PUBLIC_ORG_TIMEZONE: IANA timezone used to interpret user-entered date/time values before they are converted and stored as UTC (default: Europe/Stockholm)
 - VERCEL_PROJECT_PRODUCTION_URL: Used to compute absolute URLs in some server redirects when deployed (e.g. my-app.vercel.app)
 
 Notes

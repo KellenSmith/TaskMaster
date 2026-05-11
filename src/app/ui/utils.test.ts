@@ -26,20 +26,22 @@ const makeOrganizationSettings = (overrides: Record<string, unknown> = {}) =>
 
 describe("ui/utils", () => {
     describe("formatDate", () => {
-        it("formats ISO date strings in UTC+2", () => {
-            expect(formatDate("2026-02-03T10:30:00")).toBe("2026/02/03 10:30");
+        it("formats ISO date strings from UTC to local time", () => {
+            const value = "2026-02-03T10:30:00Z";
+
+            expect(formatDate(value)).toBe(dayjs(value).local().format("YYYY/MM/DD HH:mm"));
         });
 
-        it("formats Date objects in UTC+2", () => {
-            const date = dayjs("2026-04-05T06:07:00").toDate();
+        it("formats Date objects from UTC to local time", () => {
+            const date = dayjs("2026-04-05T06:07:00Z").toDate();
 
-            expect(formatDate(date)).toBe("2026/04/05 06:07");
+            expect(formatDate(date)).toBe(dayjs(date).local().format("YYYY/MM/DD HH:mm"));
         });
 
-        it("formats Dayjs objects in UTC+2", () => {
-            const date = dayjs("2026-09-10T11:12:00");
+        it("formats Dayjs objects from UTC to local time", () => {
+            const date = dayjs("2026-09-10T11:12:00Z");
 
-            expect(formatDate(date)).toBe("2026/09/10 11:12");
+            expect(formatDate(date)).toBe(dayjs(date).local().format("YYYY/MM/DD HH:mm"));
         });
     });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import dayjs from "./dayjs";
+import { parseOrganizationDateTimeInputToUTC } from "./dayjs";
 import {
     AddEventParticipantSchema,
     AddEventReserveSchema,
@@ -48,7 +48,7 @@ import {
 } from "../../prisma/generated/enums";
 
 const validDate = "2026-02-03 14:30";
-const expectedDate = dayjs(validDate, "YYYY-MM-DD HH:mm").format();
+const expectedDate = parseOrganizationDateTimeInputToUTC(validDate);
 
 const baseProduct = {
     name: "Test Product",
@@ -194,6 +194,29 @@ describe("EventCreateSchema", () => {
         });
 
         expect(result.success).toBe(false);
+    });
+
+    it("converts organization-local winter and summer times to UTC", () => {
+        const winter = EventCreateSchema.parse({
+            title: "Winter event",
+            location_id: null,
+            start_time: "2026-01-15 14:30",
+            end_time: "2026-01-15 16:00",
+            max_participants: 10,
+        });
+
+        const summer = EventCreateSchema.parse({
+            title: "Summer event",
+            location_id: null,
+            start_time: "2026-07-15 14:30",
+            end_time: "2026-07-15 16:00",
+            max_participants: 10,
+        });
+
+        expect(winter.start_time).toBe("2026-01-15T13:30:00Z");
+        expect(winter.end_time).toBe("2026-01-15T15:00:00Z");
+        expect(summer.start_time).toBe("2026-07-15T12:30:00Z");
+        expect(summer.end_time).toBe("2026-07-15T14:00:00Z");
     });
 });
 

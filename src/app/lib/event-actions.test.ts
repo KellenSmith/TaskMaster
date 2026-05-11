@@ -646,7 +646,7 @@ describe("event-actions", () => {
                 data: expect.objectContaining({
                     title: "Original Event (Clone)",
                     status: EventStatus.draft,
-                    start_time: dayjs("2024-07-15T09:00:00").format(),
+                    start_time: "2024-07-15T07:00:00Z",
                     host: { connect: { id: userId } },
                 }),
             });
@@ -658,8 +658,8 @@ describe("event-actions", () => {
 
         it("adjusts end time based on original duration", async () => {
             const originalDuration = dayjs(mockEvent.end_time).diff(dayjs(mockEvent.start_time));
-            const newStartTime = dayjs("2024-07-15T09:00:00");
-            const expectedEndTime = newStartTime.add(originalDuration).toISOString();
+            const newStartTime = dayjs("2024-07-15T07:00:00Z");
+            const expectedEndTime = newStartTime.add(originalDuration).format();
 
             const formData = buildFormData({
                 start_time: "2024-07-15 09:00",
@@ -669,7 +669,7 @@ describe("event-actions", () => {
 
             expect(vi.mocked(prisma.event.create)).toHaveBeenCalledWith({
                 data: expect.objectContaining({
-                    end_time: expectedEndTime,
+                    end_time: expect.stringMatching(/2024-07-15T15:00:00/),
                 }),
             });
         });
@@ -774,5 +774,63 @@ describe("event-actions", () => {
                 }),
             });
         });
+    });
+});
+
+describe("datetime UTC round-trip conversion", () => {
+    beforeEach(() => {
+        vi.mocked(getOrganizationSettings).mockResolvedValue({
+            event_manager_email: null,
+        } as any);
+        vi.mocked(getLoggedInUser).mockResolvedValue({
+            id: userId,
+            role: "member",
+        } as any);
+        vi.mocked(prisma.location.findUniqueOrThrow).mockResolvedValue({
+            id: locationId,
+            capacity: 50,
+        } as any);
+        vi.mocked(prisma.event.create).mockResolvedValue({
+            id: eventId,
+            tickets: [{ product_id: ticketId, type: TicketType.volunteer }],
+        } as any);
+    });
+
+    it("accepts organization-timezone input, stores as UTC, and round-trips correctly", async () => {
+        const winterInput = "2026-01-15 14:30"; // Europe/Stockholm winter (UTC+1)
+        const summerInput = "2026-07-15 14:30"; // Europe/Stockholm summer (UTC+2)
+
+        const winterFormData = buildFormData({
+            title: "Winter Event",
+            location_id: locationId,
+            start_time: winterInput,
+            end_time: winterInput,
+            max_participants: "10",
+            full_ticket_price: "0",
+            status: EventStatus.draft,
+        });
+
+        const summerFormData = buildFormData({
+            title: "Summer Event",
+            location_id: locationId,
+            start_time: summerInput,
+            end_time: summerInput,
+            max_participants: "10",
+            full_ticket_price: "0",
+            status: EventStatus.draft,
+        });
+
+        await eventActions.createEvent(winterFormData);
+        await eventActions.createEvent(summerFormData);
+
+        const callsToCreate = vi.mocked(prisma.event.create).mock.calls;
+        const winterCall = callsToCreate[0][0];
+        const summerCall = callsToCreate[1][0];
+
+        const winterStartTime = winterCall?.data?.start_time;
+        const summerStartTime = summerCall?.data?.start_time;
+
+        expect(winterStartTime).toEqual("2026-01-15T13:30:00Z");
+        expect(summerStartTime).toEqual("2026-07-15T12:30:00Z");
     });
 });

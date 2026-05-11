@@ -35,7 +35,7 @@ import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
 import { useNotificationContext } from "../../context/NotificationContext";
 import z, { ZodType, ZodError } from "zod";
 import { allowRedirectException, formatPrice } from "../utils";
-import dayjs, { Dayjs } from "../../lib/dayjs";
+import dayjs, { Dayjs, convertUTCToLocalDayjs, dateTimeInputFormat } from "../../lib/dayjs";
 import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "../LanguageTranslations";
@@ -220,7 +220,9 @@ const Form: FC<FormProps> = ({
     const getDefaultValue = (fieldId: string) => {
         if (defaultValues && fieldId in defaultValues) {
             if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId] as number);
-            if (datePickerFields.includes(fieldId)) return dayjs(defaultValues[fieldId] as Dayjs);
+            // Convert stored UTC datetime to local time for picker display
+            if (datePickerFields.includes(fieldId))
+                return convertUTCToLocalDayjs(defaultValues[fieldId] as Dayjs);
             return defaultValues[fieldId];
         }
 
@@ -253,6 +255,7 @@ const Form: FC<FormProps> = ({
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId][language] as string}
                     defaultValue={getDefaultValue(fieldId) as Dayjs}
+                    format={dateTimeInputFormat}
                     slotProps={{
                         textField: {
                             name: fieldId,

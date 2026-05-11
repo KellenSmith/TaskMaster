@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import dayjs from "./dayjs";
+import dayjs, { parseOrganizationDateTimeInputToUTC } from "./dayjs";
 import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import { revalidateTag } from "next/cache";
@@ -30,7 +30,8 @@ describe("user-membership-actions", () => {
 
             await membershipActions.addUserMembership(testUserId, formData);
 
-            const expectedExpiresAt = dayjs("2026-02-12 10:00", "YYYY-MM-DD HH:mm", true).format();
+            // Parse the form input using the same function as the schema
+            const expectedExpiresAt = parseOrganizationDateTimeInputToUTC("2026-02-12 10:00");
 
             expect(mockContext.prisma.userMembership.upsert).toHaveBeenCalledWith({
                 where: { user_id: testUserId, membership_id: "membership-1" },
