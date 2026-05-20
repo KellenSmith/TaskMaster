@@ -37,6 +37,7 @@ import {
     UserCreateSchema,
     UserRoleSchema,
     UuidSchema,
+    dateDisplayFormat,
 } from "./zod-schemas";
 import testdata from "../../test/testdata";
 import {
@@ -48,7 +49,7 @@ import {
 } from "../../prisma/generated/enums";
 
 const validDate = "03/02/2026 14:30";
-const expectedDate = dayjs.utc(validDate, "DD/MM/YYYY HH:mm").format();
+const expectedDate = dayjs.utc(validDate, dateDisplayFormat).format();
 
 const baseProduct = {
     name: "Test Product",

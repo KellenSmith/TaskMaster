@@ -66,7 +66,7 @@ describe("CalendarDashboard", () => {
                 />,
             );
         });
-        const currentMonth = dayjs().format("YYYY/MM");
+        const currentMonth = dayjs.utc().format("YYYY/MM");
         expect(await screen.findByText(currentMonth)).toBeInTheDocument();
     });
     it("allows navigating to the next month", async () => {
