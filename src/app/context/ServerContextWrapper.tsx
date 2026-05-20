@@ -12,7 +12,12 @@ interface ServerContextWrapperProps {
 }
 
 const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
-    const loggedInUser = await getLoggedInUser();
+    let loggedInUser = null;
+    try {
+        loggedInUser = await getLoggedInUser();
+    } catch (error) {
+        console.error("Error fetching logged in user:", error);
+    }
 
     const allowedUserRolePrivileges = Object.values(UserRole).filter((role) =>
         userHasRolePrivileges(loggedInUser, role),
