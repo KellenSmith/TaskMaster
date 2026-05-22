@@ -30,15 +30,15 @@ const events = [
     {
         id: "1",
         title: "Event 1",
-        start_time: dayjs.utc("2026-03-10").toDate(),
-        end_time: dayjs.utc("2026-03-10").add(1, "hour").toDate(),
+        start_time: dayjs.utc("2026-03-10T10:00:00Z").toDate(),
+        end_time: dayjs.utc("2026-03-10T11:00:00Z").toDate(),
         tags: ["Tag1", "Tag2"],
     },
     {
         id: "2",
         title: "Event 2",
-        start_time: dayjs.utc("2026-03-15").toDate(),
-        end_time: dayjs.utc("2026-03-15").add(1, "hour").toDate(),
+        start_time: dayjs.utc("2026-03-15T23:00:00Z").toDate(),
+        end_time: dayjs.utc("2026-03-16T01:00:00Z").toDate(),
         tags: ["Tag2", "Tag3"],
     },
 ];
@@ -69,6 +69,26 @@ describe("CalendarDashboard", () => {
         const currentMonth = dayjs.utc().format("YYYY/MM");
         expect(await screen.findByText(currentMonth)).toBeInTheDocument();
     });
+    it("shows the current month when UTC month and timezone month differ", async () => {
+        // Mock system time to a date where UTC month is different from timezone month for some timezones (e.g. late March when some timezones switch to summer time)
+        vi.useFakeTimers();
+        vi.setSystemTime(dayjs.utc("2026-03-31T23:00:00Z").toDate()); // Use explicit UTC instant for deterministic behavior
+
+        await act(async () => {
+            render(
+                <CalendarDashboard
+                    eventsPromise={Promise.resolve([])}
+                    locationsPromise={Promise.resolve([])}
+                />,
+            );
+        });
+
+        // Expect the displayed month to be based on the timezone-aware current date,
+        // not the UTC date. Depending on the timezone. Europe/Stockholm is UTC+1 or UTC+2
+        // (depending on daylight saving time). Eitherway, the displayed month should be April 2026, not March 2026.
+        const expectedMonth = "2026/04";
+        expect(screen.getByText(expectedMonth)).toBeInTheDocument();
+    });
     it("allows navigating to the next month", async () => {
         await act(async () => {
             render(
@@ -82,7 +102,11 @@ describe("CalendarDashboard", () => {
         const nextButton = screen.getByTestId("ArrowRightIcon");
         await userEvent.click(nextButton);
 
-        const nextMonth = dayjs().add(1, "month").format("YYYY/MM");
+        const nextMonth = dayjs
+            .utc()
+            .tz(process.env.NEXT_PUBLIC_TIMEZONE)
+            .add(1, "month")
+            .format("YYYY/MM");
         expect(await screen.findByText(nextMonth)).toBeInTheDocument();
     });
     it("allows navigating to the previous month", async () => {
@@ -98,7 +122,11 @@ describe("CalendarDashboard", () => {
         const prevButton = screen.getByTestId("ArrowLeftIcon");
         await userEvent.click(prevButton);
 
-        const prevMonth = dayjs().subtract(1, "month").format("YYYY/MM");
+        const prevMonth = dayjs
+            .utc()
+            .tz(process.env.NEXT_PUBLIC_TIMEZONE)
+            .subtract(1, "month")
+            .format("YYYY/MM");
         expect(await screen.findByText(prevMonth)).toBeInTheDocument();
     });
     it("renders calendar with correct days if large screen", async () => {
@@ -121,6 +149,8 @@ describe("CalendarDashboard", () => {
         expect(calendarCells.length).toBe(42);
     });
     it("renders only days with events if small screen", async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(dayjs.utc("2026-03-04T12:00:00Z").toDate()); // Use explicit UTC instant for deterministic behavior
         vi.mocked(useMediaQuery).mockReturnValue(true); // Mock small screen
 
         await act(async () => {
@@ -136,12 +166,12 @@ describe("CalendarDashboard", () => {
 
         expect(screen.getByText("Event 1")).toBeInTheDocument();
         expect(screen.getByText("Event 2")).toBeInTheDocument();
-        // Expect only the days with events to be rendered (10th and 15th)
+        // Expect only the days with events to be rendered (10th and 16th)
         expect(screen.getByText("10")).toBeInTheDocument();
-        expect(screen.getByText("15")).toBeInTheDocument();
-        // All digits that are not 10 or 15 should not be rendered
+        expect(screen.getByText("16")).toBeInTheDocument();
+        // All digits that are not 10 or 16 should not be rendered
         expect(
-            screen.queryAllByText(new RegExp("^(?!(?:10|15)$)(?:[1-9]|[12][0-9]|3[01])$")).length,
+            screen.queryAllByText(new RegExp("^(?!(?:10|16)$)(?:[1-9]|[12][0-9]|3[01])$")).length,
         ).toBe(0);
     });
     it("renders swedish translations if language is set to swedish", async () => {

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Language } from "../../prisma/generated/enums";
 import {
     allowRedirectException,
-    formatDate,
+    formatUtcDateToTimezone,
     formatPrice,
     getPrivacyPolicyUrl,
     getTermsOfMembershipUrl,
@@ -12,6 +12,7 @@ import {
     openResourceInNewTab,
     userHasSkillBadge,
 } from "./utils";
+import { dateDisplayFormat, localTimeZone } from "../context/LocalizationContext";
 
 const makeOrganizationSettings = (overrides: Record<string, unknown> = {}) =>
     ({
@@ -25,21 +26,44 @@ const makeOrganizationSettings = (overrides: Record<string, unknown> = {}) =>
     }) as any;
 
 describe("ui/utils", () => {
-    describe("formatDate", () => {
-        it("formats ISO date strings in UTC", () => {
-            expect(formatDate("2026-02-03T10:30:00Z")).toBe("2026/02/03 10:30");
+    describe("formatUtcDateToTimezone", () => {
+        it("formats ISO date strings from UTC to local timezone", () => {
+            const testdate1 = "2026-02-03T10:30:00Z";
+            const expectedDisplayedDate = dayjs(testdate1)
+                .tz(localTimeZone)
+                .format(dateDisplayFormat);
+            expect(formatUtcDateToTimezone("2026-02-03T10:30:00Z")).toBe(expectedDisplayedDate);
+            const testdate2 = "2026-02-03T23:30:00Z";
+            const expectedDisplayedDate2 = dayjs(testdate2)
+                .tz(localTimeZone)
+                .format(dateDisplayFormat);
+            expect(formatUtcDateToTimezone(testdate2)).toBe(expectedDisplayedDate2);
         });
 
-        it("formats Date objects in UTC", () => {
-            const date = new Date("2026-04-05T06:07:00Z");
-
-            expect(formatDate(date)).toBe("2026/04/05 06:07");
+        it("formats Date objects from UTC to local timezone", () => {
+            const testdate1 = "2026-04-05T06:07:00Z";
+            const expectedDisplayedDate1 = dayjs(testdate1)
+                .tz(localTimeZone)
+                .format(dateDisplayFormat);
+            expect(formatUtcDateToTimezone(new Date(testdate1))).toBe(expectedDisplayedDate1);
+            const testdate2 = "2026-04-05T23:07:00Z";
+            const expectedDisplayedDate2 = dayjs(testdate2)
+                .tz(localTimeZone)
+                .format(dateDisplayFormat);
+            expect(formatUtcDateToTimezone(new Date(testdate2))).toBe(expectedDisplayedDate2);
         });
 
-        it("formats Dayjs objects in UTC", () => {
-            const date = dayjs("2026-09-10T11:12:00Z");
-
-            expect(formatDate(date)).toBe("2026/09/10 11:12");
+        it("formats Dayjs objects from UTC to local timezone", () => {
+            const testdate1 = "2026-09-10T11:12:00Z";
+            const expectedDisplayedDate1 = dayjs(testdate1)
+                .tz(localTimeZone)
+                .format(dateDisplayFormat);
+            expect(formatUtcDateToTimezone(dayjs.utc(testdate1))).toBe(expectedDisplayedDate1);
+            const testdate2 = "2026-09-10T23:12:00Z";
+            const expectedDisplayedDate2 = dayjs(testdate2)
+                .tz(localTimeZone)
+                .format(dateDisplayFormat);
+            expect(formatUtcDateToTimezone(dayjs.utc(testdate2))).toBe(expectedDisplayedDate2);
         });
     });
 

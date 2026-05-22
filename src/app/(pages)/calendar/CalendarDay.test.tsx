@@ -14,7 +14,7 @@ vi.mock("@mui/material", async (importActual) => {
     };
 });
 
-const testDate = dayjs("2026-03-04");
+const testDate = dayjs.utc("2026-03-04");
 
 const baseEvent = {
     id: "1",
@@ -28,7 +28,7 @@ const renderCalendarDay = async (eventsPromise: Promise<any[]>) => {
     await act(async () =>
         render(
             <LocalizationContextProvider>
-                <CalendarDay date={testDate} eventsPromise={eventsPromise} />
+                <CalendarDay tzDate={testDate} eventsPromise={eventsPromise} />
             </LocalizationContextProvider>,
         ),
     );
@@ -67,6 +67,26 @@ describe("CalendarDay", () => {
             ...baseEvent,
             start_time: testDate.subtract(1, "day").hour(22).minute(0).second(0).toDate(),
             end_time: testDate.hour(2).minute(0).second(0).toDate(),
+        };
+        await renderCalendarDay(Promise.resolve([event]));
+
+        expect(screen.getByText("Event 1")).toBeInTheDocument();
+    });
+    it("does not render events ending exactly at midnight at start of day", async () => {
+        const event = {
+            ...baseEvent,
+            start_time: testDate.subtract(1, "day").hour(22).minute(0).second(0).toDate(),
+            end_time: testDate.startOf("day").toDate(),
+        };
+        await renderCalendarDay(Promise.resolve([event]));
+
+        expect(screen.queryByText("Event 1")).not.toBeInTheDocument();
+    });
+    it("renders events ending shortly after midnight", async () => {
+        const event = {
+            ...baseEvent,
+            start_time: testDate.subtract(1, "day").hour(22).minute(0).second(0).toDate(),
+            end_time: testDate.startOf("day").add(1, "minute").toDate(),
         };
         await renderCalendarDay(Promise.resolve([event]));
 

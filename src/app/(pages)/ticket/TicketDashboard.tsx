@@ -6,7 +6,7 @@ import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
 import { isUserAdmin } from "../../lib/utils";
 
@@ -109,7 +109,7 @@ const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
         if (alreadyCheckedIn) {
             setStatusColor("error");
             setStatusText(
-                `${LanguageTranslations.alreadyCheckedIn[language]} ${formatDate(dayjs(eventParticipant.checked_in_at))}`,
+                `${LanguageTranslations.alreadyCheckedIn[language]} ${formatUtcDateToTimezone(dayjs.utc(eventParticipant.checked_in_at))}`,
             );
             setTitle("Checked in");
             return;
@@ -165,11 +165,11 @@ const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
                         </Typography>
                         <Typography>
                             {(eventStart
-                                ? formatDate(eventStart)
+                                ? formatUtcDateToTimezone(eventStart)
                                 : LanguageTranslations.startMissing[language]) +
                                 " - " +
                                 (eventEnd
-                                    ? formatDate(eventEnd)
+                                    ? formatUtcDateToTimezone(eventEnd)
                                     : LanguageTranslations.endMissing[language])}
                         </Typography>
                         <Typography>

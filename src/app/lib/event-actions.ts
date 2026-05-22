@@ -317,6 +317,8 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = CloneEventSchema.parse(Object.fromEntries(formData.entries()));
 
+    console.log("Cloning event with data:", validatedData);
+
     const {
         id: eventIdToOmit, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
         host_id: hostIdToOmit, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars

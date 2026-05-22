@@ -11,6 +11,8 @@ import updateLocale from "dayjs/plugin/updateLocale";
 import { ReactNode, FC } from "react";
 
 const locale = "en-gb";
+export const dateDisplayFormat = "YYYY/MM/DD HH:mm";
+export const localTimeZone = process.env.NEXT_PUBLIC_TIMEZONE || "Europe/Stockholm";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
@@ -23,6 +25,8 @@ dayjs.updateLocale(locale, {
     weekdays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
     weekdaysShort: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 });
+
+export const utcDateToTzDate = (utcDate: dayjs.Dayjs) => dayjs.tz(utcDate, localTimeZone);
 
 interface LocalizationContextProviderProps {
     children: ReactNode;

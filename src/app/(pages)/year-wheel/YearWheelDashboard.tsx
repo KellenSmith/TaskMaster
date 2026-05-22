@@ -13,7 +13,7 @@ import dayjs from "dayjs";
 import { use, useState, useRef, PointerEvent } from "react";
 import YearWheelEvent from "./YearWheelEvent";
 import YearWheelMarker from "./YearWheelMarker";
-import { formatDate, openResourceInNewTab } from "../../ui/utils";
+import { formatUtcDateToTimezone, openResourceInNewTab } from "../../ui/utils";
 import { ArrowLeft, ArrowRight, OpenInNew } from "@mui/icons-material";
 import { getRelativeUrl } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
@@ -154,7 +154,7 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
                             >
                                 <ListItemText
                                     primary={ev.title}
-                                    secondary={`${formatDate(ev.start_time)} — ${formatDate(ev.end_time)}`}
+                                    secondary={`${formatUtcDateToTimezone(ev.start_time)} — ${formatUtcDateToTimezone(ev.end_time)}`}
                                 />
                                 <ListItemIcon
                                     sx={{ cursor: "pointer", justifyContent: "flex-end" }}

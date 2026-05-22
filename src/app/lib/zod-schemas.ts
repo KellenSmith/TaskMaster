@@ -10,11 +10,10 @@ import {
     UserRole,
 } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { dateDisplayFormat } from "../context/LocalizationContext";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
-
-export const dateDisplayFormat = "DD/MM/YYYY HH:mm";
 
 // Required dayjs to string schema for create operations
 const stringToISODate = z

@@ -9,7 +9,7 @@ import { clientRedirect, getRelativeUrl } from "../../lib/utils";
 import Link from "next/link";
 import GlobalConstants from "../../GlobalConstants";
 import LanguageTranslations from "./LanguageTranslations";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { useRouter } from "next/navigation";
 
 interface DashboardProps {
@@ -66,7 +66,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ticketInfoPromise }) => {
                             <Typography
                                 sx={{ paddingBottom: 2 }}
                                 variant="body2"
-                            >{`${formatDate(eventParticipant.ticket.event.start_time)} - ${formatDate(eventParticipant.ticket.event.end_time)}`}</Typography>
+                            >{`${formatUtcDateToTimezone(eventParticipant.ticket.event.start_time)} - ${formatUtcDateToTimezone(eventParticipant.ticket.event.end_time)}`}</Typography>
                             <CardMedia sx={{ display: "flex", justifyContent: "center" }}>
                                 <Image
                                     src={getRelativeUrl([

@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import LocalizedDateTimePicker from "./LocalizedDateTimePicker";
-import LocalizationContextProvider from "../../context/LocalizationContext";
+import LocalizationContextProvider, { dateDisplayFormat } from "../../context/LocalizationContext";
 import { DateTimePickerProps } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import { dateDisplayFormat } from "../../lib/zod-schemas";
+import { vi } from "vitest";
 
 const renderLocalizedDatePicker = (props: DateTimePickerProps = {}) => {
     render(
@@ -28,7 +28,7 @@ describe("LocalizedDateTimePicker", () => {
         expect(minute).toBeInTheDocument();
     });
     it("accepts and displays a valid utc date in Europe/Stockholm time zone by default", () => {
-        const utcDate = dayjs.utc("06/05/2026 12:00", dateDisplayFormat);
+        const utcDate = dayjs.utc("2026/05/06 12:00", dateDisplayFormat);
         renderLocalizedDatePicker({ defaultValue: utcDate });
 
         // Don't hardcode expected date due to summer time. The offset from UTC changes during the year.
@@ -37,15 +37,31 @@ describe("LocalizedDateTimePicker", () => {
         expect(displayedDate).toBeInTheDocument();
     });
     it("accepts and displays a valid utc date in env time zone", () => {
-        process.env.NEXT_PUBLIC_TIMEZONE = "America/New_York";
+        // Module-level constants read env once, so reset and import after env change.
+        vi.resetModules();
+        vi.stubEnv("NEXT_PUBLIC_TIMEZONE", "America/New_York");
 
-        const utcDate = dayjs.utc("06/05/2026 12:00", dateDisplayFormat);
-        renderLocalizedDatePicker({ defaultValue: utcDate });
+        return Promise.all([
+            import("./LocalizedDateTimePicker"),
+            import("../../context/LocalizationContext"),
+        ]).then(([pickerModule, contextModule]) => {
+            const TestLocalizedDateTimePicker = pickerModule.default;
+            const TestLocalizationContextProvider = contextModule.default;
+            const testDateDisplayFormat = contextModule.dateDisplayFormat;
 
-        const expectedDisplayedDate = utcDate
-            .tz(process.env.NEXT_PUBLIC_TIMEZONE)
-            .format(dateDisplayFormat);
-        const displayedDate = screen.getByDisplayValue(expectedDisplayedDate);
-        expect(displayedDate).toBeInTheDocument();
+            const utcDate = dayjs.utc("2026/05/06 12:00", testDateDisplayFormat);
+
+            render(
+                <TestLocalizationContextProvider>
+                    <TestLocalizedDateTimePicker fieldId={"testId"} defaultValue={utcDate} />
+                </TestLocalizationContextProvider>,
+            );
+
+            const expectedDisplayedDate = dayjs
+                .tz(utcDate, "America/New_York")
+                .format(testDateDisplayFormat);
+            const displayedDate = screen.getByDisplayValue(expectedDisplayedDate);
+            expect(displayedDate).toBeInTheDocument();
+        });
     });
 });

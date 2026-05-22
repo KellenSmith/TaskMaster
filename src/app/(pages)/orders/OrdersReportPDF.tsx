@@ -1,6 +1,6 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { styles } from "../../ui/pdf-styles";
-import { formatDate, formatPrice } from "../../ui/utils";
+import { formatUtcDateToTimezone, formatPrice } from "../../ui/utils";
 import { useMemo } from "react";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
@@ -148,7 +148,7 @@ const OrdersReportPDF = ({ orders, language }: OrdersReportPDFProps) => {
                     <Text style={styles.eventDetailLabel}>
                         {LanguageTranslations.printed[language]}
                     </Text>
-                    <Text>{formatDate(dayjs.utc())}</Text>
+                    <Text>{formatUtcDateToTimezone(dayjs.utc())}</Text>
                 </View>
                 {getReportDetails()}
                 <View style={styles.table}>

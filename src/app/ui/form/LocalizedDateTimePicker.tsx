@@ -1,4 +1,5 @@
 import { DateTimePicker, DateTimePickerProps } from "@mui/x-date-pickers";
+import { dateDisplayFormat, localTimeZone } from "../../context/LocalizationContext";
 
 interface LocalizedDatePickerProps {
     fieldId: string;
@@ -13,7 +14,8 @@ const LocalizedDateTimePicker = ({
     return (
         <DateTimePicker
             name={fieldId}
-            timezone={process.env.NEXT_PUBLIC_TIMEZONE || "Europe/Stockholm"}
+            format={dateDisplayFormat}
+            timezone={localTimeZone}
             slotProps={{
                 textField: {
                     name: fieldId,

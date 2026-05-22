@@ -1,5 +1,5 @@
 import { Button, Card, CardContent, Stack, Typography, Chip, Box } from "@mui/material";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserHost, clientRedirect } from "../../lib/utils";
 import { isEventPublished, isUserParticipant, isUserReserve } from "../calendar-post/event-utils";
@@ -78,11 +78,11 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
                     <Stack spacing={1}>
                         <Typography color="text.secondary">
                             <strong>{EventLanguageTranslations.start[language]}:</strong>{" "}
-                            {formatDate(event.start_time)}
+                            {formatUtcDateToTimezone(event.start_time)}
                         </Typography>
                         <Typography color="text.secondary">
                             <strong>{EventLanguageTranslations.end[language]}:</strong>{" "}
-                            {formatDate(event.end_time)}
+                            {formatUtcDateToTimezone(event.end_time)}
                         </Typography>
                         {event.location?.name && (
                             <Typography color="text.secondary">

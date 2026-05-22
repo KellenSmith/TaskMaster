@@ -314,8 +314,8 @@ describe("event-participant-actions", () => {
 
         const mockEvent = {
             id: eventId,
-            start_time: dayjs("2024-06-15T09:00:00Z").toDate(),
-            end_time: dayjs("2024-06-15T17:00:00Z").toDate(),
+            start_time: dayjs.utc("2024-06-15T09:00:00Z").toDate(),
+            end_time: dayjs.utc("2024-06-15T17:00:00Z").toDate(),
         };
 
         beforeEach(() => {
@@ -402,7 +402,7 @@ describe("event-participant-actions", () => {
             vi.mocked(getLoggedInUser).mockResolvedValue({
                 id: userId,
                 role: UserRole.admin,
-                user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+                user_membership: { expires_at: dayjs.utc().add(1, "month").toDate() },
             } as any);
             const checkedInAt = now.subtract(1, "hour").toDate();
             vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue({
@@ -542,7 +542,7 @@ describe("event-participant-actions", () => {
                 vi.mocked(getLoggedInUser).mockResolvedValue({
                     id: userId,
                     role: userRole,
-                    user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+                    user_membership: { expires_at: dayjs.utc().add(1, "month").toDate() },
                 } as any);
                 const duringEvent = {
                     ...mockEventParticipant,
@@ -572,7 +572,7 @@ describe("event-participant-actions", () => {
             vi.mocked(getLoggedInUser).mockResolvedValue({
                 id: userId,
                 role: UserRole.member,
-                user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+                user_membership: { expires_at: dayjs.utc().add(1, "month").toDate() },
             } as any);
             const duringEvent = {
                 ...mockEventParticipant,

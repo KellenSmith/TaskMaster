@@ -3,24 +3,26 @@ import { vi, describe, it, expect } from "vitest";
 import Dashboard from "./Dashboard";
 import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
+import dayjs from "dayjs";
+import { dateDisplayFormat, localTimeZone } from "../../context/LocalizationContext";
 
 const mockUser = { nickname: "TestUser", id: 1 };
 
-// Example props for Dashboard
-const ticketInfoPromise = Promise.resolve([
-    {
-        id: "ep-1",
-        ticket: {
-            event: {
-                title: "Sample Event",
-                start_time: new Date("2026-02-22T10:00:00Z"),
-                end_time: new Date("2026-02-22T12:00:00Z"),
-                location: { name: "Main Hall" },
-            },
-            user: { id: 1, nickname: "TestUser" },
+const ticketInfo = {
+    id: "ep-1",
+    ticket: {
+        event: {
+            title: "Sample Event",
+            start_time: new Date("2026-02-22T10:00:00Z"),
+            end_time: new Date("2026-02-22T12:00:00Z"),
+            location: { name: "Main Hall" },
         },
+        user: { id: 1, nickname: "TestUser" },
     },
-]) as any;
+};
+
+// Example props for Dashboard
+const ticketInfoPromise = Promise.resolve([ticketInfo]) as any;
 
 describe("Dashboard", () => {
     it("renders welcome and ticket cards for user with tickets", async () => {
@@ -36,7 +38,13 @@ describe("Dashboard", () => {
         // Ticket card location
         expect(screen.getByText(/Main Hall/i)).toBeInTheDocument();
         // Event start and end time
-        expect(screen.getByText("2026/02/22 10:00 - 2026/02/22 12:00")).toBeInTheDocument();
+        const localEventStart = dayjs
+            .tz(dayjs.utc(ticketInfo.ticket.event.start_time), localTimeZone)
+            .format(dateDisplayFormat);
+        const localEventEnd = dayjs
+            .tz(dayjs.utc(ticketInfo.ticket.event.end_time), localTimeZone)
+            .format(dateDisplayFormat);
+        expect(screen.getByText(`${localEventStart} - ${localEventEnd}`)).toBeInTheDocument();
         // QR image alt
         expect(screen.getByAltText(/QR code for ticket ep-1/i)).toBeInTheDocument();
     });

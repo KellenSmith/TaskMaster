@@ -5,7 +5,7 @@ import { mockContext } from "../../test/mocks/prismaMock";
 import { revalidateTag } from "next/cache";
 import * as membershipActions from "./user-membership-actions";
 import { buildFormData } from "../../test/test-helpers";
-import { dateDisplayFormat } from "./zod-schemas";
+import { dateDisplayFormat } from "../context/LocalizationContext";
 
 vi.mock("./order-actions", () => ({
     createAndRedirectToOrder: vi.fn(),
@@ -26,13 +26,13 @@ describe("user-membership-actions", () => {
             mockContext.prisma.userMembership.upsert.mockResolvedValue({} as any);
 
             const formData = buildFormData({
-                expires_at: "12/02/2026 10:00",
+                expires_at: "2026/02/12 10:00",
             });
 
             await membershipActions.addUserMembership(testUserId, formData);
 
             const expectedExpiresAt = dayjs
-                .utc("12/02/2026 10:00", dateDisplayFormat, true)
+                .utc("2026/02/12 10:00", dateDisplayFormat, true)
                 .format();
 
             expect(mockContext.prisma.userMembership.upsert).toHaveBeenCalledWith({
