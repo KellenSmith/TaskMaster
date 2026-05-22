@@ -28,6 +28,8 @@ describe("Dashboard", () => {
     it("renders welcome and ticket cards for user with tickets", async () => {
         vi.mocked(useUserContext).mockReturnValue({ user: mockUser, language: "english" } as any);
 
+        console.log(localTimeZone);
+
         await act(async () => render(<Dashboard ticketInfoPromise={ticketInfoPromise} />));
         // Welcome message
         expect(screen.getByText(/Welcome back, TestUser!/i)).toBeInTheDocument();

@@ -640,8 +640,6 @@ describe("event-actions", () => {
                 start_time: "2024/07/15 09:00",
             });
 
-            console.warn(process.env.NEXT_PUBLIC_TIMEZONE);
-
             await eventActions.cloneEvent(eventId, formData);
 
             expect(vi.mocked(prisma.event.create)).toHaveBeenCalledWith({

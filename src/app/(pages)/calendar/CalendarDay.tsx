@@ -57,12 +57,6 @@ const CalendarDay: FC<CalendarDayProps> = ({ tzDate, eventsPromise }) => {
         [events, shouldShowEvent],
     );
 
-    console.warn(
-        "events for date",
-        dayjs.utc(tzDate).format(),
-        eventsForDay.map((e) => [e.title, e.start_time, e.end_time]),
-    );
-
     const getEmptyDay = () => <Paper key={`empty-end-${tzDate.date()}`} elevation={0} />;
 
     if (eventsForDay.length < 1 && isSmallScreen) return null;

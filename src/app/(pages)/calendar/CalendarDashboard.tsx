@@ -130,11 +130,6 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         );
     };
 
-    console.warn(
-        "CalendarDashboard is rendering",
-        events.map((e) => [e.title, e.start_time, e.end_time]),
-    );
-
     const getTzCalendarList = () => {
         const days = getDaysOfTzMonth();
         return (
