@@ -9,7 +9,7 @@ const mockUser = {
     id: "user-1",
     role: UserRole.member,
     user_membership: {
-        expires_at: dayjs().add(1, "month").toDate(),
+        expires_at: dayjs.utc().add(1, "month").toDate(),
     },
 };
 const activeMembers = [

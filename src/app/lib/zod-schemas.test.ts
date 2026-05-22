@@ -46,9 +46,10 @@ import {
     TicketType,
     UserRole,
 } from "../../prisma/generated/enums";
+import { dateDisplayFormat } from "../context/LocalizationContext";
 
-const validDate = "03/02/2026 14:30";
-const expectedDate = dayjs.utc(validDate, "DD/MM/YYYY HH:mm").format();
+const validDate = "2026/02/03 14:30";
+const expectedDate = dayjs.utc(validDate, dateDisplayFormat).format();
 
 const baseProduct = {
     name: "Test Product",

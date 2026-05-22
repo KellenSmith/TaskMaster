@@ -12,7 +12,7 @@ import {
     useTheme,
     useMediaQuery,
 } from "@mui/material";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { clientRedirect, isUserAdmin } from "../../lib/utils";
 import { useUserContext } from "../../context/UserContext";
@@ -237,12 +237,14 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                             <Stack spacing={1}>
                                 {task.start_time && (
                                     <Typography color="text.secondary">
-                                        <strong>Start:</strong> {formatDate(task.start_time)}
+                                        <strong>Start:</strong>{" "}
+                                        {formatUtcDateToTimezone(task.start_time)}
                                     </Typography>
                                 )}
                                 {task.end_time && (
                                     <Typography color="text.secondary">
-                                        <strong>End:</strong> {formatDate(task.end_time)}
+                                        <strong>End:</strong>{" "}
+                                        {formatUtcDateToTimezone(task.end_time)}
                                     </Typography>
                                 )}
                                 {task.assignee?.nickname && (

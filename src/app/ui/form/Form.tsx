@@ -27,7 +27,6 @@ import {
     explanatoryTexts,
     fileUploadFields,
 } from "./FieldCfg";
-import { DateTimePicker } from "@mui/x-date-pickers";
 import { Cancel, Edit } from "@mui/icons-material";
 import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
@@ -40,6 +39,7 @@ import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "../LanguageTranslations";
 import { upload } from "@vercel/blob/client";
+import LocalizedDateTimePicker from "./LocalizedDateTimePicker";
 
 interface FormProps {
     name: string;
@@ -250,20 +250,13 @@ const Form: FC<FormProps> = ({
         }
         if (datePickerFields.includes(fieldId)) {
             return (
-                <DateTimePicker
+                <LocalizedDateTimePicker
                     key={getFieldCompKey(fieldId)}
-                    name={fieldId}
+                    fieldId={fieldId}
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId][language] as string}
                     defaultValue={getDefaultValue(fieldId) as Dayjs}
-                    slotProps={{
-                        textField: {
-                            name: fieldId,
-                            required: requiredFields.includes(fieldId),
-                        },
-                        // TODO: Implement translation for action buttons
-                        actionBar: { actions: ["clear", "accept"] },
-                    }}
+                    required={requiredFields.includes(fieldId)}
                 />
             );
         }

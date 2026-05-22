@@ -10,6 +10,7 @@ import {
     UserRole,
 } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { dateDisplayFormat } from "../context/LocalizationContext";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -17,11 +18,11 @@ dayjs.extend(utc);
 // Required dayjs to string schema for create operations
 const stringToISODate = z
     .string()
-    .refine((val) => !val || dayjs.utc(val, "DD/MM/YYYY HH:mm", true).isValid(), {
+    .refine((val) => !val || dayjs.utc(val, dateDisplayFormat, true).isValid(), {
         message: "Invalid date",
     })
     .transform((val) =>
-        val ? dayjs.utc(val, "DD/MM/YYYY HH:mm", true).format() : "",
+        val ? dayjs.utc(val, dateDisplayFormat, true).format() : "",
     ) as z.ZodType<string>;
 
 const priceSchema = z.coerce

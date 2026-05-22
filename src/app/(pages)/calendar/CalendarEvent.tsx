@@ -4,7 +4,7 @@ import { Card, Tooltip, useTheme, Typography, Box, Chip } from "@mui/material";
 import { FC } from "react";
 import { useUserContext } from "../../context/UserContext";
 import GlobalConstants from "../../GlobalConstants";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { useRouter } from "next/navigation";
 import { clientRedirect } from "../../lib/utils";
 import { EventStatus, Prisma } from "../../../prisma/generated/browser";
@@ -112,7 +112,9 @@ const CalendarEvent: FC<CalendarEventProps> = ({ event }) => {
     return isSmallScreen ? (
         content
     ) : (
-        <Tooltip title={`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}>
+        <Tooltip
+            title={`${formatUtcDateToTimezone(event.start_time)} - ${formatUtcDateToTimezone(event.end_time)}`}
+        >
             {content}
         </Tooltip>
     );

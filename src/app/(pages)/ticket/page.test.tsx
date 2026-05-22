@@ -18,7 +18,7 @@ const mockUser = {
     id: "user-1",
     role: UserRole.member,
     user_membership: {
-        expires_at: dayjs().add(1, "day").toDate(), // Not expired
+        expires_at: dayjs.utc().add(1, "day").toDate(), // Not expired
     },
 };
 const mockEventParticipant = {

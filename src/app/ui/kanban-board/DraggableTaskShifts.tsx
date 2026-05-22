@@ -9,7 +9,7 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import { formatDate } from "../utils";
+import { formatUtcDateToTimezone } from "../utils";
 import { ExpandMore } from "@mui/icons-material";
 import { getEarliestStartTime, sortTasks } from "../../(pages)/calendar-post/event-utils";
 import DraggableTask from "./DraggableTask";
@@ -109,9 +109,9 @@ const DraggableTaskShifts = ({
         const earliestStartTime = getEarliestStartTime(taskList);
         const latestEndTime = getLatestEndTime();
         return (
-            (earliestStartTime ? formatDate(earliestStartTime) : "Unknown") +
+            (earliestStartTime ? formatUtcDateToTimezone(earliestStartTime) : "Unknown") +
             " - " +
-            (latestEndTime ? formatDate(latestEndTime) : "Unknown")
+            (latestEndTime ? formatUtcDateToTimezone(latestEndTime) : "Unknown")
         );
     };
     return (

@@ -11,7 +11,7 @@ vi.mock("../../lib/user-helpers", () => ({
 const mockUser = {
     id: "user-id",
     role: UserRole.admin,
-    user_membership: { expires_at: dayjs().add(1, "day").toDate() },
+    user_membership: { expires_at: dayjs.utc().add(1, "day").toDate() },
 };
 
 describe("CalendarPage", async () => {
@@ -40,7 +40,7 @@ describe("CalendarPage", async () => {
     it("fetches no events for expired members", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue({
             ...mockUser,
-            user_membership: { expires_at: dayjs().subtract(1, "day").toDate() },
+            user_membership: { expires_at: dayjs.utc().subtract(1, "day").toDate() },
         } as any);
 
         await expect(async () => await CalendarPage()).rejects.toThrow("Unauthorized");

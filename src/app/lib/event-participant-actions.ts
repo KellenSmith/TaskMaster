@@ -8,7 +8,7 @@ import { UuidSchema } from "./zod-schemas";
 import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
-import { formatDate } from "../ui/utils";
+import { formatUtcDateToTimezone } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { Prisma } from "../../prisma/generated/client";
 import { isUserAdmin } from "./utils";
@@ -234,15 +234,15 @@ export const checkInEventParticipant = async (
                 return (
                     LanguageTranslations.alreadyCheckedIn[language] +
                     " " +
-                    formatDate(eventParticipant.checked_in_at)
+                    formatUtcDateToTimezone(eventParticipant.checked_in_at)
                 );
             return;
         }
 
         // Dont check in if not within one hour of event opening hours
         const now = dayjs.utc();
-        const eventStart = dayjs(eventParticipant.ticket.event.start_time);
-        const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
+        const eventStart = dayjs.utc(eventParticipant.ticket.event.start_time);
+        const eventEnd = dayjs.utc(eventParticipant.ticket.event.end_time);
         if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {
             return;
         }

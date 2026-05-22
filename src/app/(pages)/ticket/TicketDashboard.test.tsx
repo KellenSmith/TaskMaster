@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 import TicketDashboard from "./TicketDashboard";
 import { EventStatus, Language, TicketType, UserRole } from "../../../prisma/generated/enums";
 import dayjs from "dayjs";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
 import { useUserContext } from "../../context/UserContext";
 import testdata from "../../../test/testdata";
@@ -14,7 +14,7 @@ const baseUser = {
     id: "user1",
     nickname: "TestUser",
     user_membership: {
-        expires_at: dayjs().add(1, "month").toDate(),
+        expires_at: dayjs.utc().add(1, "month").toDate(),
     },
 };
 
@@ -23,8 +23,8 @@ const baseEvent = {
     status: EventStatus.published,
     title: "Test Event",
     location_id: null,
-    start_time: dayjs().toDate(),
-    end_time: dayjs().add(4, "hour").toDate(),
+    start_time: dayjs.utc().toDate(),
+    end_time: dayjs.utc().add(4, "hour").toDate(),
     description: null,
     max_participants: 100,
     tags: [],
@@ -57,7 +57,7 @@ const renderWithNotificationContext = async (eventParticipant: any) => {
 
 describe("TicketDashboard", () => {
     it("renders ticket and event details correctly when outside the event opening hours", async () => {
-        const mockEvent = { ...baseEvent, start_time: dayjs().add(2, "hour").toDate() };
+        const mockEvent = { ...baseEvent, start_time: dayjs.utc().add(2, "hour").toDate() };
         const eventParticipant = getEventParticipant({
             ticket: { ...baseTicket, event: mockEvent },
         });
@@ -73,7 +73,7 @@ describe("TicketDashboard", () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                `${formatDate(dayjs(eventParticipant.ticket.event.start_time))} - ${formatDate(dayjs(eventParticipant.ticket.event.end_time))}`,
+                `${formatUtcDateToTimezone(dayjs.utc(eventParticipant.ticket.event.start_time))} - ${formatUtcDateToTimezone(dayjs.utc(eventParticipant.ticket.event.end_time))}`,
             ),
         ).toBeInTheDocument();
         // Should not check in the participant if outside the event opening hours
@@ -118,7 +118,7 @@ describe("TicketDashboard", () => {
             user: { ...baseUser, role: UserRole.admin },
             language: Language.english,
         } as any);
-        const checkedInAt = dayjs().subtract(30, "second").toDate();
+        const checkedInAt = dayjs.utc().subtract(30, "second").toDate();
         const eventParticipant = getEventParticipant({ checked_in_at: checkedInAt });
 
         await renderWithNotificationContext(eventParticipant);

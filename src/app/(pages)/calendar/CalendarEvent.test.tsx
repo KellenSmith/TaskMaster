@@ -7,7 +7,7 @@ import { useUserContext } from "../../context/UserContext";
 import { useRouter } from "next/navigation";
 import { clientRedirect } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 
 vi.mock("../../lib/utils", async (importOriginal) => {
     const actual = (await importOriginal()) as object;
@@ -210,7 +210,7 @@ describe("CalendarEvent", () => {
             start_time: new Date("2026-08-01T10:30:00Z"),
             end_time: new Date("2026-08-01T12:45:00Z"),
         });
-        const expectedTitle = `${formatDate(event.start_time)} - ${formatDate(event.end_time)}`;
+        const expectedTitle = `${formatUtcDateToTimezone(event.start_time)} - ${formatUtcDateToTimezone(event.end_time)}`;
 
         await userEvent.hover(screen.getByText(baseEvent.title));
 
