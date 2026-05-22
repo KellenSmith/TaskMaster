@@ -182,7 +182,7 @@ export const TaskCreateSchema = z
         name: z.string(),
         status: TaskStatusSchema.optional(),
         start_time: stringToISODate.optional(),
-        end_time: stringToISODate,
+        end_time: stringToISODate.optional(),
         description: z.string(),
         tags: selectMultipleSchema,
 
