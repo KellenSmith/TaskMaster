@@ -75,6 +75,10 @@ export const textContentFieldLabels = {
         [Language.english]: "Text content",
         [Language.swedish]: "Textinnehåll",
     },
+    [GlobalConstants.TEXT]: {
+        [Language.english]: "Text",
+        [Language.swedish]: "Text",
+    },
 };
 
 export const infoPageFieldLabels = {
