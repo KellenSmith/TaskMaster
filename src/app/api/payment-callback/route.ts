@@ -12,47 +12,7 @@ const getClientIp = (request: NextRequest): string | null => {
     return cfConnectingIp || xRealIp || xForwardedFor?.split(",")[0]?.trim() || null;
 };
 
-const isAllowedIp = (request: NextRequest): boolean => {
-    const clientIp = getClientIp(request);
-    if (!clientIp) {
-        console.warn("No client IP found in headers");
-        return false;
-    }
-
-    // Updated IP ranges per Swedbank Pay documentation (March 12th 2025)
-    const allowedIps = [
-        // Legacy IPs (still valid)
-        "51.107.183.58",
-        "91.132.170.1",
-        // New IP range: 20.91.170.120–127 (20.91.170.120/29)
-        "20.91.170.120",
-        "20.91.170.121",
-        "20.91.170.122",
-        "20.91.170.123",
-        "20.91.170.124",
-        "20.91.170.125",
-        "20.91.170.126",
-        "20.91.170.127",
-    ];
-
-    const isAllowed = allowedIps.includes(clientIp);
-    if (!isAllowed) {
-        console.warn(`Blocked request from IP: ${clientIp}`);
-    }
-
-    return isAllowed;
-};
-
 export async function POST(request: NextRequest): Promise<NextResponse> {
-    const clientIp = getClientIp(request);
-
-    if (!isAllowedIp(request)) {
-        console.error(
-            `Unauthorized payment callback attempt from IP: ${clientIp}, Referrer: ${request.headers.get("referer")}`,
-        );
-        return new NextResponse("Unauthorized", { status: 401 });
-    }
-
     try {
         const orderId = request.nextUrl.searchParams.get("orderId");
         if (!orderId) throw new Error("Missing orderId parameter");
@@ -89,6 +49,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         return new NextResponse("OK", { status: 200 });
     } catch (error) {
+        const clientIp = getClientIp(request);
         console.error(
             `Payment callback error from IP ${clientIp}:`,
             error instanceof Error ? error.message : String(error),
