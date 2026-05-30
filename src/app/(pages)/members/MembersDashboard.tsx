@@ -229,12 +229,13 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 const statusText = (FieldLabels[status][language] as string) || status;
                 return (
                     <Stack
-                        height="100%"
                         direction="row"
-                        justifyContent="flex-start"
-                        alignItems="center"
-                        gap={1}
-                    >
+                        sx={{
+                            height: "100%",
+                            justifyContent: "flex-start",
+                            alignItems: "center",
+                            gap: 1
+                        }}>
                         <Icon sx={{ color }} />
                         <Typography variant="body2" sx={{ color }}>
                             {statusText}
@@ -342,10 +343,10 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 customFormOptions={{
                     [GlobalConstants.SKILL_BADGES]: skillBadges.map(
                         (badge) =>
-                            ({
+                            (({
                                 id: badge.id,
-                                label: badge.name,
-                            }) as CustomOptionProps,
+                                label: badge.name
+                            }) as CustomOptionProps),
                     ),
                 }}
             />

@@ -64,23 +64,29 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
             >
                 <Stack
                     direction={{ xs: "column", sm: "row" }}
-                    flexWrap="wrap"
-                    width="100%"
-                    gap={1}
-                    justifyContent="space-between"
-                    alignItems={{ xs: "stretch", sm: "center" }}
-                >
-                    <Stack flexWrap="wrap" sx={{ width: { xs: "100%", sm: "auto" } }}>
+                    sx={{
+                        flexWrap: "wrap",
+                        width: "100%",
+                        gap: 1,
+                        justifyContent: "space-between",
+                        alignItems: { xs: "stretch", sm: "center" }
+                    }}>
+                    <Stack
+                        sx={{
+                            flexWrap: "wrap",
+                            width: { xs: "100%", sm: "auto" }
+                        }}>
                         <Typography variant="body1" sx={{ wordBreak: "break-word" }}>
                             {task.name}
                         </Typography>
                         <Stack
-                            flexWrap="wrap"
                             direction="row"
-                            alignItems="center"
-                            gap={2}
-                            sx={{ mt: 0.5 }}
-                        >
+                            sx={{
+                                flexWrap: "wrap",
+                                alignItems: "center",
+                                gap: 2,
+                                mt: 0.5
+                            }}>
                             <Typography variant="body2">
                                 {task.start_time ? formatUtcDateToTimezone(task.start_time) : ""}
                             </Typography>
@@ -91,7 +97,9 @@ const DraggableTask = ({ readOnly, eventPromise, task, setDraggedTask }: Draggab
                         </Stack>
                     </Stack>
 
-                    <Stack spacing={1} width="100%">
+                    <Stack spacing={1} sx={{
+                        width: "100%"
+                    }}>
                         <Button
                             variant="outlined"
                             fullWidth

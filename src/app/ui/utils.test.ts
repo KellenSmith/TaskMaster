@@ -15,15 +15,15 @@ import {
 import { dateDisplayFormat, localTimeZone } from "../context/LocalizationContext";
 
 const makeOrganizationSettings = (overrides: Record<string, unknown> = {}) =>
-    ({
+    (({
         privacy_policy_english_url: null,
         privacy_policy_swedish_url: null,
         terms_of_membership_english_url: null,
         terms_of_membership_swedish_url: null,
         terms_of_purchase_english_url: null,
         terms_of_purchase_swedish_url: null,
-        ...overrides,
-    }) as any;
+        ...overrides
+    }) as any);
 
 describe("ui/utils", () => {
     describe("formatUtcDateToTimezone", () => {

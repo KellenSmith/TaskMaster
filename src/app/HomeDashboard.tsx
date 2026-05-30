@@ -18,7 +18,9 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => 
     const router = useRouter();
 
     return (
-        <Stack width="100%">
+        <Stack sx={{
+            width: "100%"
+        }}>
             <Stack
                 spacing={4}
                 sx={{

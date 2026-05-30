@@ -117,12 +117,15 @@ const DraggableTaskShifts = ({
     return (
         <Card key={taskList[0].id} sx={{ width: "100%" }}>
             <Stack
-                sx={{ p: 1, pt: 1, pb: 0 }}
                 direction={{ xs: "column", sm: "row" }}
-                justifyContent="space-between"
-                alignItems={{ xs: "flex-start", sm: "center" }}
                 spacing={{ xs: 0.5, sm: 0 }}
-            >
+                sx={{
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    p: 1,
+                    pt: 1,
+                    pb: 0
+                }}>
                 <Typography variant="body1" sx={{ wordBreak: "break-word" }} noWrap={false}>
                     {taskList[0].name}
                 </Typography>

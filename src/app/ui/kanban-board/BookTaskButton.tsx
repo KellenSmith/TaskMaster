@@ -72,9 +72,16 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
 
     if (!isUserQualifiedForTask(user, task.skill_badges))
         return (
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+                direction="row"
+                sx={{
+                    alignItems: "center",
+                    gap: 1
+                }}>
                 <Warning color="warning" />
-                <Typography variant="caption" color="warning.main">
+                <Typography variant="caption" sx={{
+                    color: "warning.main"
+                }}>
                     {LanguageTranslations.unqualifiedForShiftTooltip[language]}
                 </Typography>
             </Stack>

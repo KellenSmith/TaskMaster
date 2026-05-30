@@ -154,10 +154,10 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                     ),
                     [GlobalConstants.SKILL_BADGES]: skillBadges.map(
                         (b) =>
-                            ({
+                            (({
                                 id: b.id,
-                                label: b.name,
-                            }) as CustomOptionProps,
+                                label: b.name
+                            }) as CustomOptionProps),
                     ),
                 }}
                 action={updateTaskAction}
@@ -185,16 +185,21 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                     <Stack spacing={2}>
                         <Stack
                             direction={isSmallScreen ? "column" : "row"}
-                            justifyContent="space-between"
-                            alignItems="center"
-                            width="100%"
-                        >
+                            sx={{
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                width: "100%"
+                            }}>
                             <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
                                 {task.name}
                             </Typography>
                             {task.skill_badges && task.skill_badges.length > 0 && (
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                    <Typography variant="body2" color="text.secondary">
+                                <Stack direction="row" spacing={1} sx={{
+                                    alignItems: "center"
+                                }}>
+                                    <Typography variant="body2" sx={{
+                                        color: "text.secondary"
+                                    }}>
                                         Required Skill Badges:
                                     </Typography>
                                     {task.skill_badges.map((badge) => (
@@ -233,27 +238,40 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                             />
                         </Stack>
 
-                        <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+                        <Stack
+                            direction="row"
+                            sx={{
+                                justifyContent: "space-between",
+                                alignItems: "flex-end"
+                            }}>
                             <Stack spacing={1}>
                                 {task.start_time && (
-                                    <Typography color="text.secondary">
+                                    <Typography sx={{
+                                        color: "text.secondary"
+                                    }}>
                                         <strong>Start:</strong>{" "}
                                         {formatUtcDateToTimezone(task.start_time)}
                                     </Typography>
                                 )}
                                 {task.end_time && (
-                                    <Typography color="text.secondary">
+                                    <Typography sx={{
+                                        color: "text.secondary"
+                                    }}>
                                         <strong>End:</strong>{" "}
                                         {formatUtcDateToTimezone(task.end_time)}
                                     </Typography>
                                 )}
                                 {task.assignee?.nickname && (
-                                    <Typography color="text.secondary">
+                                    <Typography sx={{
+                                        color: "text.secondary"
+                                    }}>
                                         <strong>Assignee:</strong> {task.assignee.nickname}
                                     </Typography>
                                 )}
                                 {task.reviewer?.nickname && (
-                                    <Typography color="text.secondary">
+                                    <Typography sx={{
+                                        color: "text.secondary"
+                                    }}>
                                         <strong>Reviewer:</strong> {task.reviewer.nickname}
                                     </Typography>
                                 )}
@@ -272,7 +290,11 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
                                 )}
                             </Stack>
                         </Stack>
-                        <Stack width="100%" justifyContent="space-between">
+                        <Stack
+                            sx={{
+                                width: "100%",
+                                justifyContent: "space-between"
+                            }}>
                             <BookTaskButton task={task} />
                             {task.event_id && (
                                 <Button

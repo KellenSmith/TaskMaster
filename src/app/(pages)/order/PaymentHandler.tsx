@@ -56,94 +56,104 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         }
     };
 
-    return (
-        order?.status === OrderStatus.pending && (
-            <Stack component="form" onSubmit={redirectToOrderPaymentAction}>
-                <Stack alignItems="center" width="100%">
-                    <Stack direction="row" alignItems={"center"} width={"100%"}>
-                        <Checkbox
-                            checked={termsAccepted.termsOfPurchase}
-                            onChange={(e) =>
-                                setTermsAccepted({
-                                    ...termsAccepted,
-                                    termsOfPurchase: e.target.checked,
-                                })
-                            }
-                            required
-                        />
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                display: "inline",
-                                wordBreak: "keep-all",
-                                hyphens: "none",
-                                marginRight: 1,
-                            }}
-                        >
-                            {LanguageTranslations.iHaveRead[language]}{" "}
-                            <Link
-                                href={
-                                    getTermsOfPurchaseUrl(organizationSettings, language) as string
-                                }
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {LanguageTranslations.termsOfPurchase[language]}
-                            </Link>
-                        </Typography>
-                    </Stack>
-                    <Stack direction="row" alignItems={"center"} width={"100%"}>
-                        <Checkbox
-                            checked={termsAccepted.privacyPolicy}
-                            onChange={(e) =>
-                                setTermsAccepted({
-                                    ...termsAccepted,
-                                    privacyPolicy: e.target.checked,
-                                })
-                            }
-                            required
-                        />
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                display: "inline",
-                                wordBreak: "keep-all",
-                                hyphens: "none",
-                                marginRight: 1,
-                            }}
-                        >
-                            {LanguageTranslations.iHaveRead[language]}{" "}
-                            <Link
-                                href={getPrivacyPolicyUrl(organizationSettings, language) as string}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {LanguageTranslations.privacyPolicy[language]}
-                            </Link>
-                        </Typography>
-                    </Stack>
-
-                    <Button
-                        type="submit"
-                        color="success"
-                        fullWidth
-                        disabled={!(termsAccepted.termsOfPurchase && termsAccepted.privacyPolicy)}
+    return (order?.status === OrderStatus.pending && (<Stack component="form" onSubmit={redirectToOrderPaymentAction}>
+        <Stack
+            sx={{
+                alignItems: "center",
+                width: "100%"
+            }}>
+            <Stack
+                direction="row"
+                sx={{
+                    alignItems: "center",
+                    width: "100%"
+                }}>
+                <Checkbox
+                    checked={termsAccepted.termsOfPurchase}
+                    onChange={(e) =>
+                        setTermsAccepted({
+                            ...termsAccepted,
+                            termsOfPurchase: e.target.checked,
+                        })
+                    }
+                    required
+                />
+                <Typography
+                    variant="body2"
+                    sx={{
+                        display: "inline",
+                        wordBreak: "keep-all",
+                        hyphens: "none",
+                        marginRight: 1,
+                    }}
+                >
+                    {LanguageTranslations.iHaveRead[language]}{" "}
+                    <Link
+                        href={
+                            getTermsOfPurchaseUrl(organizationSettings, language) as string
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
                     >
-                        {LanguageTranslations.pay[language](order.total_amount)}
-                    </Button>
-                    <ConfirmButton
-                        buttonProps={{
-                            fullWidth: true,
-                            color: "error",
-                        }}
-                        onClick={cancelOrderAction}
-                    >
-                        {GlobalLanguageTranslations.cancel[language]}
-                    </ConfirmButton>
-                </Stack>
+                        {LanguageTranslations.termsOfPurchase[language]}
+                    </Link>
+                </Typography>
             </Stack>
-        )
-    );
+            <Stack
+                direction="row"
+                sx={{
+                    alignItems: "center",
+                    width: "100%"
+                }}>
+                <Checkbox
+                    checked={termsAccepted.privacyPolicy}
+                    onChange={(e) =>
+                        setTermsAccepted({
+                            ...termsAccepted,
+                            privacyPolicy: e.target.checked,
+                        })
+                    }
+                    required
+                />
+                <Typography
+                    variant="body2"
+                    sx={{
+                        display: "inline",
+                        wordBreak: "keep-all",
+                        hyphens: "none",
+                        marginRight: 1,
+                    }}
+                >
+                    {LanguageTranslations.iHaveRead[language]}{" "}
+                    <Link
+                        href={getPrivacyPolicyUrl(organizationSettings, language) as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {LanguageTranslations.privacyPolicy[language]}
+                    </Link>
+                </Typography>
+            </Stack>
+
+            <Button
+                type="submit"
+                color="success"
+                fullWidth
+                disabled={!(termsAccepted.termsOfPurchase && termsAccepted.privacyPolicy)}
+            >
+                {LanguageTranslations.pay[language](order.total_amount)}
+            </Button>
+            <ConfirmButton
+                buttonProps={{
+                    fullWidth: true,
+                    color: "error",
+                }}
+                onClick={cancelOrderAction}
+            >
+                {GlobalLanguageTranslations.cancel[language]}
+            </ConfirmButton>
+        </Stack>
+    </Stack>));
 };
 
 export default PaymentHandler;

@@ -11,10 +11,10 @@ vi.mock("../lib/text-content-actions", () => ({
 }));
 
 const createTextContent = (translations: Array<{ language: Language; text: string }>) =>
-    ({
+    (({
         id: "text-content-1",
-        translations,
-    }) as any;
+        translations
+    }) as any);
 
 const renderEditableTextContent = async (textContentPromise: Promise<any>) => {
     await act(async () => {

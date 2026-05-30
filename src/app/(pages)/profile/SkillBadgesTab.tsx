@@ -27,7 +27,13 @@ const SkillBadgesTab = ({ skillBadgesPromise }: SkillBadgesTabProps) => {
         });
     };
     return (
-        <Stack direction="row" justifyContent="space-around" flexWrap="wrap" gap={2}>
+        <Stack
+            direction="row"
+            sx={{
+                justifyContent: "space-around",
+                flexWrap: "wrap",
+                gap: 2
+            }}>
             {getSortedSkillBadges().map((badge) => {
                 return (
                     <Stack key={badge.id} spacing={1}>
@@ -35,7 +41,9 @@ const SkillBadgesTab = ({ skillBadgesPromise }: SkillBadgesTabProps) => {
                             badge={badge}
                             greyedOut={!userHasSkillBadge(user, badge.id)}
                         />
-                        <Stack spacing={1} maxWidth={250}>
+                        <Stack spacing={1} sx={{
+                            maxWidth: 250
+                        }}>
                             <Divider />
                         </Stack>
                     </Stack>

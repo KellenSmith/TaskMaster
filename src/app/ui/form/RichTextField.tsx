@@ -35,7 +35,7 @@ const RichTextField: FC<RichTextFieldProps> = ({
             <input type="hidden" name={fieldId} value={content} />
             {editMode ? (
                 // Ensure the editor expands to available width
-                <div style={{ width: "100%", backgroundColor: "transparent" }}>
+                (<div style={{ width: "100%", backgroundColor: "transparent" }}>
                     <RichTextEditor
                         ref={rteRef}
                         immediatelyRender={false}
@@ -46,16 +46,16 @@ const RichTextField: FC<RichTextFieldProps> = ({
                     >
                         {() => <LinkBubbleMenu />}
                     </RichTextEditor>
-                </div>
+                </div>)
             ) : (
                 // Readonly view inside a Card that also spans full width
-                <div style={{ width: "100%", backgroundColor: "transparent" }}>
+                (<div style={{ width: "100%", backgroundColor: "transparent" }}>
                     <RichTextReadOnly
                         immediatelyRender={false}
                         content={content}
                         extensions={extensions}
                     />
-                </div>
+                </div>)
             )}
         </>
     );

@@ -108,20 +108,25 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
 
     return (
         <Stack
-            height="100%"
-            width={"100%"}
             direction={isSmall ? "column" : "row"}
-            justifyContent={"space-around"}
             spacing={2}
-        >
-            <Stack width={isSmall ? "100%" : "50%"}>
+            sx={{
+                height: "100%",
+                width: "100%",
+                justifyContent: "space-around"
+            }}>
+            <Stack sx={{
+                width: isSmall ? "100%" : "50%"
+            }}>
                 <Accordion sx={{ padding: 1 }} defaultExpanded={true}>
                     <AccordionSummary expandIcon={<ExpandMore />}>
                         <Typography>
                             {LanguageTranslations.sendToRecipients[language](recipientCount)}
                         </Typography>
                     </AccordionSummary>
-                    <Stack spacing={2} padding={1}>
+                    <Stack spacing={2} sx={{
+                        padding: 1
+                    }}>
                         <FormControl>
                             <RadioGroup value={sendTo} onChange={(e) => setSendTo(e.target.value)}>
                                 {Object.values(sendToOptions).map((option) => (
@@ -144,8 +149,12 @@ const SendoutDashboard: FC<SendoutPageProps> = ({ newsLetterJobsPromise }: Sendo
                     editable={false}
                 />
             </Stack>
-
-            <Stack height={"100%"} maxWidth={isSmall ? "100%" : "50%"} flex={1}>
+            <Stack
+                sx={{
+                    height: "100%",
+                    maxWidth: isSmall ? "100%" : "50%",
+                    flex: 1
+                }}>
                 <Datagrid
                     dataGridRowsPromise={newsLetterJobsPromise}
                     rowActions={rowActions}

@@ -50,7 +50,12 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
         >
             <Card sx={{ flex: 1 }}>
                 <CardContent sx={{ p: 4 }}>
-                    <Stack alignItems="center" justifyContent="center" spacing={2}>
+                    <Stack
+                        spacing={2}
+                        sx={{
+                            alignItems: "center",
+                            justifyContent: "center"
+                        }}>
                         {isReserve && (
                             <Chip
                                 icon={<CheckCircle />}
@@ -66,26 +71,31 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                         {isReserve && (
                             <Typography
                                 variant="h6"
-                                color="text.secondary"
-                                sx={{ fontWeight: 400, lineHeight: 1.6 }}
-                            >
+                                sx={{
+                                    color: "text.secondary",
+                                    fontWeight: 400,
+                                    lineHeight: 1.6
+                                }}>
                                 {LanguageTranslations.notifyIfSpotOpens[language]}
                             </Typography>
                         )}
                     </Stack>
                     <Divider sx={{ my: 3, opacity: 0.3 }} />
                     <Stack
-                        mt="auto"
-                        padding={3}
-                        border={`1px solid ${theme.palette.info.dark}`}
-                        borderRadius={2}
-                    >
+                        sx={{
+                            mt: "auto",
+                            padding: 3,
+                            border: `1px solid ${theme.palette.info.dark}`,
+                            borderRadius: 2
+                        }}>
                         <Typography
                             variant="body1"
-                            color="text.secondary"
-                            textAlign="center"
-                            sx={{ mb: 2, fontWeight: 500 }}
-                        >
+                            sx={{
+                                color: "text.secondary",
+                                textAlign: "center",
+                                mb: 2,
+                                fontWeight: 500
+                            }}>
                             {LanguageTranslations.joinReserveToBeNotified[language](isReserve)}
                         </Typography>
                         <ConfirmButton

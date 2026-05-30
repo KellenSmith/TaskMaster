@@ -329,7 +329,12 @@ const Form: FC<FormProps> = ({
     return (
         <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto", width: "100%" }}>
             {editable && (
-                <Stack direction="row" justifyContent="flex-end" alignItems="center">
+                <Stack
+                    direction="row"
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center"
+                    }}>
                     {editable && (
                         <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
                             {editMode && editable ? <Cancel /> : <Edit />}
@@ -337,7 +342,6 @@ const Form: FC<FormProps> = ({
                     )}
                 </Stack>
             )}
-
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
                     {renderedFields.map((fieldId) => (

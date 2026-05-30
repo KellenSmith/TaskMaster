@@ -21,20 +21,18 @@ const UPLOAD_CONFIG = {
  * Sanitize filename to prevent path traversal and other attacks
  */
 function sanitizeFilename(filename: string): string {
-    return (
-        filename
-            // Remove path separators
-            .replace(/[/\\]/g, "")
-            // Remove null bytes and control characters
-            // eslint-disable-next-line no-control-regex
-            .replace(/[\x00-\x1f\x80-\x9f]/g, "")
-            // Remove potentially dangerous characters
-            .replace(/[<>:"|?*]/g, "")
-            // Limit length
-            .substring(0, UPLOAD_CONFIG.MAX_FILENAME_LENGTH)
-            // Ensure it's not empty or just dots
-            .replace(/^\.+$/, "file") || "file"
-    );
+    return (filename
+        // Remove path separators
+        .replace(/[/\\]/g, "")
+        // Remove null bytes and control characters
+        // eslint-disable-next-line no-control-regex
+        .replace(/[\x00-\x1f\x80-\x9f]/g, "")
+        // Remove potentially dangerous characters
+        .replace(/[<>:"|?*]/g, "")
+        // Limit length
+        .substring(0, UPLOAD_CONFIG.MAX_FILENAME_LENGTH)
+        // Ensure it's not empty or just dots
+        .replace(/^\.+$/, "file") || "file");
 }
 
 /**

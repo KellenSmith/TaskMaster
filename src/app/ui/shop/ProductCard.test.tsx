@@ -5,7 +5,7 @@ import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
 
 const makeProduct = (overrides: Record<string, unknown> = {}) =>
-    ({
+    (({
         id: "product-1",
         name: "Standard Ticket",
         description: "<p>Product description</p>",
@@ -15,8 +15,8 @@ const makeProduct = (overrides: Record<string, unknown> = {}) =>
         vat_percentage: 25,
         created_at: new Date("2025-01-01T00:00:00.000Z"),
         updated_at: new Date("2025-01-02T00:00:00.000Z"),
-        ...overrides,
-    }) as any;
+        ...overrides
+    }) as any);
 
 describe("ProductCard", () => {
     beforeEach(() => {

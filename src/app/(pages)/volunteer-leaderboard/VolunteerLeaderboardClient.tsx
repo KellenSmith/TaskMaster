@@ -38,11 +38,20 @@ const VolunteerLeaderboardClient: React.FC<VolunteerLeaderboardClientProps> = ({
     };
 
     return (
-        <Stack spacing={3} sx={{ maxWidth: 600, mx: "auto", py: 4 }} justifyContent="center">
+        <Stack
+            spacing={3}
+            sx={{
+                justifyContent: "center",
+                maxWidth: 600,
+                mx: "auto",
+                py: 4
+            }}>
             <Typography variant="h4" component="h1">
                 {LanguageTranslations[GlobalConstants.VOLUNTEER_LEADERBOARD][language]}
             </Typography>
-            <Stack direction="row" justifyContent="space-around">
+            <Stack direction="row" sx={{
+                justifyContent: "space-around"
+            }}>
                 <Button onClick={() => stepYear(-1)}>
                     <ChevronLeft />
                     {LanguageTranslations.prev[language]}

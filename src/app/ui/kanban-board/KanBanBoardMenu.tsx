@@ -279,7 +279,12 @@ const KanBanBoardMenu = ({
                     <Menu />
                 </Fab>
             </Badge>
-            <Stack direction="row" width="fit-content" height="100%">
+            <Stack
+                direction="row"
+                sx={{
+                    width: "fit-content",
+                    height: "100%"
+                }}>
                 {/* Tabs moved inside the drawer for better mobile UX */}
                 <SwipeableDrawer
                     key={myTasks.map((task) => task.assignee_id).join("-")}
@@ -293,7 +298,12 @@ const KanBanBoardMenu = ({
                     sx={{ flexShrink: 0 }}
                     slotProps={{ paper: { sx: { width: { xs: "85vw", sm: drawerWidth } } } }}
                 >
-                    <Stack justifyContent="center" padding={2} spacing={2}>
+                    <Stack
+                        spacing={2}
+                        sx={{
+                            justifyContent: "center",
+                            padding: 2
+                        }}>
                         <Button
                             sx={{ justifyContent: "flex-start" }}
                             size="small"
@@ -352,7 +362,11 @@ const KanBanBoardMenu = ({
                                         ),
                                     )
                                 ) : (
-                                    <Typography textAlign="center" paddingY={2}>
+                                    <Typography
+                                        sx={{
+                                            textAlign: "center",
+                                            paddingY: 2
+                                        }}>
                                         {LanguageTranslations.noShiftsBooked[language]}
                                     </Typography>
                                 )}

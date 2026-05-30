@@ -35,7 +35,9 @@ const NoTicketFound = () => {
                 }}
             >
                 <Stack spacing={{ xs: 1.5, sm: 2 }}>
-                    <Stack spacing={{ xs: 1, sm: 2 }} justifyContent="space-between">
+                    <Stack spacing={{ xs: 1, sm: 2 }} sx={{
+                        justifyContent: "space-between"
+                    }}>
                         <Chip label={LanguageTranslations.missingData[language]} color="error" />
                         <Typography variant="h4" component="h1">
                             {LanguageTranslations.ticketNotFound[language]}

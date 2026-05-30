@@ -29,28 +29,32 @@ const routerPushMock = vi.fn();
 const setEditModeMock = vi.fn();
 
 const createUser = (overrides: Record<string, unknown> = {}) =>
-    ({
+    (({
         id: "user-1",
         role: UserRole.member,
         status: UserStatus.validated,
+
         user_membership: {
             expires_at: new Date("2099-01-01T00:00:00.000Z"),
         },
-        ...overrides,
-    }) as any;
+
+        ...overrides
+    }) as any);
 
 const createInfoPageItem = (overrides: Record<string, unknown> = {}) =>
-    ({
+    (({
         id: "info-page-1",
         lowest_allowed_user_role: UserRole.member,
+
         titleText: {
             translations: [
                 { language: Language.english, text: "Member Info" },
                 { language: Language.swedish, text: "Medlemsinfo" },
             ],
         },
-        ...overrides,
-    }) as any;
+
+        ...overrides
+    }) as any);
 
 const makeOrganizationSettingsContext = (overrides: Record<string, unknown> = {}) => ({
     organizationSettings: {

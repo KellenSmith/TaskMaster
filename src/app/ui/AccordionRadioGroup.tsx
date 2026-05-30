@@ -29,7 +29,9 @@ const AccordionRadioGroup: FC<IAccordionRadioGroup> = ({
             <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography>{title}</Typography>
             </AccordionSummary>
-            <Stack spacing={2} padding={1}>
+            <Stack spacing={2} sx={{
+                padding: 1
+            }}>
                 <FormControl>
                     <RadioGroup value={value} onChange={(e) => setValue(e.target.value)}>
                         {Object.values(valueOptions).map((option) => (

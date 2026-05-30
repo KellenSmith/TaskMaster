@@ -49,7 +49,9 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     if (!location) {
         return (
             <Box sx={{ my: 2 }}>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{
+                    color: "text.secondary"
+                }}>
                     {LanguageTranslations.noLocationInfo[language]}
                 </Typography>
             </Box>
@@ -112,7 +114,6 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                     }
                 />
             </Box>
-
             {(isUserAdmin(user) || isUserHost(user, event)) && locations.length > 1 && (
                 <Card sx={{ width: { xs: "100%", sm: 360 }, flexShrink: 0 }}>
                     <CardContent sx={{ p: 2 }}>
@@ -152,9 +153,10 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                         {isSwitchButtonDisabled() && (
                             <Typography
                                 color="error"
-                                textAlign="center"
-                                sx={{ fontSize: "0.95rem" }}
-                            >
+                                sx={{
+                                    textAlign: "center",
+                                    fontSize: "0.95rem"
+                                }}>
                                 {CalendarLanguageTranslations.locationCapacityExceeded[language](
                                     locations.find(
                                         (location) => location.id === selectedLocationOption?.id,

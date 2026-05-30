@@ -58,7 +58,9 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
                     />
                 </CardMedia>
                 <CardContent>
-                    <Typography textAlign="center" variant="h6">
+                    <Typography variant="h6" sx={{
+                        textAlign: "center"
+                    }}>
                         {badge.name}
                     </Typography>
                 </CardContent>
@@ -72,7 +74,9 @@ const SkillBadgeCard = ({ badge, onClick, greyedOut = false }: SkillBadgeProps) 
             >
                 <DialogTitle>{badge.name}</DialogTitle>
                 <DialogContent>
-                    <Stack direction="row" width="100%" spacing={4}>
+                    <Stack direction="row" spacing={4} sx={{
+                        width: "100%"
+                    }}>
                         <Image
                             src={badge.image_url || "/images/badge-placeholder.svg"}
                             alt={badge.name}

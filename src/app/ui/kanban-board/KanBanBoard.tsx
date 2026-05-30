@@ -61,8 +61,16 @@ const KanBanBoard = ({
     );
 
     return (
-        <Stack spacing={2} justifyContent="center">
-            <Typography variant="h4" color="primary" paddingTop={2} textAlign="center">
+        <Stack spacing={2} sx={{
+            justifyContent: "center"
+        }}>
+            <Typography
+                variant="h4"
+                color="primary"
+                sx={{
+                    paddingTop: 2,
+                    textAlign: "center"
+                }}>
                 {event
                     ? LanguageTranslations.assignYourselfEventPrompt[language]
                     : LanguageTranslations.assignYourselfPrompt[language]}
@@ -73,7 +81,9 @@ const KanBanBoard = ({
                     container
                     spacing={2}
                     columns={isSmallScreen ? 1 : appliedFilter?.status?.length || 4}
-                    width="100%"
+                    sx={{
+                        width: "100%"
+                    }}
                 >
                     {(appliedFilter?.status && appliedFilter.status.length > 0
                         ? (appliedFilter.status as TaskStatus[])

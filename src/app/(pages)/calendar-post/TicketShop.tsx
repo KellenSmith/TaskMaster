@@ -143,7 +143,7 @@ const TicketShop = ({
 
     return (
         <Stack spacing={2} sx={{ padding: 2 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
                 <Typography variant="h6" color={theme.palette.primary.main}>
                     {LanguageTranslations.tickets[language]}
                 </Typography>
@@ -157,7 +157,7 @@ const TicketShop = ({
             {tickets.length === 0 ? (
                 <Typography color="primary">{LanguageTranslations.noTickets[language]}</Typography>
             ) : (
-                <Stack direction="row" flexWrap="wrap" gap={2}>
+                <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
                     {getSortedTickets().map((ticket) => (
                         <Stack key={ticket.product_id}>
                             <ProductCard

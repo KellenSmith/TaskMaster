@@ -151,7 +151,6 @@ export default function ProductCard({
                     </CardContent>
                 </Card>
             </Tooltip>
-
             <Dialog
                 open={isOpen}
                 onClose={() => setIsOpen(false)}
@@ -201,8 +200,12 @@ export default function ProductCard({
                                 </Stack>
                             )}
                         </Stack>
-                        <Stack width="100%" spacing={2}>
-                            <Stack direction="row" justifyContent="space-between">
+                        <Stack spacing={2} sx={{
+                            width: "100%"
+                        }}>
+                            <Stack direction="row" sx={{
+                                justifyContent: "space-between"
+                            }}>
                                 <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
                                     {`${formatPrice(product.price)} SEK`}
                                 </Typography>
@@ -216,11 +219,12 @@ export default function ProductCard({
                 </DialogContent>
                 <DialogActions sx={{ p: { xs: 2, sm: 1 } }}>
                     <Stack
-                        justifyContent={isSmDown ? "center" : "flex-end"}
                         direction={{ xs: "column", sm: "row" }}
                         spacing={1}
-                        sx={{ width: "100%" }}
-                    >
+                        sx={{
+                            justifyContent: isSmDown ? "center" : "flex-end",
+                            width: "100%"
+                        }}>
                         {onAddToCart && (
                             <Button
                                 onClick={() => onAddToCart(product.id)}

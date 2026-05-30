@@ -37,7 +37,7 @@ vi.mock("../utils", async (importOriginal) => {
 });
 
 const makeTask = (overrides: Record<string, unknown> = {}) =>
-    ({
+    (({
         id: "task-1",
         name: "Setup",
         status: TaskStatus.toDo,
@@ -46,8 +46,8 @@ const makeTask = (overrides: Record<string, unknown> = {}) =>
         reviewer_id: "user-1",
         start_time: new Date("2026-01-01T10:00:00.000Z"),
         end_time: new Date("2026-01-01T11:00:00.000Z"),
-        ...overrides,
-    }) as any;
+        ...overrides
+    }) as any);
 
 const renderMenu = async (
     options: {

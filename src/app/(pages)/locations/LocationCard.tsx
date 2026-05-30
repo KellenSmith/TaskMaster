@@ -15,10 +15,17 @@ interface LocationDashboardProps {
 const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
     const { language } = useUserContext();
     return (
-        <Stack spacing={3} width="100%">
+        <Stack spacing={3} sx={{
+            width: "100%"
+        }}>
             <Paper elevation={3} sx={{ p: 3 }}>
                 <Stack spacing={2}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack
+                        direction="row"
+                        sx={{
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                        }}>
                         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                             <LocationOn color="primary" />
                             <Typography variant="h6" component="h3">
@@ -29,7 +36,9 @@ const LocationCard = ({ location, renderedFields }: LocationDashboardProps) => {
 
                     {renderedFields.map((fieldId: string) => (
                         <Stack key={fieldId} spacing={1}>
-                            <Typography color="text.secondary">
+                            <Typography sx={{
+                                color: "text.secondary"
+                            }}>
                                 {FieldLabels[fieldId][language] as string}
                             </Typography>
                             {fieldId === GlobalConstants.DESCRIPTION ? (

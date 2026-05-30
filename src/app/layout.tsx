@@ -24,7 +24,11 @@ export const RootLayoutInner: React.FC<RootLayoutProps> = ({ children }) => {
     return (
         <ServerContextWrapper>
             <NavPanel />
-            <Stack sx={{ height: "100%" }} padding={4}>
+            <Stack
+                sx={{
+                    padding: 4,
+                    height: "100%"
+                }}>
                 <ErrorBoundarySuspense>{children}</ErrorBoundarySuspense>
             </Stack>
         </ServerContextWrapper>

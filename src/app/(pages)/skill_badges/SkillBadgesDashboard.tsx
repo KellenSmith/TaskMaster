@@ -69,13 +69,21 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
             <Button onClick={() => setCreateNew(true)}>
                 {LanguageTranslations.addSkillBadge[language]}
             </Button>
-            <Stack direction="row" justifyContent="space-around" flexWrap="wrap" gap={2}>
+            <Stack
+                direction="row"
+                sx={{
+                    justifyContent: "space-around",
+                    flexWrap: "wrap",
+                    gap: 2
+                }}>
                 {badges
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((badge) => (
                         <Stack key={badge.id} spacing={1}>
                             <SkillBadgeCard badge={badge} />
-                            <Stack spacing={1} maxWidth={250}>
+                            <Stack spacing={1} sx={{
+                                maxWidth: 250
+                            }}>
                                 <Button
                                     disabled={isPending}
                                     onClick={() => setEditBadgeId(badge.id)}

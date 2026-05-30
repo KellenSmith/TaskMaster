@@ -168,7 +168,9 @@ const Datagrid: React.FC<DatagridProps> = ({
                 };
 
                 return (
-                    <Stack direction="row" spacing={1} marginTop={1}>
+                    <Stack direction="row" spacing={1} sx={{
+                        marginTop: 1
+                    }}>
                         <TextField
                             label="From"
                             type="date"

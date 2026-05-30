@@ -173,7 +173,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
         }
 
         return (
-            <Stack direction="row" flexWrap="wrap" gap={2}>
+            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
                 {productsToRender.map((product) => (
                     <Stack key={product.id}>
                         <ProductCard
@@ -276,7 +276,10 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
             <ErrorBoundarySuspense>
                 <Stack spacing={2} sx={{ padding: 2 }}>
                     {isUserAdmin(user) && (
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Stack
+                            direction="row"
+                            sx={{ justifyContent: "space-between", alignItems: "center" }}
+                        >
                             <Typography variant="h6" color={theme.palette.primary.main}>
                                 {tabLabels[openTab]}
                             </Typography>

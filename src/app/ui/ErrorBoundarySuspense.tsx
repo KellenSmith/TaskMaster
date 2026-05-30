@@ -9,7 +9,14 @@ import { useUserContext } from "../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 
 const Container = ({ children }: { children: React.ReactNode }) => (
-    <Stack direction="row" height="100%" width="100%" justifyContent="center" alignItems="center">
+    <Stack
+        direction="row"
+        sx={{
+            height: "100%",
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center"
+        }}>
         {children}
     </Stack>
 );

@@ -10,12 +10,12 @@ type AuthUser = Prisma.UserGetPayload<{
 }>;
 
 const makeUser = (overrides: Partial<AuthUser> = {}): AuthUser =>
-    ({
+    (({
         role: UserRole.member,
         status: UserStatus.pending,
         user_membership: testdata.user.user_membership,
-        ...overrides,
-    }) as AuthUser;
+        ...overrides
+    }) as AuthUser);
 
 describe("userHasRolePrivileges", () => {
     it("returns true when no role is required", () => {

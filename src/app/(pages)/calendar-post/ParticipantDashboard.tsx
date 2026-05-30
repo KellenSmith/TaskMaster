@@ -134,7 +134,12 @@ const ParticipantDashboard = ({
     }) => (
         <List sx={{ minWidth: 200 }}>
             <ListSubheader>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                    direction="row"
+                    sx={{
+                        alignItems: "center",
+                        justifyContent: "space-between"
+                    }}>
                     {`${FieldLabels[name][language] as string} (${users.length})`}
                     <Button onClick={() => setAddDialogOpen(name)}>
                         <Add sx={{ cursor: "pointer" }} />
@@ -149,11 +154,12 @@ const ParticipantDashboard = ({
                         <ListItem key={String(p.user.id)} disableGutters alignItems="center">
                             <Stack
                                 direction="row"
-                                width="100%"
                                 spacing={1}
-                                justifyContent="space-between"
-                                alignItems="center"
-                            >
+                                sx={{
+                                    width: "100%",
+                                    justifyContent: "space-between",
+                                    alignItems: "center"
+                                }}>
                                 <ListItemAvatar sx={{ display: "flex", justifyContent: "center" }}>
                                     <Person sx={{ color: theme.palette.primary.main }} />
                                 </ListItemAvatar>
@@ -184,11 +190,16 @@ const ParticipantDashboard = ({
     );
 
     const getTicketsOptions = () =>
-        tickets.map((t) => ({ id: t.product_id, label: t.product.name }) as CustomOptionProps);
+        tickets.map((t) => (({
+            id: t.product_id,
+            label: t.product.name
+        }) as CustomOptionProps));
 
     return (
         <Stack>
-            <Stack direction={isSmDown ? "column" : "row"} justifyContent="center" spacing={2}>
+            <Stack direction={isSmDown ? "column" : "row"} spacing={2} sx={{
+                justifyContent: "center"
+            }}>
                 {isPending ? (
                     <LoadingFallback />
                 ) : (
