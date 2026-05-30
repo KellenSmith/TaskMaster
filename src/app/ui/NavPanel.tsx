@@ -109,7 +109,7 @@ const NavPanel = () => {
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            throw new Error(GlobalLanguageTranslations.failedSave[language], { cause: error });
         }
     };
 
@@ -123,7 +123,7 @@ const NavPanel = () => {
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            throw new Error(GlobalLanguageTranslations.failedSave[language], { cause: error });
         }
     };
 

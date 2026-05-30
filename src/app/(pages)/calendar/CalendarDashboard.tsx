@@ -64,7 +64,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            throw new Error(GlobalLanguageTranslations.failedSave[language], { cause: error });
         }
     };
 

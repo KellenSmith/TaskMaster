@@ -34,7 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     );
                 } catch (error) {
                     console.error("Failed to send sign-in email:", error);
-                    throw new Error("Failed to send verification email");
+                    throw new Error("Failed to send verification email", { cause: error });
                 }
             },
         },
