@@ -18,7 +18,7 @@ export default [
         ],
     },
     {
-        files: ["**/*.{js,jsx,ts,tsx}"],
+        files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
         languageOptions: {
             parser: tsParser,
             parserOptions: {
