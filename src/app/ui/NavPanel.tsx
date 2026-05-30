@@ -378,7 +378,7 @@ const NavPanel = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 sx={{
-                                    textTransform: "capitalize"
+                                    textTransform: "capitalize",
                                 }}
                             >
                                 {ApplyLanguageTranslations.termsOfMembership[language]}
@@ -392,7 +392,7 @@ const NavPanel = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 sx={{
-                                    textTransform: "capitalize"
+                                    textTransform: "capitalize",
                                 }}
                             >
                                 {OrderLanguageTranslations.privacyPolicy[language]}
@@ -407,7 +407,7 @@ const NavPanel = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 sx={{
-                                    textTransform: "capitalize"
+                                    textTransform: "capitalize",
                                 }}
                             >
                                 {OrderLanguageTranslations.termsOfPurchase[language]}

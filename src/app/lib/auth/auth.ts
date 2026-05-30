@@ -1,4 +1,6 @@
 import NextAuth from "next-auth";
+import type { Session, User } from "next-auth";
+import type { JWT } from "@auth/core/jwt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "../../../prisma/prisma-client";
 import { sendMail } from "../mail-service/mail-service";
@@ -21,7 +23,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: "Email",
             server: "", // Not used since we handle sending ourselves
             from: process.env.EMAIL as string,
-            sendVerificationRequest: async ({ identifier: email, url }) => {
+            sendVerificationRequest: async ({
+                identifier: email,
+                url,
+            }: {
+                identifier: string;
+                url: string;
+            }) => {
                 try {
                     const mailContent = createElement(SignInEmailTemplate, {
                         email,
@@ -41,15 +49,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     ],
     session: { strategy: "jwt" },
     callbacks: {
-        async jwt({ token, user }) {
-            // If user object is available (first time after sign in), add the user id to the token
-            if (!user) return token; // No user object, return token as is
+        async jwt({ token, user }: { token: JWT; user?: User | null }) {
+            // Hydrate token once at login. For subsequent requests, keep token as-is
+            // to avoid repeated database reads.
+            if (!user?.id) return token;
 
             const dbUser = await prisma.user.findUnique({
                 where: { id: user.id },
                 select: { id: true, status: true, role: true, user_membership: true },
             });
-            if (!dbUser) return token; // No user found in database, return token as is
+            if (!dbUser) return token;
 
             token.id = dbUser.id;
             token.status = dbUser.status;
@@ -58,21 +67,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             return token;
         },
-        async session({ session, token }) {
-            // Add the user id from the token to the session
-            if (!token.id) return session; // No user id in token, return session as is
+        async session({ session, token }: { session: Session; token: JWT }) {
+            // Build session from token only to avoid per-request DB operations.
+            if (!token.id || !token.status || !token.role) return session;
 
-            // Always fetch user_membership from Prisma at sign-in
-            const dbUser = await prisma.user.findUnique({
-                where: { id: token.id },
-                select: { id: true, user_membership: true },
-            });
-            if (!dbUser) return session; // No user found in database, return session as is
-
-            session.user.id = dbUser.id;
+            session.user.id = token.id;
             session.user.status = token.status as UserStatus;
             session.user.role = token.role as UserRole;
-            session.user.user_membership = dbUser?.user_membership ?? null;
+            session.user.user_membership = token.user_membership ?? null;
 
             return session;
         },

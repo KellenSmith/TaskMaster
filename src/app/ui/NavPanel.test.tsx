@@ -29,7 +29,7 @@ const routerPushMock = vi.fn();
 const setEditModeMock = vi.fn();
 
 const createUser = (overrides: Record<string, unknown> = {}) =>
-    (({
+    ({
         id: "user-1",
         role: UserRole.member,
         status: UserStatus.validated,
@@ -38,11 +38,11 @@ const createUser = (overrides: Record<string, unknown> = {}) =>
             expires_at: new Date("2099-01-01T00:00:00.000Z"),
         },
 
-        ...overrides
-    }) as any);
+        ...overrides,
+    }) as any;
 
 const createInfoPageItem = (overrides: Record<string, unknown> = {}) =>
-    (({
+    ({
         id: "info-page-1",
         lowest_allowed_user_role: UserRole.member,
 
@@ -53,8 +53,8 @@ const createInfoPageItem = (overrides: Record<string, unknown> = {}) =>
             ],
         },
 
-        ...overrides
-    }) as any);
+        ...overrides,
+    }) as any;
 
 const makeOrganizationSettingsContext = (overrides: Record<string, unknown> = {}) => ({
     organizationSettings: {
@@ -140,6 +140,27 @@ describe("NavPanel", () => {
         const contactRouteButton = screen.getByRole("button", { name: "Contact" });
         expect(contactRouteButton).toBeDisabled();
         expect(screen.queryByRole("button", { name: "Home" })).not.toBeInTheDocument();
+    });
+
+    it("shows profile and shop for validated user with expired membership", async () => {
+        vi.mocked(useUserContext).mockReturnValue({
+            user: createUser({
+                status: UserStatus.validated,
+                user_membership: {
+                    expires_at: new Date("2000-01-01T00:00:00.000Z"),
+                },
+            }),
+            editMode: false,
+            setEditMode: setEditModeMock,
+            language: Language.english,
+        } as any);
+
+        await renderNavPanel();
+        await openNavigationDrawer();
+
+        expect(screen.getByRole("button", { name: "Profile" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Shop" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Calendar" })).not.toBeInTheDocument();
     });
 
     it("navigates to info page when info page button is clicked", async () => {
