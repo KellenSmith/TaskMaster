@@ -57,6 +57,8 @@ const NavPanel = () => {
         [],
     );
     const { user, editMode, setEditMode, language } = useUserContext();
+
+    console.debug("User in NavPanel:", user); // Debug log to check user object
     const { organizationSettings, infopagesPromise } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
