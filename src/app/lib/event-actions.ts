@@ -15,6 +15,7 @@ import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotific
 import z from "zod";
 import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
 
 export const getEventParticipants = async (
     eventId: string,
@@ -64,6 +65,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
     }
 
     const createdEvent = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         // Create event with ticket
         const createdEvent = await tx.event.create({
             data: {
@@ -140,6 +142,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
     }
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         const eventParticipantsCount = (await getEventParticipants(parsedEventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
@@ -288,6 +291,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             "The event has participants and cannot be deleted. Cancel the event instead",
         );
 
+    await connection();
     await prisma.$transaction([
         prisma.eventReserve.deleteMany({
             where: { event_id: validatedEventId },
@@ -335,6 +339,7 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
     });
 
     const eventClone = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         // Copy event itself with default values
         const createdEvent = await tx.event.create({
             data: {

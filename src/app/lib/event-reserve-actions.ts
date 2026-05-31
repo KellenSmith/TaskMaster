@@ -5,6 +5,7 @@ import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { UuidSchema } from "./zod-schemas";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
 
 export const addEventReserveWithTx = async (
     tx: Prisma.TransactionClient,
@@ -54,6 +55,7 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
     const validatedEventId = UuidSchema.parse(eventId);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         await addEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
 };
@@ -81,6 +83,7 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
     const validatedEventId = UuidSchema.parse(eventId);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         await deleteEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
 };

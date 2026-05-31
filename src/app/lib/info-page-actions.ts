@@ -8,12 +8,14 @@ import { createTextContent } from "./text-content-actions";
 import { revalidateTag } from "next/cache";
 import { Language, UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
 
 export const createInfoPage = async (formData: FormData): Promise<void> => {
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     let createdInfoPageId: string = "";
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         const title = await createTextContent(tx);
         await tx.textTranslation.updateMany({
             where: { text_content_id: title.id },
@@ -52,6 +54,7 @@ export const updateInfoPage = async (
     const validatedInfoPageId = UuidSchema.parse(infoPageId);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         // First, update the InfoPage basic fields
         const updatedInfoPage = await tx.infoPage.update({
             where: { id: validatedInfoPageId },

@@ -18,6 +18,7 @@ import TaskUpdateTemplate from "./mail-service/mail-templates/TaskUpdateTemplate
 import MemberContactMemberTemplate from "./mail-service/mail-templates/MemberContactMemberTemplate";
 import { TaskStatus, TicketType } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     // Validate task ID format
@@ -51,6 +52,7 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
     } = validatedData;
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -205,6 +207,7 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
     }
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -266,6 +269,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
     const validatedTaskId = UuidSchema.parse(taskId);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,

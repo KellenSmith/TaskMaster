@@ -12,6 +12,7 @@ import { formatUtcDateToTimezone } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { Prisma } from "../../prisma/generated/client";
 import { isUserAdmin } from "./utils";
+import { connection } from "next/server";
 
 export const addEventParticipantWithTx = async (
     tx: Prisma.TransactionClient,
@@ -88,6 +89,7 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
     const validatedTicketId = UuidSchema.parse(ticketId);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         await addEventParticipantWithTx(tx, validatedTicketId, validatedUserId);
     });
 };
@@ -143,6 +145,7 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
     const validatedUserId = UuidSchema.parse(userId);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         await deleteEventParticipantWithTx(tx, validatedEventId, validatedUserId);
         await unassignUserFromEventTasks(tx, validatedEventId, validatedUserId);
     });

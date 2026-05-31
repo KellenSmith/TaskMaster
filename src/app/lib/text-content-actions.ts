@@ -1,5 +1,6 @@
 "use server";
 import { revalidateTag } from "next/cache";
+import { connection } from "next/server";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { sanitizeRichText } from "./html-sanitizer";
@@ -77,6 +78,7 @@ export const getTextContent = async (
     }
 
     try {
+        await connection();
         return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             if (!id) return await createTextContent(tx, id);
 
@@ -118,6 +120,7 @@ export const updateTextContent = async (
     const sanitizedText = sanitizeRichText(text);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         await tx.textContent.upsert({
             where: {
                 id,

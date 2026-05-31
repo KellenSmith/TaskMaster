@@ -7,6 +7,7 @@ import { sendOrderConfirmation } from "./mail-service/mail-service";
 import { capturePaymentFunds } from "./payment-helpers";
 import GlobalConstants from "../GlobalConstants";
 import { processOrderItems } from "./order-item-helpers";
+import { connection } from "next/server";
 
 export const progressOrder = async (
     order: Prisma.OrderGetPayload<{
@@ -68,6 +69,7 @@ const paidOrderToShipped = async (
     // This transaction may perform multiple updates and external work; increase timeout locally.
     const updatedOrder = await prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
+            await connection();
             await processOrderItems(tx, order);
             return await tx.order.update({
                 where: { id: order.id },

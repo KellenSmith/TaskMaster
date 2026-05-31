@@ -9,6 +9,7 @@ import { getLoggedInUser } from "./user-helpers";
 import { validateAndBuildOrderItems } from "./order-item-helpers";
 import { OrderStatus, UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
 
 export const createAndRedirectToOrder = async (
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
@@ -17,6 +18,7 @@ export const createAndRedirectToOrder = async (
     if (!loggedInUser) throw new Error("User must be logged in to create an order");
 
     const createdOrder = await prisma.$transaction(async (tx) => {
+        await connection();
         // Create the order with items in a transaction to ensure data consistency
         // and proper stock validation
 

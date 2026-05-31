@@ -24,6 +24,7 @@ import { Prisma } from "../../prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
 import { getUserLanguage } from "./user-helpers";
 import { getUniqueConstraintFields, prismaErrorCodes } from "../../prisma/prisma-error-codes";
+import { connection } from "next/server";
 
 export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -34,6 +35,7 @@ export const createUser = async (formData: FormData): Promise<void> => {
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         const newUser = await tx.user.create({
             data: {
                 ...userData,
@@ -128,6 +130,7 @@ export const updateUser = async (userId: string, formData: FormData): Promise<un
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         await tx.user.update({
             where: {
                 id: validatedUserId,
@@ -169,17 +172,11 @@ export const deleteUser = async (userId: string): Promise<void> => {
         }
     }
 
-    const deleteUser = prisma.user.delete({
+    await prisma.user.delete({
         where: {
             id: validatedUserId,
         } as unknown as Prisma.UserWhereUniqueInput,
     });
-
-    /**
-     * Delete dependencies and user in a transaction where all actions must
-     * succeed or no action is taken to preserve data integrity.
-     */
-    await prisma.$transaction([deleteUser]);
 
     // TODO: Check revalidation tags for all caches
     revalidateTag(GlobalConstants.USER, "max");
@@ -232,6 +229,7 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     const validatedUserId = UuidSchema.parse(userId);
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await connection();
         const validatedUser = await tx.user.update({
             where: { id: validatedUserId },
             data: { status: UserStatus.validated },
