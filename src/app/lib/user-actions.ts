@@ -201,6 +201,8 @@ export const login = async (formData: FormData): Promise<string | undefined> => 
         let redirectTo: string;
         if (isUserAuthorized(existingUser, GlobalConstants.DASHBOARD))
             redirectTo = getRelativeUrl([GlobalConstants.DASHBOARD]);
+        else if (isUserAuthorized(existingUser, GlobalConstants.PROFILE))
+            redirectTo = getRelativeUrl([GlobalConstants.PROFILE]);
         else redirectTo = getRelativeUrl([GlobalConstants.HOME]);
 
         await signIn("email", {

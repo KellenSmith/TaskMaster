@@ -408,6 +408,8 @@ describe("user-actions", () => {
             vi.mocked(prisma.user.findUniqueOrThrow).mockResolvedValue({
                 id: "user-1",
                 email: "member@example.com",
+                role: UserRole.member,
+                status: UserStatus.validated,
                 user_membership: {
                     id: "membership-1",
                     user_id: "user-1",
@@ -425,7 +427,7 @@ describe("user-actions", () => {
             expect(vi.mocked(signIn)).toHaveBeenCalledWith("email", {
                 email: "member@example.com",
                 callback: "/login",
-                redirectTo: "/",
+                redirectTo: "/profile",
                 redirect: false,
             });
         });

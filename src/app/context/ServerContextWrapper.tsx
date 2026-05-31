@@ -94,9 +94,10 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     try {
         loggedInUser = await getLoggedInUser();
     } catch (error) {
-        if (!isExpectedDynamicServerUsageError(error)) {
-            console.error("Error fetching logged in user:", error);
-        }
+        // Let Next switch to dynamic rendering for auth-bound requests.
+        // Swallowing this can incorrectly hydrate user as null.
+        if (isExpectedDynamicServerUsageError(error)) throw error;
+        console.error("Error fetching logged in user:", error);
     }
 
     const allowedUserRolePrivileges = Object.values(UserRole).filter((role) =>
