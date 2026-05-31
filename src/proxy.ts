@@ -48,13 +48,31 @@ export default async function proxy(req: NextRequest) {
     // Create response based on authorization
     let response: NextResponse;
 
+    if (loggedInUser) {
+        console.debug(
+            `Authenticated user ${loggedInUser.id} with role ${loggedInUser.role} and status ${loggedInUser.status} is accessing ${req.nextUrl.pathname}`,
+        );
+    } else {
+        console.debug(`Unauthenticated user is accessing ${req.nextUrl.pathname}`);
+    }
+
     if (isUserAuthorized(loggedInUser, req.nextUrl.pathname)) {
+        console.debug(`User is authorized to access ${req.nextUrl.pathname}`);
         response = NextResponse.next();
     } else if (isUserAuthorized(loggedInUser, GlobalConstants.DASHBOARD)) {
+        console.debug(
+            `User is not authorized to access ${req.nextUrl.pathname}, redirecting to ${GlobalConstants.DASHBOARD}`,
+        );
         response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.DASHBOARD]));
     } else if (isUserAuthorized(loggedInUser, GlobalConstants.HOME)) {
+        console.debug(
+            `User is not authorized to access ${req.nextUrl.pathname}, redirecting to ${GlobalConstants.HOME}`,
+        );
         response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.HOME]));
     } else {
+        console.debug(
+            `User is not authorized to access ${req.nextUrl.pathname} and has no access to dashboard or home, redirecting to login`,
+        );
         response = NextResponse.redirect(getAbsoluteUrl([GlobalConstants.LOGIN]));
     }
 
