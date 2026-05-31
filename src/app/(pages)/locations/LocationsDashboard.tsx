@@ -61,9 +61,11 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
     };
 
     return (
-        <Stack sx={{
-            justifyContent: "flex-start"
-        }}>
+        <Stack
+            sx={{
+                justifyContent: "flex-start",
+            }}
+        >
             <Button onClick={() => setCreateNew(true)}>
                 {LanguageTranslations.addLocation[language]}
             </Button>

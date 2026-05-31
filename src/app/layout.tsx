@@ -27,8 +27,9 @@ export const RootLayoutInner: React.FC<RootLayoutProps> = ({ children }) => {
             <Stack
                 sx={{
                     padding: 4,
-                    height: "100%"
-                }}>
+                    height: "100%",
+                }}
+            >
                 <ErrorBoundarySuspense>{children}</ErrorBoundarySuspense>
             </Stack>
         </ServerContextWrapper>

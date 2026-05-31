@@ -38,9 +38,12 @@ const ApplyPage = () => {
         <Stack spacing={1}>
             <Typography variant="h6">{LanguageTranslations.makeSureYouRead[language]}</Typography>
             {termsOfMembershipUrl && (
-                <Stack direction="row" sx={{
-                    alignItems: "center"
-                }}>
+                <Stack
+                    direction="row"
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     <Checkbox
                         checked={termsAccepted.termsOfMembership}
                         onChange={(e) =>
@@ -71,9 +74,12 @@ const ApplyPage = () => {
                     </Link>
                 </Stack>
             )}
-            <Stack direction="row" sx={{
-                alignItems: "center"
-            }}>
+            <Stack
+                direction="row"
+                sx={{
+                    alignItems: "center",
+                }}
+            >
                 <Checkbox
                     checked={termsAccepted.privacyPolicy}
                     onChange={(e) =>

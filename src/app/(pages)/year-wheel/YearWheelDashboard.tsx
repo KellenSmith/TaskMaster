@@ -101,15 +101,22 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
 
     return (
         <Stack direction="row" sx={{ width: "100%", height: "100%" }}>
-            <Stack direction="row" sx={{
-                height: "fit-content"
-            }}>
+            <Stack
+                direction="row"
+                sx={{
+                    height: "fit-content",
+                }}
+            >
                 <Button onClick={() => setDisplayStartTime((prev) => prev.subtract(1, "year"))}>
                     <ArrowLeft />
                 </Button>
-                <Typography color="primary" variant="h4" sx={{
-                    alignSelf: "center"
-                }}>
+                <Typography
+                    color="primary"
+                    variant="h4"
+                    sx={{
+                        alignSelf: "center",
+                    }}
+                >
                     {displayStartTime.format("YYYY")}
                 </Typography>
                 <Button onClick={() => setDisplayStartTime((prev) => prev.add(1, "year"))}>

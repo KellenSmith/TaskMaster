@@ -31,8 +31,8 @@ All functions in `*-actions.ts` must defensively handle input.
 ## Read-Only Get Actions
 
 - Place `get*` actions in one of these locations:
-  - In the server component where they are used.
-  - In a dedicated helper file (for example `*-helpers.ts`).
+    - In the server component where they are used.
+    - In a dedicated helper file (for example `*-helpers.ts`).
 - Keep `*-actions.ts` focused on create/update/delete and other mutating operations.
 
 ## Error Handling And Localization
@@ -71,6 +71,7 @@ export const updateSomething = async (formData: FormData): Promise<void | string
 ```
 
 If the server actions is used as a Form.tsx action prop, recieve the returned error message in the client and throw it as an error to trigger error handling UI in the Form.tsx component:
+
 ```ts
 "use client";
 
@@ -79,8 +80,7 @@ import { updateSomething } from "../lib/some-actions";
 let errorMsg: string | undefined;
 try {
     errorMsg = await updateSomething(formData);
-    if (!errorMsg)
-        return GlobalLanguageTranslations.successfulSave[language];
+    if (!errorMsg) return GlobalLanguageTranslations.successfulSave[language];
 } catch {
     errorMsg = GlobalLanguageTranslations.failedSave[language];
 }
@@ -88,11 +88,12 @@ throw new Error(errorMsg);
 ```
 
 If the server action is used in a different context, e.g. as a button action or useEffect, handle the returned error through a notification.
+
 ```ts
 "use client";
 
-import {startTransition} from "react";
-import {updateSomething} from "../lib/some-actions";
+import { startTransition } from "react";
+import { updateSomething } from "../lib/some-actions";
 
 startTransition(async () => {
     let errorMsg: string | undefined;

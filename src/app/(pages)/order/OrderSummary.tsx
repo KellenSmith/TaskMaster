@@ -60,8 +60,9 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                             flexWrap: "wrap",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            gap: 2
-                        }}>
+                            gap: 2,
+                        }}
+                    >
                         <Typography variant="h5">
                             {LanguageTranslations.orderSummary[language]}
                         </Typography>
@@ -71,8 +72,9 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                             sx={{
                                 textTransform: "capitalize",
                                 minWidth: 180,
-                                flexShrink: 0
-                            }}>
+                                flexShrink: 0,
+                            }}
+                        >
                             Status: {LanguageTranslations[order.status][language]}
                         </Typography>
                     </Stack>
@@ -155,8 +157,9 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                     sx={{
                         justifyContent: "space-between",
                         flexWrap: "wrap",
-                        marginTop: 2
-                    }}>
+                        marginTop: 2,
+                    }}
+                >
                     <Typography color="primary">
                         {LanguageTranslations.orderId[language]}: {order.id}
                     </Typography>

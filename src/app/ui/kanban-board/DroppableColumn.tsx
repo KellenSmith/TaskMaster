@@ -172,8 +172,9 @@ const DroppableColumn = ({
                     spacing={isSmallScreen ? 1 : 0}
                     sx={{
                         justifyContent: "space-between",
-                        alignItems: "center"
-                    }}>
+                        alignItems: "center",
+                    }}
+                >
                     <Typography variant={isSmallScreen ? "subtitle1" : "h6"}>
                         {LanguageTranslations[status][language].toUpperCase()}
                     </Typography>
@@ -238,10 +239,10 @@ const DroppableColumn = ({
                         [GlobalConstants.REVIEWER_ID]: getUserSelectOptions(activeMembers),
                         [GlobalConstants.SKILL_BADGES]: skillBadges.map(
                             (b) =>
-                                (({
+                                ({
                                     id: b.id,
-                                    label: b.name
-                                }) as CustomOptionProps),
+                                    label: b.name,
+                                }) as CustomOptionProps,
                         ),
                         [GlobalConstants.TAGS]: stringsToSelectOptions([
                             ...new Set(tasks.flatMap((t) => t.tags || [])),

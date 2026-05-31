@@ -17,9 +17,13 @@ const FileUploadField: FC<Props> = ({ fieldId, editMode, customReadOnlyFields })
     const [filename, setFilename] = useState<string | null>(null);
 
     return (
-        <Stack direction="row" spacing={2} sx={{
-            alignItems: "center"
-        }}>
+        <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+                alignItems: "center",
+            }}
+        >
             <Button
                 fullWidth
                 component="label"

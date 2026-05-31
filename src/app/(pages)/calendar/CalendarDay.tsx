@@ -82,13 +82,19 @@ const CalendarDay: FC<CalendarDayProps> = ({ tzDate, eventsPromise }) => {
     return (
         <Paper sx={{ width: "100%", minHeight: { xs: 80, sm: "auto" } }}>
             <Stack spacing={1}>
-                <Stack direction="row" sx={{
-                    alignItems: "center"
-                }}>
+                <Stack
+                    direction="row"
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     {/* Localized short weekday (Monday-first) */}
-                    <Typography variant="subtitle2" sx={{
-                        padding: 1
-                    }}>
+                    <Typography
+                        variant="subtitle2"
+                        sx={{
+                            padding: 1,
+                        }}
+                    >
                         {`${tzDate.format("D")}`}
                     </Typography>
                     {isSmallScreen && (

@@ -49,9 +49,12 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
     if (!location) {
         return (
             <Box sx={{ my: 2 }}>
-                <Typography variant="body2" sx={{
-                    color: "text.secondary"
-                }}>
+                <Typography
+                    variant="body2"
+                    sx={{
+                        color: "text.secondary",
+                    }}
+                >
                     {LanguageTranslations.noLocationInfo[language]}
                 </Typography>
             </Box>
@@ -155,8 +158,9 @@ const LocationDashboard = ({ eventPromise, locationsPromise }: LocationDashboard
                                 color="error"
                                 sx={{
                                     textAlign: "center",
-                                    fontSize: "0.95rem"
-                                }}>
+                                    fontSize: "0.95rem",
+                                }}
+                            >
                                 {CalendarLanguageTranslations.locationCapacityExceeded[language](
                                     locations.find(
                                         (location) => location.id === selectedLocationOption?.id,

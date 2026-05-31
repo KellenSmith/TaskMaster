@@ -44,14 +44,18 @@ const VolunteerLeaderboardClient: React.FC<VolunteerLeaderboardClientProps> = ({
                 justifyContent: "center",
                 maxWidth: 600,
                 mx: "auto",
-                py: 4
-            }}>
+                py: 4,
+            }}
+        >
             <Typography variant="h4" component="h1">
                 {LanguageTranslations[GlobalConstants.VOLUNTEER_LEADERBOARD][language]}
             </Typography>
-            <Stack direction="row" sx={{
-                justifyContent: "space-around"
-            }}>
+            <Stack
+                direction="row"
+                sx={{
+                    justifyContent: "space-around",
+                }}
+            >
                 <Button onClick={() => stepYear(-1)}>
                     <ChevronLeft />
                     {LanguageTranslations.prev[language]}

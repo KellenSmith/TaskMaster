@@ -124,8 +124,9 @@ const DraggableTaskShifts = ({
                     alignItems: { xs: "flex-start", sm: "center" },
                     p: 1,
                     pt: 1,
-                    pb: 0
-                }}>
+                    pb: 0,
+                }}
+            >
                 <Typography variant="body1" sx={{ wordBreak: "break-word" }} noWrap={false}>
                     {taskList[0].name}
                 </Typography>

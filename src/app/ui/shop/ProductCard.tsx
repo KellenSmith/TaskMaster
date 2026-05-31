@@ -200,12 +200,18 @@ export default function ProductCard({
                                 </Stack>
                             )}
                         </Stack>
-                        <Stack spacing={2} sx={{
-                            width: "100%"
-                        }}>
-                            <Stack direction="row" sx={{
-                                justifyContent: "space-between"
-                            }}>
+                        <Stack
+                            spacing={2}
+                            sx={{
+                                width: "100%",
+                            }}
+                        >
+                            <Stack
+                                direction="row"
+                                sx={{
+                                    justifyContent: "space-between",
+                                }}
+                            >
                                 <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
                                     {`${formatPrice(product.price)} SEK`}
                                 </Typography>
@@ -223,8 +229,9 @@ export default function ProductCard({
                         spacing={1}
                         sx={{
                             justifyContent: isSmDown ? "center" : "flex-end",
-                            width: "100%"
-                        }}>
+                            width: "100%",
+                        }}
+                    >
                         {onAddToCart && (
                             <Button
                                 onClick={() => onAddToCart(product.id)}

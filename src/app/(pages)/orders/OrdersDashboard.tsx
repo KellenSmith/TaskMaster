@@ -88,8 +88,9 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
                             height: "100%",
                             justifyContent: "flex-start",
                             alignItems: "center",
-                            gap: 1
-                        }}>
+                            gap: 1,
+                        }}
+                    >
                         <Icon sx={{ color }} />
                         <Typography variant="body2" sx={{ color }}>
                             {statusText}

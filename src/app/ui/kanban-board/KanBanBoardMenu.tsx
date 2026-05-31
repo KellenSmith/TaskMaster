@@ -283,8 +283,9 @@ const KanBanBoardMenu = ({
                 direction="row"
                 sx={{
                     width: "fit-content",
-                    height: "100%"
-                }}>
+                    height: "100%",
+                }}
+            >
                 {/* Tabs moved inside the drawer for better mobile UX */}
                 <SwipeableDrawer
                     key={myTasks.map((task) => task.assignee_id).join("-")}
@@ -302,8 +303,9 @@ const KanBanBoardMenu = ({
                         spacing={2}
                         sx={{
                             justifyContent: "center",
-                            padding: 2
-                        }}>
+                            padding: 2,
+                        }}
+                    >
                         <Button
                             sx={{ justifyContent: "flex-start" }}
                             size="small"
@@ -365,8 +367,9 @@ const KanBanBoardMenu = ({
                                     <Typography
                                         sx={{
                                             textAlign: "center",
-                                            paddingY: 2
-                                        }}>
+                                            paddingY: 2,
+                                        }}
+                                    >
                                         {LanguageTranslations.noShiftsBooked[language]}
                                     </Typography>
                                 )}

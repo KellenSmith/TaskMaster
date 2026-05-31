@@ -414,8 +414,9 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                         <Stack
                             sx={{
                                 height: 300,
-                                width: 300
-                            }}>
+                                width: 300,
+                            }}
+                        >
                             <LoadingFallback />
                         </Stack>
                     ) : (

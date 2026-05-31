@@ -23,8 +23,9 @@ const MembershipStatusCard = () => {
                         sx={{
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "space-between"
-                        }}>
+                            justifyContent: "space-between",
+                        }}
+                    >
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {LanguageTranslations.membership[language]}
                         </Typography>
@@ -98,14 +99,21 @@ const MembershipStatusCard = () => {
                     ) : (
                         <Stack spacing={2}>
                             {/* Member Since */}
-                            <Stack direction="row" spacing={2} sx={{
-                                alignItems: "center"
-                            }}>
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                sx={{
+                                    alignItems: "center",
+                                }}
+                            >
                                 <Person color="primary" />
                                 <Stack>
-                                    <Typography variant="body2" sx={{
-                                        color: "text.secondary"
-                                    }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: "text.secondary",
+                                        }}
+                                    >
                                         {LanguageTranslations.memberSince[language]}
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -116,14 +124,21 @@ const MembershipStatusCard = () => {
 
                             {/* Expiration Date */}
                             {user.user_membership && (
-                                <Stack direction="row" spacing={2} sx={{
-                                    alignItems: "center"
-                                }}>
+                                <Stack
+                                    direction="row"
+                                    spacing={2}
+                                    sx={{
+                                        alignItems: "center",
+                                    }}
+                                >
                                     <Schedule color="primary" />
                                     <Stack>
-                                        <Typography variant="body2" sx={{
-                                            color: "text.secondary"
-                                        }}>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: "text.secondary",
+                                            }}
+                                        >
                                             {LanguageTranslations.membershipExpires[language]}
                                         </Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -135,14 +150,21 @@ const MembershipStatusCard = () => {
                                 </Stack>
                             )}
 
-                            <Stack direction="row" spacing={2} sx={{
-                                alignItems: "center"
-                            }}>
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                sx={{
+                                    alignItems: "center",
+                                }}
+                            >
                                 <AdminPanelSettings color="primary" />
                                 <Stack>
-                                    <Typography variant="body2" sx={{
-                                        color: "text.secondary"
-                                    }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: "text.secondary",
+                                        }}
+                                    >
                                         {LanguageTranslations.role[language]}
                                     </Typography>
                                     <Typography

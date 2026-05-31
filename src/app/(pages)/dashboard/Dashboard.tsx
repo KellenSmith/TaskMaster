@@ -41,13 +41,19 @@ const Dashboard: React.FC<DashboardProps> = ({ ticketInfoPromise }) => {
     const ticketInfo = use(ticketInfoPromise);
 
     return (
-        <Stack spacing={4} sx={{
-            width: "100%"
-        }}>
+        <Stack
+            spacing={4}
+            sx={{
+                width: "100%",
+            }}
+        >
             <Typography variant="h4">{`${LanguageTranslations.welcomeBack[language]}, ${user!.nickname}!`}</Typography>
-            <Stack spacing={2} sx={{
-                width: "100%"
-            }}>
+            <Stack
+                spacing={2}
+                sx={{
+                    width: "100%",
+                }}
+            >
                 <Typography variant="h5">
                     {LanguageTranslations.upcomingEventTickets[language]}
                 </Typography>

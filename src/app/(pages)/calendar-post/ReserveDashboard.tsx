@@ -54,8 +54,9 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                         spacing={2}
                         sx={{
                             alignItems: "center",
-                            justifyContent: "center"
-                        }}>
+                            justifyContent: "center",
+                        }}
+                    >
                         {isReserve && (
                             <Chip
                                 icon={<CheckCircle />}
@@ -74,8 +75,9 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                                 sx={{
                                     color: "text.secondary",
                                     fontWeight: 400,
-                                    lineHeight: 1.6
-                                }}>
+                                    lineHeight: 1.6,
+                                }}
+                            >
                                 {LanguageTranslations.notifyIfSpotOpens[language]}
                             </Typography>
                         )}
@@ -86,16 +88,18 @@ const ReserveDashboard = ({ eventPromise }: ReserveDashboardProps) => {
                             mt: "auto",
                             padding: 3,
                             border: `1px solid ${theme.palette.info.dark}`,
-                            borderRadius: 2
-                        }}>
+                            borderRadius: 2,
+                        }}
+                    >
                         <Typography
                             variant="body1"
                             sx={{
                                 color: "text.secondary",
                                 textAlign: "center",
                                 mb: 2,
-                                fontWeight: 500
-                            }}>
+                                fontWeight: 500,
+                            }}
+                        >
                             {LanguageTranslations.joinReserveToBeNotified[language](isReserve)}
                         </Typography>
                         <ConfirmButton

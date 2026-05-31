@@ -333,8 +333,9 @@ const Form: FC<FormProps> = ({
                     direction="row"
                     sx={{
                         justifyContent: "flex-end",
-                        alignItems: "center"
-                    }}>
+                        alignItems: "center",
+                    }}
+                >
                     {editable && (
                         <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
                             {editMode && editable ? <Cancel /> : <Edit />}

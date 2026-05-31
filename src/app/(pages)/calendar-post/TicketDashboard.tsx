@@ -77,8 +77,9 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                 spacing={3}
                 sx={{
                     alignItems: "center",
-                    height: "100%"
-                }}>
+                    height: "100%",
+                }}
+            >
                 {/* Product Card Section */}
                 <Stack sx={{ flex: "0 0 auto" }}>
                     <ProductCard product={ticket.product} />
@@ -113,8 +114,9 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                 sx={{
                                     color: "text.secondary",
                                     fontWeight: 400,
-                                    lineHeight: 1.6
-                                }}>
+                                    lineHeight: 1.6,
+                                }}
+                            >
                                 {LanguageTranslations.youHaveATicket[language]}
                             </Typography>
                         </Stack>
@@ -136,8 +138,9 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                         color: "text.secondary",
                                         textAlign: "center",
                                         mb: 2,
-                                        fontWeight: 500
-                                    }}>
+                                        fontWeight: 500,
+                                    }}
+                                >
                                     {LanguageTranslations.cantMakeIt[language]}
                                 </Typography>
                                 <Typography
@@ -146,8 +149,9 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                                         color: "text.secondary",
                                         textAlign: "center",
                                         mb: 3,
-                                        opacity: 0.8
-                                    }}>
+                                        opacity: 0.8,
+                                    }}
+                                >
                                     {LanguageTranslations.leaveToFreeUpSpot[language]}
                                 </Typography>
                                 <ConfirmButton

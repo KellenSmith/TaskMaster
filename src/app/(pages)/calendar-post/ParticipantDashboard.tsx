@@ -138,8 +138,9 @@ const ParticipantDashboard = ({
                     direction="row"
                     sx={{
                         alignItems: "center",
-                        justifyContent: "space-between"
-                    }}>
+                        justifyContent: "space-between",
+                    }}
+                >
                     {`${FieldLabels[name][language] as string} (${users.length})`}
                     <Button onClick={() => setAddDialogOpen(name)}>
                         <Add sx={{ cursor: "pointer" }} />
@@ -158,8 +159,9 @@ const ParticipantDashboard = ({
                                 sx={{
                                     width: "100%",
                                     justifyContent: "space-between",
-                                    alignItems: "center"
-                                }}>
+                                    alignItems: "center",
+                                }}
+                            >
                                 <ListItemAvatar sx={{ display: "flex", justifyContent: "center" }}>
                                     <Person sx={{ color: theme.palette.primary.main }} />
                                 </ListItemAvatar>
@@ -190,16 +192,23 @@ const ParticipantDashboard = ({
     );
 
     const getTicketsOptions = () =>
-        tickets.map((t) => (({
-            id: t.product_id,
-            label: t.product.name
-        }) as CustomOptionProps));
+        tickets.map(
+            (t) =>
+                ({
+                    id: t.product_id,
+                    label: t.product.name,
+                }) as CustomOptionProps,
+        );
 
     return (
         <Stack>
-            <Stack direction={isSmDown ? "column" : "row"} spacing={2} sx={{
-                justifyContent: "center"
-            }}>
+            <Stack
+                direction={isSmDown ? "column" : "row"}
+                spacing={2}
+                sx={{
+                    justifyContent: "center",
+                }}
+            >
                 {isPending ? (
                     <LoadingFallback />
                 ) : (

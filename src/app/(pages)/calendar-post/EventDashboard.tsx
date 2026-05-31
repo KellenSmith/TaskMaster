@@ -173,9 +173,12 @@ const EventDashboard = ({
 
     return (
         <Stack>
-            <Stack spacing={2} sx={{
-                padding: "0 24px 0 24px"
-            }}>
+            <Stack
+                spacing={2}
+                sx={{
+                    padding: "0 24px 0 24px",
+                }}
+            >
                 {event.status === EventStatus.draft && (
                     <Typography
                         variant="h4"
@@ -222,8 +225,9 @@ const EventDashboard = ({
                     flexWrap: "nowrap",
                     padding: isSmall ? 0 : "0 24px 0 24px",
                     justifyContent: "space-between",
-                    alignItems: "center"
-                }}>
+                    alignItems: "center",
+                }}
+            >
                 <Tabs
                     value={openTab || implementedTabs.details}
                     onChange={(_, newTab) => setOpenTab(newTab)}

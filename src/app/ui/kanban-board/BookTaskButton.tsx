@@ -76,12 +76,16 @@ const BookTaskButton = ({ task, event }: BookTaskButtonProps) => {
                 direction="row"
                 sx={{
                     alignItems: "center",
-                    gap: 1
-                }}>
+                    gap: 1,
+                }}
+            >
                 <Warning color="warning" />
-                <Typography variant="caption" sx={{
-                    color: "warning.main"
-                }}>
+                <Typography
+                    variant="caption"
+                    sx={{
+                        color: "warning.main",
+                    }}
+                >
                     {LanguageTranslations.unqualifiedForShiftTooltip[language]}
                 </Typography>
             </Stack>

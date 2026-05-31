@@ -74,16 +74,20 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
                 sx={{
                     justifyContent: "space-around",
                     flexWrap: "wrap",
-                    gap: 2
-                }}>
+                    gap: 2,
+                }}
+            >
                 {badges
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((badge) => (
                         <Stack key={badge.id} spacing={1}>
                             <SkillBadgeCard badge={badge} />
-                            <Stack spacing={1} sx={{
-                                maxWidth: 250
-                            }}>
+                            <Stack
+                                spacing={1}
+                                sx={{
+                                    maxWidth: 250,
+                                }}
+                            >
                                 <Button
                                     disabled={isPending}
                                     onClick={() => setEditBadgeId(badge.id)}

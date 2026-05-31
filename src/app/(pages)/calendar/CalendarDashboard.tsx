@@ -110,9 +110,13 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             <Stack sx={{ width: "100%" }}>
                 <Grid container spacing={2} columns={7}>
                     {LanguageTranslations.weekDaysShort[language].map((day) => (
-                        <Grid key={day} size={1} sx={{
-                            alignContent: "center"
-                        }}>
+                        <Grid
+                            key={day}
+                            size={1}
+                            sx={{
+                                alignContent: "center",
+                            }}
+                        >
                             <Typography
                                 key={day}
                                 variant="subtitle2"
@@ -158,17 +162,22 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             <Stack
                 sx={{
                     padding: isSmallScreen ? 2 : 4,
-                    width: "100%"
-                }}>
-                <Stack direction="row" sx={{
-                    justifyContent: "center"
-                }}>
+                    width: "100%",
+                }}
+            >
+                <Stack
+                    direction="row"
+                    sx={{
+                        justifyContent: "center",
+                    }}
+                >
                     <Stack
                         direction="row"
                         sx={{
                             width: "100%",
-                            justifyContent: "space-between"
-                        }}>
+                            justifyContent: "space-between",
+                        }}
+                    >
                         {user && (
                             <Button
                                 size={isSmallScreen ? "small" : "medium"}
@@ -190,7 +199,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                                 color="primary"
                                 variant={isSmallScreen ? "h6" : "h4"}
                                 sx={{
-                                    alignSelf: "center"
+                                    alignSelf: "center",
                                 }}
                             >
                                 {utcDateToTzDate(selectedTzDate).format("YYYY/MM")}
