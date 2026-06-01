@@ -6,13 +6,12 @@ import { Prisma } from "../../../prisma/generated/browser";
 
 interface InfoDashboardProps {
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;
-    id: string;
 }
 
-const InfoDashboard: React.FC<InfoDashboardProps> = ({ textContentPromise, id }) => {
+const InfoDashboard: React.FC<InfoDashboardProps> = ({ textContentPromise }) => {
     return (
         <Stack sx={{ height: "100%", alignItems: "center" }}>
-            <TextContent id={id} textContentPromise={textContentPromise} />
+            <TextContent textContentPromise={textContentPromise} />
         </Stack>
     );
 };

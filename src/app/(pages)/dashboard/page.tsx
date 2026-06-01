@@ -1,17 +1,18 @@
 import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import Dashboard from "./Dashboard";
-import { serverRedirect } from "../../lib/utils";
-import GlobalConstants from "../../GlobalConstants";
 import dayjs from "dayjs";
+import { cacheTag } from "next/cache";
+import { getUserEventParticipantsCacheTag } from "../../lib/event-participant-actions";
 
-const DashboardPage = async () => {
-    const loggedInUser = await getLoggedInUser();
-    if (!loggedInUser) serverRedirect([GlobalConstants.LOGIN]);
+const getCachedUserEventParticipants = async (userId: string) => {
+    "use cache";
 
-    const ticketInfoPromise = prisma.eventParticipant.findMany({
+    cacheTag(await getUserEventParticipantsCacheTag(userId));
+
+    return await prisma.eventParticipant.findMany({
         where: {
-            user_id: loggedInUser!.id,
+            user_id: userId,
             ticket: {
                 event: {
                     end_time: {
@@ -43,6 +44,13 @@ const DashboardPage = async () => {
             },
         },
     });
+};
+
+const DashboardPage = async () => {
+    const loggedInUser = await getLoggedInUser();
+    const ticketInfoPromise = loggedInUser
+        ? getCachedUserEventParticipants(loggedInUser.id)
+        : Promise.reject(new Error("Unauthorized"));
 
     return <Dashboard ticketInfoPromise={ticketInfoPromise} />;
 };

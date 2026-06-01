@@ -25,6 +25,7 @@ const LanguageMenu = () => {
                 height={24}
                 onClick={(e) => setAnchorEl(e.currentTarget as HTMLElement)}
                 style={{ cursor: "pointer", marginRight: 24 }}
+                loading="eager"
             />
             <Menu
                 anchorEl={anchorEl}
@@ -48,6 +49,7 @@ const LanguageMenu = () => {
                             style={{ width: 24, height: 24, marginRight: 8 }}
                             width={24}
                             height={24}
+                            loading="eager"
                         />
                     </MenuItem>
                 ))}

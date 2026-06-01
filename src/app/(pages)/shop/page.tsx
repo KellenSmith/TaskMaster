@@ -1,9 +1,13 @@
-// ...existing code...
 import ShopDashboard from "./ShopDashboard";
 import { prisma } from "../../../prisma/prisma-client";
+import { cacheTag } from "next/cache";
+import GlobalConstants from "../../GlobalConstants";
 
-const ShopPage = () => {
-    const productsPromise = prisma.product.findMany({
+const getCachedProducts = async () => {
+    "use cache";
+    cacheTag(GlobalConstants.PRODUCT);
+
+    return await prisma.product.findMany({
         where: {
             ticket: null,
         },
@@ -11,6 +15,10 @@ const ShopPage = () => {
             membership: true,
         },
     });
+};
+
+const ShopPage = () => {
+    const productsPromise = getCachedProducts();
     return <ShopDashboard productsPromise={productsPromise} />;
 };
 

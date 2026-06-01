@@ -16,21 +16,25 @@ import GlobalConstants from "../../GlobalConstants";
 import { useRouter } from "next/navigation";
 import { clientRedirect } from "../../lib/utils";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { use } from "react";
 
 interface VolunteerLeaderboardClientProps {
-    assigneeVolunteerHours: {
-        nickname: string;
-        hours: number;
-    }[];
+    assigneeVolunteerHoursPromise: Promise<
+        {
+            nickname: string;
+            hours: number;
+        }[]
+    >;
     year: string;
 }
 
 const VolunteerLeaderboardClient: React.FC<VolunteerLeaderboardClientProps> = ({
-    assigneeVolunteerHours,
+    assigneeVolunteerHoursPromise,
     year,
 }) => {
     const { language } = useUserContext();
     const router = useRouter();
+    const assigneeVolunteerHours = use(assigneeVolunteerHoursPromise);
 
     const stepYear = (step: number) => {
         const newYear = (parseInt(year) + step).toString();

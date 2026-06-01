@@ -10,6 +10,9 @@ import { Language, UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 import { connection } from "next/server";
 
+export const getInfoPageCacheTag = async (pageId: string) =>
+    `${GlobalConstants.INFO_PAGE}:${pageId}`;
+
 export const createInfoPage = async (formData: FormData): Promise<void> => {
     const validatedData = InfoPageCreateSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -81,6 +84,7 @@ export const updateInfoPage = async (
         // Content is updated directly in the rich text component (InfoPageEditor)
     });
     revalidateTag(GlobalConstants.INFO_PAGE, "max");
+    revalidateTag(await getInfoPageCacheTag(validatedInfoPageId), "max");
 };
 
 export const deleteInfoPage = async (id: string): Promise<void> => {
@@ -94,4 +98,5 @@ export const deleteInfoPage = async (id: string): Promise<void> => {
     });
 
     revalidateTag(GlobalConstants.INFO_PAGE, "max");
+    revalidateTag(await getInfoPageCacheTag(validatedId), "max");
 };

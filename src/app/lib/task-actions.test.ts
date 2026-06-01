@@ -501,7 +501,10 @@ describe("task-actions", () => {
                 userId,
             );
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TASK, "max");
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
+                `${GlobalConstants.TASK}:event:${eventId}`,
+                "max",
+            );
         });
 
         it("does not add volunteer ticket if user already has non-volunteer ticket", async () => {

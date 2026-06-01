@@ -40,7 +40,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => 
                         {LanguageTranslations.routeLabel[GlobalConstants.APPLY][language]}
                     </Button>
                 )}
-                <TextContent id={"home"} textContentPromise={textContentPromise} />
+                <TextContent textContentPromise={textContentPromise} />
             </Stack>
         </Stack>
     );

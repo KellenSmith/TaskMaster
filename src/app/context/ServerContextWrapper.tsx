@@ -6,22 +6,16 @@ import { prisma } from "../../prisma/prisma-client";
 import { userHasRolePrivileges } from "../lib/auth/auth-utils";
 import { UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/browser";
+import { cacheTag } from "next/cache";
+import GlobalConstants from "../GlobalConstants";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
 }
 
-const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
-    let loggedInUser = null;
-    try {
-        loggedInUser = await getLoggedInUser();
-    } catch (error) {
-        console.error("Error fetching logged in user:", error);
-    }
-
-    const allowedUserRolePrivileges = Object.values(UserRole).filter((role) =>
-        userHasRolePrivileges(loggedInUser, role),
-    ) as UserRole[];
+const getAllowedInfoPagesByRoles = async (allowedUserRolePrivileges: UserRole[]) => {
+    "use cache";
+    cacheTag(GlobalConstants.INFO_PAGE);
 
     // Pages with no role restrictions are always allowed
     const lowestAllowedUserRoleCondition: Prisma.InfoPageWhereInput & {
@@ -32,17 +26,38 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
             lowest_allowed_user_role: { in: allowedUserRolePrivileges },
         });
     }
-    const infoPagesPromise = prisma.infoPage.findMany({
+    const allowedInfoPages = await prisma.infoPage.findMany({
         where: lowestAllowedUserRoleCondition,
         include: { titleText: { include: { translations: true } } },
     });
 
+    return allowedInfoPages;
+};
+
+const getAllowedInfoPages = async (userPromise: ReturnType<typeof getLoggedInUser>) => {
+    let loggedInUser = null;
+    try {
+        loggedInUser = await userPromise;
+    } catch (error) {
+        console.error("Error fetching logged in user:", error);
+    }
+
+    const allowedUserRolePrivileges = Object.values(UserRole)
+        .filter((role) => userHasRolePrivileges(loggedInUser, role))
+        .sort() as UserRole[];
+
+    return getAllowedInfoPagesByRoles(allowedUserRolePrivileges);
+};
+
+const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
     const organizationSettingsPromise = getOrganizationSettings();
+    const userPromise = getLoggedInUser();
+    const infoPagesPromise = getAllowedInfoPages(userPromise);
 
     return (
         <ContextWrapper
             organizationSettingsPromise={organizationSettingsPromise}
-            userPromise={new Promise((resolve) => resolve(loggedInUser))}
+            userPromise={userPromise}
             infoPagesPromise={infoPagesPromise}
         >
             {children}

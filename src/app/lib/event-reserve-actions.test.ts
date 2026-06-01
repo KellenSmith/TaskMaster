@@ -7,6 +7,7 @@ import * as eventReserveActions from "./event-reserve-actions";
 
 const userId = "550e8400-e29b-41d4-a716-446655440001";
 const eventId = "550e8400-e29b-41d4-a716-446655440002";
+const reserveUsersEventTag = `${GlobalConstants.RESERVE_USERS}:event:${eventId}`;
 
 describe("event-reserve-actions", () => {
     describe("addEventReserveWithTx", () => {
@@ -48,11 +49,7 @@ describe("event-reserve-actions", () => {
                 },
                 update: {},
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.RESERVE_USERS,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(reserveUsersEventTag, "max");
         });
 
         it("throws error when user is already a participant", async () => {
@@ -137,11 +134,7 @@ describe("event-reserve-actions", () => {
                     event_id: eventId,
                 },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.RESERVE_USERS,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(reserveUsersEventTag, "max");
         });
 
         it("uses deleteMany to avoid errors when reserve does not exist", async () => {
@@ -172,11 +165,7 @@ describe("event-reserve-actions", () => {
             await eventReserveActions.deleteEventReserveWithTx(tx as any, userId, eventId);
 
             // Should still revalidate cache
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.RESERVE_USERS,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(reserveUsersEventTag, "max");
         });
     });
 

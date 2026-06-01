@@ -6,6 +6,7 @@ import type { TransactionClient } from "../../test/types/test-types";
 import * as textContentActions from "./text-content-actions";
 import { sanitizeRichText } from "./html-sanitizer";
 import { Language } from "../../prisma/generated/enums";
+import { getTextContentCacheTag } from "./text-content-actions";
 
 vi.mock("./html-sanitizer", () => ({
     sanitizeRichText: vi.fn(),
@@ -93,7 +94,7 @@ describe("text-content-actions", () => {
                 callback(tx),
             );
 
-            const result = await textContentActions.getTextContent(textContentId);
+            const result = await textContentActions.getCachedTextContent(textContentId);
 
             expect(tx.textContent.findUnique).toHaveBeenCalledWith({
                 where: { id: textContentId },
@@ -118,7 +119,7 @@ describe("text-content-actions", () => {
                 callback(tx),
             );
 
-            const result = await textContentActions.getTextContent(textContentId);
+            const result = await textContentActions.getCachedTextContent(textContentId);
 
             expect(tx.textContent.findUnique).toHaveBeenCalled();
             expect(tx.textContent.create).toHaveBeenCalled();
@@ -137,7 +138,7 @@ describe("text-content-actions", () => {
                 callback(tx),
             );
 
-            const result = await textContentActions.getTextContent(null);
+            const result = await textContentActions.getCachedTextContent(null);
 
             expect(tx.textContent.findUnique).not.toHaveBeenCalled();
             expect(tx.textContent.create).toHaveBeenCalled();
@@ -198,7 +199,7 @@ describe("text-content-actions", () => {
                 },
             });
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.TEXT_CONTENT,
+                await getTextContentCacheTag(textContentId),
                 "max",
             );
         });

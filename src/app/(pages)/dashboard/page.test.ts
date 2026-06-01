@@ -2,9 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import DashboardPage from "./page";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
-import GlobalConstants from "../../GlobalConstants";
 import dayjs from "dayjs";
-import * as utils from "../../lib/utils";
 
 vi.mock("../../lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
@@ -16,15 +14,14 @@ beforeEach(() => {
     vi.mocked(getLoggedInUser).mockReset();
     vi.mocked(prisma.eventParticipant.findMany).mockReset();
 });
-const serverRedirectSpy = vi.spyOn(utils, "serverRedirect");
 
 describe("DashboardPage", () => {
-    it("redirects if user is not logged in", async () => {
+    it("returns dashboard and rejects ticket promise if user is not logged in", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue(null);
 
-        await expect(DashboardPage()).rejects.toThrow("Redirect called");
+        const result = await DashboardPage();
 
-        expect(serverRedirectSpy).toHaveBeenCalledWith([GlobalConstants.LOGIN]);
+        await expect(result.props.ticketInfoPromise).rejects.toThrow("Unauthorized");
     });
 
     it("renders dashboard for logged-in user", async () => {

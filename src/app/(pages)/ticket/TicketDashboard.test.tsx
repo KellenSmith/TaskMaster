@@ -52,7 +52,10 @@ function getEventParticipant(overrides = {}) {
 }
 
 const renderWithNotificationContext = async (eventParticipant: any) => {
-    return await act(async () => render(<TicketDashboard eventParticipant={eventParticipant} />));
+    const eventParticipantPromise = Promise.resolve(eventParticipant);
+    return await act(async () =>
+        render(<TicketDashboard eventParticipantPromise={eventParticipantPromise as any} />),
+    );
 };
 
 describe("TicketDashboard", () => {

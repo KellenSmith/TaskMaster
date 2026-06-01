@@ -7,6 +7,12 @@ import { UuidSchema } from "./zod-schemas";
 import { Prisma } from "../../prisma/generated/client";
 import { connection } from "next/server";
 
+export const getEventReservesCacheTag = async (eventId: string) =>
+    `${GlobalConstants.RESERVE_USERS}:event:${eventId}`;
+
+export const getUserEventReservesCacheTag = async (userId: string) =>
+    `${GlobalConstants.RESERVE_USERS}:user:${userId}`;
+
 export const addEventReserveWithTx = async (
     tx: Prisma.TransactionClient,
     userId: string,
@@ -44,9 +50,8 @@ export const addEventReserveWithTx = async (
         },
         update: {},
     });
-    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
-    // Event reserves with limited data is cached with the event
-    revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };
 
 export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
@@ -58,6 +63,9 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
         await connection();
         await addEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
+
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };
 
 export const deleteEventReserveWithTx = async (
@@ -72,9 +80,8 @@ export const deleteEventReserveWithTx = async (
             event_id: eventId,
         },
     });
-    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
-    // Event reserves with limited data is cached with the event
-    revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };
 
 export const deleteEventReserve = async (userId: string, eventId: string) => {
@@ -86,4 +93,7 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
         await connection();
         await deleteEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
+
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };

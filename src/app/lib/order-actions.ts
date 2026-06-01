@@ -11,6 +11,8 @@ import { OrderStatus, UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 import { connection } from "next/server";
 
+export const getOrderCacheTag = async (orderId: string) => `${GlobalConstants.ORDER}:${orderId}`;
+
 export const createAndRedirectToOrder = async (
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
 ): Promise<void> => {
@@ -77,6 +79,7 @@ export const cancelOrder = async (orderId: string): Promise<void> => {
         data: { status: OrderStatus.cancelled },
     });
     revalidateTag(GlobalConstants.ORDER, "max");
+    revalidateTag(await getOrderCacheTag(parsedOrderId), "max");
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
@@ -95,4 +98,5 @@ export const deleteOrder = async (orderId: string): Promise<void> => {
     });
 
     revalidateTag(GlobalConstants.ORDER, "max");
+    revalidateTag(await getOrderCacheTag(validatedOrderId), "max");
 };

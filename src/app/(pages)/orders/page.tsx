@@ -1,10 +1,14 @@
 "use server";
 import OrdersDashboard from "./OrdersDashboard";
-// ...existing code...
 import { prisma } from "../../../prisma/prisma-client";
+import { cacheTag } from "next/cache";
+import GlobalConstants from "../../GlobalConstants";
 
-const OrdersPage = async () => {
-    const ordersPromise = prisma.order.findMany({
+const getCachedOrders = async () => {
+    "use cache";
+    cacheTag(GlobalConstants.ORDER);
+
+    return await prisma.order.findMany({
         include: {
             user: {
                 select: {
@@ -18,6 +22,10 @@ const OrdersPage = async () => {
             },
         },
     });
+};
+
+const OrdersPage = async () => {
+    const ordersPromise = getCachedOrders();
     return <OrdersDashboard ordersPromise={ordersPromise} />;
 };
 

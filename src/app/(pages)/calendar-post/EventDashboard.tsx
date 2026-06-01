@@ -62,7 +62,7 @@ interface EventDashboardProps {
         }>[]
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
-    eventTags: string[];
+    eventTagsPromise: Promise<string[]>;
 }
 
 const EventDashboard = ({
@@ -74,7 +74,7 @@ const EventDashboard = ({
     eventParticipantsPromise,
     eventReservesPromise,
     locationsPromise,
-    eventTags,
+    eventTagsPromise,
 }: EventDashboardProps) => {
     const { user, language } = useUserContext();
 
@@ -279,7 +279,7 @@ const EventDashboard = ({
                     <EventActions
                         eventPromise={eventPromise}
                         locationsPromise={locationsPromise}
-                        eventTags={eventTags}
+                        eventTagsPromise={eventTagsPromise}
                     />
                 </Stack>
             </Stack>

@@ -9,6 +9,9 @@ import { isSwedbankPayConfigured } from "./payment-helpers";
 import LanguageTranslations from "./LanguageTranslations";
 import { getUserLanguage } from "./user-helpers";
 
+export const getEventTicketsCacheTag = async (eventId: string) =>
+    `${GlobalConstants.TICKET}:event:${eventId}`;
+
 export const createEventTicket = async (
     eventId: string,
     formData: FormData,
@@ -55,7 +58,7 @@ export const createEventTicket = async (
             },
         },
     });
-    revalidateTag(GlobalConstants.TICKET, "max");
+    revalidateTag(await getEventTicketsCacheTag(validatedEventId), "max");
 };
 
 export const updateEventTicket = async (ticketId: string, formData: FormData) => {
@@ -92,7 +95,7 @@ export const updateEventTicket = async (ticketId: string, formData: FormData) =>
     if (GlobalConstants.IMAGE_URL in productFieldValues)
         await deleteOldBlob(oldProduct.image_url, productFieldValues.image_url);
 
-    revalidateTag(GlobalConstants.TICKET, "max");
+    revalidateTag(await getEventTicketsCacheTag(validatedTicketId), "max");
 };
 
 export const deleteEventTicket = async (ticketId: string) => {
@@ -103,5 +106,5 @@ export const deleteEventTicket = async (ticketId: string) => {
             id: validatedTicketId,
         },
     });
-    revalidateTag(GlobalConstants.TICKET, "max");
+    revalidateTag(await getEventTicketsCacheTag(validatedTicketId), "max");
 };

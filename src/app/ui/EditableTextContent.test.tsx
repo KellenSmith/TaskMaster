@@ -21,10 +21,7 @@ const renderEditableTextContent = async (textContentPromise: Promise<any>) => {
         render(
             <NotificationContextProvider>
                 <Suspense fallback={<div>Loading text</div>}>
-                    <EditableTextContent
-                        id="text-content-1"
-                        textContentPromise={textContentPromise}
-                    />
+                    <EditableTextContent textContentPromise={textContentPromise} />
                 </Suspense>
             </NotificationContextProvider>,
         );

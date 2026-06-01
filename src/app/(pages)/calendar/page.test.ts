@@ -38,14 +38,29 @@ describe("CalendarPage", async () => {
         });
     });
     it("fetches no events for expired members", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue({
+        const expiredMember = {
             ...mockUser,
+            role: UserRole.member,
             user_membership: { expires_at: dayjs.utc().subtract(1, "day").toDate() },
+        };
+        const mockEvents = [{ id: "event1", status: "published", host_id: "host1" }];
+        vi.mocked(getLoggedInUser).mockResolvedValue({
+            ...expiredMember,
         } as any);
+        vi.mocked(prisma.event.findMany).mockResolvedValue(mockEvents as any);
 
-        await expect(async () => await CalendarPage()).rejects.toThrow("Unauthorized");
-        expect(prisma.event.findMany).not.toHaveBeenCalled();
-        expect(prisma.location.findMany).not.toHaveBeenCalled();
+        const result = await CalendarPage();
+
+        expect(prisma.event.findMany).toHaveBeenCalledWith({
+            where: {
+                OR: [{ status: "published" }, { host_id: expiredMember.id }],
+            },
+        });
+        expect(prisma.location.findMany).toHaveBeenCalled();
+        expect(result.props).toStrictEqual({
+            eventsPromise: Promise.resolve(mockEvents),
+            locationsPromise: Promise.resolve([]),
+        });
     });
     it("fetches all published events and their own event drafts for regular users", async () => {
         const regularUser = {
@@ -74,10 +89,19 @@ describe("CalendarPage", async () => {
         });
     });
     it("fetches no events for non-logged in users", async () => {
+        const mockEvents = [{ id: "event1", status: "published", host_id: "host1" }];
         vi.mocked(getLoggedInUser).mockResolvedValue(null);
+        vi.mocked(prisma.event.findMany).mockResolvedValue(mockEvents as any);
 
-        await expect(async () => await CalendarPage()).rejects.toThrow("Unauthorized");
-        expect(prisma.event.findMany).not.toHaveBeenCalled();
-        expect(prisma.location.findMany).not.toHaveBeenCalled();
+        const result = await CalendarPage();
+
+        expect(prisma.event.findMany).toHaveBeenCalledWith({
+            where: {},
+        });
+        expect(prisma.location.findMany).toHaveBeenCalled();
+        expect(result.props).toStrictEqual({
+            eventsPromise: Promise.resolve(mockEvents),
+            locationsPromise: Promise.resolve([]),
+        });
     });
 });

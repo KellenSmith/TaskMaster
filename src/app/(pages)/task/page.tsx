@@ -1,13 +1,16 @@
 import GlobalConstants from "../../GlobalConstants";
-// ...existing code...
 import TaskDashboard from "./TaskDashboard";
-import { getActiveMembers } from "../../lib/user-helpers";
+import { getCachedActiveMembers } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import { SearchParams } from "next/dist/server/request/search-params";
+import { cacheTag } from "next/cache";
+import { getTaskCacheTag } from "../../lib/task-actions";
 
-const TaskPage = async ({ searchParams }: { searchParams: SearchParams }) => {
-    const taskId = (await searchParams)[GlobalConstants.TASK_ID] as string;
-    const taskPromise = prisma.task.findUniqueOrThrow({
+const getCachedTaskById = async (taskId: string) => {
+    "use cache";
+    cacheTag(await getTaskCacheTag(taskId));
+
+    return await prisma.task.findUniqueOrThrow({
         where: {
             id: taskId,
         },
@@ -18,8 +21,20 @@ const TaskPage = async ({ searchParams }: { searchParams: SearchParams }) => {
             skill_badges: true,
         },
     });
-    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
-    const activeMembersPromise = getActiveMembers();
+};
+
+const getCachedSkillBadges = async () => {
+    "use cache";
+    cacheTag(GlobalConstants.SKILL_BADGE);
+
+    return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
+};
+
+const TaskPage = async ({ searchParams }: { searchParams: SearchParams }) => {
+    const taskId = (await searchParams)[GlobalConstants.TASK_ID] as string;
+    const taskPromise = getCachedTaskById(taskId);
+    const skillBadgesPromise = getCachedSkillBadges();
+    const activeMembersPromise = getCachedActiveMembers();
 
     // TODO: enable unassigning tasks + clone tasks and edit such that the task is unassigned
     return (

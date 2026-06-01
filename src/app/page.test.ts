@@ -1,7 +1,7 @@
 import HomePage from "./page";
 import { vi, describe, it, expect } from "vitest";
 import { getLoggedInUser } from "./lib/user-helpers";
-import { getTextContent } from "./lib/text-content-actions";
+import { getCachedTextContent } from "./lib/text-content-actions";
 import dayjs from "dayjs";
 import { ReactElement } from "react";
 
@@ -10,6 +10,7 @@ vi.mock("./lib/user-helpers", () => ({
 }));
 vi.mock("./lib/text-content-actions", () => ({
     getTextContent: vi.fn(),
+    getCachedTextContent: vi.fn(),
 }));
 const mockedNow = dayjs.utc();
 beforeEach(() => {
@@ -23,11 +24,11 @@ describe("HomePage", () => {
             id: "home",
             translations: [],
         } as any;
-        vi.mocked(getTextContent).mockResolvedValue(textContentData);
+        vi.mocked(getCachedTextContent).mockResolvedValue(textContentData);
 
         const result = (await HomePage({})) as ReactElement;
 
-        expect(vi.mocked(getTextContent)).toHaveBeenCalledWith("home");
+        expect(vi.mocked(getCachedTextContent)).toHaveBeenCalledWith("home");
         expect(result.props).toStrictEqual({
             textContentPromise: Promise.resolve(textContentData),
         });
@@ -39,11 +40,11 @@ describe("HomePage", () => {
             id: "home",
             translations: [],
         } as any;
-        vi.mocked(getTextContent).mockResolvedValue(textContentData);
+        vi.mocked(getCachedTextContent).mockResolvedValue(textContentData);
 
         const result = (await HomePage({})) as ReactElement;
 
-        expect(vi.mocked(getTextContent)).toHaveBeenCalledWith("home");
+        expect(vi.mocked(getCachedTextContent)).toHaveBeenCalledWith("home");
         expect(result.props).toStrictEqual({
             textContentPromise: Promise.resolve(textContentData),
         });

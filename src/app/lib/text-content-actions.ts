@@ -1,41 +1,13 @@
 "use server";
-import { revalidateTag } from "next/cache";
-import { connection } from "next/server";
+import { cacheTag, revalidateTag } from "next/cache";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { sanitizeRichText } from "./html-sanitizer";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
 
-let hasLoggedBuildFallbackForTextContent = false;
-
-const isBuildPhase = (): boolean => process.env.NEXT_PHASE === "phase-production-build";
-
-const isExpectedBuildTimeDatabaseError = (error: unknown): boolean => {
-    if (!error || typeof error !== "object") {
-        return false;
-    }
-
-    const dbError = error as { code?: string; message?: string };
-    return (
-        dbError.code === "ETIMEDOUT" ||
-        dbError.code === "ECONNREFUSED" ||
-        dbError.code === "P1001" ||
-        dbError.message?.includes("Can't reach database server") === true
-    );
-};
-
-const getBuildFallbackTextContent = (
-    id: string,
-): Prisma.TextContentGetPayload<{ include: { translations: true } }> => {
-    return {
-        id,
-        category: "organization",
-        title_info_page_id: null,
-        content_info_page_id: null,
-        translations: [],
-    };
-};
+export const getTextContentCacheTag = async (id: string) => `${GlobalConstants.TEXT_CONTENT}:${id}`;
 
 export const createTextContent = async (
     tx: Prisma.TransactionClient,
@@ -64,50 +36,31 @@ export const createTextContent = async (
         },
     });
 
-export const getTextContent = async (
+export const getCachedTextContent = async (
     id: string | null = null,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
-    if (id && isBuildPhase()) {
-        if (!hasLoggedBuildFallbackForTextContent) {
-            hasLoggedBuildFallbackForTextContent = true;
-            console.warn(
-                "Using build-time fallback for text content because database is not reachable.",
-            );
-        }
-        return getBuildFallbackTextContent(id);
-    }
+    "use cache";
 
-    try {
-        await connection();
-        return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            if (!id) return await createTextContent(tx, id);
+    const textContent = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        if (!id) return await createTextContent(tx, id);
 
-            let textContent = await tx.textContent.findUnique({
-                where: {
-                    id: id,
-                },
-                include: {
-                    translations: true,
-                },
-            });
-
-            // If the text content doesn't exist, create a default
-            if (!textContent) textContent = await createTextContent(tx, id);
-            return textContent;
+        let textContent = await tx.textContent.findUnique({
+            where: {
+                id: id,
+            },
+            include: {
+                translations: true,
+            },
         });
-    } catch (error) {
-        if (id && isExpectedBuildTimeDatabaseError(error)) {
-            if (!hasLoggedBuildFallbackForTextContent) {
-                hasLoggedBuildFallbackForTextContent = true;
-                console.warn(
-                    "Using build-time fallback for text content because database is not reachable.",
-                );
-            }
-            return getBuildFallbackTextContent(id);
-        }
 
-        throw error;
-    }
+        // If the text content doesn't exist, create a default
+        if (!textContent) textContent = await createTextContent(tx, id);
+        return textContent;
+    });
+
+    cacheTag(await getTextContentCacheTag(textContent.id));
+
+    return textContent;
 };
 
 export const updateTextContent = async (
@@ -157,5 +110,5 @@ export const updateTextContent = async (
             },
         });
     });
-    revalidateTag(GlobalConstants.TEXT_CONTENT, "max");
+    revalidateTag(await getTextContentCacheTag(id), "max");
 };

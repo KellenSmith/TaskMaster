@@ -1,9 +1,9 @@
 import React from "react";
 import HomeDashboard from "./HomeDashboard";
-import { getTextContent } from "./lib/text-content-actions";
+import { getCachedTextContent } from "./lib/text-content-actions";
 
 const HomePage: React.FC = async () => {
-    const textContentPromise = getTextContent("home");
+    const textContentPromise = getCachedTextContent("home");
 
     return <HomeDashboard textContentPromise={textContentPromise} />;
 };

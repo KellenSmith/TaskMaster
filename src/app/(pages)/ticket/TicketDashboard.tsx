@@ -4,19 +4,19 @@ import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { formatUtcDateToTimezone } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
 import { isUserAdmin } from "../../lib/utils";
 
 interface TicketDashboardProps {
-    eventParticipant: Prisma.EventParticipantGetPayload<{
+    eventParticipantPromise: Promise<Prisma.EventParticipantGetPayload<{
         include: {
             ticket: { include: { event: { include: { tasks: true } } } };
             user: { select: { id: true; nickname: true } };
         };
-    }> | null;
+    }> | null>;
 }
 
 const NoTicketFound = () => {
@@ -56,13 +56,14 @@ const NoTicketFound = () => {
     );
 };
 
-const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
+const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
     const { language, user } = useUserContext();
 
     // State for check-in result and status
     const [statusColor, setStatusColor] = useState<"success" | "warning" | "error">("warning");
     const [statusText, setStatusText] = useState<string>("");
     const [title, setTitle] = useState<string>("");
+    const eventParticipant = use(eventParticipantPromise);
 
     if (!eventParticipant) {
         return <NoTicketFound />;

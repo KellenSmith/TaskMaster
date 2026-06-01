@@ -1,11 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
-import GlobalConstants from "../../GlobalConstants";
 import InfoDashboard from "./InfoDashboard";
+
+const textContentMock = vi.fn();
 
 vi.mock("../../ui/TextContent", () => ({
     __esModule: true,
-    default: ({ id }: any) => <div data-testid="text-content">{id}</div>,
+    default: (props: any) => {
+        textContentMock(props);
+        return <div data-testid="text-content" />;
+    },
 }));
 
 describe("InfoDashboard", () => {
@@ -15,8 +19,9 @@ describe("InfoDashboard", () => {
             translations: [],
         });
 
-        render(<InfoDashboard id={"test-id"} textContentPromise={textContentPromise as any} />);
+        render(<InfoDashboard textContentPromise={textContentPromise as any} />);
 
-        expect(await screen.findByTestId("text-content")).toHaveTextContent("test-id");
+        expect(await screen.findByTestId("text-content")).toBeInTheDocument();
+        expect(textContentMock).toHaveBeenCalledWith({ textContentPromise });
     });
 });

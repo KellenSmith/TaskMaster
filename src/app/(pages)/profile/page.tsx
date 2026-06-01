@@ -3,12 +3,11 @@ import ProfileDashboard from "./ProfileDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 
-const ProfilePage = async () => {
-    const loggedInUser = await getLoggedInUser();
-    if (!loggedInUser) throw new Error("Not authorized to view profile");
+const getCachedUserTasks = async (loggedInUserId: string) => {
+    "use cache";
 
-    const tasksPromise = prisma.task.findMany({
-        where: { OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] },
+    return await prisma.task.findMany({
+        where: { OR: [{ assignee_id: loggedInUserId }, { reviewer_id: loggedInUserId }] },
         include: {
             assignee: {
                 select: {
@@ -25,22 +24,27 @@ const ProfilePage = async () => {
             skill_badges: true,
         },
     });
-    const eventsPromise = prisma.event.findMany({
+};
+
+const getCachedUserEvents = async (loggedInUserId: string) => {
+    "use cache";
+
+    return await prisma.event.findMany({
         where: {
             OR: [
-                { host_id: loggedInUser.id },
+                { host_id: loggedInUserId },
                 {
                     tickets: {
                         some: {
                             event_participants: {
                                 some: {
-                                    user_id: loggedInUser.id,
+                                    user_id: loggedInUserId,
                                 },
                             },
                         },
                     },
                 },
-                { event_reserves: { some: { user_id: loggedInUser.id } } },
+                { event_reserves: { some: { user_id: loggedInUserId } } },
             ],
         },
         include: {
@@ -58,7 +62,22 @@ const ProfilePage = async () => {
             event_reserves: true,
         },
     });
-    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
+};
+
+const getCachedSkillBadges = async () => {
+    return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
+};
+
+const ProfilePage = async () => {
+    const loggedInUser = await getLoggedInUser();
+
+    const tasksPromise = loggedInUser
+        ? getCachedUserTasks(loggedInUser.id)
+        : Promise.reject(new Error("Not authorized to view tasks"));
+    const eventsPromise = loggedInUser
+        ? getCachedUserEvents(loggedInUser.id)
+        : Promise.reject(new Error("Not authorized to view events"));
+    const skillBadgesPromise = getCachedSkillBadges();
 
     return (
         <ProfileDashboard

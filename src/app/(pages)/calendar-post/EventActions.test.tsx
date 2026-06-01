@@ -103,7 +103,7 @@ const buildProps = (eventOverrides: Partial<EventInput> = {}) => ({
         { id: "loc-1", name: "Hall A" },
         { id: "loc-2", name: "Hall B" },
     ] as any),
-    eventTags: ["Before", "During", "After"],
+    eventTagsPromise: Promise.resolve(["Before", "During", "After"]),
 });
 
 const buildCompleteEventOverrides = () => ({

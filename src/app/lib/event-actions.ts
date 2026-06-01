@@ -17,6 +17,8 @@ import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enum
 import { Prisma } from "../../prisma/generated/client";
 import { connection } from "next/server";
 
+export const getEventCacheTag = async (eventId: string) => `${GlobalConstants.EVENT}:${eventId}`;
+
 export const getEventParticipants = async (
     eventId: string,
 ): Promise<
@@ -108,6 +110,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
         return createdEvent;
     });
 
+    revalidateTag(GlobalConstants.EVENT, "max");
     serverRedirect([GlobalConstants.CALENDAR_POST], {
         [GlobalConstants.EVENT_ID]: createdEvent.id,
     });
@@ -231,6 +234,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
             where: { id: parsedEventId },
             data: sanitizedData,
         });
+        revalidateTag(await getEventCacheTag(parsedEventId), "max");
         revalidateTag(GlobalConstants.EVENT, "max");
         revalidateTag(GlobalConstants.TICKET, "max");
         try {
@@ -249,6 +253,7 @@ export const publishEvent = async (eventId: string): Promise<void> => {
         data: { status: EventStatus.published },
     });
     revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventCacheTag(validatedEventId), "max");
 };
 
 export const cancelEvent = async (eventId: string): Promise<void> => {
@@ -259,6 +264,7 @@ export const cancelEvent = async (eventId: string): Promise<void> => {
     cancelFormData.append(GlobalConstants.STATUS, EventStatus.cancelled);
     await updateEvent(validatedEventId, cancelFormData);
     revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventCacheTag(validatedEventId), "max");
 
     try {
         await informOfCancelledEvent(validatedEventId);
@@ -307,6 +313,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         }),
     ]);
     revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventCacheTag(validatedEventId), "max");
     serverRedirect([GlobalConstants.CALENDAR]);
 };
 

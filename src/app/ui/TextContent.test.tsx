@@ -5,7 +5,7 @@ const editableTextContentMock = vi.fn();
 
 vi.mock("./EditableTextContent", () => ({
     __esModule: true,
-    default: (props: { id: string; textContentPromise: Promise<unknown> }) => {
+    default: (props: { textContentPromise: Promise<unknown> }) => {
         editableTextContentMock(props);
         return <div data-testid="editable-text-content" />;
     },
@@ -29,23 +29,22 @@ describe("TextContent", () => {
             translations: [],
         } as any);
 
-        render(<TextContent id="text-content-1" textContentPromise={textContentPromise} />);
+        render(<TextContent textContentPromise={textContentPromise} />);
 
         expect(screen.getByTestId("error-boundary-suspense")).toBeInTheDocument();
         expect(screen.getByTestId("editable-text-content")).toBeInTheDocument();
     });
 
-    it("forwards id and textContentPromise to EditableTextContent", () => {
+    it("forwards textContentPromise to EditableTextContent", () => {
         const textContentPromise = Promise.resolve({
             id: "text-content-2",
             translations: [],
         } as any);
 
-        render(<TextContent id="text-content-2" textContentPromise={textContentPromise} />);
+        render(<TextContent textContentPromise={textContentPromise} />);
 
         expect(editableTextContentMock).toHaveBeenCalledTimes(1);
         expect(editableTextContentMock).toHaveBeenCalledWith({
-            id: "text-content-2",
             textContentPromise,
         });
     });

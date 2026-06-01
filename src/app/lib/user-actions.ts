@@ -22,7 +22,7 @@ import { isUserAuthorized } from "./auth/auth-utils";
 import { UserRole, UserStatus } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
-import { getUserLanguage } from "./user-helpers";
+import { getUserCacheTag, getUserLanguage } from "./user-helpers";
 import { getUniqueConstraintFields, prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { connection } from "next/server";
 
@@ -62,6 +62,7 @@ export const createUser = async (formData: FormData): Promise<void> => {
             await renewUserMembership(tx, newUser.id, membershipProduct.id);
         }
         revalidateTag(GlobalConstants.USER, "max");
+        revalidateTag(await getUserCacheTag(newUser.id), "max");
     });
 };
 
@@ -154,6 +155,7 @@ export const updateUser = async (userId: string, formData: FormData): Promise<un
     });
 
     revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(validatedUserId), "max");
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
@@ -180,6 +182,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
 
     // TODO: Check revalidation tags for all caches
     revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(validatedUserId), "max");
     revalidateTag(GlobalConstants.USER_MEMBERSHIP, "max");
     revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
     revalidateTag(GlobalConstants.EVENT, "max");
@@ -243,4 +246,5 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     });
 
     revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(validatedUserId), "max");
 };

@@ -1,10 +1,11 @@
 import { ReactElement } from "react";
-import { getTextContent } from "../../lib/text-content-actions";
+import { getCachedTextContent } from "../../lib/text-content-actions";
 import ContactPage from "./page";
 
-getTextContent;
+getCachedTextContent;
 vi.mock("../../lib/text-content-actions", () => ({
     getTextContent: vi.fn(),
+    getCachedTextContent: vi.fn(),
 }));
 
 describe("ContactPage", () => {
@@ -13,7 +14,7 @@ describe("ContactPage", () => {
             id: "contact",
             translations: [],
         };
-        vi.mocked(getTextContent).mockResolvedValue(textContent as any);
+        vi.mocked(getCachedTextContent).mockResolvedValue(textContent as any);
 
         const result = (await ContactPage({})) as ReactElement;
 
