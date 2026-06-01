@@ -98,8 +98,8 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedTicketId = UuidSchema.parse(ticketId);
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         await addEventParticipantWithTx(tx, validatedTicketId, validatedUserId);
     });
 };
@@ -167,8 +167,8 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
     const validatedEventId = UuidSchema.parse(eventId);
     const validatedUserId = UuidSchema.parse(userId);
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         await deleteEventParticipantWithTx(tx, validatedEventId, validatedUserId);
         await unassignUserFromEventTasks(tx, validatedEventId, validatedUserId);
     });

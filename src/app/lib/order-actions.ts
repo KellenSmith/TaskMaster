@@ -19,8 +19,8 @@ export const createAndRedirectToOrder = async (
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser) throw new Error("User must be logged in to create an order");
 
+    await connection();
     const createdOrder = await prisma.$transaction(async (tx) => {
-        await connection();
         // Create the order with items in a transaction to ensure data consistency
         // and proper stock validation
 

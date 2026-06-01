@@ -72,8 +72,8 @@ export const updateTextContent = async (
     // Sanitize rich text content before saving
     const sanitizedText = sanitizeRichText(text);
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         await tx.textContent.upsert({
             where: {
                 id,

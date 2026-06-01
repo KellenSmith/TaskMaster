@@ -59,8 +59,8 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
     const validatedUserId = UuidSchema.parse(userId);
     const validatedEventId = UuidSchema.parse(eventId);
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         await addEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
 
@@ -89,8 +89,8 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedEventId = UuidSchema.parse(eventId);
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         await deleteEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
 

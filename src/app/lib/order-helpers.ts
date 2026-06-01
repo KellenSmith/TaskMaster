@@ -67,9 +67,9 @@ const paidOrderToShipped = async (
     needsCapture: boolean,
 ): Promise<void> => {
     // This transaction may perform multiple updates and external work; increase timeout locally.
+    await connection();
     const updatedOrder = await prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
-            await connection();
             await processOrderItems(tx, order);
             return await tx.order.update({
                 where: { id: order.id },

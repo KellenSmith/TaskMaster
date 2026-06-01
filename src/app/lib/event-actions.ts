@@ -66,8 +66,8 @@ export const createEvent = async (formData: FormData): Promise<void> => {
         throw new Error("The location can't handle that many participants");
     }
 
+    await connection();
     const createdEvent = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         // Create event with ticket
         const createdEvent = await tx.event.create({
             data: {
@@ -144,8 +144,8 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
         throw new Error("You are not authorized to publish this event");
     }
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         const eventParticipantsCount = (await getEventParticipants(parsedEventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
@@ -345,8 +345,8 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         include: { skill_badges: true },
     });
 
+    await connection();
     const eventClone = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         // Copy event itself with default values
         const createdEvent = await tx.event.create({
             data: {

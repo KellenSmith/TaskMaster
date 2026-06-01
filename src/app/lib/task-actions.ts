@@ -59,8 +59,8 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         ...taskWithoutUsers
     } = validatedData;
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -221,8 +221,8 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
         }
     }
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -286,8 +286,8 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedTaskId = UuidSchema.parse(taskId);
 
+    await connection();
     const updatedTask = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,

@@ -34,8 +34,8 @@ export const createUser = async (formData: FormData): Promise<void> => {
     const userCount = await prisma.user.count();
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         const newUser = await tx.user.create({
             data: {
                 ...userData,
@@ -130,8 +130,8 @@ export const updateUser = async (userId: string, formData: FormData): Promise<un
     const validatedData = UserUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         await tx.user.update({
             where: {
                 id: validatedUserId,
@@ -231,8 +231,8 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
 
+    await connection();
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await connection();
         const validatedUser = await tx.user.update({
             where: { id: validatedUserId },
             data: { status: UserStatus.validated },
