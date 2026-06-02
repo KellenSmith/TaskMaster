@@ -13,4 +13,6 @@ const globalForPrisma = global as typeof global & { prisma?: ReturnType<typeof g
 const prisma = globalForPrisma.prisma || getPrismaClient();
 globalForPrisma.prisma = prisma;
 
+export type TransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 export { prisma };

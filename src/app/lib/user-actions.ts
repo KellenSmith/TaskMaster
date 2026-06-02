@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import {
@@ -35,7 +35,7 @@ export const createUser = async (formData: FormData): Promise<void> => {
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const newUser = await tx.user.create({
             data: {
                 ...userData,
@@ -131,7 +131,7 @@ export const updateUser = async (userId: string, formData: FormData): Promise<un
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await tx.user.update({
             where: {
                 id: validatedUserId,
@@ -232,7 +232,7 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     const validatedUserId = UuidSchema.parse(userId);
 
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const validatedUser = await tx.user.update({
             where: { id: validatedUserId },
             data: { status: UserStatus.validated },

@@ -28,7 +28,6 @@ interface DashboardProps {
                             };
                         };
                     };
-                    user: { select: { id: true; nickname: true } };
                 };
             };
         }>[]

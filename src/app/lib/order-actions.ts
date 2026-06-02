@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { serverRedirect } from "./utils";
@@ -20,7 +20,7 @@ export const createAndRedirectToOrder = async (
     if (!loggedInUser) throw new Error("User must be logged in to create an order");
 
     await connection();
-    const createdOrder = await prisma.$transaction(async (tx) => {
+    const createdOrder = await prisma.$transaction(async (tx: TransactionClient) => {
         // Create the order with items in a transaction to ensure data consistency
         // and proper stock validation
 

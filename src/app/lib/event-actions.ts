@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { CloneEventSchema, EventCreateSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
@@ -67,7 +67,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
     }
 
     await connection();
-    const createdEvent = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const createdEvent = await prisma.$transaction(async (tx: TransactionClient) => {
         // Create event with ticket
         const createdEvent = await tx.event.create({
             data: {
@@ -145,7 +145,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
     }
 
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const eventParticipantsCount = (await getEventParticipants(parsedEventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
@@ -346,7 +346,7 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
     });
 
     await connection();
-    const eventClone = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const eventClone = await prisma.$transaction(async (tx: TransactionClient) => {
         // Copy event itself with default values
         const createdEvent = await tx.event.create({
             data: {

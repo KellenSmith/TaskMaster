@@ -9,6 +9,7 @@ import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotific
 import { getAbsoluteUrl } from "./utils";
 import GlobalConstants from "../GlobalConstants";
 import { sendMail } from "./mail-service/mail-service";
+import { TransactionClient } from "../../prisma/prisma-client";
 
 export const getAvailableProductStock = async (
     product: Prisma.ProductGetPayload<{
@@ -37,7 +38,7 @@ export const getAvailableProductStock = async (
 };
 
 export const processOrderedProduct = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     userId: string,
     orderItem: Prisma.OrderItemGetPayload<{
         include: { product: { include: { membership: true; ticket: true } } };

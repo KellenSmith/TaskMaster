@@ -1,6 +1,6 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
 import { deleteEventReserveWithTx, getEventReservesCacheTag } from "./event-reserve-actions";
@@ -26,7 +26,7 @@ export const getEventParticipantByIdCacheTag = async (eventParticipantId: string
     `${GlobalConstants.PARTICIPANT_USERS}:${eventParticipantId}`;
 
 export const addEventParticipantWithTx = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     ticketId: string,
     userId: string,
 ) => {
@@ -99,13 +99,13 @@ export const addEventParticipant = async (userId: string, ticketId: string) => {
     const validatedTicketId = UuidSchema.parse(ticketId);
 
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await addEventParticipantWithTx(tx, validatedTicketId, validatedUserId);
     });
 };
 
 export const deleteEventParticipantWithTx = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     eventId: string,
     userId: string,
 ) => {
@@ -168,14 +168,14 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
     const validatedUserId = UuidSchema.parse(userId);
 
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await deleteEventParticipantWithTx(tx, validatedEventId, validatedUserId);
         await unassignUserFromEventTasks(tx, validatedEventId, validatedUserId);
     });
 };
 
 export const unassignUserFromEventTasks = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     eventId: string,
     userId: string,
 ) => {

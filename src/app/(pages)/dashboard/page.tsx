@@ -1,15 +1,36 @@
-import { Prisma } from "../../../prisma/generated/client";
+import { connection } from "next/server";
+import type { Prisma } from "../../../prisma/generated/browser";
 import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import Dashboard from "./Dashboard";
 import dayjs from "dayjs";
 
-const getCachedUserEventParticipants = async () => {
+const dashboardTicketInclude = {
+    ticket: {
+        include: {
+            event: {
+                select: {
+                    id: true,
+                    title: true,
+                    start_time: true,
+                    end_time: true,
+                    location: { select: { name: true } },
+                },
+            },
+        },
+    },
+} satisfies Prisma.EventParticipantInclude;
+
+type DashboardTicketInfo = Prisma.EventParticipantGetPayload<{
+    include: typeof dashboardTicketInclude;
+}>;
+
+const getCachedUserEventParticipants = async (): Promise<DashboardTicketInfo[]> => {
     const loggedInUser = await getLoggedInUser();
 
     if (!loggedInUser?.id) throw new Error("Unauthorized");
 
-    return await prisma.eventParticipant.findMany({
+    const participants = await prisma.eventParticipant.findMany({
         where: {
             user_id: loggedInUser.id,
             ticket: {
@@ -20,21 +41,7 @@ const getCachedUserEventParticipants = async () => {
                 },
             },
         },
-        include: {
-            ticket: {
-                include: {
-                    event: {
-                        select: {
-                            id: true,
-                            title: true,
-                            start_time: true,
-                            end_time: true,
-                            location: { select: { name: true } },
-                        },
-                    },
-                },
-            },
-        },
+        include: dashboardTicketInclude,
         orderBy: {
             ticket: {
                 event: {
@@ -43,9 +50,13 @@ const getCachedUserEventParticipants = async () => {
             },
         },
     });
+
+    return participants as DashboardTicketInfo[];
 };
 
 const DashboardPage = async () => {
+    await connection();
+
     const ticketInfoPromise = getCachedUserEventParticipants();
 
     return <Dashboard ticketInfoPromise={ticketInfoPromise} />;

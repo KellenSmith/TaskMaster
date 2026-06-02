@@ -1,6 +1,6 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { sanitizeRichText } from "./html-sanitizer";
 import { Language } from "../../prisma/generated/enums";
@@ -10,7 +10,7 @@ import { getDefaultTextContent } from "./text-content-helpers";
 export const getTextContentCacheTag = async (id: string) => `${GlobalConstants.TEXT_CONTENT}:${id}`;
 
 export const createTextContent = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     id: string | null = null,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> =>
     await tx.textContent.create({

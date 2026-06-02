@@ -1,5 +1,5 @@
 "use server";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { getLoggedInUser } from "./user-helpers";
 import { InfoPageCreateSchema, UuidSchema } from "./zod-schemas";
 import { serverRedirect } from "./utils";
@@ -7,7 +7,6 @@ import GlobalConstants from "../GlobalConstants";
 import { createTextContent } from "./text-content-actions";
 import { revalidateTag } from "next/cache";
 import { Language, UserRole } from "../../prisma/generated/enums";
-import { Prisma } from "../../prisma/generated/client";
 import { connection } from "next/server";
 
 export const getInfoPageCacheTag = async (pageId: string) =>
@@ -18,7 +17,7 @@ export const createInfoPage = async (formData: FormData): Promise<void> => {
 
     let createdInfoPageId: string = "";
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const title = await createTextContent(tx);
         await tx.textTranslation.updateMany({
             where: { text_content_id: title.id },
@@ -57,7 +56,7 @@ export const updateInfoPage = async (
     const validatedInfoPageId = UuidSchema.parse(infoPageId);
 
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         // First, update the InfoPage basic fields
         const updatedInfoPage = await tx.infoPage.update({
             where: { id: validatedInfoPageId },

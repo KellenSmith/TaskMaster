@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema, UuidSchema } from "./zod-schemas";
@@ -60,7 +60,7 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
     } = validatedData;
 
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -80,12 +80,12 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
 
         // Update skill badges
         if (newSkillBadges) {
-            await prisma.taskSkillBadge.deleteMany({
+            await tx.taskSkillBadge.deleteMany({
                 where: {
                     task_id: validatedTaskId,
                 },
             });
-            await prisma.taskSkillBadge.createMany({
+            await tx.taskSkillBadge.createMany({
                 data: newSkillBadges.map((badgeId) => ({
                     task_id: validatedTaskId,
                     skill_badge_id: badgeId,
@@ -222,7 +222,7 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
     }
 
     await connection();
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -287,7 +287,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
     const validatedTaskId = UuidSchema.parse(taskId);
 
     await connection();
-    const updatedTask = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const updatedTask = await prisma.$transaction(async (tx: TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,

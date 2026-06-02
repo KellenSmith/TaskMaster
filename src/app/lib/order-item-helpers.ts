@@ -1,11 +1,12 @@
 "use server";
 
 import { Prisma } from "../../prisma/generated/client";
+import { TransactionClient } from "../../prisma/prisma-client";
 import { getAvailableProductStock, processOrderedProduct } from "./product-helpers";
 import { UuidSchema } from "./zod-schemas";
 
 export const validateAndBuildOrderItems = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
 ): Promise<Prisma.OrderItemCreateManyOrderInput[]> => {
     // Fetch all products in a single query for efficiency
@@ -54,7 +55,7 @@ export const validateAndBuildOrderItems = async (
 };
 
 export const processOrderItems = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     order: Prisma.OrderGetPayload<{
         select: {
             id: true;
