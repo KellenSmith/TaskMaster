@@ -29,13 +29,13 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
     userPromise,
 }) => {
     return (
-        <ThemeContextProvider>
-            <ErrorBoundarySuspense>
-                <LocalizationContextProvider>
-                    <OrganizationSettingsProvider
-                        organizationSettingsPromise={organizationSettingsPromise}
-                        infopagesPromise={infoPagesPromise}
-                    >
+        <ErrorBoundarySuspense>
+            <LocalizationContextProvider>
+                <OrganizationSettingsProvider
+                    organizationSettingsPromise={organizationSettingsPromise}
+                    infopagesPromise={infoPagesPromise}
+                >
+                    <ThemeContextProvider>
                         <NotificationContextProvider>
                             <SessionProvider>
                                 <UserContextProvider userPromise={userPromise}>
@@ -43,10 +43,10 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                                 </UserContextProvider>
                             </SessionProvider>
                         </NotificationContextProvider>
-                    </OrganizationSettingsProvider>
-                </LocalizationContextProvider>
-            </ErrorBoundarySuspense>
-        </ThemeContextProvider>
+                    </ThemeContextProvider>
+                </OrganizationSettingsProvider>
+            </LocalizationContextProvider>
+        </ErrorBoundarySuspense>
     );
 };
 
