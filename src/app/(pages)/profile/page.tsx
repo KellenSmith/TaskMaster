@@ -4,8 +4,6 @@ import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 
 const getCachedUserTasks = async (loggedInUserId: string) => {
-    "use cache";
-
     return await prisma.task.findMany({
         where: { OR: [{ assignee_id: loggedInUserId }, { reviewer_id: loggedInUserId }] },
         include: {
@@ -27,8 +25,6 @@ const getCachedUserTasks = async (loggedInUserId: string) => {
 };
 
 const getCachedUserEvents = async (loggedInUserId: string) => {
-    "use cache";
-
     return await prisma.event.findMany({
         where: {
             OR: [

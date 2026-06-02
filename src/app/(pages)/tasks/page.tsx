@@ -2,13 +2,8 @@ import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import { getCachedActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
-import GlobalConstants from "../../GlobalConstants";
-import { cacheTag } from "next/cache";
 
 const getCachedTasks = async () => {
-    "use cache";
-    cacheTag(GlobalConstants.TASK);
-
     return await prisma.task.findMany({
         where: {
             event_id: null,

@@ -3,13 +3,8 @@ import { getLoggedInUser } from "../../lib/user-helpers";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventStatus, Prisma } from "../../../prisma/generated/client";
-import { cacheTag } from "next/cache";
-import GlobalConstants from "../../GlobalConstants";
 
 const getEvents = async (userId: string | null, isAdmin: boolean) => {
-    "use cache";
-    cacheTag(GlobalConstants.EVENT);
-
     const eventFilterParams = {} as Prisma.EventWhereInput;
 
     // Non-admins can only see their own event drafts and pending approval events or published events
@@ -28,9 +23,6 @@ const getEvents = async (userId: string | null, isAdmin: boolean) => {
 };
 
 const getLocations = async () => {
-    "use cache";
-    cacheTag(GlobalConstants.LOCATION);
-
     return await prisma.location.findMany();
 };
 

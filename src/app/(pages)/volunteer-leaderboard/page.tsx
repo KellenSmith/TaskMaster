@@ -2,17 +2,12 @@ import { FC } from "react";
 import { prisma } from "../../../prisma/prisma-client";
 import VolunteerLeaderboardClient from "./VolunteerLeaderboardClient";
 import { Prisma } from "../../../prisma/generated/client";
-import GlobalConstants from "../../GlobalConstants";
-import { cacheTag } from "next/cache";
 
 interface VolunteerLeaderboardProps {
     searchParams: Promise<{ [year: string]: string }>;
 }
 
 const getCachedAssigneeVolunteerHours = async (year: string) => {
-    "use cache";
-    cacheTag(GlobalConstants.TASK);
-
     const volunteerTasksForYear: Prisma.TaskGetPayload<{ include: { assignee: true } }>[] =
         await prisma.task.findMany({
             where: {

@@ -1,9 +1,7 @@
-import { cacheTag } from "next/cache";
 import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { isMembershipExpired, isUserAdmin } from "../../lib/utils";
 import TicketDashboard from "./TicketDashboard";
-import { getUserEventParticipantsCacheTag } from "../../lib/event-participant-actions";
 
 interface TicketPageProps {
     searchParams: Promise<{ [eventParticipantId: string]: string }>;
@@ -14,10 +12,6 @@ const getCachedEventParticipant = async (
     loggedInUserIsAdmin: boolean,
     eventParticipantId: string,
 ) => {
-    "use cache";
-
-    cacheTag(await getUserEventParticipantsCacheTag(loggedInUserId));
-
     const eventParticipant = await prisma.eventParticipant.findUnique({
         where: {
             id: eventParticipantId,

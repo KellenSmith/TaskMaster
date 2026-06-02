@@ -2,14 +2,8 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import Dashboard from "./Dashboard";
 import dayjs from "dayjs";
-import { cacheTag } from "next/cache";
-import { getUserEventParticipantsCacheTag } from "../../lib/event-participant-actions";
 
 const getCachedUserEventParticipants = async (userId: string) => {
-    "use cache";
-
-    cacheTag(await getUserEventParticipantsCacheTag(userId));
-
     return await prisma.eventParticipant.findMany({
         where: {
             user_id: userId,

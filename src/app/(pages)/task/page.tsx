@@ -3,13 +3,8 @@ import TaskDashboard from "./TaskDashboard";
 import { getCachedActiveMembers } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import { SearchParams } from "next/dist/server/request/search-params";
-import { cacheTag } from "next/cache";
-import { getTaskCacheTag } from "../../lib/task-actions";
 
 const getCachedTaskById = async (taskId: string) => {
-    "use cache";
-    cacheTag(await getTaskCacheTag(taskId));
-
     return await prisma.task.findUniqueOrThrow({
         where: {
             id: taskId,
@@ -24,9 +19,6 @@ const getCachedTaskById = async (taskId: string) => {
 };
 
 const getCachedSkillBadges = async () => {
-    "use cache";
-    cacheTag(GlobalConstants.SKILL_BADGE);
-
     return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 };
 

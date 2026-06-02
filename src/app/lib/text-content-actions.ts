@@ -1,5 +1,5 @@
 "use server";
-import { cacheTag, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { sanitizeRichText } from "./html-sanitizer";
@@ -39,8 +39,6 @@ export const createTextContent = async (
 export const getCachedTextContent = async (
     id: string,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
-    "use cache";
-
     let textContent = await prisma.textContent.findUnique({
         where: {
             id: id,
@@ -49,10 +47,6 @@ export const getCachedTextContent = async (
             translations: true,
         },
     });
-
-    if (id) {
-        cacheTag(await getTextContentCacheTag(id));
-    }
 
     if (textContent) return textContent;
     return await getDefaultTextContent(id);

@@ -5,16 +5,12 @@ import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { cookies } from "next/headers";
 import { auth } from "./auth/auth";
-import { cacheTag } from "next/cache";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 
 export const getUserCacheTag = async (userId: string) => `${GlobalConstants.USER}:${userId}`;
 
 const getCachedUserById = async (userId: string) => {
-    "use cache";
-    cacheTag(await getUserCacheTag(userId));
-
     return prisma.user.findUnique({
         where: { id: userId },
         include: { user_membership: true, skill_badges: true },
@@ -48,9 +44,6 @@ export const getCachedActiveMembers = async (): Promise<
         select: { id: true; nickname: true; skill_badges: true };
     }>[]
 > => {
-    "use cache";
-    cacheTag(GlobalConstants.USER);
-
     return await prisma.user.findMany({
         where: {
             user_membership: {

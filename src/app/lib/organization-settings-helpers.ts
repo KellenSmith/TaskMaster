@@ -4,7 +4,6 @@ import { prisma } from "../../prisma/prisma-client";
 export const getOrganizationSettings = async (): Promise<
     Prisma.OrganizationSettingsGetPayload<true>
 > => {
-    "use cache";
     let orgSettings = await prisma.organizationSettings.findFirst();
     if (!orgSettings) {
         // Create using an explicit empty `data` so Prisma uses database defaults.

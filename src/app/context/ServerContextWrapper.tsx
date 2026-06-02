@@ -6,17 +6,12 @@ import { prisma } from "../../prisma/prisma-client";
 import { userHasRolePrivileges } from "../lib/auth/auth-utils";
 import { UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/browser";
-import { cacheTag } from "next/cache";
-import GlobalConstants from "../GlobalConstants";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
 }
 
 const getAllowedInfoPagesByRoles = async (allowedUserRolePrivileges: UserRole[]) => {
-    "use cache";
-    cacheTag(GlobalConstants.INFO_PAGE);
-
     // Pages with no role restrictions are always allowed
     const lowestAllowedUserRoleCondition: Prisma.InfoPageWhereInput & {
         OR: Prisma.InfoPageWhereInput[];

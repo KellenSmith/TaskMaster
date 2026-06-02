@@ -5,17 +5,12 @@ import { FC } from "react";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { userHasRolePrivileges } from "../../lib/auth/auth-utils";
 import { prisma } from "../../../prisma/prisma-client";
-import { cacheTag } from "next/cache";
-import { getInfoPageCacheTag } from "../../lib/info-page-actions";
 
 interface InfoPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
 }
 
 const getCachedInfoPageContentById = async (pageId: string) => {
-    "use cache";
-    cacheTag(await getInfoPageCacheTag(pageId));
-
     const infoPage = await prisma.infoPage.findUniqueOrThrow({
         where: { id: pageId },
         include: {

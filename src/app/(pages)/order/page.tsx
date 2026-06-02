@@ -1,12 +1,9 @@
 "use server";
-// ...existing code...
 import GlobalConstants from "../../GlobalConstants";
 import OrderDashboard from "./OrderDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import { isUserAdmin } from "../../lib/utils";
-import { cacheTag } from "next/cache";
-import { getOrderCacheTag } from "../../lib/order-actions";
 
 interface OrderPageProps {
     searchParams: Promise<{ [orderId: string]: string }>;
@@ -17,9 +14,6 @@ const getCachedOrderById = async (
     loggedInUserIsAdmin: boolean,
     orderId: string,
 ) => {
-    "use cache";
-    cacheTag(await getOrderCacheTag(orderId));
-
     const order = await prisma.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
