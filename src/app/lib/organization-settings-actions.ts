@@ -16,13 +16,14 @@ export const updateOrganizationSettings = async (formData: FormData): Promise<vo
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,
     // attempt to delete the old blob from Vercel Blob storage.
-    await deleteOldBlob(settings.logo_url, validatedData.logo_url);
+    if (settings) await deleteOldBlob(settings.logo_url, validatedData.logo_url);
 
-    await prisma.organizationSettings.update({
+    await prisma.organizationSettings.upsert({
         where: {
             id: settings?.id,
         },
-        data: validatedData,
+        update: validatedData,
+        create: validatedData,
     });
     revalidateTag(GlobalConstants.ORGANIZATION_SETTINGS, "max");
 };

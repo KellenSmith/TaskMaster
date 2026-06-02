@@ -10,7 +10,7 @@ const testdata = {
         AUTH_SECRET: "test-auth-secret",
         BLOB_HOSTNAME: "test-blob-hostname",
         CRON_SECRET: "test-cron-secret",
-        DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+        ACCELERATE_DATABASE_URL: "postgresql://test:test@localhost:5432/test",
         BLOB_READ_WRITE_TOKEN: "test-blob-token",
         EMAIL: "test@example.com",
         EMAIL_PASSWORD: "test-password",

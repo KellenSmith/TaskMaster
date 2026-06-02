@@ -29,13 +29,8 @@ const getAllowedInfoPagesByRoles = async (allowedUserRolePrivileges: UserRole[])
     return allowedInfoPages;
 };
 
-const getAllowedInfoPages = async (userPromise: ReturnType<typeof getLoggedInUser>) => {
-    let loggedInUser = null;
-    try {
-        loggedInUser = await userPromise;
-    } catch (error) {
-        console.error("Error fetching logged in user:", error);
-    }
+const getAllowedInfoPages = async () => {
+    let loggedInUser = await getLoggedInUser();
 
     const allowedUserRolePrivileges = Object.values(UserRole)
         .filter((role) => userHasRolePrivileges(loggedInUser, role))
@@ -45,9 +40,9 @@ const getAllowedInfoPages = async (userPromise: ReturnType<typeof getLoggedInUse
 };
 
 const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
-    const organizationSettingsPromise = getOrganizationSettings();
     const userPromise = getLoggedInUser();
-    const infoPagesPromise = getAllowedInfoPages(userPromise);
+    const organizationSettingsPromise = getOrganizationSettings();
+    const infoPagesPromise = getAllowedInfoPages();
 
     return (
         <ContextWrapper

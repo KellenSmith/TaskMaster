@@ -2,6 +2,7 @@ import { FC } from "react";
 import { prisma } from "../../../prisma/prisma-client";
 import VolunteerLeaderboardClient from "./VolunteerLeaderboardClient";
 import { Prisma } from "../../../prisma/generated/client";
+import dayjs from "dayjs";
 
 interface VolunteerLeaderboardProps {
     searchParams: Promise<{ [year: string]: string }>;
@@ -46,7 +47,7 @@ const getCachedAssigneeVolunteerHours = async (year: string) => {
 };
 
 const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchParams }) => {
-    const year = (await searchParams)?.year || new Date().getFullYear().toString();
+    const year = (await searchParams)?.year || dayjs.utc().year().toString();
 
     const assigneeVolunteerHoursPromise = getCachedAssigneeVolunteerHours(year);
 
