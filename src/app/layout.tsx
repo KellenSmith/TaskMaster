@@ -30,7 +30,7 @@ export const RootLayoutInner: React.FC<RootLayoutProps> = ({ children }) => {
                     height: "100%",
                 }}
             >
-                <ErrorBoundarySuspense>{children}</ErrorBoundarySuspense>
+                {children}
             </Stack>
         </ServerContextWrapper>
     );

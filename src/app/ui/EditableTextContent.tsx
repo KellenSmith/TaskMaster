@@ -22,7 +22,7 @@ const EditableTextContent = ({ textContentPromise }: EditableTextContentProps) =
 
     const handleUpdateTextContent = async (formData: FormData) => {
         await updateTextContent(
-            textContent.id,
+            textContent?.id ?? undefined,
             language,
             formData.get(GlobalConstants.TEXT) as string,
         );

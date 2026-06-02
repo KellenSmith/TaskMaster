@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { revalidateTag } from "next/cache";
-import GlobalConstants from "../GlobalConstants";
 import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import * as textContentActions from "./text-content-actions";
 import { sanitizeRichText } from "./html-sanitizer";
 import { Language } from "../../prisma/generated/enums";
 import { getTextContentCacheTag } from "./text-content-actions";
+import { waitFor } from "@testing-library/react";
+import { prisma } from "../../prisma/prisma-client";
+import { getDefaultTextContent } from "./text-content-helpers";
 
 vi.mock("./html-sanitizer", () => ({
     sanitizeRichText: vi.fn(),
@@ -103,7 +105,7 @@ describe("text-content-actions", () => {
             expect(result).toEqual(existing);
         });
 
-        it("creates text content when not found", async () => {
+        it("returns default text content when not found", async () => {
             const tx = mockContext.prisma as any as TransactionClient;
             const created = {
                 id: textContentId,
@@ -122,27 +124,7 @@ describe("text-content-actions", () => {
             const result = await textContentActions.getCachedTextContent(textContentId);
 
             expect(tx.textContent.findUnique).toHaveBeenCalled();
-            expect(tx.textContent.create).toHaveBeenCalled();
-            expect(result).toEqual(created);
-        });
-
-        it("creates new text content when id is null", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
-            const created = {
-                id: "new-id",
-                translations: [],
-            };
-
-            vi.mocked(tx.textContent.create).mockResolvedValue(created as any);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
-                callback(tx),
-            );
-
-            const result = await textContentActions.getCachedTextContent(null);
-
-            expect(tx.textContent.findUnique).not.toHaveBeenCalled();
-            expect(tx.textContent.create).toHaveBeenCalled();
-            expect(result).toEqual(created);
+            expect(result).toEqual(await getDefaultTextContent(textContentId));
         });
     });
 
@@ -205,13 +187,9 @@ describe("text-content-actions", () => {
         });
 
         it("updates text content without category when omitted", async () => {
-            const tx = mockContext.prisma as any as TransactionClient;
             const sanitized = "<p>Hello</p>";
 
             vi.mocked(sanitizeRichText).mockReturnValue(sanitized);
-            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
-                callback(tx),
-            );
 
             await textContentActions.updateTextContent(
                 textContentId,
@@ -219,15 +197,17 @@ describe("text-content-actions", () => {
                 "<p>Hello</p>",
             );
 
-            expect(tx.textContent.upsert).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    create: expect.objectContaining({
-                        category: null,
+            await waitFor(async () =>
+                expect(vi.mocked(prisma.textContent.upsert)).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        create: expect.objectContaining({
+                            category: null,
+                        }),
+                        update: expect.objectContaining({
+                            category: null,
+                        }),
                     }),
-                    update: expect.objectContaining({
-                        category: null,
-                    }),
-                }),
+                ),
             );
         });
     });
