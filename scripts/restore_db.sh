@@ -7,7 +7,7 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/.." && pwd)"
 
-# Load local environment variables (including POSTGRES_URL) when available.
+# Load local environment variables (including DIRECT_DATABASE_URL) when available.
 if [[ -f "${repo_root}/.env" ]]; then
   set -a
   # shellcheck disable=SC1091
@@ -15,7 +15,7 @@ if [[ -f "${repo_root}/.env" ]]; then
   set +a
 fi
 
-: "${POSTGRES_URL:?POSTGRES_URL is not set}"
+: "${DIRECT_DATABASE_URL:?DIRECT_DATABASE_URL is not set}"
 
 # Prefer newer client binaries to handle newer dump archive formats.
 pg_bin_dir="${PG_BIN_DIR:-}"
@@ -60,17 +60,17 @@ fi
 pre_restore_backup="${repo_root}/pre-restore-$(date -u +%Y%m%dT%H%M%SZ).dump"
 
 echo "==> Creating safety backup before restore: ${pre_restore_backup}"
-"${pg_dump_cmd}" "${POSTGRES_URL}" --format=custom --file="${pre_restore_backup}" --no-owner --no-privileges
+"${pg_dump_cmd}" "${DIRECT_DATABASE_URL}" --format=custom --file="${pre_restore_backup}" --no-owner --no-privileges
 
 # Restore with clean/if-exists so objects are replaced in place.
-echo "==> Restoring from ${dump_file} into POSTGRES_URL target"
+echo "==> Restoring from ${dump_file} into DIRECT_DATABASE_URL target"
 "${pg_restore_cmd}" \
   --verbose \
   --clean \
   --if-exists \
   --no-owner \
   --no-privileges \
-  --dbname="${POSTGRES_URL}" \
+  --dbname="${DIRECT_DATABASE_URL}" \
   "${dump_file}"
 
 echo "==> Restore completed successfully"
