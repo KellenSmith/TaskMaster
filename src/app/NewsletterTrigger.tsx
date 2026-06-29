@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { processNextNewsletterBatch } from "./lib/mail-service/newsletter-actions";
 
-export const NEWSLETTER_PROCESS_INTERVAL = 60 * 1000; // 1 minute
+export const NEWSLETTER_PROCESS_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 const NewsletterTrigger: React.FC = () => {
     const processNewsletterAction = () => {
