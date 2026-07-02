@@ -1,4 +1,6 @@
 import { prisma } from "../../../prisma/prisma-client";
+import GlobalConstants from "../../GlobalConstants";
+import ProtectedPage from "../../ProtectedPage";
 import SkillBadgesDashboard from "./SkillBadgesDashboard";
 
 const getCachedSkillBadges = async () => {
@@ -8,7 +10,11 @@ const getCachedSkillBadges = async () => {
 const SkillBadgesPage = async () => {
     const skillBadgesPromise = getCachedSkillBadges();
 
-    return <SkillBadgesDashboard skillBadgesPromise={skillBadgesPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.SKILL_BADGES}>
+            <SkillBadgesDashboard skillBadgesPromise={skillBadgesPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default SkillBadgesPage;

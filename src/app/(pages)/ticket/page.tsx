@@ -1,6 +1,8 @@
 import { prisma } from "../../../prisma/prisma-client";
+import GlobalConstants from "../../GlobalConstants";
 import { getLoggedInUser } from "../../lib/user-helpers";
-import { isMembershipExpired, isUserAdmin } from "../../lib/utils";
+import { isUserAdmin } from "../../lib/utils";
+import ProtectedPage from "../../ProtectedPage";
 import TicketDashboard from "./TicketDashboard";
 
 interface TicketPageProps {
@@ -50,21 +52,20 @@ const getCachedEventParticipant = async (
 };
 
 const TicketPage = async ({ searchParams }: TicketPageProps) => {
+    const eventParticipantId = (await searchParams).eventParticipantId;
     const loggedInUser = await getLoggedInUser();
 
-    const eventParticipantId = (await searchParams).eventParticipantId;
+    const eventParticipantPromise = getCachedEventParticipant(
+        loggedInUser!.id,
+        isUserAdmin(loggedInUser),
+        eventParticipantId,
+    );
 
-    const eventParticipantPromise = !loggedInUser
-        ? Promise.reject(new Error("Unauthorized"))
-        : isMembershipExpired(loggedInUser)
-          ? Promise.reject(new Error("Unauthorized"))
-          : getCachedEventParticipant(
-                loggedInUser.id,
-                isUserAdmin(loggedInUser),
-                eventParticipantId,
-            );
-
-    return <TicketDashboard eventParticipantPromise={eventParticipantPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.TICKET}>
+            <TicketDashboard eventParticipantPromise={eventParticipantPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default TicketPage;

@@ -1,12 +1,12 @@
 import HomePage from "./page";
 import { vi, describe, it, expect } from "vitest";
-import { getLoggedInUser } from "./lib/user-helpers";
 import { getCachedTextContent } from "./lib/text-content-actions";
 import dayjs from "dayjs";
 import { ReactElement } from "react";
+import GlobalConstants from "./GlobalConstants";
 
-vi.mock("./lib/user-helpers", () => ({
-    getLoggedInUser: vi.fn(),
+vi.mock("./ProtectedPage", () => ({
+    default: vi.fn(({ children }) => children),
 }));
 vi.mock("./lib/text-content-actions", () => ({
     getTextContent: vi.fn(),
@@ -18,8 +18,7 @@ beforeEach(() => {
 });
 
 describe("HomePage", () => {
-    it("renders TextContent for logged-out user", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue(null);
+    it("returns ProtectedPage with the home dashboard props", async () => {
         const textContentData = {
             id: "home",
             translations: [],
@@ -29,24 +28,12 @@ describe("HomePage", () => {
         const result = (await HomePage({})) as ReactElement;
 
         expect(vi.mocked(getCachedTextContent)).toHaveBeenCalledWith("home");
-        expect(result.props).toStrictEqual({
-            textContentPromise: Promise.resolve(textContentData),
-        });
-    });
+        expect((result.props as any).name).toBe(GlobalConstants.HOME);
 
-    it("renders TextContent for logged in user", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue({ id: "user-1" } as any);
-        const textContentData = {
-            id: "home",
-            translations: [],
-        } as any;
-        vi.mocked(getCachedTextContent).mockResolvedValue(textContentData);
+        const homeDashboard = (result.props as any).children as ReactElement<{
+            textContentPromise: Promise<unknown>;
+        }>;
 
-        const result = (await HomePage({})) as ReactElement;
-
-        expect(vi.mocked(getCachedTextContent)).toHaveBeenCalledWith("home");
-        expect(result.props).toStrictEqual({
-            textContentPromise: Promise.resolve(textContentData),
-        });
+        await expect(homeDashboard.props.textContentPromise).resolves.toBe(textContentData);
     });
 });

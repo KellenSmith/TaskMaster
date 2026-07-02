@@ -1,31 +1,70 @@
 import { DateTimePicker, DateTimePickerProps } from "@mui/x-date-pickers";
 import { dateDisplayFormat, localTimeZone } from "../../context/LocalizationContext";
+import { useEffect, useMemo, useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
 
 interface LocalizedDatePickerProps {
     fieldId: string;
     required?: boolean;
 }
 
+const toLocalDateTime = (value: unknown): Dayjs | null => {
+    if (!value) return null;
+
+    const utcDate = dayjs.utc(value as string | number | Date | Dayjs);
+    if (!utcDate.isValid()) return null;
+
+    return utcDate.tz(localTimeZone);
+};
+
 const LocalizedDateTimePicker = ({
     fieldId,
     required,
     ...props
 }: LocalizedDatePickerProps & DateTimePickerProps) => {
+    const { defaultValue, disabled, onChange, slotProps, ...dateTimePickerProps } = props;
+    const initialLocalValue = useMemo(() => toLocalDateTime(defaultValue), [defaultValue]);
+    const [localValue, setLocalValue] = useState<Dayjs | null>(initialLocalValue);
+
+    useEffect(() => {
+        setLocalValue(initialLocalValue);
+    }, [initialLocalValue]);
+
+    const utcSubmittedValue =
+        localValue && localValue.isValid() ? localValue.tz("UTC").format(dateDisplayFormat) : "";
+
     return (
-        <DateTimePicker
-            name={fieldId}
-            format={dateDisplayFormat}
-            timezone={localTimeZone}
-            slotProps={{
-                textField: {
-                    name: fieldId,
-                    required: required,
-                },
-                // TODO: Implement translation for action buttons
-                actionBar: { actions: ["clear", "accept"] },
-            }}
-            {...props}
-        />
+        <>
+            <input
+                type="hidden"
+                name={fieldId}
+                value={utcSubmittedValue}
+                disabled={disabled}
+                data-testid={`${fieldId}-utc-value`}
+            />
+            <DateTimePicker
+                {...dateTimePickerProps}
+                format={dateDisplayFormat}
+                timezone={localTimeZone}
+                value={localValue}
+                onChange={(newValue, context) => {
+                    setLocalValue(newValue);
+                    onChange?.(newValue, context);
+                }}
+                slotProps={{
+                    ...slotProps,
+                    textField: {
+                        ...slotProps?.textField,
+                        required: required,
+                    },
+                    // TODO: Implement translation for action buttons
+                    actionBar: {
+                        actions: ["clear", "accept"],
+                        ...slotProps?.actionBar,
+                    },
+                }}
+            />
+        </>
     );
 };
 

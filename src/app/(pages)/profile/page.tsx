@@ -3,6 +3,8 @@ import ProfileDashboard from "./ProfileDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import { connection } from "next/server";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 const assertIsAuthorized = async () => {
     const loggedInUser = await getLoggedInUser();
@@ -84,11 +86,13 @@ const ProfilePage = async () => {
     const skillBadgesPromise = getCachedSkillBadges();
 
     return (
-        <ProfileDashboard
-            tasksPromise={tasksPromise}
-            eventsPromise={eventsPromise}
-            skillBadgesPromise={skillBadgesPromise}
-        />
+        <ProtectedPage name={GlobalConstants.PROFILE}>
+            <ProfileDashboard
+                tasksPromise={tasksPromise}
+                eventsPromise={eventsPromise}
+                skillBadgesPromise={skillBadgesPromise}
+            />
+        </ProtectedPage>
     );
 };
 

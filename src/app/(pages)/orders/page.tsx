@@ -1,6 +1,8 @@
 "use server";
 import OrdersDashboard from "./OrdersDashboard";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 const getCachedOrders = async () => {
     return await prisma.order.findMany({
@@ -21,7 +23,11 @@ const getCachedOrders = async () => {
 
 const OrdersPage = async () => {
     const ordersPromise = getCachedOrders();
-    return <OrdersDashboard ordersPromise={ordersPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.ORDERS}>
+            <OrdersDashboard ordersPromise={ordersPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default OrdersPage;

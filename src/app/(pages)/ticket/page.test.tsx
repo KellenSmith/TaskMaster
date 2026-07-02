@@ -5,6 +5,8 @@ import { getLoggedInUser } from "../../lib/user-helpers";
 import { UserRole } from "../../../prisma/generated/enums";
 import dayjs from "dayjs";
 import { ReactElement } from "react";
+import testdata from "../../../test/testdata";
+import GlobalConstants from "../../GlobalConstants";
 
 // Mock child component to not have to call contexts and other dependencies
 vi.mock("./TicketDashboard", () => ({
@@ -15,13 +17,6 @@ vi.mock("../../lib/user-helpers", () => ({
 }));
 
 const mockSearchParams = Promise.resolve({ eventParticipantId: "ep-1" });
-const mockUser = {
-    id: "user-1",
-    role: UserRole.member,
-    user_membership: {
-        expires_at: dayjs.utc().add(1, "day").toDate(), // Not expired
-    },
-};
 const mockEventParticipant = {
     id: "ep-1",
     ticket: { event: { title: "Event 1", tasks: [] } },
@@ -40,39 +35,20 @@ const authorizedTestCases = [
 ];
 
 type TicketPageElementProps = {
+    name: string;
+    children: ReactElement<{ eventParticipantPromise: Promise<unknown> }>;
+};
+
+type TicketDashboardElementProps = {
     eventParticipantPromise: Promise<unknown>;
 };
 
 describe("TicketPage", () => {
-    it("throws error if user is not logged in", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue(null);
-
-        const result = (await TicketPage({
-            searchParams: mockSearchParams,
-        })) as ReactElement<TicketPageElementProps>;
-
-        await expect(result.props.eventParticipantPromise).rejects.toThrow("Unauthorized");
-        expect(prisma.eventParticipant.findUnique).not.toHaveBeenCalled();
-    });
-    it("throws error if user is not authorized", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue({ ...mockUser, id: "user-2" } as any);
-        vi.mocked(prisma.eventParticipant.findUnique).mockResolvedValue(
-            mockEventParticipant as any,
-        );
-
-        const result = (await TicketPage({
-            searchParams: mockSearchParams,
-        })) as ReactElement<TicketPageElementProps>;
-
-        await expect(result.props.eventParticipantPromise).rejects.toThrow("Unauthorized");
-        expect(prisma.eventParticipant.findUnique).toHaveBeenCalled();
-    });
-
     it.for(authorizedTestCases)(
-        "allows viewing ticket when user role is %s, event host: %s, event volunteer: %s, event participant: %s",
+        "returns ProtectedPage and allows viewing ticket when user role is %s, event host: %s, event volunteer: %s, event participant: %s",
         async ([userRole, eventHost, eventVolunteer, eventParticipant]) => {
             const mockedUserWithRole = {
-                ...mockUser,
+                ...testdata.user,
                 role: userRole,
             };
             vi.mocked(getLoggedInUser).mockResolvedValue(mockedUserWithRole as any);
@@ -81,7 +57,7 @@ describe("TicketPage", () => {
                 ticket: {
                     event: {
                         title: "Event 1",
-                        host_id: eventHost ? "user-1" : "other-host",
+                        host_id: eventHost ? mockedUserWithRole.id : "other-host",
                         tasks: eventVolunteer ? [{ id: "task-1" }] : [],
                     },
                 },
@@ -95,7 +71,12 @@ describe("TicketPage", () => {
                 searchParams: mockSearchParams,
             })) as ReactElement<TicketPageElementProps>;
 
-            await expect(result.props.eventParticipantPromise).resolves.toStrictEqual(
+            expect(result.props.name).toBe(GlobalConstants.TICKET);
+
+            const ticketDashboard = result.props
+                .children as ReactElement<TicketDashboardElementProps>;
+
+            await expect(ticketDashboard.props.eventParticipantPromise).resolves.toStrictEqual(
                 mockEventParticipantWithConditions,
             );
             // Query execution is deferred until the promise is consumed.
@@ -117,18 +98,22 @@ describe("TicketPage", () => {
                     user: { select: { id: true, nickname: true } },
                 },
             });
-            expect(result.props).toHaveProperty("eventParticipantPromise");
+            expect(ticketDashboard.props).toHaveProperty("eventParticipantPromise");
         },
     );
 
     it("renders dashboard even if eventParticipant is not found", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue(mockUser as any);
+        vi.mocked(getLoggedInUser).mockResolvedValue(testdata.user as any);
         vi.mocked(prisma.eventParticipant.findUnique).mockResolvedValue(null);
 
         const result = (await TicketPage({
             searchParams: mockSearchParams,
         })) as ReactElement<TicketPageElementProps>;
 
-        await expect(result.props.eventParticipantPromise).resolves.toBe(null);
+        expect(result.props.name).toBe(GlobalConstants.TICKET);
+
+        const ticketDashboard = result.props.children as ReactElement<TicketDashboardElementProps>;
+
+        await expect(ticketDashboard.props.eventParticipantPromise).resolves.toBe(null);
     });
 });

@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { clientRedirect } from "../../lib/utils";
-import LoginPage from "./page";
 import userEvent from "@testing-library/user-event";
 import { login } from "../../lib/user-actions";
 import NotificationContextProvider from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
+import LoginDashboard from "./LoginDashboard";
 
 vi.mock("../../lib/utils", () => ({
     clientRedirect: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../../lib/user-actions", () => ({
 const renderLoginPage = () =>
     render(
         <NotificationContextProvider>
-            <LoginPage />
+            <LoginDashboard />
         </NotificationContextProvider>,
     );
 

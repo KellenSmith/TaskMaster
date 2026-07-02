@@ -8,6 +8,7 @@ import {
     getCachedActiveMembers as getCachedActiveMembersFromUserHelpers,
     getLoggedInUser,
 } from "../../lib/user-helpers";
+import ProtectedPage from "../../ProtectedPage";
 
 interface EventPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
@@ -138,17 +139,19 @@ const EventPage = async ({ searchParams }: EventPageProps) => {
 
     // TODO: Optimize database queries based on role and need for data (e.g. only fetch locations if user is host or admin)
     return (
-        <EventDashboard
-            eventPromise={eventPromise}
-            eventTasksPromise={eventTasksPromise}
-            eventTicketsPromise={eventTicketsPromise}
-            activeMembersPromise={activeMembersPromise}
-            skillBadgesPromise={skillBadgesPromise}
-            eventParticipantsPromise={eventParticipantsPromise}
-            eventReservesPromise={eventReservesPromise}
-            locationsPromise={locationsPromise}
-            eventTagsPromise={eventTagsPromise}
-        />
+        <ProtectedPage name={GlobalConstants.CALENDAR_POST}>
+            <EventDashboard
+                eventPromise={eventPromise}
+                eventTasksPromise={eventTasksPromise}
+                eventTicketsPromise={eventTicketsPromise}
+                activeMembersPromise={activeMembersPromise}
+                skillBadgesPromise={skillBadgesPromise}
+                eventParticipantsPromise={eventParticipantsPromise}
+                eventReservesPromise={eventReservesPromise}
+                locationsPromise={locationsPromise}
+                eventTagsPromise={eventTagsPromise}
+            />
+        </ProtectedPage>
     );
 };
 

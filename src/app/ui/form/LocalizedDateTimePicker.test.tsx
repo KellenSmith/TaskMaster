@@ -64,4 +64,25 @@ describe("LocalizedDateTimePicker", () => {
             expect(displayedDate).toBeInTheDocument();
         });
     });
+
+    it("submits UTC value while displaying local value", () => {
+        const utcDate = dayjs("2026-05-06T12:00:00.000Z");
+
+        render(
+            <LocalizationContextProvider>
+                <form>
+                    <LocalizedDateTimePicker fieldId={"testId"} defaultValue={utcDate} />
+                </form>
+            </LocalizationContextProvider>,
+        );
+
+        const expectedDisplayedDate = dayjs
+            .utc(utcDate)
+            .tz("Europe/Stockholm")
+            .format(dateDisplayFormat);
+        expect(screen.getByDisplayValue(expectedDisplayedDate)).toBeInTheDocument();
+
+        const hiddenUtcInput = screen.getByTestId("testId-utc-value") as HTMLInputElement;
+        expect(hiddenUtcInput.value).toBe(dayjs.utc(utcDate).format(dateDisplayFormat));
+    });
 });

@@ -1,5 +1,7 @@
 import ShopDashboard from "./ShopDashboard";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 const getCachedProducts = async () => {
     return await prisma.product.findMany({
@@ -14,7 +16,11 @@ const getCachedProducts = async () => {
 
 const ShopPage = () => {
     const productsPromise = getCachedProducts();
-    return <ShopDashboard productsPromise={productsPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.SHOP}>
+            <ShopDashboard productsPromise={productsPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default ShopPage;

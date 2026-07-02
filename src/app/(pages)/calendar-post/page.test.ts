@@ -5,6 +5,7 @@ import { getCachedActiveMembers, getLoggedInUser } from "../../lib/user-helpers"
 import EventPage from "./page";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../../GlobalConstants";
+import { ReactElement } from "react";
 
 const mockUser = {
     id: "user-1",
@@ -23,6 +24,9 @@ const activeMembers = [
 vi.mock("../../lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
     getCachedActiveMembers: vi.fn(),
+}));
+vi.mock("../../ProtectedPage", () => ({
+    default: vi.fn(({ children }) => children),
 }));
 
 const mockSearchParams = Promise.resolve({ [GlobalConstants.EVENT_ID]: "event-1" });
@@ -202,16 +206,23 @@ describe("EventPage", () => {
 
             const result = await EventPage({ searchParams: mockSearchParams });
             const props = result.props as {
-                eventPromise: EventPromiseType;
-                eventTasksPromise: EventTasksPromiseType;
-                eventTicketsPromise: EventTicketsPromiseType;
-                activeMembersPromise: ActiveMembersPromiseType;
-                skillBadgesPromise: SkillBadgesPromiseType;
-                eventParticipantsPromise: EventParticipantsPromiseType;
-                eventReservesPromise: EventReservesPromiseType;
-                locationsPromise: LocationsPromiseType;
-                eventTagsPromise: EventTagsPromiseType;
+                name: string;
+                children: ReactElement<{
+                    eventPromise: EventPromiseType;
+                    eventTasksPromise: EventTasksPromiseType;
+                    eventTicketsPromise: EventTicketsPromiseType;
+                    activeMembersPromise: ActiveMembersPromiseType;
+                    skillBadgesPromise: SkillBadgesPromiseType;
+                    eventParticipantsPromise: EventParticipantsPromiseType;
+                    eventReservesPromise: EventReservesPromiseType;
+                    locationsPromise: LocationsPromiseType;
+                    eventTagsPromise: EventTagsPromiseType;
+                }>;
             };
+
+            const dashboardProps = props.children.props;
+
+            expect(props.name).toBe(GlobalConstants.CALENDAR_POST);
 
             const [
                 resolvedEvent,
@@ -224,15 +235,15 @@ describe("EventPage", () => {
                 resolvedLocations,
                 resolvedEventTags,
             ] = await Promise.all([
-                props.eventPromise,
-                props.eventTasksPromise,
-                props.eventTicketsPromise,
-                props.activeMembersPromise,
-                props.skillBadgesPromise,
-                props.eventParticipantsPromise,
-                props.eventReservesPromise,
-                props.locationsPromise,
-                props.eventTagsPromise,
+                dashboardProps.eventPromise,
+                dashboardProps.eventTasksPromise,
+                dashboardProps.eventTicketsPromise,
+                dashboardProps.activeMembersPromise,
+                dashboardProps.skillBadgesPromise,
+                dashboardProps.eventParticipantsPromise,
+                dashboardProps.eventReservesPromise,
+                dashboardProps.locationsPromise,
+                dashboardProps.eventTagsPromise,
             ]);
 
             expect(prisma.event.findUniqueOrThrow).toHaveBeenCalledWith({

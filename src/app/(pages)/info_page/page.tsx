@@ -5,6 +5,7 @@ import { FC } from "react";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { userHasRolePrivileges } from "../../lib/auth/auth-utils";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
 
 interface InfoPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
@@ -33,7 +34,11 @@ const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
 
     const textContentPromise = getCachedInfoPageContentById(pageId);
 
-    return <InfoDashboard textContentPromise={textContentPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.INFO_PAGE}>
+            <InfoDashboard textContentPromise={textContentPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default InfoPage;

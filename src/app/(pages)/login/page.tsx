@@ -1,44 +1,12 @@
-"use client";
 import GlobalConstants from "../../GlobalConstants";
-import Form from "../../ui/form/Form";
-import { Button, Stack } from "@mui/material";
-import { FC } from "react";
-import { LoginSchema } from "../../lib/zod-schemas";
-import { clientRedirect } from "../../lib/utils";
-import { useRouter } from "next/navigation";
-import { useUserContext } from "../../context/UserContext";
-import LanguageTranslations from "./LanguageTranslations";
-import { login } from "../../lib/user-actions";
+import ProtectedPage from "../../ProtectedPage";
+import LoginDashboard from "./LoginDashboard";
 
-const LoginPage: FC = () => {
-    const { language } = useUserContext();
-    const router = useRouter();
-
-    const loginAction = async (formData: FormData) => {
-        let errorMsg: string | undefined;
-        try {
-            errorMsg = await login(formData);
-            if (!errorMsg) return LanguageTranslations.loggingIn[language];
-        } catch {
-            errorMsg = LanguageTranslations.failedLogin[language];
-        }
-        throw new Error(errorMsg);
-    };
-
+const LoginPage = async () => {
     return (
-        <Stack>
-            <Form
-                name={GlobalConstants.LOGIN}
-                buttonLabel={LanguageTranslations.login[language]}
-                validationSchema={LoginSchema}
-                action={loginAction}
-                readOnly={false}
-                editable={false}
-            />
-            <Button onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}>
-                {LanguageTranslations.applyForMembership[language]}
-            </Button>
-        </Stack>
+        <ProtectedPage name={GlobalConstants.LOGIN}>
+            <LoginDashboard />
+        </ProtectedPage>
     );
 };
 

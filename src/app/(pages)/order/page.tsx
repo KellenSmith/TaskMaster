@@ -4,6 +4,7 @@ import OrderDashboard from "./OrderDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import { isUserAdmin } from "../../lib/utils";
+import ProtectedPage from "../../ProtectedPage";
 
 interface OrderPageProps {
     searchParams: Promise<{ [orderId: string]: string }>;
@@ -38,7 +39,11 @@ const OrderPage = async ({ searchParams }: OrderPageProps) => {
         ? getCachedOrderById(loggedInUser.id, isUserAdmin(loggedInUser), orderId)
         : Promise.reject(new Error("Not authorized to view this order"));
 
-    return <OrderDashboard orderPromise={orderPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.ORDER}>
+            <OrderDashboard orderPromise={orderPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default OrderPage;

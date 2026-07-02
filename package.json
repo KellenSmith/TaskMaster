@@ -26,7 +26,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "@auth/core": "^0.40.0",
+        "@auth/core": "0.41.2",
         "@auth/prisma-adapter": "^2.11.2",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",

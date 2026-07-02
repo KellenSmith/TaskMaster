@@ -175,7 +175,7 @@ describe("EventDashboard", () => {
 
         await renderDashboard({ status: EventStatus.cancelled });
 
-        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent('"CANCELLED"');
+        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent("(CANCELLED)");
     });
 
     it("appends sold out label to title when event is sold out and not cancelled", async () => {
@@ -183,7 +183,9 @@ describe("EventDashboard", () => {
 
         await renderDashboard();
 
-        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent("(SOLD OUT)");
+        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent(
+            new RegExp("sold out", "i"),
+        );
     });
 
     it("builds details, location, organize and tickets tabs for all users", async () => {

@@ -3,6 +3,8 @@ import { getLoggedInUser } from "../../lib/user-helpers";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventStatus, Prisma } from "../../../prisma/generated/client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 const getEvents = async (userId: string | null, isAdmin: boolean) => {
     const eventFilterParams = {} as Prisma.EventWhereInput;
@@ -30,10 +32,12 @@ const CalendarPage = async () => {
     const loggedInUser = await getLoggedInUser();
 
     return (
-        <CalendarDashboard
-            eventsPromise={getEvents(loggedInUser?.id ?? null, isUserAdmin(loggedInUser))}
-            locationsPromise={getLocations()}
-        />
+        <ProtectedPage name={GlobalConstants.CALENDAR}>
+            <CalendarDashboard
+                eventsPromise={getEvents(loggedInUser?.id ?? null, isUserAdmin(loggedInUser))}
+                locationsPromise={getLocations()}
+            />
+        </ProtectedPage>
     );
 };
 

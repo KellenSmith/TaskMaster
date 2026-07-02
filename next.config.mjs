@@ -12,8 +12,8 @@ const nextConfig = {
             // Allow images form the own server ( e.g. for generated qr codes)
             {
                 protocol: "https",
-                hostname: process.env.VERCEL_PROJECT_PRODUCTION_URL.split(":")[0],
-                port: process.env.VERCEL_PROJECT_PRODUCTION_URL.split(":")[1] || "",
+                hostname: process.env.VERCEL_URL.split(":")[0],
+                port: process.env.VERCEL_URL.split(":")[1] || "",
                 pathname: "/**",
             },
             // Allow images from Vercel Blob storage
@@ -113,8 +113,8 @@ const nextConfig = {
                         key: "Access-Control-Allow-Origin",
                         value:
                             process.env.NODE_ENV === "production"
-                                ? process.env.VERCEL_PROJECT_PRODUCTION_URL
-                                    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+                                ? process.env.VERCEL_URL
+                                    ? `https://${process.env.VERCEL_URL}`
                                     : "https://your-domain.com"
                                 : "http://localhost:3000",
                     },

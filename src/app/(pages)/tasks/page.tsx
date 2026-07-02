@@ -2,6 +2,8 @@ import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import { getCachedActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 const getCachedTasks = async () => {
     return await prisma.task.findMany({
@@ -27,12 +29,14 @@ const TasksPage = async () => {
     const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 
     return (
-        <KanBanBoard
-            readOnly={!isUserAdmin(loggedInUser)}
-            tasksPromise={tasksPromise}
-            activeMembersPromise={activeMembersPromise}
-            skillBadgesPromise={skillBadgesPromise}
-        />
+        <ProtectedPage name={GlobalConstants.TASKS}>
+            <KanBanBoard
+                readOnly={!isUserAdmin(loggedInUser)}
+                tasksPromise={tasksPromise}
+                activeMembersPromise={activeMembersPromise}
+                skillBadgesPromise={skillBadgesPromise}
+            />
+        </ProtectedPage>
     );
 };
 

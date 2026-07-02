@@ -3,35 +3,45 @@ import DashboardPage from "./page";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import dayjs from "dayjs";
+import testdata from "../../../test/testdata";
+import { serverRedirect } from "../../lib/utils";
+import GlobalConstants from "../../GlobalConstants";
 
 vi.mock("../../lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
+}));
+vi.mock("../../lib/utils", () => ({
+    serverRedirect: vi.fn(() => {
+        throw new Error("Redirect called");
+    }),
 }));
 
 const mockedNow = dayjs.utc();
 beforeEach(() => {
     vi.spyOn(dayjs, "utc").mockReturnValue(mockedNow);
-    vi.mocked(getLoggedInUser).mockReset();
-    vi.mocked(prisma.eventParticipant.findMany).mockReset();
 });
 
 describe("DashboardPage", () => {
-    it("returns dashboard and rejects ticket promise if user is not logged in", async () => {
+    it("returns dashboard wrapped in ProtectedPage and rejects the ticket promise if user is not logged in", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue(null);
 
-        const result = await DashboardPage();
+        const page = await DashboardPage();
 
-        await expect(result.props.ticketInfoPromise).rejects.toThrow("Unauthorized");
+        expect(vi.mocked(getLoggedInUser)).toHaveBeenCalledTimes(1);
+        expect(page.props.name).toBe(GlobalConstants.DASHBOARD);
+        await expect(page.props.children.props.ticketInfoPromise).rejects.toThrow(TypeError);
+        expect(vi.mocked(serverRedirect)).not.toHaveBeenCalled();
+        expect(vi.mocked(prisma.eventParticipant.findMany)).not.toHaveBeenCalled();
     });
 
     it("renders dashboard for logged-in user", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue({ id: "user-1", nickname: "TestUser" } as any);
+        vi.mocked(getLoggedInUser).mockResolvedValue(testdata.user);
         const mockTicketInfo = [{ id: "ep-1", ticket: { event: { title: "Event 1" } } }];
         vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue(mockTicketInfo as any);
 
-        const result = await DashboardPage();
+        await DashboardPage();
 
         // passes the ticketInfoPromise to Dashboard
-        expect(result.props.ticketInfoPromise).toStrictEqual(Promise.resolve(mockTicketInfo));
+        expect(vi.mocked(prisma.eventParticipant.findMany)).toHaveBeenCalledTimes(1);
     });
 });

@@ -4,6 +4,8 @@ import { prisma } from "../../../prisma/prisma-client";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import Dashboard from "./Dashboard";
 import dayjs from "dayjs";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 const dashboardTicketInclude = {
     ticket: {
@@ -28,11 +30,9 @@ type DashboardTicketInfo = Prisma.EventParticipantGetPayload<{
 const getCachedUserEventParticipants = async (): Promise<DashboardTicketInfo[]> => {
     const loggedInUser = await getLoggedInUser();
 
-    if (!loggedInUser?.id) throw new Error("Unauthorized");
-
     const participants = await prisma.eventParticipant.findMany({
         where: {
-            user_id: loggedInUser.id,
+            user_id: loggedInUser!.id,
             ticket: {
                 event: {
                     end_time: {
@@ -59,7 +59,11 @@ const DashboardPage = async () => {
 
     const ticketInfoPromise = getCachedUserEventParticipants();
 
-    return <Dashboard ticketInfoPromise={ticketInfoPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.DASHBOARD}>
+            <Dashboard ticketInfoPromise={ticketInfoPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default DashboardPage;

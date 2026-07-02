@@ -114,7 +114,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     <Text style={styles.headerCell}>Email</Text>
                     <Text style={styles.headerCell}>Nickname</Text>
                 </View>
-                {filteredMembers
+                {[...filteredMembers]
                     .sort((a, b) => a.email.localeCompare(b.email))
                     .map((member, idx) => (
                         <View style={styles.row} key={idx}>

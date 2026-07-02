@@ -3,6 +3,8 @@ import { prisma } from "../../../prisma/prisma-client";
 import VolunteerLeaderboardClient from "./VolunteerLeaderboardClient";
 import { Prisma } from "../../../prisma/generated/client";
 import dayjs from "dayjs";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 interface VolunteerLeaderboardProps {
     searchParams: Promise<{ [year: string]: string }>;
@@ -52,10 +54,12 @@ const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchP
     const assigneeVolunteerHoursPromise = getCachedAssigneeVolunteerHours(year);
 
     return (
-        <VolunteerLeaderboardClient
-            assigneeVolunteerHoursPromise={assigneeVolunteerHoursPromise}
-            year={year}
-        />
+        <ProtectedPage name={GlobalConstants.VOLUNTEER_LEADERBOARD}>
+            <VolunteerLeaderboardClient
+                assigneeVolunteerHoursPromise={assigneeVolunteerHoursPromise}
+                year={year}
+            />
+        </ProtectedPage>
     );
 };
 

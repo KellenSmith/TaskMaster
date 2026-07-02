@@ -258,6 +258,10 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 - The ticket QR-code is visible and scannable on the dashboard page.
 - An email confirmation is sent to the participant.
 
+** Post-condition:**
+
+- Log out.
+
 ## 12. Volunteer for an event
 
 **Steps:**
@@ -290,6 +294,7 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 
 - The skilled member is signed up for the task and visible in the event's volunteer tab.
 - The skilled member is able to book the "Skilled task" due to having the required skill badge.
+- The event should now be marked as "SOLD OUT" due to max participants (4) being reached.
 
 ** Post-condition:**
 
@@ -308,7 +313,7 @@ This document outlines the most recommended test flows for a User Acceptance Tes
 
 **Expected Results:**
 
-- The spot is reserved successfully and visible in the event's ticket tab as a reservation.
+- The spot is reserved successfully and visible in the event's Reserve List tab
 - The reservation is removed successfully when leaving the reserve list and the spot becomes available again.
 
 ** Post-condition:**

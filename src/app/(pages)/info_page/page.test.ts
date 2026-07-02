@@ -6,8 +6,13 @@ import { getLoggedInUser } from "../../lib/user-helpers";
 import { getCachedTextContent } from "../../lib/text-content-actions";
 import { ReactElement } from "react";
 
+vi.mock("../../ProtectedPage", () => ({
+    default: vi.fn(({ children }) => children),
+}));
+
 type InfoPageElementProps = {
-    textContentPromise: Promise<unknown>;
+    name: string;
+    children: ReactElement<{ textContentPromise: Promise<unknown> }>;
 };
 
 vi.mock("../../lib/auth/auth-utils", () => ({
@@ -37,6 +42,10 @@ describe("InfoPage", () => {
             searchParams: Promise.resolve({ [GlobalConstants.INFO_PAGE_ID]: "test-page-id" }),
         } as any)) as ReactElement<InfoPageElementProps>;
 
+        expect(result.props.name).toBe(GlobalConstants.INFO_PAGE);
+
+        const infoDashboard = result.props.children;
+
         expect(prisma.infoPage.findUniqueOrThrow).toHaveBeenCalledWith({
             where: { id: "test-page-id" },
             include: {
@@ -44,11 +53,13 @@ describe("InfoPage", () => {
                 content: true,
             },
         });
-        await expect(result.props.textContentPromise).resolves.toStrictEqual(textContentData);
+        await expect(infoDashboard.props.textContentPromise).resolves.toStrictEqual(
+            textContentData,
+        );
         expect(getLoggedInUser).toHaveBeenCalled();
         expect(userHasRolePrivileges).toHaveBeenCalledWith(null, null);
         expect(vi.mocked(getCachedTextContent)).toHaveBeenCalledWith("content-id");
-        expect(result.props).toHaveProperty("textContentPromise");
+        expect(infoDashboard.props).toHaveProperty("textContentPromise");
     });
     it("rejects the text content promise when user is unauthorized", async () => {
         vi.mocked(prisma.infoPage.findUniqueOrThrow).mockResolvedValue({
@@ -65,7 +76,11 @@ describe("InfoPage", () => {
             }),
         } as any)) as ReactElement<InfoPageElementProps>;
 
-        await expect(result.props.textContentPromise).rejects.toThrow("Unauthorized");
+        expect(result.props.name).toBe(GlobalConstants.INFO_PAGE);
+
+        const infoDashboard = result.props.children;
+
+        await expect(infoDashboard.props.textContentPromise).rejects.toThrow("Unauthorized");
         expect(prisma.infoPage.findUniqueOrThrow).toHaveBeenCalledWith({
             where: { id: "test-page-id" },
             include: {
@@ -90,7 +105,11 @@ describe("InfoPage", () => {
             }),
         } as any)) as ReactElement<InfoPageElementProps>;
 
-        await expect(result.props.textContentPromise).rejects.toThrow(
+        expect(result.props.name).toBe(GlobalConstants.INFO_PAGE);
+
+        const infoDashboard = result.props.children;
+
+        await expect(infoDashboard.props.textContentPromise).rejects.toThrow(
             "Info page content not found",
         );
         expect(prisma.infoPage.findUniqueOrThrow).toHaveBeenCalledWith({

@@ -1,4 +1,6 @@
 import { prisma } from "../../../prisma/prisma-client";
+import GlobalConstants from "../../GlobalConstants";
+import ProtectedPage from "../../ProtectedPage";
 import LocationsDashboard from "./LocationsDashboard";
 
 const getCachedLocations = async () => {
@@ -8,7 +10,11 @@ const getCachedLocations = async () => {
 const LocationsPage = async () => {
     const locationsPromise = getCachedLocations();
 
-    return <LocationsDashboard locationsPromise={locationsPromise} />;
+    return (
+        <ProtectedPage name={GlobalConstants.LOCATIONS}>
+            <LocationsDashboard locationsPromise={locationsPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default LocationsPage;

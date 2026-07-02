@@ -3,6 +3,7 @@ import TaskDashboard from "./TaskDashboard";
 import { getCachedActiveMembers } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
 import { SearchParams } from "next/dist/server/request/search-params";
+import ProtectedPage from "../../ProtectedPage";
 
 const getCachedTaskById = async (taskId: string) => {
     return await prisma.task.findUniqueOrThrow({
@@ -30,11 +31,13 @@ const TaskPage = async ({ searchParams }: { searchParams: SearchParams }) => {
 
     // TODO: enable unassigning tasks + clone tasks and edit such that the task is unassigned
     return (
-        <TaskDashboard
-            taskPromise={taskPromise}
-            skillBadgesPromise={skillBadgesPromise}
-            activeMembersPromise={activeMembersPromise}
-        />
+        <ProtectedPage name={GlobalConstants.TASK}>
+            <TaskDashboard
+                taskPromise={taskPromise}
+                skillBadgesPromise={skillBadgesPromise}
+                activeMembersPromise={activeMembersPromise}
+            />
+        </ProtectedPage>
     );
 };
 

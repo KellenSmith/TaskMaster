@@ -29,10 +29,10 @@ See `.env.example` for a template you can copy.
 
 - NEXT_PUBLIC_ORG_NAME: Overrides organization name in UI
 - NEXT_PUBLIC_ORG_DESCRIPTION: Meta description override
-- VERCEL_PROJECT_PRODUCTION_URL: Used to compute absolute URLs in some server redirects when deployed (e.g. my-app.vercel.app)
+- VERCEL_URL: Used to compute absolute URLs in some server redirects when deployed (e.g. my-app.vercel.app)
 
 Notes
 
 - Changing BLOB_HOSTNAME updates image allowlist in `next.config.mjs`.
-- When VERCEL_PROJECT_PRODUCTION_URL is unset locally, absolute links fall back to `window.location` during client navigation.
+- When VERCEL_URL is unset locally, absolute links fall back to `window.location` during client navigation.
 - Prisma CLI commands (migrate/introspect/generate) use `DIRECT_DATABASE_URL` when set via `prisma.config.ts`.

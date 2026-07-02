@@ -215,7 +215,7 @@ const EventDashboard = ({
                         textAlign: isSmall ? "center" : "left",
                     }}
                 >
-                    {`${event.title} ${isEventCancelled(event) ? `"${LanguageTranslations.cancelled[language].toUpperCase()}"` : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
+                    {`${event.title} ${isEventCancelled(event) ? `(${LanguageTranslations.cancelled[language].toUpperCase()})` : isEventSoldOut(event) ? `(${LanguageTranslations.soldOut[language]})` : ""}`}
                 </Typography>
             </Stack>
             <Stack
