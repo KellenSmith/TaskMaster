@@ -12,6 +12,7 @@ import {
     Stack,
     TextField,
     Typography,
+    useTheme,
 } from "@mui/material";
 import { useState, FC, useTransition, FormEvent, useMemo } from "react";
 import {
@@ -27,7 +28,7 @@ import {
     explanatoryTexts,
     fileUploadFields,
 } from "./FieldCfg";
-import { Cancel, Edit } from "@mui/icons-material";
+import { Cancel, Edit, Info } from "@mui/icons-material";
 import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
 import AutocompleteWrapper, { CustomOptionProps } from "./AutocompleteWrapper";
@@ -74,6 +75,7 @@ const Form: FC<FormProps> = ({
     readOnly = true,
     editable = true,
 }) => {
+    const theme = useTheme();
     const { language } = useUserContext();
     const [validationError, setValidationError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -325,11 +327,14 @@ const Form: FC<FormProps> = ({
             <Stack key={getFieldCompKey(fieldId) + "-infotext"}>
                 <Divider />
                 <Card sx={{ py: 1 }}>
-                    {infoText.split("\n").map((line, index) => (
-                        <Typography key={index} variant="subtitle2" color="primary">
-                            {line}
-                        </Typography>
-                    ))}
+                    <Stack direction="row" spacing={1}>
+                        {<Info sx={{ color: theme.palette.primary.main }} />}
+                        {infoText.split("\n").map((line, index) => (
+                            <Typography key={index} variant="subtitle2" color="primary">
+                                {line}
+                            </Typography>
+                        ))}
+                    </Stack>
                 </Card>
             </Stack>
         );

@@ -99,6 +99,7 @@ const NavPanel = () => {
         GlobalConstants.CALENDAR_POST,
         GlobalConstants.TICKET,
         GlobalConstants.INFO_PAGE,
+        GlobalConstants.YEAR_WHEEL,
     ];
     !user && hiddenRoutes.push(GlobalConstants.HOME);
 

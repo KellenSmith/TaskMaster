@@ -68,6 +68,12 @@ export const explanatoryTexts = {
         [Language.swedish]:
             "Om den anges kommer denna text att visas som en uppmaning för medlemsansökningar och ansökningar kan inte skickas utan ett meddelande. Om detta fält lämnas tomt kan ansökningar skickas utan ett meddelande.",
     },
+    [GlobalConstants.NICKNAME]: {
+        [Language.english]:
+            "This nickname that will be displayed to other members. No other personal data will be revealed.",
+        [Language.swedish]:
+            "Detta smeknamn som kommer att visas för andra medlemmar. Inga andra personuppgifter kommer att avslöjas.",
+    },
 };
 
 export const RenderedFields = {
