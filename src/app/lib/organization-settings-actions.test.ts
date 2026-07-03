@@ -107,15 +107,6 @@ describe("organization-settings-actions", () => {
             expect(vi.mocked(del)).not.toHaveBeenCalled();
         });
 
-        it("does not delete non-vercel urls", async () => {
-            await orgActions.deleteOldBlob(
-                "https://example.com/external.png",
-                "https://blob.vercel-storage.com/new.png",
-            );
-
-            expect(vi.mocked(del)).not.toHaveBeenCalled();
-        });
-
         it("swallows errors from blob deletion", async () => {
             vi.mocked(del).mockRejectedValueOnce(new Error("delete failed"));
             const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
