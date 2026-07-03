@@ -35,13 +35,7 @@ export const deleteOldBlob = async (
     // Only delete if old blob exists and the new url is not equal to the old
     if (oldBlobUrl && oldBlobUrl !== updateBlobUrl) {
         try {
-            // Quick guard: Vercel public blob URLs contain 'blob.vercel-storage.com'
-            // Only attempt deletion for URLs that look like Vercel blob URLs to avoid
-            // trying to delete external resources.
-
-            if (oldBlobUrl.includes("blob.vercel-storage.com")) {
-                await del(oldBlobUrl);
-            }
+            await del(oldBlobUrl);
         } catch (error) {
             // Log for inspection.
             console.error(`Failed to delete logo blob with url ${oldBlobUrl}:`, error);
