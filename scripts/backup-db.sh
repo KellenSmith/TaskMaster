@@ -3,7 +3,7 @@
 set -euo pipefail
 
 required_env_vars=(
-	"DIRECT_DATABASE_URL",
+	"DIRECT_DATABASE_URL"
 	"BLOB_BACKUP_READ_WRITE_TOKEN"
 )
 
