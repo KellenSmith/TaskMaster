@@ -233,7 +233,7 @@ const NavPanel = () => {
                                 title={process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
                                 height={40}
                                 width={200}
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: "pointer", height: "auto", width: "auto" }}
                                 onClick={() =>
                                     clientRedirect(router, [
                                         user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
