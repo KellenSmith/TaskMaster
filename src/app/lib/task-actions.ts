@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { ContactMemberSchema, TaskCreateSchema, TaskUpdateSchema, UuidSchema } from "./zod-schemas";
@@ -18,17 +18,26 @@ import TaskUpdateTemplate from "./mail-service/mail-templates/TaskUpdateTemplate
 import MemberContactMemberTemplate from "./mail-service/mail-templates/MemberContactMemberTemplate";
 import { TaskStatus, TicketType } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
+
+export const getEventTasksCacheTag = async (eventId: string) =>
+    `${GlobalConstants.TASK}:event:${eventId}`;
+export const getTaskCacheTag = async (taskId: string) => `${GlobalConstants.TASK}:${taskId}`;
 
 export const deleteTask = async (taskId: string): Promise<void> => {
     // Validate task ID format
     const validatedTaskId = UuidSchema.parse(taskId);
 
-    await prisma.task.delete({
+    const deletedTask = await prisma.task.delete({
         where: {
             id: validatedTaskId,
         },
     });
     revalidateTag(GlobalConstants.TASK, "max");
+    revalidateTag(await getTaskCacheTag(validatedTaskId), "max");
+    if (deletedTask.event_id) {
+        revalidateTag(await getEventTasksCacheTag(deletedTask.event_id), "max");
+    }
 };
 
 export const updateTaskById = async (taskId: string, formData: FormData): Promise<void> => {
@@ -50,7 +59,8 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
         ...taskWithoutUsers
     } = validatedData;
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -70,12 +80,12 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
 
         // Update skill badges
         if (newSkillBadges) {
-            await prisma.taskSkillBadge.deleteMany({
+            await tx.taskSkillBadge.deleteMany({
                 where: {
                     task_id: validatedTaskId,
                 },
             });
-            await prisma.taskSkillBadge.createMany({
+            await tx.taskSkillBadge.createMany({
                 data: newSkillBadges.map((badgeId) => ({
                     task_id: validatedTaskId,
                     skill_badge_id: badgeId,
@@ -112,6 +122,10 @@ export const updateTaskById = async (taskId: string, formData: FormData): Promis
     });
 
     revalidateTag(GlobalConstants.TASK, "max");
+    revalidateTag(await getTaskCacheTag(validatedTaskId), "max");
+    if (oldTask.event_id) {
+        revalidateTag(await getEventTasksCacheTag(oldTask.event_id), "max");
+    }
 };
 
 export const createTask = async (formData: FormData): Promise<void> => {
@@ -130,7 +144,7 @@ export const createTask = async (formData: FormData): Promise<void> => {
         ...taskWithoutUsers
     } = sanitizedData;
 
-    await prisma.task.create({
+    const createdTask = await prisma.task.create({
         data: {
             ...taskWithoutUsers,
             tags: validatedData.tags,
@@ -168,6 +182,9 @@ export const createTask = async (formData: FormData): Promise<void> => {
         include: { reviewer: true },
     });
     revalidateTag(GlobalConstants.TASK, "max");
+    if (createdTask.event_id) {
+        revalidateTag(await getEventTasksCacheTag(createdTask.event_id), "max");
+    }
 };
 
 export const assignTaskToUser = async (userId: string, taskId: string) => {
@@ -204,7 +221,8 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
         }
     }
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -257,7 +275,10 @@ export const assignTaskToUser = async (userId: string, taskId: string) => {
         }
     });
     revalidateTag(GlobalConstants.TASK, "max");
-    revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getTaskCacheTag(validatedTaskId), "max");
+    if (existingTask.event_id) {
+        revalidateTag(await getEventTasksCacheTag(existingTask.event_id), "max");
+    }
 };
 
 export const unassignTaskFromUser = async (userId: string, taskId: string) => {
@@ -265,7 +286,8 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedTaskId = UuidSchema.parse(taskId);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    const updatedTask = await prisma.$transaction(async (tx: TransactionClient) => {
         const updatedTask = await tx.task.update({
             where: {
                 id: validatedTaskId,
@@ -281,7 +303,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
         });
         revalidateTag(GlobalConstants.TASK, "max");
 
-        if (!updatedTask.event_id) return;
+        if (!updatedTask.event_id) return updatedTask;
 
         // The user will lose their volunteer ticket to the event if all apply:
         // - They are not host
@@ -293,7 +315,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
                 id: updatedTask.event_id,
             },
         });
-        if (event.host_id === userId) return;
+        if (event.host_id === userId) return updatedTask;
 
         const existingVolunteer = await tx.eventParticipant.findFirst({
             where: {
@@ -304,7 +326,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
                 },
             },
         });
-        if (!existingVolunteer) return;
+        if (!existingVolunteer) return updatedTask;
 
         const taskCount = await tx.task.count({
             where: {
@@ -312,7 +334,7 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
                 event_id: updatedTask.event_id,
             },
         });
-        if (taskCount > 0) return;
+        if (taskCount > 0) return updatedTask;
 
         await deleteEventParticipantWithTx(tx, updatedTask.event_id, userId);
 
@@ -327,7 +349,15 @@ export const unassignTaskFromUser = async (userId: string, taskId: string) => {
                 // Still allow the user to unassign the task
                 console.error("Error notifying task reviewer:", error);
             }
+
+        return updatedTask;
     });
+
+    revalidateTag(GlobalConstants.TASK, "max");
+    revalidateTag(await getTaskCacheTag(validatedTaskId), "max");
+    if (updatedTask.event_id) {
+        revalidateTag(await getEventTasksCacheTag(updatedTask.event_id), "max");
+    }
 };
 
 export const contactTaskMember = async (

@@ -18,7 +18,11 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => 
     const router = useRouter();
 
     return (
-        <Stack width="100%">
+        <Stack
+            sx={{
+                width: "100%",
+            }}
+        >
             <Stack
                 spacing={4}
                 sx={{
@@ -36,7 +40,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => 
                         {LanguageTranslations.routeLabel[GlobalConstants.APPLY][language]}
                     </Button>
                 )}
-                <TextContent id={"home"} textContentPromise={textContentPromise} />
+                <TextContent textContentPromise={textContentPromise} />
             </Stack>
         </Stack>
     );

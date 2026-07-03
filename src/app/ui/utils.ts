@@ -1,13 +1,16 @@
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
+import tz from "dayjs/plugin/timezone";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { dateDisplayFormat, localTimeZone } from "../context/LocalizationContext";
 
 // Ensure all date formatting uses UTC to avoid environment-specific timezone shifts
 dayjs.extend(utc);
+dayjs.extend(tz);
 
-export const formatDate = (date: string | Date | Dayjs): string =>
-    dayjs.utc(date).format("YYYY/MM/DD HH:mm");
+export const formatUtcDateToTimezone = (date: string | Date | Dayjs): string =>
+    dayjs.tz(dayjs.utc(date), localTimeZone).format(dateDisplayFormat);
 export const formatPrice = (price: number): number => price / 100;
 
 export const openResourceInNewTab = (resourceUrl: string) => {

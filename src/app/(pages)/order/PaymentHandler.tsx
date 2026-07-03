@@ -59,8 +59,19 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
     return (
         order?.status === OrderStatus.pending && (
             <Stack component="form" onSubmit={redirectToOrderPaymentAction}>
-                <Stack alignItems="center" width="100%">
-                    <Stack direction="row" alignItems={"center"} width={"100%"}>
+                <Stack
+                    sx={{
+                        alignItems: "center",
+                        width: "100%",
+                    }}
+                >
+                    <Stack
+                        direction="row"
+                        sx={{
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <Checkbox
                             checked={termsAccepted.termsOfPurchase}
                             onChange={(e) =>
@@ -92,7 +103,13 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
                             </Link>
                         </Typography>
                     </Stack>
-                    <Stack direction="row" alignItems={"center"} width={"100%"}>
+                    <Stack
+                        direction="row"
+                        sx={{
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <Checkbox
                             checked={termsAccepted.privacyPolicy}
                             onChange={(e) =>

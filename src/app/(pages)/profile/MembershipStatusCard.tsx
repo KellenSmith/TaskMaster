@@ -3,7 +3,7 @@ import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@
 import { isMembershipExpired } from "../../lib/utils";
 import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserStatus } from "../../../prisma/generated/enums";
@@ -19,10 +19,12 @@ const MembershipStatusCard = () => {
                 <Stack spacing={3}>
                     {/* Header */}
                     <Stack
-                        display="flex"
                         direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                        }}
                     >
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {LanguageTranslations.membership[language]}
@@ -97,37 +99,72 @@ const MembershipStatusCard = () => {
                     ) : (
                         <Stack spacing={2}>
                             {/* Member Since */}
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                sx={{
+                                    alignItems: "center",
+                                }}
+                            >
                                 <Person color="primary" />
                                 <Stack>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: "text.secondary",
+                                        }}
+                                    >
                                         {LanguageTranslations.memberSince[language]}
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                        {formatDate(user.created_at)}
+                                        {formatUtcDateToTimezone(user.created_at)}
                                     </Typography>
                                 </Stack>
                             </Stack>
 
                             {/* Expiration Date */}
                             {user.user_membership && (
-                                <Stack direction="row" alignItems="center" spacing={2}>
+                                <Stack
+                                    direction="row"
+                                    spacing={2}
+                                    sx={{
+                                        alignItems: "center",
+                                    }}
+                                >
                                     <Schedule color="primary" />
                                     <Stack>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: "text.secondary",
+                                            }}
+                                        >
                                             {LanguageTranslations.membershipExpires[language]}
                                         </Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                            {formatDate(dayjs.utc(user.user_membership.expires_at))}
+                                            {formatUtcDateToTimezone(
+                                                dayjs.utc(user.user_membership.expires_at),
+                                            )}
                                         </Typography>
                                     </Stack>
                                 </Stack>
                             )}
 
-                            <Stack direction="row" spacing={2} alignItems="center">
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                sx={{
+                                    alignItems: "center",
+                                }}
+                            >
                                 <AdminPanelSettings color="primary" />
                                 <Stack>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: "text.secondary",
+                                        }}
+                                    >
                                         {LanguageTranslations.role[language]}
                                     </Typography>
                                     <Typography

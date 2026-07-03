@@ -13,7 +13,7 @@ import dayjs from "dayjs";
 import { use, useState, useRef, PointerEvent } from "react";
 import YearWheelEvent from "./YearWheelEvent";
 import YearWheelMarker from "./YearWheelMarker";
-import { formatDate, openResourceInNewTab } from "../../ui/utils";
+import { formatUtcDateToTimezone, openResourceInNewTab } from "../../ui/utils";
 import { ArrowLeft, ArrowRight, OpenInNew } from "@mui/icons-material";
 import { getRelativeUrl } from "../../lib/utils";
 import GlobalConstants from "../../GlobalConstants";
@@ -101,11 +101,22 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
 
     return (
         <Stack direction="row" sx={{ width: "100%", height: "100%" }}>
-            <Stack direction="row" height="fit-content">
+            <Stack
+                direction="row"
+                sx={{
+                    height: "fit-content",
+                }}
+            >
                 <Button onClick={() => setDisplayStartTime((prev) => prev.subtract(1, "year"))}>
                     <ArrowLeft />
                 </Button>
-                <Typography color="primary" alignSelf="center" variant="h4">
+                <Typography
+                    color="primary"
+                    variant="h4"
+                    sx={{
+                        alignSelf: "center",
+                    }}
+                >
                     {displayStartTime.format("YYYY")}
                 </Typography>
                 <Button onClick={() => setDisplayStartTime((prev) => prev.add(1, "year"))}>
@@ -154,7 +165,7 @@ const YearWheelDashboard = ({ eventsPromise }: YearWheelDashboardProps) => {
                             >
                                 <ListItemText
                                     primary={ev.title}
-                                    secondary={`${formatDate(ev.start_time)} — ${formatDate(ev.end_time)}`}
+                                    secondary={`${formatUtcDateToTimezone(ev.start_time)} — ${formatUtcDateToTimezone(ev.end_time)}`}
                                 />
                                 <ListItemIcon
                                     sx={{ cursor: "pointer", justifyContent: "flex-end" }}

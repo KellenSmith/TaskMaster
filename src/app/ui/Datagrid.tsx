@@ -24,7 +24,7 @@ import {
 } from "./form/FieldCfg";
 import Form from "./form/Form";
 import ConfirmButton from "./ConfirmButton";
-import { formatDate, formatPrice } from "./utils";
+import { formatUtcDateToTimezone, formatPrice } from "./utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import { OrderUpdateSchema, ProductUpdateSchema, UserUpdateSchema } from "../lib/zod-schemas";
 import { CustomOptionProps } from "./form/AutocompleteWrapper";
@@ -168,7 +168,13 @@ const Datagrid: React.FC<DatagridProps> = ({
                 };
 
                 return (
-                    <Stack direction="row" spacing={1} marginTop={1}>
+                    <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{
+                            marginTop: 1,
+                        }}
+                    >
                         <TextField
                             label="From"
                             type="date"
@@ -216,7 +222,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 }),
                 valueFormatter: (value) => {
                     if (datePickerFields.includes(key)) {
-                        return formatDate(value);
+                        return formatUtcDateToTimezone(value);
                     }
                     if (priceFields.includes(key)) {
                         return formatPrice(value);

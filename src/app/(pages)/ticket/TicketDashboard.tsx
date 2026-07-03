@@ -4,19 +4,19 @@ import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LangaugeTranslations";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { checkInEventParticipant } from "../../lib/event-participant-actions";
 import { isUserAdmin } from "../../lib/utils";
 
 interface TicketDashboardProps {
-    eventParticipant: Prisma.EventParticipantGetPayload<{
+    eventParticipantPromise: Promise<Prisma.EventParticipantGetPayload<{
         include: {
             ticket: { include: { event: { include: { tasks: true } } } };
             user: { select: { id: true; nickname: true } };
         };
-    }> | null;
+    }> | null>;
 }
 
 const NoTicketFound = () => {
@@ -35,7 +35,12 @@ const NoTicketFound = () => {
                 }}
             >
                 <Stack spacing={{ xs: 1.5, sm: 2 }}>
-                    <Stack spacing={{ xs: 1, sm: 2 }} justifyContent="space-between">
+                    <Stack
+                        spacing={{ xs: 1, sm: 2 }}
+                        sx={{
+                            justifyContent: "space-between",
+                        }}
+                    >
                         <Chip label={LanguageTranslations.missingData[language]} color="error" />
                         <Typography variant="h4" component="h1">
                             {LanguageTranslations.ticketNotFound[language]}
@@ -51,13 +56,14 @@ const NoTicketFound = () => {
     );
 };
 
-const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
+const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
     const { language, user } = useUserContext();
 
     // State for check-in result and status
     const [statusColor, setStatusColor] = useState<"success" | "warning" | "error">("warning");
     const [statusText, setStatusText] = useState<string>("");
     const [title, setTitle] = useState<string>("");
+    const eventParticipant = use(eventParticipantPromise);
 
     if (!eventParticipant) {
         return <NoTicketFound />;
@@ -109,7 +115,7 @@ const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
         if (alreadyCheckedIn) {
             setStatusColor("error");
             setStatusText(
-                `${LanguageTranslations.alreadyCheckedIn[language]} ${formatDate(dayjs(eventParticipant.checked_in_at))}`,
+                `${LanguageTranslations.alreadyCheckedIn[language]} ${formatUtcDateToTimezone(dayjs.utc(eventParticipant.checked_in_at))}`,
             );
             setTitle("Checked in");
             return;
@@ -165,11 +171,11 @@ const TicketDashboard = ({ eventParticipant }: TicketDashboardProps) => {
                         </Typography>
                         <Typography>
                             {(eventStart
-                                ? formatDate(eventStart)
+                                ? formatUtcDateToTimezone(eventStart)
                                 : LanguageTranslations.startMissing[language]) +
                                 " - " +
                                 (eventEnd
-                                    ? formatDate(eventEnd)
+                                    ? formatUtcDateToTimezone(eventEnd)
                                     : LanguageTranslations.endMissing[language])}
                         </Typography>
                         <Typography>

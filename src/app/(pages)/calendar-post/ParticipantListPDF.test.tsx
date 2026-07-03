@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import ParticipantListPDF from "./ParticipantListPDF";
 import { Language } from "../../../prisma/generated/enums";
+import dayjs from "dayjs";
+import { dateDisplayFormat, localTimeZone } from "../../context/LocalizationContext";
 
 // Mock @react-pdf/renderer components to render as simple HTML elements since react-pdf uses its own rendering system that doesn't work in a JSDOM environment.
 // This allows us to test the content structure without needing to render an actual PDF.
@@ -75,7 +77,14 @@ describe("ParticipantListPDF", () => {
     it("renders formatted event time interval", () => {
         renderParticipantListPDF();
 
-        expect(screen.getByText("2026/03/10 09:00 - 2026/03/10 11:00")).toBeInTheDocument();
+        const localEventStart = dayjs
+            .tz(dayjs.utc(baseEvent.start_time), localTimeZone)
+            .format(dateDisplayFormat);
+        const localEventEnd = dayjs
+            .tz(dayjs.utc(baseEvent.end_time), localTimeZone)
+            .format(dateDisplayFormat);
+
+        expect(screen.getByText(`${localEventStart} - ${localEventEnd}`)).toBeInTheDocument();
     });
 
     it("renders english table headers", () => {

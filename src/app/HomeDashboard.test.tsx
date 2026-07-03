@@ -6,16 +6,25 @@ import { useUserContext } from "./context/UserContext";
 import { Language } from "../prisma/generated/enums";
 import userEvent from "@testing-library/user-event";
 
+const textContentMock = vi.fn();
+
 // Mocks
 vi.mock("./lib/utils", () => ({
     clientRedirect: vi.fn(),
 }));
 vi.mock("./ui/TextContent", () => ({
     __esModule: true,
-    default: ({ id }: any) => <div data-testid="text-content">{id}</div>,
+    default: (props: any) => {
+        textContentMock(props);
+        return <div data-testid="text-content" />;
+    },
 }));
 
 describe("HomeDashboard", () => {
+    beforeEach(() => {
+        textContentMock.mockClear();
+    });
+
     it("renders home dashboard for logged out user", async () => {
         const textContentPromise = Promise.resolve({ id: "home", translations: [] });
 
@@ -24,7 +33,8 @@ describe("HomeDashboard", () => {
         expect(
             await screen.findByRole("button", { name: /apply for membership/i }),
         ).toBeInTheDocument();
-        expect(await screen.findByTestId("text-content")).toHaveTextContent("home");
+        expect(await screen.findByTestId("text-content")).toBeInTheDocument();
+        expect(textContentMock).toHaveBeenCalledWith({ textContentPromise });
     });
 
     it("calls clientRedirect when apply button clicked", async () => {

@@ -27,7 +27,6 @@ import {
     explanatoryTexts,
     fileUploadFields,
 } from "./FieldCfg";
-import { DateTimePicker } from "@mui/x-date-pickers";
 import { Cancel, Edit } from "@mui/icons-material";
 import FileUploadField from "./FileUploadField";
 import RichTextField from "./RichTextField";
@@ -40,6 +39,8 @@ import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "../LanguageTranslations";
 import { upload } from "@vercel/blob/client";
+import LocalizedDateTimePicker from "./LocalizedDateTimePicker";
+import { localTimeZone } from "../../context/LocalizationContext";
 
 interface FormProps {
     name: string;
@@ -221,13 +222,21 @@ const Form: FC<FormProps> = ({
         if (defaultValues && fieldId in defaultValues) {
             if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId] as number);
             if (datePickerFields.includes(fieldId))
-                return dayjs.utc(defaultValues[fieldId] as Dayjs);
+                return dayjs.utc(
+                    dayjs(defaultValues[fieldId] as Dayjs)
+                        .tz(localTimeZone)
+                        .hour(18)
+                        .minute(0)
+                        .second(0)
+                        .millisecond(0),
+                );
+
             return defaultValues[fieldId];
         }
 
         if (datePickerFields.includes(fieldId))
             return requiredFields.includes(fieldId)
-                ? dayjs.utc().hour(18).minute(0).second(0)
+                ? dayjs.utc(dayjs().tz(localTimeZone).hour(18).minute(0).second(0).millisecond(0))
                 : null;
         if (checkboxFields.includes(fieldId)) return false;
         return null;
@@ -250,20 +259,13 @@ const Form: FC<FormProps> = ({
         }
         if (datePickerFields.includes(fieldId)) {
             return (
-                <DateTimePicker
+                <LocalizedDateTimePicker
                     key={getFieldCompKey(fieldId)}
-                    name={fieldId}
+                    fieldId={fieldId}
                     disabled={!editMode || customReadOnlyFields.includes(fieldId)}
                     label={FieldLabels[fieldId][language] as string}
                     defaultValue={getDefaultValue(fieldId) as Dayjs}
-                    slotProps={{
-                        textField: {
-                            name: fieldId,
-                            required: requiredFields.includes(fieldId),
-                        },
-                        // TODO: Implement translation for action buttons
-                        actionBar: { actions: ["clear", "accept"] },
-                    }}
+                    required={requiredFields.includes(fieldId)}
                 />
             );
         }
@@ -336,7 +338,13 @@ const Form: FC<FormProps> = ({
     return (
         <Card component="form" onSubmit={submitForm} sx={{ overflowY: "auto", width: "100%" }}>
             {editable && (
-                <Stack direction="row" justifyContent="flex-end" alignItems="center">
+                <Stack
+                    direction="row"
+                    sx={{
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                    }}
+                >
                     {editable && (
                         <IconButton sx={{ marginRight: 2 }} onClick={() => setEditMode(!editMode)}>
                             {editMode && editable ? <Cancel /> : <Edit />}
@@ -344,7 +352,6 @@ const Form: FC<FormProps> = ({
                     )}
                 </Stack>
             )}
-
             <CardContent sx={{ display: "flex", flexDirection: "column", rowGap: 2 }}>
                 <Stack spacing={2}>
                     {renderedFields.map((fieldId) => (

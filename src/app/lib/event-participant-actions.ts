@@ -1,20 +1,32 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { notifyEventReserves } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
-import { deleteEventReserveWithTx } from "./event-reserve-actions";
+import { deleteEventReserveWithTx, getEventReservesCacheTag } from "./event-reserve-actions";
 import { UuidSchema } from "./zod-schemas";
 import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import LanguageTranslations from "./LanguageTranslations";
 import dayjs from "dayjs";
-import { formatDate } from "../ui/utils";
+import { formatUtcDateToTimezone } from "../ui/utils";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { Prisma } from "../../prisma/generated/client";
 import { isUserAdmin } from "./utils";
+import { connection } from "next/server";
+import { getEventTicketsCacheTag } from "./ticket-actions";
+import { getEventTasksCacheTag } from "./task-actions";
+
+export const getEventParticipantCacheTag = async (eventId: string) =>
+    `${GlobalConstants.PARTICIPANT_USERS}:event:${eventId}`;
+
+export const getUserEventParticipantsCacheTag = async (userId: string) =>
+    `${GlobalConstants.PARTICIPANT_USERS}:user:${userId}`;
+
+export const getEventParticipantByIdCacheTag = async (eventParticipantId: string) =>
+    `${GlobalConstants.PARTICIPANT_USERS}:${eventParticipantId}`;
 
 export const addEventParticipantWithTx = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     ticketId: string,
     userId: string,
 ) => {
@@ -44,7 +56,7 @@ export const addEventParticipantWithTx = async (
     }
 
     await deleteEventReserveWithTx(tx, userId, ticket.event_id);
-    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
+    revalidateTag(await getEventReservesCacheTag(ticket.event_id), "max");
 
     // Decrement the product stock of all tickets with limited stock belonging to the same event
     // Ticket product stock reflects the total number of available tickets across all types
@@ -63,7 +75,7 @@ export const addEventParticipantWithTx = async (
             },
         },
     });
-    revalidateTag(GlobalConstants.TICKET, "max");
+    revalidateTag(await getEventTicketsCacheTag(ticket.event_id), "max");
     // Create the participant and connect it to the user, ticket, and event
     await tx.eventParticipant.create({
         data: {
@@ -79,21 +91,21 @@ export const addEventParticipantWithTx = async (
             },
         },
     });
-    revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
-    revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventParticipantCacheTag(ticket.event_id), "max");
 };
 
 export const addEventParticipant = async (userId: string, ticketId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedTicketId = UuidSchema.parse(ticketId);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await addEventParticipantWithTx(tx, validatedTicketId, validatedUserId);
     });
 };
 
 export const deleteEventParticipantWithTx = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     eventId: string,
     userId: string,
 ) => {
@@ -108,12 +120,27 @@ export const deleteEventParticipantWithTx = async (
             },
         },
     });
+
+    const eventParticipantsToDelete = await tx.eventParticipant.findMany({
+        where: {
+            user_id: userId,
+            ticket_id: ticket.product_id,
+        },
+    });
+
     await tx.eventParticipant.deleteMany({
         where: {
             user_id: userId,
             ticket_id: ticket.product_id,
         },
     });
+
+    if (eventParticipantsToDelete.length > 0) {
+        const deletedEventParticipant = eventParticipantsToDelete[0];
+        revalidateTag(await getEventParticipantByIdCacheTag(deletedEventParticipant.id), "max");
+        revalidateTag(await getEventParticipantCacheTag(eventId), "max");
+        revalidateTag(await getUserEventParticipantsCacheTag(userId), "max");
+    }
     // Increment the product stock of all tickets with limited stock belonging to the same event
     // Ticket product stock reflects the total number of available tickets across all types
     await tx.product.updateMany({
@@ -132,9 +159,7 @@ export const deleteEventParticipantWithTx = async (
         },
     });
 
-    revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
-    revalidateTag(GlobalConstants.EVENT, "max");
-    revalidateTag(GlobalConstants.TICKET, "max");
+    revalidateTag(await getEventTicketsCacheTag(eventId), "max");
     await notifyEventReserves(eventId);
 };
 
@@ -142,14 +167,15 @@ export const deleteEventParticipant = async (eventId: string, userId: string) =>
     const validatedEventId = UuidSchema.parse(eventId);
     const validatedUserId = UuidSchema.parse(userId);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await deleteEventParticipantWithTx(tx, validatedEventId, validatedUserId);
         await unassignUserFromEventTasks(tx, validatedEventId, validatedUserId);
     });
 };
 
 export const unassignUserFromEventTasks = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     eventId: string,
     userId: string,
 ) => {
@@ -184,6 +210,8 @@ export const unassignUserFromEventTasks = async (
             assignee_id: null,
         },
     });
+
+    revalidateTag(await getEventTasksCacheTag(eventId), "max");
 };
 
 export const checkInEventParticipant = async (
@@ -234,15 +262,15 @@ export const checkInEventParticipant = async (
                 return (
                     LanguageTranslations.alreadyCheckedIn[language] +
                     " " +
-                    formatDate(eventParticipant.checked_in_at)
+                    formatUtcDateToTimezone(eventParticipant.checked_in_at)
                 );
             return;
         }
 
         // Dont check in if not within one hour of event opening hours
         const now = dayjs.utc();
-        const eventStart = dayjs(eventParticipant.ticket.event.start_time);
-        const eventEnd = dayjs(eventParticipant.ticket.event.end_time);
+        const eventStart = dayjs.utc(eventParticipant.ticket.event.start_time);
+        const eventEnd = dayjs.utc(eventParticipant.ticket.event.end_time);
         if (now.isBefore(eventStart.subtract(1, "hour")) || now.isAfter(eventEnd.add(1, "hour"))) {
             return;
         }
@@ -255,6 +283,10 @@ export const checkInEventParticipant = async (
                 checked_in_at: new Date(),
             },
         });
+
+        revalidateTag(await getEventParticipantByIdCacheTag(validatedEventParticipantId), "max");
+        revalidateTag(await getEventParticipantCacheTag(eventParticipant.ticket.event_id), "max");
+        revalidateTag(await getUserEventParticipantsCacheTag(eventParticipant.user_id), "max");
     } catch (error) {
         if (
             error instanceof Prisma.PrismaClientKnownRequestError &&

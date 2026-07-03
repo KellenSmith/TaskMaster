@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { CloneEventSchema, EventCreateSchema, EventUpdateSchema, UuidSchema } from "./zod-schemas";
 import { informOfCancelledEvent, notifyEventReserves, sendMail } from "./mail-service/mail-service";
 import GlobalConstants from "../GlobalConstants";
@@ -15,6 +15,9 @@ import EmailNotificationTemplate from "./mail-service/mail-templates/MailNotific
 import z from "zod";
 import { EventStatus, TaskStatus, TicketType } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
+
+export const getEventCacheTag = async (eventId: string) => `${GlobalConstants.EVENT}:${eventId}`;
 
 export const getEventParticipants = async (
     eventId: string,
@@ -63,7 +66,8 @@ export const createEvent = async (formData: FormData): Promise<void> => {
         throw new Error("The location can't handle that many participants");
     }
 
-    const createdEvent = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    const createdEvent = await prisma.$transaction(async (tx: TransactionClient) => {
         // Create event with ticket
         const createdEvent = await tx.event.create({
             data: {
@@ -106,6 +110,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
         return createdEvent;
     });
 
+    revalidateTag(GlobalConstants.EVENT, "max");
     serverRedirect([GlobalConstants.CALENDAR_POST], {
         [GlobalConstants.EVENT_ID]: createdEvent.id,
     });
@@ -139,7 +144,8 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
         throw new Error("You are not authorized to publish this event");
     }
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const eventParticipantsCount = (await getEventParticipants(parsedEventId)).length;
 
         // Ensure that the new max_participants is not lower than the current number of participants
@@ -228,6 +234,7 @@ export const updateEvent = async (eventId: string, formData: FormData): Promise<
             where: { id: parsedEventId },
             data: sanitizedData,
         });
+        revalidateTag(await getEventCacheTag(parsedEventId), "max");
         revalidateTag(GlobalConstants.EVENT, "max");
         revalidateTag(GlobalConstants.TICKET, "max");
         try {
@@ -246,6 +253,7 @@ export const publishEvent = async (eventId: string): Promise<void> => {
         data: { status: EventStatus.published },
     });
     revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventCacheTag(validatedEventId), "max");
 };
 
 export const cancelEvent = async (eventId: string): Promise<void> => {
@@ -256,6 +264,7 @@ export const cancelEvent = async (eventId: string): Promise<void> => {
     cancelFormData.append(GlobalConstants.STATUS, EventStatus.cancelled);
     await updateEvent(validatedEventId, cancelFormData);
     revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventCacheTag(validatedEventId), "max");
 
     try {
         await informOfCancelledEvent(validatedEventId);
@@ -288,6 +297,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
             "The event has participants and cannot be deleted. Cancel the event instead",
         );
 
+    await connection();
     await prisma.$transaction([
         prisma.eventReserve.deleteMany({
             where: { event_id: validatedEventId },
@@ -303,6 +313,7 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
         }),
     ]);
     revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventCacheTag(validatedEventId), "max");
     serverRedirect([GlobalConstants.CALENDAR]);
 };
 
@@ -334,7 +345,8 @@ export const cloneEvent = async (eventId: string, formData: FormData) => {
         include: { skill_badges: true },
     });
 
-    const eventClone = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    const eventClone = await prisma.$transaction(async (tx: TransactionClient) => {
         // Copy event itself with default values
         const createdEvent = await tx.event.create({
             data: {

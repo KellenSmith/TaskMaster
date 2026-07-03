@@ -9,11 +9,10 @@ import { UpdateTextContentSchema } from "../lib/zod-schemas";
 import { Prisma } from "../../prisma/generated/browser";
 
 interface EditableTextContentProps {
-    id: string;
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;
 }
 
-const EditableTextContent = ({ id, textContentPromise }: EditableTextContentProps) => {
+const EditableTextContent = ({ textContentPromise }: EditableTextContentProps) => {
     const { language, editMode: editWebsiteMode } = useUserContext();
     const textContent = use(textContentPromise);
     const textTranslation = useMemo(
@@ -22,7 +21,11 @@ const EditableTextContent = ({ id, textContentPromise }: EditableTextContentProp
     );
 
     const handleUpdateTextContent = async (formData: FormData) => {
-        await updateTextContent(id, language, formData.get(GlobalConstants.TEXT) as string);
+        await updateTextContent(
+            textContent?.id ?? undefined,
+            language,
+            formData.get(GlobalConstants.TEXT) as string,
+        );
         return "Updated successfully";
     };
 

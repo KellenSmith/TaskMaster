@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import ApplyPage from "./page";
 import { Language } from "../../../prisma/generated/enums";
 import { submitMemberApplication } from "../../lib/user-actions";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
@@ -9,6 +8,7 @@ import z from "zod";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import NotificationContextProvider from "../../context/NotificationContext";
 import { useUserContext } from "../../context/UserContext";
+import ApplyDashboard from "./ApplyDashboard";
 
 vi.mock("../../context/UserContext", () => ({
     useUserContext: vi.fn(() => ({
@@ -47,7 +47,7 @@ const fieldLabels = {
 const renderApplyPage = () =>
     render(
         <NotificationContextProvider>
-            <ApplyPage />
+            <ApplyDashboard />
         </NotificationContextProvider>,
     );
 

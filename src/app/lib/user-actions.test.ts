@@ -15,9 +15,10 @@ import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 
 vi.mock("./user-helpers", () => ({
     getUserLanguage: vi.fn(),
+    getUserCacheTag: vi.fn(),
 }));
 import * as userActions from "./user-actions";
-import { getUserLanguage } from "./user-helpers";
+import { getUserCacheTag, getUserLanguage } from "./user-helpers";
 
 vi.mock("./mail-service/mail-service", () => ({
     sendMail: vi.fn(),
@@ -36,6 +37,9 @@ vi.mock("./user-membership-helpers", () => ({
 
 beforeEach(() => {
     vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
+    vi.mocked(getUserCacheTag).mockImplementation(
+        async (userId: string) => `${GlobalConstants.USER}:${userId}`,
+    );
 });
 
 describe("user-actions", () => {
@@ -180,7 +184,12 @@ describe("user-actions", () => {
             vi.mocked(getOrganizationSettings).mockResolvedValue({
                 member_application_prompt: null,
             } as any);
-            vi.spyOn(userActions, "createUser").mockResolvedValue();
+            const tx = mockContext.prisma as any as TransactionClient;
+            vi.mocked(mockContext.prisma.user.count).mockResolvedValue(1);
+            vi.mocked(tx.user.create).mockResolvedValue({ id: "user-1" } as any);
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
+            );
             vi.mocked(sendMail).mockRejectedValueOnce(new Error("smtp down"));
             const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
@@ -408,6 +417,8 @@ describe("user-actions", () => {
             vi.mocked(prisma.user.findUniqueOrThrow).mockResolvedValue({
                 id: "user-1",
                 email: "member@example.com",
+                role: UserRole.member,
+                status: UserStatus.validated,
                 user_membership: {
                     id: "membership-1",
                     user_id: "user-1",
@@ -425,7 +436,7 @@ describe("user-actions", () => {
             expect(vi.mocked(signIn)).toHaveBeenCalledWith("email", {
                 email: "member@example.com",
                 callback: "/login",
-                redirectTo: "/",
+                redirectTo: "/profile",
                 redirect: false,
             });
         });

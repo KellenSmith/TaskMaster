@@ -109,7 +109,7 @@ const NavPanel = () => {
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            throw new Error(GlobalLanguageTranslations.failedSave[language], { cause: error });
         }
     };
 
@@ -123,7 +123,7 @@ const NavPanel = () => {
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            throw new Error(GlobalLanguageTranslations.failedSave[language], { cause: error });
         }
     };
 
@@ -371,38 +371,44 @@ const NavPanel = () => {
                     <Stack sx={{ mt: "auto", pb: 2 }}>
                         <ListItem>
                             <Link
-                                textTransform="capitalize"
                                 href={
                                     getTermsOfMembershipUrl(organizationSettings, language) ??
                                     undefined
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                sx={{
+                                    textTransform: "capitalize",
+                                }}
                             >
                                 {ApplyLanguageTranslations.termsOfMembership[language]}
                             </Link>
                         </ListItem>
                         <ListItem>
                             <Link
-                                textTransform="capitalize"
                                 href={
                                     getPrivacyPolicyUrl(organizationSettings, language) ?? undefined
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                sx={{
+                                    textTransform: "capitalize",
+                                }}
                             >
                                 {OrderLanguageTranslations.privacyPolicy[language]}
                             </Link>
                         </ListItem>
                         <ListItem>
                             <Link
-                                textTransform="capitalize"
                                 href={
                                     getTermsOfPurchaseUrl(organizationSettings, language) ??
                                     undefined
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                sx={{
+                                    textTransform: "capitalize",
+                                }}
                             >
                                 {OrderLanguageTranslations.termsOfPurchase[language]}
                             </Link>

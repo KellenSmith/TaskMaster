@@ -1,13 +1,19 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { UuidSchema } from "./zod-schemas";
-import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
+
+export const getEventReservesCacheTag = async (eventId: string) =>
+    `${GlobalConstants.RESERVE_USERS}:event:${eventId}`;
+
+export const getUserEventReservesCacheTag = async (userId: string) =>
+    `${GlobalConstants.RESERVE_USERS}:user:${userId}`;
 
 export const addEventReserveWithTx = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     userId: string,
     eventId: string,
 ) => {
@@ -43,9 +49,8 @@ export const addEventReserveWithTx = async (
         },
         update: {},
     });
-    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
-    // Event reserves with limited data is cached with the event
-    revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };
 
 export const addEventReserve = async (userId: string, eventId: string): Promise<void> => {
@@ -53,13 +58,17 @@ export const addEventReserve = async (userId: string, eventId: string): Promise<
     const validatedUserId = UuidSchema.parse(userId);
     const validatedEventId = UuidSchema.parse(eventId);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await addEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
+
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };
 
 export const deleteEventReserveWithTx = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     userId: string,
     eventId: string,
 ) => {
@@ -70,9 +79,8 @@ export const deleteEventReserveWithTx = async (
             event_id: eventId,
         },
     });
-    revalidateTag(GlobalConstants.RESERVE_USERS, "max");
-    // Event reserves with limited data is cached with the event
-    revalidateTag(GlobalConstants.EVENT, "max");
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };
 
 export const deleteEventReserve = async (userId: string, eventId: string) => {
@@ -80,7 +88,11 @@ export const deleteEventReserve = async (userId: string, eventId: string) => {
     const validatedUserId = UuidSchema.parse(userId);
     const validatedEventId = UuidSchema.parse(eventId);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await deleteEventReserveWithTx(tx, validatedUserId, validatedEventId);
     });
+
+    revalidateTag(await getEventReservesCacheTag(eventId), "max");
+    revalidateTag(await getUserEventReservesCacheTag(userId), "max");
 };

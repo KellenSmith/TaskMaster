@@ -31,15 +31,13 @@ describe("utils", () => {
     });
 
     describe("getAbsoluteUrl", () => {
-        it("builds absolute urls using VERCEL_PROJECT_PRODUCTION_URL", () => {
+        it("builds absolute urls using VERCEL_URL", () => {
             const result = getAbsoluteUrl(["calendar"], { view: "month" });
-            expect(result).toBe(
-                `https://${testdata.env.VERCEL_PROJECT_PRODUCTION_URL}/calendar?view=month`,
-            );
+            expect(result).toBe(`https://${testdata.env.VERCEL_URL}/calendar?view=month`);
         });
 
-        it("builds absolute urls using window origin when VERCEL_PROJECT_PRODUCTION_URL is not set", () => {
-            process.env.VERCEL_PROJECT_PRODUCTION_URL = undefined;
+        it("builds absolute urls using window origin when VERCEL_URL is not set", () => {
+            process.env.VERCEL_URL = undefined;
 
             const result = getAbsoluteUrl(["shop"]);
 
@@ -47,7 +45,7 @@ describe("utils", () => {
         });
 
         it("throws when base url and window are missing", () => {
-            process.env.VERCEL_PROJECT_PRODUCTION_URL = undefined;
+            process.env.VERCEL_URL = undefined;
             vi.stubGlobal("window", undefined as unknown as Window);
 
             expect(() => getAbsoluteUrl(["tasks"])).toThrow("Base URL not found");

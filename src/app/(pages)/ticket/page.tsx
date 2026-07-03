@@ -1,18 +1,19 @@
 import { prisma } from "../../../prisma/prisma-client";
+import GlobalConstants from "../../GlobalConstants";
 import { getLoggedInUser } from "../../lib/user-helpers";
-import { isMembershipExpired, isUserAdmin } from "../../lib/utils";
+import { isUserAdmin } from "../../lib/utils";
+import ProtectedPage from "../../ProtectedPage";
 import TicketDashboard from "./TicketDashboard";
 
 interface TicketPageProps {
     searchParams: Promise<{ [eventParticipantId: string]: string }>;
 }
 
-const TicketPage = async ({ searchParams }: TicketPageProps) => {
-    const loggedInUser = await getLoggedInUser();
-    if (isMembershipExpired(loggedInUser)) throw new Error("Unauthorized");
-
-    const eventParticipantId = (await searchParams).eventParticipantId;
-
+const getCachedEventParticipant = async (
+    loggedInUserId: string,
+    loggedInUserIsAdmin: boolean,
+    eventParticipantId: string,
+) => {
     const eventParticipant = await prisma.eventParticipant.findUnique({
         where: {
             id: eventParticipantId,
@@ -24,7 +25,7 @@ const TicketPage = async ({ searchParams }: TicketPageProps) => {
                         include: {
                             tasks: {
                                 where: {
-                                    assignee_id: loggedInUser!.id,
+                                    assignee_id: loggedInUserId,
                                 },
                                 select: {
                                     id: true,
@@ -39,15 +40,32 @@ const TicketPage = async ({ searchParams }: TicketPageProps) => {
     });
 
     if (eventParticipant) {
-        const isEventHost = eventParticipant.ticket.event.host_id === loggedInUser!.id;
+        const isEventHost = eventParticipant.ticket.event.host_id === loggedInUserId;
         const isVolunteer = eventParticipant.ticket.event.tasks.length || 0 > 0;
-        const isOwnTicket = eventParticipant.user_id === loggedInUser!.id;
+        const isOwnTicket = eventParticipant.user_id === loggedInUserId;
 
-        if (!(isUserAdmin(loggedInUser) || isEventHost || isVolunteer || isOwnTicket))
+        if (!(loggedInUserIsAdmin || isEventHost || isVolunteer || isOwnTicket))
             throw new Error("Unauthorized");
     }
 
-    return <TicketDashboard eventParticipant={eventParticipant} />;
+    return eventParticipant;
+};
+
+const TicketPage = async ({ searchParams }: TicketPageProps) => {
+    const eventParticipantId = (await searchParams).eventParticipantId;
+    const loggedInUser = await getLoggedInUser();
+
+    const eventParticipantPromise = getCachedEventParticipant(
+        loggedInUser!.id,
+        isUserAdmin(loggedInUser),
+        eventParticipantId,
+    );
+
+    return (
+        <ProtectedPage name={GlobalConstants.TICKET}>
+            <TicketDashboard eventParticipantPromise={eventParticipantPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default TicketPage;

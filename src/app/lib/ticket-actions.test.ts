@@ -63,7 +63,10 @@ describe("ticket-actions", () => {
                     },
                 }),
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
+                `${GlobalConstants.TICKET}:event:${eventId}`,
+                "max",
+            );
         });
 
         it("rejects invalid event id", async () => {
@@ -106,7 +109,10 @@ describe("ticket-actions", () => {
                     },
                 }),
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
+                `${GlobalConstants.TICKET}:event:${ticketId}`,
+                "max",
+            );
         });
 
         it("deletes old blob when updating image URL", async () => {
@@ -198,7 +204,10 @@ describe("ticket-actions", () => {
             expect(mockContext.prisma.product.delete).toHaveBeenCalledWith({
                 where: { id: ticketId },
             });
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
+                `${GlobalConstants.TICKET}:event:${ticketId}`,
+                "max",
+            );
         });
 
         it("rejects invalid ticket id", async () => {

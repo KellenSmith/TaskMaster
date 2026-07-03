@@ -1,8 +1,8 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_BASE_URL || "https://taskmaster.com";
 
     // Static pages
@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Generate sitemap entries
     const sitemap: MetadataRoute.Sitemap = staticPages.map((route) => ({
         url: `${baseUrl}${route}`,
-        lastModified: new Date(),
+        lastModified: "2026-05-26",
         changeFrequency: route === "" ? "daily" : "weekly",
         priority: route === "" ? 1 : 0.8,
     }));
@@ -23,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // products.forEach(product => {
     //   sitemap.push({
     //     url: `${baseUrl}/products/${product.slug}`,
-    //     lastModified: product.updatedAt,
+    //     lastModified: "2026-05-26",
     //     changeFrequency: 'weekly',
     //     priority: 0.6,
     //   })

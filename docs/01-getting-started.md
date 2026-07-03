@@ -20,7 +20,8 @@ pnpm install
 2. Configure environment
 
 - Copy `.env.example` to `.env` and fill in values.
-- Ensure `DATABASE_URL` points to a valid Postgres instance.
+- Set `ACCELERATE_DATABASE_URL` to your Prisma Accelerate connection string.
+- Set `DIRECT_DATABASE_URL` to a direct Postgres connection string for Prisma CLI commands.
 
 3. Database: generate client and run migrations
 
@@ -48,5 +49,5 @@ Visit https://localhost:3000
 ## Troubleshooting
 
 - SSL cert warnings on localhost: trust the local certs in `./certificates/` or switch to HTTP in dev if needed.
-- Prisma errors: verify `DATABASE_URL` and that the database is reachable; re-run `pnpm prisma-generate`.
+- Prisma errors: verify `ACCELERATE_DATABASE_URL` (Accelerate) and `DIRECT_DATABASE_URL` (direct Postgres), then re-run `pnpm prisma-generate`.
 - Email not sending: check SMTP credentials and that `EMAIL` matches the authenticated account.

@@ -41,7 +41,15 @@ vi.mock("@/app/lib/mail-service/mail-transport", () => ({
 }));
 vi.mock("next/cache", () => ({
     revalidateTag: vi.fn(),
+    cacheTag: vi.fn(),
 }));
+vi.mock("next/server", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("next/server")>();
+    return {
+        ...actual,
+        connection: vi.fn().mockResolvedValue(undefined),
+    };
+});
 vi.mock("next/navigation", () => ({
     useRouter: vi.fn(() => ({ push: vi.fn() })),
     redirect: vi.fn(() => {

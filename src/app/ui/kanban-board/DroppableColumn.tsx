@@ -169,9 +169,11 @@ const DroppableColumn = ({
             >
                 <Stack
                     direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
                     spacing={isSmallScreen ? 1 : 0}
+                    sx={{
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
                 >
                     <Typography variant={isSmallScreen ? "subtitle1" : "h6"}>
                         {LanguageTranslations[status][language].toUpperCase()}

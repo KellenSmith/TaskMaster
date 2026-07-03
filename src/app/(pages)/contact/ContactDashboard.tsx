@@ -1,7 +1,6 @@
 "use client";
 import { Stack } from "@mui/material";
 import React from "react";
-import GlobalConstants from "../../GlobalConstants";
 import TextContent from "../../ui/TextContent";
 import { Prisma } from "../../../prisma/generated/browser";
 
@@ -12,7 +11,7 @@ interface ContactDashboardProps {
 const ContactDashboard: React.FC<ContactDashboardProps> = ({ textContentPromise }) => {
     return (
         <Stack sx={{ height: "100%", alignItems: "center" }}>
-            <TextContent id={GlobalConstants.CONTACT} textContentPromise={textContentPromise} />
+            <TextContent textContentPromise={textContentPromise} />
         </Stack>
     );
 };

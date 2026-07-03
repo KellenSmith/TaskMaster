@@ -3,7 +3,7 @@ import { useMediaQuery } from "@mui/material";
 import EventDetails from "./EventDetails";
 import { useUserContext } from "../../context/UserContext";
 import { Language } from "../../../prisma/generated/enums";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { taskFieldLabels } from "../../ui/form/LanguageTranslations";
 import LocalizationContextProvider from "../../context/LocalizationContext";
 
@@ -75,11 +75,13 @@ describe("EventDetails", () => {
         });
 
         const datesBlock = screen.getByText(
-            new RegExp(`${formatDate(event.start_time)}.*${formatDate(event.end_time)}`),
+            new RegExp(
+                `${formatUtcDateToTimezone(event.start_time)}.*${formatUtcDateToTimezone(event.end_time)}`,
+            ),
             { selector: "p" },
         );
-        expect(datesBlock).toHaveTextContent(formatDate(event.start_time));
-        expect(datesBlock).toHaveTextContent(formatDate(event.end_time));
+        expect(datesBlock).toHaveTextContent(formatUtcDateToTimezone(event.start_time));
+        expect(datesBlock).toHaveTextContent(formatUtcDateToTimezone(event.end_time));
     });
 
     it("renders location name and address when location is provided", async () => {

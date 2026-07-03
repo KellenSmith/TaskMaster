@@ -27,20 +27,24 @@ export const getAbsoluteUrl = (
     pathSegments: string[] = [],
     searchParams: { [key: string]: string } = {},
 ): string => {
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-        ? "https://" + process.env.VERCEL_PROJECT_PRODUCTION_URL
+    const baseUrl = process.env.VERCEL_URL
+        ? "https://" + process.env.VERCEL_URL
         : window?.location?.origin;
     if (!baseUrl) throw new Error("Base URL not found");
 
     return baseUrl + getRelativeUrl(pathSegments, searchParams);
 };
 
+/**
+ * @throws Will throw a redirect exception that Next.js will catch and handle.
+ */
 export const serverRedirect = (
     pathSegments: string[],
     searchParams: { [key: string]: string } = {},
 ) => {
     redirect(getRelativeUrl(pathSegments, searchParams));
 };
+
 export const clientRedirect = (
     router: AppRouterInstance,
     pathSegments: string[],

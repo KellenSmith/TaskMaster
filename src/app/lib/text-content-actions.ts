@@ -1,13 +1,16 @@
 "use server";
 import { revalidateTag } from "next/cache";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { sanitizeRichText } from "./html-sanitizer";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { getDefaultTextContent } from "./text-content-helpers";
+
+export const getTextContentCacheTag = async (id: string) => `${GlobalConstants.TEXT_CONTENT}:${id}`;
 
 export const createTextContent = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     id: string | null = null,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> =>
     await tx.textContent.create({
@@ -33,29 +36,24 @@ export const createTextContent = async (
         },
     });
 
-export const getTextContent = async (
-    id: string | null = null,
+export const getCachedTextContent = async (
+    id: string,
 ): Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>> => {
-    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        if (!id) return await createTextContent(tx, id);
-
-        let textContent = await tx.textContent.findUnique({
-            where: {
-                id: id,
-            },
-            include: {
-                translations: true,
-            },
-        });
-
-        // If the text content doesn't exist, create a default
-        if (!textContent) textContent = await createTextContent(tx, id);
-        return textContent;
+    let textContent = await prisma.textContent.findUnique({
+        where: {
+            id: id,
+        },
+        include: {
+            translations: true,
+        },
     });
+
+    if (textContent) return textContent;
+    return await getDefaultTextContent(id);
 };
 
 export const updateTextContent = async (
-    id: string,
+    id: string | undefined,
     language: Language,
     text: string,
     category?: string,
@@ -63,42 +61,41 @@ export const updateTextContent = async (
     // Sanitize rich text content before saving
     const sanitizedText = sanitizeRichText(text);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        await tx.textContent.upsert({
-            where: {
-                id,
+    await prisma.textContent.upsert({
+        where: {
+            id,
+        },
+        create: {
+            id,
+            category: category || null,
+            translations: {
+                create: {
+                    language,
+                    text: sanitizedText,
+                },
             },
-            create: {
-                id,
-                category: category || null,
-                translations: {
+        },
+        update: {
+            category: category || null,
+            translations: {
+                upsert: {
+                    where: {
+                        language_text_content_id: {
+                            language,
+                            text_content_id: id as string,
+                        },
+                    },
                     create: {
                         language,
                         text: sanitizedText,
                     },
-                },
-            },
-            update: {
-                category: category || null,
-                translations: {
-                    upsert: {
-                        where: {
-                            language_text_content_id: {
-                                language,
-                                text_content_id: id,
-                            },
-                        },
-                        create: {
-                            language,
-                            text: sanitizedText,
-                        },
-                        update: {
-                            text: sanitizedText,
-                        },
+                    update: {
+                        text: sanitizedText,
                     },
                 },
             },
-        });
+        },
     });
-    revalidateTag(GlobalConstants.TEXT_CONTENT, "max");
+
+    if (id) revalidateTag(await getTextContentCacheTag(id), "max");
 };

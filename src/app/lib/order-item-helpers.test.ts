@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { validateAndBuildOrderItems, processOrderItems } from "./order-item-helpers";
 import { getAvailableProductStock, processOrderedProduct } from "./product-helpers";
-import { OrderStatus, Prisma } from "../../prisma/generated/client";
+import { OrderStatus } from "../../prisma/generated/client";
+import { TransactionClient } from "../../prisma/prisma-client";
 
 // Mocks
 vi.mock("./zod-schemas", () => ({
@@ -16,7 +17,7 @@ const mockTx = {
     product: {
         findMany: vi.fn(),
     },
-} as unknown as Prisma.TransactionClient;
+} as unknown as TransactionClient;
 
 describe("order-item-helpers", () => {
     describe("validateAndBuildOrderItems", () => {

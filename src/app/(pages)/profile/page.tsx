@@ -2,12 +2,21 @@
 import ProfileDashboard from "./ProfileDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { prisma } from "../../../prisma/prisma-client";
+import { connection } from "next/server";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
-const ProfilePage = async () => {
+const assertIsAuthorized = async () => {
     const loggedInUser = await getLoggedInUser();
-    if (!loggedInUser) throw new Error("Not authorized to view profile");
+    if (!loggedInUser) {
+        throw new Error("Unauthorized");
+    }
+    return loggedInUser;
+};
 
-    const tasksPromise = prisma.task.findMany({
+const getCachedUserTasks = async () => {
+    const loggedInUser = await assertIsAuthorized();
+    return await prisma.task.findMany({
         where: { OR: [{ assignee_id: loggedInUser.id }, { reviewer_id: loggedInUser.id }] },
         include: {
             assignee: {
@@ -25,7 +34,11 @@ const ProfilePage = async () => {
             skill_badges: true,
         },
     });
-    const eventsPromise = prisma.event.findMany({
+};
+
+const getCachedUserEvents = async () => {
+    const loggedInUser = await assertIsAuthorized();
+    return await prisma.event.findMany({
         where: {
             OR: [
                 { host_id: loggedInUser.id },
@@ -58,14 +71,28 @@ const ProfilePage = async () => {
             event_reserves: true,
         },
     });
-    const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
+};
+
+const getCachedSkillBadges = async () => {
+    await assertIsAuthorized();
+    return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
+};
+
+const ProfilePage = async () => {
+    await connection();
+
+    const tasksPromise = getCachedUserTasks();
+    const eventsPromise = getCachedUserEvents();
+    const skillBadgesPromise = getCachedSkillBadges();
 
     return (
-        <ProfileDashboard
-            tasksPromise={tasksPromise}
-            eventsPromise={eventsPromise}
-            skillBadgesPromise={skillBadgesPromise}
-        />
+        <ProtectedPage name={GlobalConstants.PROFILE}>
+            <ProfileDashboard
+                tasksPromise={tasksPromise}
+                eventsPromise={eventsPromise}
+                skillBadgesPromise={skillBadgesPromise}
+            />
+        </ProtectedPage>
     );
 };
 

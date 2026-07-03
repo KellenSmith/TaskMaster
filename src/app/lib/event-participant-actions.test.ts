@@ -4,13 +4,14 @@ import GlobalConstants from "../GlobalConstants";
 import type { TransactionClient } from "../../test/types/test-types";
 import * as eventParticipantActions from "./event-participant-actions";
 import { notifyEventReserves } from "./mail-service/mail-service";
-import { deleteEventReserveWithTx } from "./event-reserve-actions";
+import { deleteEventReserveWithTx, getEventReservesCacheTag } from "./event-reserve-actions";
 import { getLoggedInUser, getUserLanguage } from "./user-helpers";
 import dayjs from "dayjs";
 import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { prisma } from "../../prisma/prisma-client";
 import { Language, UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { getEventTicketsCacheTag } from "./ticket-actions";
 
 vi.mock("./mail-service/mail-service", () => ({
     notifyEventReserves: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock("./mail-service/mail-service", () => ({
 
 vi.mock("./event-reserve-actions", () => ({
     deleteEventReserveWithTx: vi.fn(),
+    getEventReservesCacheTag: vi.fn(),
 }));
 
 vi.mock("./user-helpers", () => ({
@@ -30,10 +32,14 @@ const ticketId = "550e8400-e29b-41d4-a716-446655440002";
 const eventId = "550e8400-e29b-41d4-a716-446655440003";
 const eventParticipantId = "550e8400-e29b-41d4-a716-446655440004";
 const otherUserId = "550e8400-e29b-41d4-a716-446655440005";
+const reserveUsersEventTag = `${GlobalConstants.RESERVE_USERS}:event:${eventId}`;
+const participantUsersEventTag = `${GlobalConstants.PARTICIPANT_USERS}:event:${eventId}`;
+const ticketEventTag = `${GlobalConstants.TICKET}:event:${eventId}`;
 
 describe("event-participant-actions", () => {
     beforeEach(() => {
         vi.mocked(getUserLanguage).mockResolvedValue("english");
+        vi.mocked(getEventReservesCacheTag).mockResolvedValue(reserveUsersEventTag);
     });
 
     describe("addEventParticipantWithTx", () => {
@@ -93,16 +99,13 @@ describe("event-participant-actions", () => {
                     ticket: { connect: { product_id: ticketId } },
                 },
             });
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(reserveUsersEventTag, "max");
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.RESERVE_USERS,
+                await getEventTicketsCacheTag(eventId),
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.PARTICIPANT_USERS,
-                "max",
-            );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(participantUsersEventTag, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(ticketEventTag, "max");
         });
 
         it("throws error when user is already a participant", async () => {
@@ -223,6 +226,13 @@ describe("event-participant-actions", () => {
         });
 
         it("deletes event participant and notifies reserves", async () => {
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
+                {
+                    id: eventParticipantId,
+                    user_id: userId,
+                },
+            ] as any);
+
             await eventParticipantActions.deleteEventParticipantWithTx(tx as any, eventId, userId);
 
             expect(tx.ticket.findFirstOrThrow).toHaveBeenCalledWith({
@@ -249,11 +259,17 @@ describe("event-participant-actions", () => {
                 },
             });
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
-                GlobalConstants.PARTICIPANT_USERS,
+                await eventParticipantActions.getEventParticipantByIdCacheTag(eventParticipantId),
                 "max",
             );
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.EVENT, "max");
-            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.TICKET, "max");
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
+                await eventParticipantActions.getEventParticipantCacheTag(eventId),
+                "max",
+            );
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(
+                await eventParticipantActions.getUserEventParticipantsCacheTag(userId),
+                "max",
+            );
             expect(vi.mocked(notifyEventReserves)).toHaveBeenCalledWith(eventId);
         });
 
@@ -266,6 +282,13 @@ describe("event-participant-actions", () => {
         });
 
         it("increments stock only for tickets with limited stock", async () => {
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
+                {
+                    id: eventParticipantId,
+                    user_id: userId,
+                },
+            ] as any);
+
             await eventParticipantActions.deleteEventParticipantWithTx(tx as any, eventId, userId);
 
             expect(tx.product.updateMany).toHaveBeenCalledWith(
@@ -298,10 +321,28 @@ describe("event-participant-actions", () => {
         });
 
         it("deletes participant and unassigns from event tasks", async () => {
+            vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue([
+                {
+                    id: eventParticipantId,
+                    user_id: userId,
+                },
+            ] as any);
+
             await eventParticipantActions.deleteEventParticipant(eventId, userId);
 
             expect(vi.mocked(prisma.$transaction)).toHaveBeenCalled();
-            expect(tx.eventParticipant.deleteMany).toHaveBeenCalled();
+            expect(tx.eventParticipant.findMany).toHaveBeenCalledWith({
+                where: {
+                    user_id: userId,
+                    ticket_id: ticketId,
+                },
+            });
+            expect(tx.eventParticipant.deleteMany).toHaveBeenCalledWith({
+                where: {
+                    user_id: userId,
+                    ticket_id: ticketId,
+                },
+            });
             expect(tx.event.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: eventId },
             });
@@ -314,8 +355,8 @@ describe("event-participant-actions", () => {
 
         const mockEvent = {
             id: eventId,
-            start_time: dayjs("2024-06-15T09:00:00Z").toDate(),
-            end_time: dayjs("2024-06-15T17:00:00Z").toDate(),
+            start_time: dayjs.utc("2024-06-15T09:00:00Z").toDate(),
+            end_time: dayjs.utc("2024-06-15T17:00:00Z").toDate(),
         };
 
         beforeEach(() => {
@@ -402,7 +443,7 @@ describe("event-participant-actions", () => {
             vi.mocked(getLoggedInUser).mockResolvedValue({
                 id: userId,
                 role: UserRole.admin,
-                user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+                user_membership: { expires_at: dayjs.utc().add(1, "month").toDate() },
             } as any);
             const checkedInAt = now.subtract(1, "hour").toDate();
             vi.mocked(prisma.eventParticipant.findUniqueOrThrow).mockResolvedValue({
@@ -542,7 +583,7 @@ describe("event-participant-actions", () => {
                 vi.mocked(getLoggedInUser).mockResolvedValue({
                     id: userId,
                     role: userRole,
-                    user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+                    user_membership: { expires_at: dayjs.utc().add(1, "month").toDate() },
                 } as any);
                 const duringEvent = {
                     ...mockEventParticipant,
@@ -572,7 +613,7 @@ describe("event-participant-actions", () => {
             vi.mocked(getLoggedInUser).mockResolvedValue({
                 id: userId,
                 role: UserRole.member,
-                user_membership: { expires_at: dayjs().add(1, "month").toDate() },
+                user_membership: { expires_at: dayjs.utc().add(1, "month").toDate() },
             } as any);
             const duringEvent = {
                 ...mockEventParticipant,

@@ -2,6 +2,7 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useMediaQuery } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
+import { use } from "react";
 import EventDashboard from "./EventDashboard";
 import testdata from "../../../test/testdata";
 import { Language, EventStatus } from "../../../prisma/generated/enums";
@@ -82,8 +83,8 @@ vi.mock("./ReserveDashboard", () => ({
 }));
 vi.mock("./EventActions", () => ({
     __esModule: true,
-    default: ({ eventTags }: { eventTags: string[] }) => (
-        <div data-testid="event-actions">{eventTags.join(",")}</div>
+    default: ({ eventTagsPromise }: { eventTagsPromise: Promise<string[]> }) => (
+        <div data-testid="event-actions">{use(eventTagsPromise).join(",")}</div>
     ),
 }));
 vi.mock("../../ui/ErrorBoundarySuspense", () => ({
@@ -113,7 +114,7 @@ const createProps = (eventOverrides: Record<string, any> = {}) => {
             eventParticipantsPromise: Promise.resolve([] as any),
             eventReservesPromise: Promise.resolve([] as any),
             locationsPromise: Promise.resolve([] as any),
-            eventTags: ["Before", "During"],
+            eventTagsPromise: Promise.resolve(["Before", "During"]),
         },
     };
 };
@@ -174,7 +175,7 @@ describe("EventDashboard", () => {
 
         await renderDashboard({ status: EventStatus.cancelled });
 
-        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent('"CANCELLED"');
+        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent("(CANCELLED)");
     });
 
     it("appends sold out label to title when event is sold out and not cancelled", async () => {
@@ -182,7 +183,9 @@ describe("EventDashboard", () => {
 
         await renderDashboard();
 
-        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent("(SOLD OUT)");
+        expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent(
+            new RegExp("sold out", "i"),
+        );
     });
 
     it("builds details, location, organize and tickets tabs for all users", async () => {

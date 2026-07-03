@@ -3,7 +3,7 @@
 set -euo pipefail
 
 required_env_vars=(
-	"POSTGRES_URL"
+	"DIRECT_DATABASE_URL",
 	"BLOB_BACKUP_READ_WRITE_TOKEN"
 )
 
@@ -44,7 +44,7 @@ trap cleanup EXIT
 
 echo "==> Creating PostgreSQL backup"
 pg_dump \
-	"${POSTGRES_URL}" \
+	"${DIRECT_DATABASE_URL}" \
 	--format=custom \
 	--file="${dump_path}" \
 	--no-owner \

@@ -62,7 +62,7 @@ interface EventDashboardProps {
         }>[]
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
-    eventTags: string[];
+    eventTagsPromise: Promise<string[]>;
 }
 
 const EventDashboard = ({
@@ -74,7 +74,7 @@ const EventDashboard = ({
     eventParticipantsPromise,
     eventReservesPromise,
     locationsPromise,
-    eventTags,
+    eventTagsPromise,
 }: EventDashboardProps) => {
     const { user, language } = useUserContext();
 
@@ -173,7 +173,12 @@ const EventDashboard = ({
 
     return (
         <Stack>
-            <Stack padding="0 24px 0 24px" spacing={2}>
+            <Stack
+                spacing={2}
+                sx={{
+                    padding: "0 24px 0 24px",
+                }}
+            >
                 {event.status === EventStatus.draft && (
                     <Typography
                         variant="h4"
@@ -210,17 +215,18 @@ const EventDashboard = ({
                         textAlign: isSmall ? "center" : "left",
                     }}
                 >
-                    {`${event.title} ${isEventCancelled(event) ? `"${LanguageTranslations.cancelled[language].toUpperCase()}"` : isEventSoldOut(event) ? "(SOLD OUT)" : ""}`}
+                    {`${event.title} ${isEventCancelled(event) ? `(${LanguageTranslations.cancelled[language].toUpperCase()})` : isEventSoldOut(event) ? `(${LanguageTranslations.soldOut[language]})` : ""}`}
                 </Typography>
             </Stack>
-
             <Stack
                 direction="row"
-                flexWrap="nowrap"
-                padding={isSmall ? 0 : "0 24px 0 24px"}
-                justifyContent="space-between"
                 spacing={isSmall ? 0 : 2}
-                alignItems="center"
+                sx={{
+                    flexWrap: "nowrap",
+                    padding: isSmall ? 0 : "0 24px 0 24px",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                }}
             >
                 <Tabs
                     value={openTab || implementedTabs.details}
@@ -273,7 +279,7 @@ const EventDashboard = ({
                     <EventActions
                         eventPromise={eventPromise}
                         locationsPromise={locationsPromise}
-                        eventTags={eventTags}
+                        eventTagsPromise={eventTagsPromise}
                     />
                 </Stack>
             </Stack>

@@ -8,6 +8,15 @@ import { auth } from "./auth/auth";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 
+export const getUserCacheTag = async (userId: string) => `${GlobalConstants.USER}:${userId}`;
+
+const getCachedUserById = async (userId: string) => {
+    return prisma.user.findUnique({
+        where: { id: userId },
+        include: { user_membership: true, skill_badges: true },
+    });
+};
+
 export const getUserLanguage = async () => {
     const cookieStore = await cookies();
     const languageValue = cookieStore.get(GlobalConstants.LANGUAGE)?.value;
@@ -20,16 +29,17 @@ export const getUserLanguage = async () => {
 export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
     include: { user_membership: true; skill_badges: true };
 }> | null> => {
-    const authResult = await auth();
-    if (!authResult?.user) return null;
-    const loggedInUser = await prisma.user.findUnique({
-        where: { id: authResult.user.id },
-        include: { user_membership: true, skill_badges: true },
-    });
-    return loggedInUser;
+    try {
+        const authResult = await auth();
+        if (!authResult?.user?.id) return null;
+        const loggedInUser = await getCachedUserById(authResult.user.id);
+        return loggedInUser;
+    } catch {
+        return null;
+    }
 };
 
-export const getActiveMembers = async (): Promise<
+export const getCachedActiveMembers = async (): Promise<
     Prisma.UserGetPayload<{
         select: { id: true; nickname: true; skill_badges: true };
     }>[]

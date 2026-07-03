@@ -74,9 +74,11 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
         >
             <Stack
                 direction={{ xs: "column", md: "row" }}
-                alignItems="center"
                 spacing={3}
-                height="100%"
+                sx={{
+                    alignItems: "center",
+                    height: "100%",
+                }}
             >
                 {/* Product Card Section */}
                 <Stack sx={{ flex: "0 0 auto" }}>
@@ -109,8 +111,11 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                             </Typography>
                             <Typography
                                 variant="h6"
-                                color="text.secondary"
-                                sx={{ fontWeight: 400, lineHeight: 1.6 }}
+                                sx={{
+                                    color: "text.secondary",
+                                    fontWeight: 400,
+                                    lineHeight: 1.6,
+                                }}
                             >
                                 {LanguageTranslations.youHaveATicket[language]}
                             </Typography>
@@ -129,17 +134,23 @@ const TicketDashboard = ({ eventPromise, ticketsPromise }: TicketDashboardProps)
                             >
                                 <Typography
                                     variant="body1"
-                                    color="text.secondary"
-                                    textAlign="center"
-                                    sx={{ mb: 2, fontWeight: 500 }}
+                                    sx={{
+                                        color: "text.secondary",
+                                        textAlign: "center",
+                                        mb: 2,
+                                        fontWeight: 500,
+                                    }}
                                 >
                                     {LanguageTranslations.cantMakeIt[language]}
                                 </Typography>
                                 <Typography
                                     variant="body2"
-                                    color="text.secondary"
-                                    textAlign="center"
-                                    sx={{ mb: 3, opacity: 0.8 }}
+                                    sx={{
+                                        color: "text.secondary",
+                                        textAlign: "center",
+                                        mb: 3,
+                                        opacity: 0.8,
+                                    }}
                                 >
                                     {LanguageTranslations.leaveToFreeUpSpot[language]}
                                 </Typography>

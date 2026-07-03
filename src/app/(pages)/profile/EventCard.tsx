@@ -1,5 +1,5 @@
 import { Button, Card, CardContent, Stack, Typography, Chip, Box } from "@mui/material";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import GlobalConstants from "../../GlobalConstants";
 import { isUserHost, clientRedirect } from "../../lib/utils";
 import { isEventPublished, isUserParticipant, isUserReserve } from "../calendar-post/event-utils";
@@ -52,7 +52,13 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
             <CardContent sx={{ p: 3 }}>
                 <Stack spacing={2}>
                     {/* Header with title and status chips */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Stack
+                        direction="row"
+                        sx={{
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                        }}
+                    >
                         <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
                             {event.title}
                         </Typography>
@@ -76,16 +82,28 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
 
                     {/* Event details */}
                     <Stack spacing={1}>
-                        <Typography color="text.secondary">
+                        <Typography
+                            sx={{
+                                color: "text.secondary",
+                            }}
+                        >
                             <strong>{EventLanguageTranslations.start[language]}:</strong>{" "}
-                            {formatDate(event.start_time)}
+                            {formatUtcDateToTimezone(event.start_time)}
                         </Typography>
-                        <Typography color="text.secondary">
+                        <Typography
+                            sx={{
+                                color: "text.secondary",
+                            }}
+                        >
                             <strong>{EventLanguageTranslations.end[language]}:</strong>{" "}
-                            {formatDate(event.end_time)}
+                            {formatUtcDateToTimezone(event.end_time)}
                         </Typography>
                         {event.location?.name && (
-                            <Typography color="text.secondary">
+                            <Typography
+                                sx={{
+                                    color: "text.secondary",
+                                }}
+                            >
                                 <strong>{LanguageTranslations.location[language]}:</strong>{" "}
                                 {event.location.name}, {event.location.address}
                             </Typography>

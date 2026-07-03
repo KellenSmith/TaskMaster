@@ -1,15 +1,17 @@
 import dayjs from "dayjs";
 import { EventStatus, UserRole } from "../../../prisma/generated/enums";
-import { getActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
+import { Prisma } from "../../../prisma/generated/browser";
+import { getCachedActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 import EventPage from "./page";
 import { prisma } from "../../../prisma/prisma-client";
 import GlobalConstants from "../../GlobalConstants";
+import { ReactElement } from "react";
 
 const mockUser = {
     id: "user-1",
     role: UserRole.member,
     user_membership: {
-        expires_at: dayjs().add(1, "month").toDate(),
+        expires_at: dayjs.utc().add(1, "month").toDate(),
     },
 };
 const activeMembers = [
@@ -21,7 +23,10 @@ const activeMembers = [
 
 vi.mock("../../lib/user-helpers", () => ({
     getLoggedInUser: vi.fn(),
-    getActiveMembers: vi.fn(),
+    getCachedActiveMembers: vi.fn(),
+}));
+vi.mock("../../ProtectedPage", () => ({
+    default: vi.fn(({ children }) => children),
 }));
 
 const mockSearchParams = Promise.resolve({ [GlobalConstants.EVENT_ID]: "event-1" });
@@ -66,6 +71,51 @@ const mockLocations = [
     },
 ];
 
+type EventPromiseType = Promise<
+    Prisma.EventGetPayload<{
+        include: {
+            location: true;
+            tickets: { include: { event_participants: true } };
+            event_reserves: true;
+        };
+    }>
+>;
+
+type EventTasksPromiseType = Promise<
+    Prisma.TaskGetPayload<{
+        include: { assignee: { select: { id: true; nickname: true } }; skill_badges: true };
+    }>[]
+>;
+
+type EventTicketsPromiseType = Promise<
+    Prisma.TicketGetPayload<{
+        include: { product: true; event_participants: true };
+    }>[]
+>;
+
+type ActiveMembersPromiseType = Promise<
+    Prisma.UserGetPayload<{
+        select: { id: true; nickname: true; skill_badges: true };
+    }>[]
+>;
+
+type SkillBadgesPromiseType = Promise<Prisma.SkillBadgeGetPayload<true>[]>;
+
+type EventParticipantsPromiseType = Promise<
+    Prisma.EventParticipantGetPayload<{
+        include: { user: { select: { id: true; nickname: true } } };
+    }>[]
+>;
+
+type EventReservesPromiseType = Promise<
+    Prisma.EventReserveGetPayload<{
+        include: { user: { select: { id: true; nickname: true } } };
+    }>[]
+>;
+
+type LocationsPromiseType = Promise<Prisma.LocationGetPayload<true>[]>;
+type EventTagsPromiseType = Promise<string[]>;
+
 // [eventStatus, userRole, eventHost]
 const authorizedTestCases = [
     [EventStatus.published, UserRole.member, false],
@@ -77,7 +127,7 @@ const authorizedTestCases = [
 describe("EventPage", () => {
     beforeEach(() => {
         vi.mocked(getLoggedInUser).mockResolvedValue(mockUser as any);
-        vi.mocked(getActiveMembers).mockResolvedValue(activeMembers as any);
+        vi.mocked(getCachedActiveMembers).mockResolvedValue(activeMembers as any);
         vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(mockEvent as any);
         vi.mocked(prisma.task.findMany).mockResolvedValue(mockedTasks as any);
         vi.mocked(prisma.ticket.findMany).mockResolvedValue(mockedTickets as any);
@@ -88,10 +138,21 @@ describe("EventPage", () => {
         await expect(
             async () => await EventPage({ searchParams: mockSearchParams }),
         ).rejects.toThrow("Unauthorized");
-        expect(prisma.event.findUniqueOrThrow).not.toHaveBeenCalled();
+        expect(prisma.event.findUniqueOrThrow).toHaveBeenCalledWith({
+            where: { id: "event-1" },
+            include: {
+                location: true,
+                tickets: {
+                    include: {
+                        event_participants: true,
+                    },
+                },
+                event_reserves: true,
+            },
+        });
         expect(prisma.task.findMany).not.toHaveBeenCalled();
         expect(prisma.ticket.findMany).not.toHaveBeenCalled();
-        expect(getActiveMembers).not.toHaveBeenCalled();
+        expect(getCachedActiveMembers).not.toHaveBeenCalled();
     });
     it("throws an error if the user is not authorized to view the event", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue(mockUser as any);
@@ -117,7 +178,7 @@ describe("EventPage", () => {
         });
         expect(prisma.task.findMany).not.toHaveBeenCalled();
         expect(prisma.ticket.findMany).not.toHaveBeenCalled();
-        expect(getActiveMembers).not.toHaveBeenCalled();
+        expect(getCachedActiveMembers).not.toHaveBeenCalled();
     });
     it.for(authorizedTestCases)(
         "shows the event when event is %s, user is %s, user is host: %s",
@@ -134,7 +195,7 @@ describe("EventPage", () => {
             vi.mocked(prisma.event.findUniqueOrThrow).mockResolvedValue(mockPublishedEvent as any);
             vi.mocked(prisma.task.findMany).mockResolvedValue(mockedTasks as any);
             vi.mocked(prisma.ticket.findMany).mockResolvedValue(mockedTickets as any);
-            vi.mocked(getActiveMembers).mockResolvedValue(activeMembers as any);
+            vi.mocked(getCachedActiveMembers).mockResolvedValue(activeMembers as any);
             vi.mocked(prisma.skillBadge.findMany).mockResolvedValue(mockSkillBadges as any);
             vi.mocked(prisma.eventParticipant.findMany).mockResolvedValue(
                 mockEventParticipants as any,
@@ -144,6 +205,46 @@ describe("EventPage", () => {
             vi.mocked(prisma.event.findMany).mockResolvedValue([mockPublishedEvent as any]);
 
             const result = await EventPage({ searchParams: mockSearchParams });
+            const props = result.props as {
+                name: string;
+                children: ReactElement<{
+                    eventPromise: EventPromiseType;
+                    eventTasksPromise: EventTasksPromiseType;
+                    eventTicketsPromise: EventTicketsPromiseType;
+                    activeMembersPromise: ActiveMembersPromiseType;
+                    skillBadgesPromise: SkillBadgesPromiseType;
+                    eventParticipantsPromise: EventParticipantsPromiseType;
+                    eventReservesPromise: EventReservesPromiseType;
+                    locationsPromise: LocationsPromiseType;
+                    eventTagsPromise: EventTagsPromiseType;
+                }>;
+            };
+
+            const dashboardProps = props.children.props;
+
+            expect(props.name).toBe(GlobalConstants.CALENDAR_POST);
+
+            const [
+                resolvedEvent,
+                resolvedEventTasks,
+                resolvedEventTickets,
+                resolvedActiveMembers,
+                resolvedSkillBadges,
+                resolvedEventParticipants,
+                resolvedEventReserves,
+                resolvedLocations,
+                resolvedEventTags,
+            ] = await Promise.all([
+                dashboardProps.eventPromise,
+                dashboardProps.eventTasksPromise,
+                dashboardProps.eventTicketsPromise,
+                dashboardProps.activeMembersPromise,
+                dashboardProps.skillBadgesPromise,
+                dashboardProps.eventParticipantsPromise,
+                dashboardProps.eventReservesPromise,
+                dashboardProps.locationsPromise,
+                dashboardProps.eventTagsPromise,
+            ]);
 
             expect(prisma.event.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: "event-1" },
@@ -178,18 +279,16 @@ describe("EventPage", () => {
                     event_participants: true,
                 },
             });
-            expect(getActiveMembers).toHaveBeenCalled();
-            expect(result.props).toStrictEqual({
-                eventPromise: Promise.resolve(mockPublishedEvent),
-                eventTasksPromise: Promise.resolve(mockedTasks),
-                eventTicketsPromise: Promise.resolve(mockedTickets),
-                activeMembersPromise: Promise.resolve(activeMembers),
-                skillBadgesPromise: Promise.resolve(mockSkillBadges),
-                eventParticipantsPromise: Promise.resolve(mockEventParticipants),
-                eventReservesPromise: Promise.resolve(mockEventReserves),
-                locationsPromise: Promise.resolve(mockLocations),
-                eventTags: mockPublishedEvent.tags,
-            });
+            expect(getCachedActiveMembers).toHaveBeenCalled();
+            expect(resolvedEvent).toStrictEqual(mockPublishedEvent);
+            expect(resolvedEventTasks).toStrictEqual(mockedTasks);
+            expect(resolvedEventTickets).toStrictEqual(mockedTickets);
+            expect(resolvedActiveMembers).toStrictEqual(activeMembers);
+            expect(resolvedSkillBadges).toStrictEqual(mockSkillBadges);
+            expect(resolvedEventParticipants).toStrictEqual(mockEventParticipants);
+            expect(resolvedEventReserves).toStrictEqual(mockEventReserves);
+            expect(resolvedLocations).toStrictEqual(mockLocations);
+            expect(resolvedEventTags).toStrictEqual(mockPublishedEvent.tags);
         },
     );
 });

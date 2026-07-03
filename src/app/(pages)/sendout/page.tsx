@@ -1,11 +1,21 @@
 // ...existing code...
 import SendoutDashboard from "./SendoutDashboard";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
-const SendoutPage = () => {
-    const newsLetterJobsPromise = prisma.newsletterJob.findMany({
+const getCachedNewsLetterJobs = async () => {
+    return await prisma.newsletterJob.findMany({
         orderBy: { created_at: "desc" },
     });
-    return <SendoutDashboard newsLetterJobsPromise={newsLetterJobsPromise} />;
+};
+
+const SendoutPage = () => {
+    const newsLetterJobsPromise = getCachedNewsLetterJobs();
+    return (
+        <ProtectedPage name={GlobalConstants.SENDOUT}>
+            <SendoutDashboard newsLetterJobsPromise={newsLetterJobsPromise} />
+        </ProtectedPage>
+    );
 };
 export default SendoutPage;

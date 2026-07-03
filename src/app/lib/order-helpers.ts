@@ -2,11 +2,12 @@
 
 import { revalidateTag } from "next/cache";
 import { OrderStatus, Prisma } from "../../prisma/generated/client";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { sendOrderConfirmation } from "./mail-service/mail-service";
 import { capturePaymentFunds } from "./payment-helpers";
 import GlobalConstants from "../GlobalConstants";
 import { processOrderItems } from "./order-item-helpers";
+import { connection } from "next/server";
 
 export const progressOrder = async (
     order: Prisma.OrderGetPayload<{
@@ -66,8 +67,9 @@ const paidOrderToShipped = async (
     needsCapture: boolean,
 ): Promise<void> => {
     // This transaction may perform multiple updates and external work; increase timeout locally.
+    await connection();
     const updatedOrder = await prisma.$transaction(
-        async (tx: Prisma.TransactionClient) => {
+        async (tx: TransactionClient) => {
             await processOrderItems(tx, order);
             return await tx.order.update({
                 where: { id: order.id },

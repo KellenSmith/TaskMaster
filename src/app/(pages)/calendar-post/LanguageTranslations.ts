@@ -56,6 +56,10 @@ const LanguageTranslations = {
         [Language.english]: "Cancelled",
         [Language.swedish]: "Inställt",
     },
+    soldOut: {
+        [Language.english]: "Sold out",
+        [Language.swedish]: "Slutsålt",
+    },
     start: {
         [Language.english]: "Start",
         [Language.swedish]: "Start",

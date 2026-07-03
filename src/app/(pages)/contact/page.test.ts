@@ -1,24 +1,35 @@
 import { ReactElement } from "react";
-import { getTextContent } from "../../lib/text-content-actions";
+import { getCachedTextContent } from "../../lib/text-content-actions";
 import ContactPage from "./page";
+import GlobalConstants from "../../GlobalConstants";
 
-getTextContent;
+vi.mock("../../ProtectedPage", () => ({
+    default: vi.fn(({ children }) => children),
+}));
+
 vi.mock("../../lib/text-content-actions", () => ({
     getTextContent: vi.fn(),
+    getCachedTextContent: vi.fn(),
 }));
 
 describe("ContactPage", () => {
-    it("renders text content without crashing", async () => {
+    it("returns ProtectedPage with the contact dashboard props", async () => {
         const textContent = {
             id: "contact",
             translations: [],
         };
-        vi.mocked(getTextContent).mockResolvedValue(textContent as any);
+        vi.mocked(getCachedTextContent).mockResolvedValue(textContent as any);
 
         const result = (await ContactPage({})) as ReactElement;
 
-        expect(result.props).toStrictEqual({
-            textContentPromise: Promise.resolve(textContent),
-        });
+        const props = result.props as {
+            name: string;
+            children: ReactElement<{ textContentPromise: Promise<unknown> }>;
+        };
+
+        expect(props.name).toBe(GlobalConstants.CONTACT);
+
+        expect(vi.mocked(getCachedTextContent)).toHaveBeenCalledWith(GlobalConstants.CONTACT);
+        await expect(props.children.props.textContentPromise).resolves.toStrictEqual(textContent);
     });
 });

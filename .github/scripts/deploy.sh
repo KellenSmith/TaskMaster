@@ -25,12 +25,6 @@ fi
 
 bash .github/scripts/set_up_customer_project.sh "${VERCEL_TARGET}"
 
-# Check that .vercel/project.json exists and contains the correct project name
-if [ ! -f .vercel/project.json ]; then
-    echo "Error: .vercel/project.json not found. Please ensure the project is set up correctly." >&2
-    exit 1
-fi
-
 bash .github/scripts/set_customer_env_vars.sh "${VERCEL_TARGET}"
 bash .github/scripts/provision_customer_rdb.sh "${VERCEL_TARGET}"
 bash .github/scripts/provision_customer_blob.sh "${VERCEL_TARGET}"

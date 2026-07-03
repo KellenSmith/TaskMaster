@@ -9,7 +9,7 @@ import { clientRedirect, getRelativeUrl } from "../../lib/utils";
 import Link from "next/link";
 import GlobalConstants from "../../GlobalConstants";
 import LanguageTranslations from "./LanguageTranslations";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { useRouter } from "next/navigation";
 
 interface DashboardProps {
@@ -28,7 +28,6 @@ interface DashboardProps {
                             };
                         };
                     };
-                    user: { select: { id: true; nickname: true } };
                 };
             };
         }>[]
@@ -41,9 +40,19 @@ const Dashboard: React.FC<DashboardProps> = ({ ticketInfoPromise }) => {
     const ticketInfo = use(ticketInfoPromise);
 
     return (
-        <Stack width="100%" spacing={4}>
+        <Stack
+            spacing={4}
+            sx={{
+                width: "100%",
+            }}
+        >
             <Typography variant="h4">{`${LanguageTranslations.welcomeBack[language]}, ${user!.nickname}!`}</Typography>
-            <Stack width="100%" spacing={2}>
+            <Stack
+                spacing={2}
+                sx={{
+                    width: "100%",
+                }}
+            >
                 <Typography variant="h5">
                     {LanguageTranslations.upcomingEventTickets[language]}
                 </Typography>
@@ -66,7 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ticketInfoPromise }) => {
                             <Typography
                                 sx={{ paddingBottom: 2 }}
                                 variant="body2"
-                            >{`${formatDate(eventParticipant.ticket.event.start_time)} - ${formatDate(eventParticipant.ticket.event.end_time)}`}</Typography>
+                            >{`${formatUtcDateToTimezone(eventParticipant.ticket.event.start_time)} - ${formatUtcDateToTimezone(eventParticipant.ticket.event.end_time)}`}</Typography>
                             <CardMedia sx={{ display: "flex", justifyContent: "center" }}>
                                 <Image
                                     src={getRelativeUrl([

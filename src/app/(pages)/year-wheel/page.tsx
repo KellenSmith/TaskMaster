@@ -1,13 +1,24 @@
-// ...existing code...
 import YearWheelDashboard from "./YearWheelDashboard";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
+import { serverRedirect } from "../../lib/utils";
 
-const YearWheelPage = () => {
-    const eventsPromise = prisma.event.findMany({
+const getCachedEventsWithTasks = async () => {
+    return prisma.event.findMany({
         include: {
             tasks: true,
         },
     });
-    return <YearWheelDashboard eventsPromise={eventsPromise} />;
+};
+
+const YearWheelPage = () => {
+    serverRedirect([GlobalConstants.HOME]);
+    const eventsPromise = getCachedEventsWithTasks();
+    return (
+        <ProtectedPage name={GlobalConstants.YEAR_WHEEL}>
+            <YearWheelDashboard eventsPromise={eventsPromise} />
+        </ProtectedPage>
+    );
 };
 export default YearWheelPage;

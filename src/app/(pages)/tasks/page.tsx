@@ -1,12 +1,12 @@
-// ...existing code...
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
-import { getActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
+import { getCachedActiveMembers, getLoggedInUser } from "../../lib/user-helpers";
 import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
-const TasksPage = async () => {
-    const loggedInUser = await getLoggedInUser();
-    const tasksPromise = prisma.task.findMany({
+const getCachedTasks = async () => {
+    return await prisma.task.findMany({
         where: {
             event_id: null,
         },
@@ -20,16 +20,23 @@ const TasksPage = async () => {
             skill_badges: true,
         },
     });
-    const activeMembersPromise = getActiveMembers();
+};
+
+const TasksPage = async () => {
+    const loggedInUser = await getLoggedInUser();
+    const tasksPromise = getCachedTasks();
+    const activeMembersPromise = getCachedActiveMembers();
     const skillBadgesPromise = prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 
     return (
-        <KanBanBoard
-            readOnly={!isUserAdmin(loggedInUser)}
-            tasksPromise={tasksPromise}
-            activeMembersPromise={activeMembersPromise}
-            skillBadgesPromise={skillBadgesPromise}
-        />
+        <ProtectedPage name={GlobalConstants.TASKS}>
+            <KanBanBoard
+                readOnly={!isUserAdmin(loggedInUser)}
+                tasksPromise={tasksPromise}
+                activeMembersPromise={activeMembersPromise}
+                skillBadgesPromise={skillBadgesPromise}
+            />
+        </ProtectedPage>
     );
 };
 

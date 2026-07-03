@@ -1,6 +1,6 @@
 import { CalendarMonth, LocationOn } from "@mui/icons-material";
 import { Paper, Stack, Typography, Box, Chip, useTheme, useMediaQuery } from "@mui/material";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import RichTextField from "../../ui/form/RichTextField";
 import { use } from "react";
 import LanguageTranslations from "./LanguageTranslations";
@@ -48,9 +48,9 @@ const EventDetails = ({ eventPromise }: EventDetailsProps) => {
                                         overflowWrap: "anywhere",
                                     }}
                                 >
-                                    {formatDate(event.start_time)}
+                                    {formatUtcDateToTimezone(event.start_time)}
                                     <br />
-                                    {formatDate(event.end_time)}
+                                    {formatUtcDateToTimezone(event.end_time)}
                                 </Typography>
                             </Box>
                         </Stack>

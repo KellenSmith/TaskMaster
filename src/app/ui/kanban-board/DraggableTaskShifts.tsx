@@ -9,7 +9,7 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import { formatDate } from "../utils";
+import { formatUtcDateToTimezone } from "../utils";
 import { ExpandMore } from "@mui/icons-material";
 import { getEarliestStartTime, sortTasks } from "../../(pages)/calendar-post/event-utils";
 import DraggableTask from "./DraggableTask";
@@ -109,19 +109,23 @@ const DraggableTaskShifts = ({
         const earliestStartTime = getEarliestStartTime(taskList);
         const latestEndTime = getLatestEndTime();
         return (
-            (earliestStartTime ? formatDate(earliestStartTime) : "Unknown") +
+            (earliestStartTime ? formatUtcDateToTimezone(earliestStartTime) : "Unknown") +
             " - " +
-            (latestEndTime ? formatDate(latestEndTime) : "Unknown")
+            (latestEndTime ? formatUtcDateToTimezone(latestEndTime) : "Unknown")
         );
     };
     return (
         <Card key={taskList[0].id} sx={{ width: "100%" }}>
             <Stack
-                sx={{ p: 1, pt: 1, pb: 0 }}
                 direction={{ xs: "column", sm: "row" }}
-                justifyContent="space-between"
-                alignItems={{ xs: "flex-start", sm: "center" }}
                 spacing={{ xs: 0.5, sm: 0 }}
+                sx={{
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    p: 1,
+                    pt: 1,
+                    pb: 0,
+                }}
             >
                 <Typography variant="body1" sx={{ wordBreak: "break-word" }} noWrap={false}>
                     {taskList[0].name}

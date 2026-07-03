@@ -1,9 +1,10 @@
 import ProductsDashboard from "./ProductsDashboard";
-// ...existing code...
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
-const ProductsPage = () => {
-    const productsPromise = prisma.product.findMany({
+const getCachedProducts = async () => {
+    return await prisma.product.findMany({
         where: {
             ticket: null,
         },
@@ -11,8 +12,16 @@ const ProductsPage = () => {
             membership: true,
         },
     });
+};
 
-    return <ProductsDashboard productsPromise={productsPromise} />;
+const ProductsPage = () => {
+    const productsPromise = getCachedProducts();
+
+    return (
+        <ProtectedPage name={GlobalConstants.PRODUCTS}>
+            <ProductsDashboard productsPromise={productsPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default ProductsPage;

@@ -7,7 +7,8 @@ import { useUserContext } from "../../context/UserContext";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import LanguageTranslations from "./LanguageTranslations";
-import { Prisma } from "../../../prisma/generated/browser";
+import { OrderStatus, Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface OrderDashboardProps {
     orderPromise: Promise<
@@ -20,18 +21,25 @@ interface OrderDashboardProps {
 const OrderDashboard = ({ orderPromise }: OrderDashboardProps) => {
     const { user, language } = useUserContext();
     const order = use(orderPromise);
+    const router = useRouter();
 
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
 
     // Check payment status immediately
     useEffect(() => {
+        if (order.status === OrderStatus.completed) return;
+
         startTransition(async () => {
             let errorMsg: string | undefined;
             try {
                 if (!user) throw new Error("User not logged in");
                 errorMsg = await checkPaymentStatus(user.id, order.id);
-                if (!errorMsg) return;
+                if (!errorMsg) {
+                    // Refresh the page to reflect any changes in order status
+                    router.refresh();
+                    return;
+                }
             } catch {
                 errorMsg = LanguageTranslations.failedCheckOrderStatus[language];
             }

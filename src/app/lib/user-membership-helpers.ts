@@ -2,13 +2,13 @@
 
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { isMembershipExpired } from "./utils";
 import { revalidateTag } from "next/cache";
 import { Prisma } from "../../prisma/generated/client";
 
 export const renewUserMembership = async (
-    tx: Prisma.TransactionClient,
+    tx: TransactionClient,
     userId: string,
     membershipId: string,
 ): Promise<void> => {

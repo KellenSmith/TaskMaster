@@ -33,6 +33,7 @@ import { addUserMembership } from "../../lib/user-membership-actions";
 import { openResourceInNewTab } from "../../ui/utils";
 import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface MembersDashboardProps {
     membersPromise: Promise<
@@ -47,6 +48,7 @@ interface MembersDashboardProps {
 }
 
 const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadgesPromise }) => {
+    const router = useRouter();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { user, language } = useUserContext();
@@ -61,6 +63,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     const validateMembershipAction = async (member: ImplementedDatagridEntities) => {
         try {
             await validateUserMembership(member.id);
+            router.refresh();
             return LanguageTranslations.validatedMembership[language];
         } catch {
             throw new Error(LanguageTranslations.failedValidatedMembership[language]);
@@ -71,6 +74,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         try {
             await addUserMembership(addMembershipDialogOpen!.id, formData);
             setAddMembershipDialogOpen(null);
+            router.refresh();
             return LanguageTranslations.addedMembership[language];
         } catch {
             throw new Error(LanguageTranslations.failedAddedMembership[language]);
@@ -80,6 +84,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
     const deleteUserAction = async (member: ImplementedDatagridEntities) => {
         try {
             await deleteUser(member.id);
+            router.refresh();
             return "Deleted user";
         } catch {
             throw new Error("Failed deleting user");
@@ -109,7 +114,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     <Text style={styles.headerCell}>Email</Text>
                     <Text style={styles.headerCell}>Nickname</Text>
                 </View>
-                {filteredMembers
+                {[...filteredMembers]
                     .sort((a, b) => a.email.localeCompare(b.email))
                     .map((member, idx) => (
                         <View style={styles.row} key={idx}>
@@ -229,11 +234,13 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                 const statusText = (FieldLabels[status][language] as string) || status;
                 return (
                     <Stack
-                        height="100%"
                         direction="row"
-                        justifyContent="flex-start"
-                        alignItems="center"
-                        gap={1}
+                        sx={{
+                            height: "100%",
+                            justifyContent: "flex-start",
+                            alignItems: "center",
+                            gap: 1,
+                        }}
                     >
                         <Icon sx={{ color }} />
                         <Typography variant="body2" sx={{ color }}>

@@ -16,21 +16,25 @@ import GlobalConstants from "../../GlobalConstants";
 import { useRouter } from "next/navigation";
 import { clientRedirect } from "../../lib/utils";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { use } from "react";
 
 interface VolunteerLeaderboardClientProps {
-    assigneeVolunteerHours: {
-        nickname: string;
-        hours: number;
-    }[];
+    assigneeVolunteerHoursPromise: Promise<
+        {
+            nickname: string;
+            hours: number;
+        }[]
+    >;
     year: string;
 }
 
 const VolunteerLeaderboardClient: React.FC<VolunteerLeaderboardClientProps> = ({
-    assigneeVolunteerHours,
+    assigneeVolunteerHoursPromise,
     year,
 }) => {
     const { language } = useUserContext();
     const router = useRouter();
+    const assigneeVolunteerHours = use(assigneeVolunteerHoursPromise);
 
     const stepYear = (step: number) => {
         const newYear = (parseInt(year) + step).toString();
@@ -38,11 +42,24 @@ const VolunteerLeaderboardClient: React.FC<VolunteerLeaderboardClientProps> = ({
     };
 
     return (
-        <Stack spacing={3} sx={{ maxWidth: 600, mx: "auto", py: 4 }} justifyContent="center">
+        <Stack
+            spacing={3}
+            sx={{
+                justifyContent: "center",
+                maxWidth: 600,
+                mx: "auto",
+                py: 4,
+            }}
+        >
             <Typography variant="h4" component="h1">
                 {LanguageTranslations[GlobalConstants.VOLUNTEER_LEADERBOARD][language]}
             </Typography>
-            <Stack direction="row" justifyContent="space-around">
+            <Stack
+                direction="row"
+                sx={{
+                    justifyContent: "space-around",
+                }}
+            >
                 <Button onClick={() => stepYear(-1)}>
                     <ChevronLeft />
                     {LanguageTranslations.prev[language]}

@@ -65,7 +65,7 @@ describe("user-helpers", () => {
             const activeMembers = [{ id: "user-1", nickname: "A", skill_badges: [] }] as any;
             mockContext.prisma.user.findMany.mockResolvedValue(activeMembers);
 
-            const result = await userActions.getActiveMembers();
+            const result = await userActions.getCachedActiveMembers();
 
             expect(mockContext.prisma.user.findMany).toHaveBeenCalled();
             expect(result).toEqual(activeMembers);

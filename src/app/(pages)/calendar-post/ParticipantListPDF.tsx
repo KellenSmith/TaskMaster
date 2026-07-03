@@ -1,7 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { styles } from "../../ui/pdf-styles";
 import GlobalConstants from "../../GlobalConstants";
-import { formatDate } from "../../ui/utils";
+import { formatUtcDateToTimezone } from "../../ui/utils";
 import { FieldLabels } from "../../ui/form/FieldCfg";
 import { useMemo } from "react";
 import dayjs from "dayjs";
@@ -28,7 +28,7 @@ const ParticipantListPDF = ({ event, eventParticipants, language }: ParticipantL
             </View>
             <View style={styles.eventDetailRow}>
                 <Text style={styles.eventDetailLabel}>Time:</Text>
-                <Text>{`${formatDate(event.start_time)} - ${formatDate(event.end_time)}`}</Text>
+                <Text>{`${formatUtcDateToTimezone(event.start_time)} - ${formatUtcDateToTimezone(event.end_time)}`}</Text>
             </View>
         </View>
     );
@@ -66,7 +66,7 @@ const ParticipantListPDF = ({ event, eventParticipants, language }: ParticipantL
                     <Text style={styles.eventDetailLabel}>
                         {LanguageTranslations.printed[language]}
                     </Text>
-                    <Text>{formatDate(dayjs.utc())}</Text>
+                    <Text>{formatUtcDateToTimezone(dayjs.utc())}</Text>
                 </View>
                 {event && getEventDetails()}
                 <View style={styles.table}>

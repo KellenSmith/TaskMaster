@@ -1,18 +1,17 @@
 import InfoDashboard from "./InfoDashboard";
 import GlobalConstants from "../../GlobalConstants";
-import { getTextContent } from "../../lib/text-content-actions";
+import { getCachedTextContent } from "../../lib/text-content-actions";
 import { FC } from "react";
 import { getLoggedInUser } from "../../lib/user-helpers";
 import { userHasRolePrivileges } from "../../lib/auth/auth-utils";
 import { prisma } from "../../../prisma/prisma-client";
+import ProtectedPage from "../../ProtectedPage";
 
 interface InfoPageProps {
     searchParams: Promise<{ [eventId: string]: string }>;
 }
 
-const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
-    const pageId = (await searchParams)[GlobalConstants.INFO_PAGE_ID];
-
+const getCachedInfoPageContentById = async (pageId: string) => {
     const infoPage = await prisma.infoPage.findUniqueOrThrow({
         where: { id: pageId },
         include: {
@@ -26,9 +25,20 @@ const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
     if (!userHasRolePrivileges(loggedInUser, infoPage.lowest_allowed_user_role))
         throw new Error("Unauthorized");
 
-    const textContentPromise = getTextContent(infoPage.content.id);
+    const textContentPromise = getCachedTextContent(infoPage.content.id);
+    return textContentPromise;
+};
 
-    return <InfoDashboard textContentPromise={textContentPromise} id={infoPage.content.id} />;
+const InfoPage: FC<InfoPageProps> = async ({ searchParams }) => {
+    const pageId = (await searchParams)[GlobalConstants.INFO_PAGE_ID];
+
+    const textContentPromise = getCachedInfoPageContentById(pageId);
+
+    return (
+        <ProtectedPage name={GlobalConstants.INFO_PAGE}>
+            <InfoDashboard textContentPromise={textContentPromise} />
+        </ProtectedPage>
+    );
 };
 
 export default InfoPage;

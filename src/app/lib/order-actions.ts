@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import { serverRedirect } from "./utils";
@@ -9,6 +9,9 @@ import { getLoggedInUser } from "./user-helpers";
 import { validateAndBuildOrderItems } from "./order-item-helpers";
 import { OrderStatus, UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { connection } from "next/server";
+
+export const getOrderCacheTag = async (orderId: string) => `${GlobalConstants.ORDER}:${orderId}`;
 
 export const createAndRedirectToOrder = async (
     orderItems: Prisma.OrderItemCreateManyOrderInput[],
@@ -16,7 +19,8 @@ export const createAndRedirectToOrder = async (
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser) throw new Error("User must be logged in to create an order");
 
-    const createdOrder = await prisma.$transaction(async (tx) => {
+    await connection();
+    const createdOrder = await prisma.$transaction(async (tx: TransactionClient) => {
         // Create the order with items in a transaction to ensure data consistency
         // and proper stock validation
 
@@ -75,6 +79,7 @@ export const cancelOrder = async (orderId: string): Promise<void> => {
         data: { status: OrderStatus.cancelled },
     });
     revalidateTag(GlobalConstants.ORDER, "max");
+    revalidateTag(await getOrderCacheTag(parsedOrderId), "max");
 };
 
 export const deleteOrder = async (orderId: string): Promise<void> => {
@@ -93,4 +98,5 @@ export const deleteOrder = async (orderId: string): Promise<void> => {
     });
 
     revalidateTag(GlobalConstants.ORDER, "max");
+    revalidateTag(await getOrderCacheTag(validatedOrderId), "max");
 };

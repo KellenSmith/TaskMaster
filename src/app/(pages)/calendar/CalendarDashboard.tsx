@@ -25,6 +25,7 @@ import { allowRedirectException } from "../../ui/utils";
 import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
 import { createEvent } from "../../lib/event-actions";
 import { Prisma } from "../../../prisma/generated/browser";
+import { utcDateToTzDate } from "../../context/LocalizationContext";
 
 interface CalendarDashboardProps {
     eventsPromise: Promise<Prisma.EventGetPayload<true>[]>;
@@ -33,7 +34,9 @@ interface CalendarDashboardProps {
 
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
     const { user, language } = useUserContext();
-    const [selectedDate, setSelectedDate] = useState(dayjs().startOf("day").date(1));
+    const [selectedTzDate, setSelectedTzDate] = useState(
+        utcDateToTzDate(dayjs.utc()).startOf("day").date(1),
+    );
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
     const events = use(eventsPromise);
@@ -61,12 +64,12 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
             return GlobalLanguageTranslations.successfulSave[language];
         } catch (error) {
             allowRedirectException(error);
-            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+            throw new Error(GlobalLanguageTranslations.failedSave[language], { cause: error });
         }
     };
 
-    const getDaysInFirstWeekButNotInMonth = () => {
-        const firstDayOfMonth = selectedDate.startOf("day");
+    const getDaysInFirstTzWeekButNotInMonth = () => {
+        const firstDayOfMonth = selectedTzDate.startOf("day");
         const firstDayOfFirstWeekInMonth = firstDayOfMonth.startOf("week");
         const dayDiff = firstDayOfMonth.diff(firstDayOfFirstWeekInMonth, "day");
         const daysInFirstWeekButNotInMonth = [];
@@ -76,8 +79,8 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         return daysInFirstWeekButNotInMonth;
     };
 
-    const getDaysInLastWeekButNotInMonth = () => {
-        const lastDayOfSelectedMonth = selectedDate.endOf("month").startOf("day");
+    const getDaysInLastTzWeekButNotInMonth = () => {
+        const lastDayOfSelectedMonth = selectedTzDate.endOf("month").startOf("day");
         const lastDayOfLastWeekInMonth = lastDayOfSelectedMonth.endOf("week");
         const dayDiff = lastDayOfLastWeekInMonth.diff(lastDayOfSelectedMonth, "day");
         const daysInLastWeekButNotInMonth = [];
@@ -87,27 +90,33 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         return daysInLastWeekButNotInMonth;
     };
 
-    const getDaysOfMonth = () => {
+    const getDaysOfTzMonth = () => {
         const daysInMonth = [];
-        const daysInSelectedMonth = selectedDate.daysInMonth();
+        const daysInSelectedMonth = selectedTzDate.daysInMonth();
         for (let i = 0; i < daysInSelectedMonth; i++) {
-            daysInMonth.push(selectedDate.add(i, "d"));
+            daysInMonth.push(selectedTzDate.add(i, "d"));
         }
         return daysInMonth;
     };
 
-    const getDaysToShow = () => [
-        ...getDaysInFirstWeekButNotInMonth(),
-        ...getDaysOfMonth(),
-        ...getDaysInLastWeekButNotInMonth(),
+    const getTzDaysToShow = () => [
+        ...getDaysInFirstTzWeekButNotInMonth(),
+        ...getDaysOfTzMonth(),
+        ...getDaysInLastTzWeekButNotInMonth(),
     ];
 
-    const getCalendarGrid = () => {
+    const getTzCalendarGrid = () => {
         return (
             <Stack sx={{ width: "100%" }}>
                 <Grid container spacing={2} columns={7}>
                     {LanguageTranslations.weekDaysShort[language].map((day) => (
-                        <Grid key={day} size={1} alignContent="center">
+                        <Grid
+                            key={day}
+                            size={1}
+                            sx={{
+                                alignContent: "center",
+                            }}
+                        >
                             <Typography
                                 key={day}
                                 variant="subtitle2"
@@ -117,9 +126,9 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                             </Typography>
                         </Grid>
                     ))}
-                    {getDaysToShow().map((date) => (
-                        <Grid key={date.format("YYYY-MM-DD")} size={1}>
-                            <CalendarDay date={date} eventsPromise={eventsPromise} />
+                    {getTzDaysToShow().map((tzDate) => (
+                        <Grid key={tzDate.format("YYYY-MM-DD")} size={1}>
+                            <CalendarDay tzDate={tzDate} eventsPromise={eventsPromise} />
                         </Grid>
                     ))}
                 </Grid>
@@ -127,14 +136,14 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
         );
     };
 
-    const getCalendarList = () => {
-        const days = getDaysOfMonth();
+    const getTzCalendarList = () => {
+        const days = getDaysOfTzMonth();
         return (
             <Stack spacing={2} sx={{ width: "100%" }}>
-                {days.map((date) => (
+                {days.map((tzDate) => (
                     <CalendarDay
-                        key={date.format("YYYY-MM-DD")}
-                        date={date}
+                        key={tzDate.format("YYYY-MM-DD")}
+                        tzDate={tzDate}
                         eventsPromise={eventsPromise}
                     />
                 ))}
@@ -150,9 +159,25 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
 
     return (
         <>
-            <Stack sx={{ width: "100%" }} padding={isSmallScreen ? 2 : 4}>
-                <Stack direction="row" justifyContent="center">
-                    <Stack direction="row" width="100%" justifyContent="space-between">
+            <Stack
+                sx={{
+                    padding: isSmallScreen ? 2 : 4,
+                    width: "100%",
+                }}
+            >
+                <Stack
+                    direction="row"
+                    sx={{
+                        justifyContent: "center",
+                    }}
+                >
+                    <Stack
+                        direction="row"
+                        sx={{
+                            width: "100%",
+                            justifyContent: "space-between",
+                        }}
+                    >
                         {user && (
                             <Button
                                 size={isSmallScreen ? "small" : "medium"}
@@ -163,25 +188,31 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                         )}
                         <Stack direction="row">
                             <Button
-                                onClick={() => setSelectedDate((prev) => prev.subtract(1, "month"))}
+                                onClick={() =>
+                                    setSelectedTzDate((prev) => prev.subtract(1, "month"))
+                                }
                                 size={isSmallScreen ? "small" : "medium"}
                             >
                                 <ArrowLeft />
                             </Button>
                             <Typography
                                 color="primary"
-                                alignSelf="center"
                                 variant={isSmallScreen ? "h6" : "h4"}
+                                sx={{
+                                    alignSelf: "center",
+                                }}
                             >
-                                {selectedDate.format("YYYY/MM")}
+                                {utcDateToTzDate(selectedTzDate).format("YYYY/MM")}
                             </Typography>
-                            <Button onClick={() => setSelectedDate((prev) => prev.add(1, "month"))}>
+                            <Button
+                                onClick={() => setSelectedTzDate((prev) => prev.add(1, "month"))}
+                            >
                                 <ArrowRight />
                             </Button>
                         </Stack>
                     </Stack>
                 </Stack>
-                {(() => (isSmallScreen ? getCalendarList() : getCalendarGrid()))()}
+                {(() => (isSmallScreen ? getTzCalendarList() : getTzCalendarGrid()))()}
             </Stack>
             <Dialog
                 fullWidth

@@ -133,7 +133,7 @@ describe("auth.ts", () => {
         expect(result).toStrictEqual(user);
     });
 
-    it("jwt callback leaves token untouched when no user provided", async () => {
+    it("jwt callback leaves token untouched when no user or token id is provided", async () => {
         process.env.EMAIL = "test@example.com";
         const options = await loadAuthModule();
 
@@ -143,7 +143,26 @@ describe("auth.ts", () => {
         expect(result).toEqual({ existing: "value" });
     });
 
-    it("jwt callback does not set id when missing", async () => {
+    it("jwt callback does not rehydrate claims when user is not provided", async () => {
+        process.env.EMAIL = "test@example.com";
+        const options = await loadAuthModule();
+
+        const token = {
+            sub: "user-1",
+            status: UserStatus.pending,
+            role: UserRole.member,
+        } as unknown as JWT;
+
+        const result = await options.callbacks.jwt({ token, user: null });
+
+        expect(result.id).toBeUndefined();
+        expect(result.status).toBe(UserStatus.pending);
+        expect(result.role).toBe(UserRole.member);
+        expect(result.user_membership).toBeUndefined();
+        expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    });
+
+    it("jwt callback leaves token unchanged when resolved user id is missing", async () => {
         process.env.EMAIL = "test@example.com";
         const token: JWT = {} as JWT;
         const user = {
@@ -152,15 +171,14 @@ describe("auth.ts", () => {
             role: UserRole.member,
             user_membership: null,
         } as unknown as User;
-        vi.mocked(prisma.user.findUnique).mockResolvedValue(user as any);
         const options = await loadAuthModule();
 
         const result = await options.callbacks.jwt({ token, user });
 
         expect((result as JWT & { id?: string }).id).toBeUndefined();
-        expect(result.status).toBe(UserStatus.validated);
-        expect(result.role).toBe(UserRole.member);
-        expect(result.user_membership).toBeNull();
+        expect(result.status).toBeUndefined();
+        expect(result.role).toBeUndefined();
+        expect(result.user_membership).toBeUndefined();
     });
 
     it("session callback maps token fields onto session.user", async () => {
@@ -168,19 +186,6 @@ describe("auth.ts", () => {
 
         const session = { user: {} } as Session;
         const expiresAt = dayjs.utc().add(1, "month").toDate();
-        const user: User = {
-            id: "user-1",
-            status: UserStatus.validated,
-            role: UserRole.member,
-            user_membership: {
-                id: "membership-1",
-                user_id: "user-1",
-                membership_id: "membership-basic",
-                expires_at: expiresAt,
-                subscription_token: null,
-                payeeRef: null,
-            },
-        } as User;
         const token: JWT = {
             id: "user-1",
             status: UserStatus.validated,
@@ -195,13 +200,12 @@ describe("auth.ts", () => {
             },
         } as JWT;
 
-        vi.mocked(prisma.user.findUnique).mockResolvedValue(user as any);
-
         const options = await loadAuthModule();
 
         const result = await options.callbacks.session({ session, token });
 
         expect(result.user).toEqual(token);
+        expect(prisma.user.findUnique).not.toHaveBeenCalled();
     });
 
     it("session callback leaves fields unset when token has none", async () => {

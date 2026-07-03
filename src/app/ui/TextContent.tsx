@@ -1,16 +1,15 @@
-import { Prisma } from "../../prisma/generated/client";
+import { Prisma } from "../../prisma/generated/browser";
 import EditableTextContent from "./EditableTextContent";
 import ErrorBoundarySuspense from "./ErrorBoundarySuspense";
 
 interface TextContentProps {
-    id: string;
     textContentPromise: Promise<Prisma.TextContentGetPayload<{ include: { translations: true } }>>;
 }
 
-const TextContent = ({ id, textContentPromise }: TextContentProps) => {
+const TextContent = ({ textContentPromise }: TextContentProps) => {
     return (
         <ErrorBoundarySuspense>
-            <EditableTextContent id={id} textContentPromise={textContentPromise} />
+            <EditableTextContent textContentPromise={textContentPromise} />
         </ErrorBoundarySuspense>
     );
 };

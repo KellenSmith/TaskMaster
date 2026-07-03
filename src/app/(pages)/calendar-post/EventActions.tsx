@@ -50,10 +50,10 @@ interface IEventActions {
         }>
     >;
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
-    eventTags: string[];
+    eventTagsPromise: Promise<string[]>;
 }
 
-const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, eventTags }) => {
+const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, eventTagsPromise }) => {
     const theme = useTheme();
     const { organizationSettings } = useOrganizationSettingsContext();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
@@ -63,6 +63,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const event = use(eventPromise);
+    const eventTags = use(eventTagsPromise);
     const [isCloneEventDialogOpen, setIsCloneEventDialogOpen] = useState(false);
     // TODO: It doesn't need to use locations if the user is not host or admin
     // Move host actions to separate component to optimize data fetching
@@ -411,7 +412,12 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
             >
                 <MenuList>
                     {isPending ? (
-                        <Stack height={300} width={300}>
+                        <Stack
+                            sx={{
+                                height: 300,
+                                width: 300,
+                            }}
+                        >
                             <LoadingFallback />
                         </Stack>
                     ) : (

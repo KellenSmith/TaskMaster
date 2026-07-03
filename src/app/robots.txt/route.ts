@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 export function GET() {
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_BASE_URL || "https://localhost:3000";
 
     const robotsTxt = `User-agent: *

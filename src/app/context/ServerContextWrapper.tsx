@@ -11,13 +11,7 @@ interface ServerContextWrapperProps {
     children: ReactNode;
 }
 
-const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
-    const loggedInUser = await getLoggedInUser();
-
-    const allowedUserRolePrivileges = Object.values(UserRole).filter((role) =>
-        userHasRolePrivileges(loggedInUser, role),
-    ) as UserRole[];
-
+const getAllowedInfoPagesByRoles = async (allowedUserRolePrivileges: UserRole[]) => {
     // Pages with no role restrictions are always allowed
     const lowestAllowedUserRoleCondition: Prisma.InfoPageWhereInput & {
         OR: Prisma.InfoPageWhereInput[];
@@ -27,17 +21,33 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
             lowest_allowed_user_role: { in: allowedUserRolePrivileges },
         });
     }
-    const infoPagesPromise = prisma.infoPage.findMany({
+    const allowedInfoPages = await prisma.infoPage.findMany({
         where: lowestAllowedUserRoleCondition,
         include: { titleText: { include: { translations: true } } },
     });
 
+    return allowedInfoPages;
+};
+
+const getAllowedInfoPages = async () => {
+    let loggedInUser = await getLoggedInUser();
+
+    const allowedUserRolePrivileges = Object.values(UserRole)
+        .filter((role) => userHasRolePrivileges(loggedInUser, role))
+        .sort() as UserRole[];
+
+    return getAllowedInfoPagesByRoles(allowedUserRolePrivileges);
+};
+
+const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children }) => {
+    const userPromise = getLoggedInUser();
     const organizationSettingsPromise = getOrganizationSettings();
+    const infoPagesPromise = getAllowedInfoPages();
 
     return (
         <ContextWrapper
             organizationSettingsPromise={organizationSettingsPromise}
-            userPromise={new Promise((resolve) => resolve(loggedInUser))}
+            userPromise={userPromise}
             infoPagesPromise={infoPagesPromise}
         >
             {children}

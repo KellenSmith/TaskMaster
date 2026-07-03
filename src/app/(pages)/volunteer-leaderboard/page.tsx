@@ -1,16 +1,16 @@
 import { FC } from "react";
-// ...existing code...
 import { prisma } from "../../../prisma/prisma-client";
 import VolunteerLeaderboardClient from "./VolunteerLeaderboardClient";
 import { Prisma } from "../../../prisma/generated/client";
+import dayjs from "dayjs";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
 interface VolunteerLeaderboardProps {
     searchParams: Promise<{ [year: string]: string }>;
 }
 
-const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchParams }) => {
-    const year = (await searchParams)?.year || new Date().getFullYear().toString();
-
+const getCachedAssigneeVolunteerHours = async (year: string) => {
     const volunteerTasksForYear: Prisma.TaskGetPayload<{ include: { assignee: true } }>[] =
         await prisma.task.findMany({
             where: {
@@ -45,8 +45,21 @@ const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchP
         };
     });
 
+    return assigneeVolunteerHours;
+};
+
+const VolunteerLeaderboardPage: FC<VolunteerLeaderboardProps> = async ({ searchParams }) => {
+    const year = (await searchParams)?.year || dayjs.utc().year().toString();
+
+    const assigneeVolunteerHoursPromise = getCachedAssigneeVolunteerHours(year);
+
     return (
-        <VolunteerLeaderboardClient assigneeVolunteerHours={assigneeVolunteerHours} year={year} />
+        <ProtectedPage name={GlobalConstants.VOLUNTEER_LEADERBOARD}>
+            <VolunteerLeaderboardClient
+                assigneeVolunteerHoursPromise={assigneeVolunteerHoursPromise}
+                year={year}
+            />
+        </ProtectedPage>
     );
 };
 

@@ -1,34 +1,44 @@
-"use server";
 import CalendarDashboard from "./CalendarDashboard";
 import { getLoggedInUser } from "../../lib/user-helpers";
-// ...existing code...
-import { isMembershipExpired, isUserAdmin } from "../../lib/utils";
+import { isUserAdmin } from "../../lib/utils";
 import { prisma } from "../../../prisma/prisma-client";
 import { EventStatus, Prisma } from "../../../prisma/generated/client";
+import ProtectedPage from "../../ProtectedPage";
+import GlobalConstants from "../../GlobalConstants";
 
-const CalendarPage = async () => {
-    const loggedInUser = await getLoggedInUser();
-
-    if (!loggedInUser || isMembershipExpired(loggedInUser)) throw new Error("Unauthorized");
-
+const getEvents = async (userId: string | null, isAdmin: boolean) => {
     const eventFilterParams = {} as Prisma.EventWhereInput;
 
     // Non-admins can only see their own event drafts and pending approval events or published events
-    if (loggedInUser && !isUserAdmin(loggedInUser)) {
+    if (userId && !isAdmin) {
         eventFilterParams.OR = [
             {
                 status: EventStatus.published,
             },
-            { host_id: loggedInUser.id },
+            { host_id: userId },
         ];
     }
 
-    const eventsPromise = prisma.event.findMany({
+    return await prisma.event.findMany({
         where: eventFilterParams,
     });
-    const locationsPromise = prisma.location.findMany();
+};
 
-    return <CalendarDashboard eventsPromise={eventsPromise} locationsPromise={locationsPromise} />;
+const getLocations = async () => {
+    return await prisma.location.findMany();
+};
+
+const CalendarPage = async () => {
+    const loggedInUser = await getLoggedInUser();
+
+    return (
+        <ProtectedPage name={GlobalConstants.CALENDAR}>
+            <CalendarDashboard
+                eventsPromise={getEvents(loggedInUser?.id ?? null, isUserAdmin(loggedInUser))}
+                locationsPromise={getLocations()}
+            />
+        </ProtectedPage>
+    );
 };
 
 export default CalendarPage;

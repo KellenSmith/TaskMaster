@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../prisma/prisma-client";
+import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import {
@@ -22,8 +22,9 @@ import { isUserAuthorized } from "./auth/auth-utils";
 import { UserRole, UserStatus } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
-import { getUserLanguage } from "./user-helpers";
+import { getUserCacheTag, getUserLanguage } from "./user-helpers";
 import { getUniqueConstraintFields, prismaErrorCodes } from "../../prisma/prisma-error-codes";
+import { connection } from "next/server";
 
 export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -33,7 +34,8 @@ export const createUser = async (formData: FormData): Promise<void> => {
     const userCount = await prisma.user.count();
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const newUser = await tx.user.create({
             data: {
                 ...userData,
@@ -60,6 +62,7 @@ export const createUser = async (formData: FormData): Promise<void> => {
             await renewUserMembership(tx, newUser.id, membershipProduct.id);
         }
         revalidateTag(GlobalConstants.USER, "max");
+        revalidateTag(await getUserCacheTag(newUser.id), "max");
     });
 };
 
@@ -127,7 +130,8 @@ export const updateUser = async (userId: string, formData: FormData): Promise<un
     const validatedData = UserUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
     const { skill_badges: skill_badge_ids, ...userData } = validatedData;
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         await tx.user.update({
             where: {
                 id: validatedUserId,
@@ -151,6 +155,7 @@ export const updateUser = async (userId: string, formData: FormData): Promise<un
     });
 
     revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(validatedUserId), "max");
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
@@ -169,20 +174,15 @@ export const deleteUser = async (userId: string): Promise<void> => {
         }
     }
 
-    const deleteUser = prisma.user.delete({
+    await prisma.user.delete({
         where: {
             id: validatedUserId,
         } as unknown as Prisma.UserWhereUniqueInput,
     });
 
-    /**
-     * Delete dependencies and user in a transaction where all actions must
-     * succeed or no action is taken to preserve data integrity.
-     */
-    await prisma.$transaction([deleteUser]);
-
     // TODO: Check revalidation tags for all caches
     revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(validatedUserId), "max");
     revalidateTag(GlobalConstants.USER_MEMBERSHIP, "max");
     revalidateTag(GlobalConstants.PARTICIPANT_USERS, "max");
     revalidateTag(GlobalConstants.EVENT, "max");
@@ -201,6 +201,8 @@ export const login = async (formData: FormData): Promise<string | undefined> => 
         let redirectTo: string;
         if (isUserAuthorized(existingUser, GlobalConstants.DASHBOARD))
             redirectTo = getRelativeUrl([GlobalConstants.DASHBOARD]);
+        else if (isUserAuthorized(existingUser, GlobalConstants.PROFILE))
+            redirectTo = getRelativeUrl([GlobalConstants.PROFILE]);
         else redirectTo = getRelativeUrl([GlobalConstants.HOME]);
 
         await signIn("email", {
@@ -229,7 +231,8 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await connection();
+    await prisma.$transaction(async (tx: TransactionClient) => {
         const validatedUser = await tx.user.update({
             where: { id: validatedUserId },
             data: { status: UserStatus.validated },
@@ -237,11 +240,11 @@ export const validateUserMembership = async (userId: string): Promise<void> => {
 
         // Notify the new member of their validated status
         const mailContent = createElement(MailTemplate, {
-            html: `Your membership has been validated. You can now log in and access member features.`,
+            html: `Your membership has been validated. Log in again to use your new permissions and access member features.`,
         });
-        // TODO: Invalidate the validated user's session to refresh their permissions and membership status on their next login
         await sendMail([validatedUser.email], `Your membership has been validated`, mailContent);
     });
 
     revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(validatedUserId), "max");
 };

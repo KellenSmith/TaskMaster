@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { UserRole } from "../prisma/generated/enums";
+import { UserRole, UserStatus } from "../prisma/generated/enums";
 import { Prisma } from "../prisma/generated/client";
 
 dayjs.extend(utc);
@@ -10,7 +10,7 @@ const testdata = {
         AUTH_SECRET: "test-auth-secret",
         BLOB_HOSTNAME: "test-blob-hostname",
         CRON_SECRET: "test-cron-secret",
-        DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+        ACCELERATE_DATABASE_URL: "postgresql://test:test@localhost:5432/test",
         BLOB_READ_WRITE_TOKEN: "test-blob-token",
         EMAIL: "test@example.com",
         EMAIL_PASSWORD: "test-password",
@@ -25,7 +25,7 @@ const testdata = {
         SWEDBANK_PAY_ACCESS_TOKEN: "test-access-token",
         SWEDBANK_PAY_PAYEE_ID: "00000000-0000-0000-0000-000000000000",
         VERCEL_OIDC_TOKEN: "test-oidc",
-        VERCEL_PROJECT_PRODUCTION_URL: "localhost:3000",
+        VERCEL_URL: "localhost:3000",
     },
     // Mock user data for testing
     user: {
@@ -39,6 +39,7 @@ const testdata = {
         consent_to_newsletters: true,
         phone: "123-456-7890",
         created_at: dayjs.utc().subtract(1, "year").toDate(),
+        status: UserStatus.validated,
         user_membership: {
             id: "test-membership-id",
             membership_id: "test-membership-id",

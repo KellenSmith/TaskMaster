@@ -22,6 +22,8 @@ export const redirectToOrderPayment = async (orderId: string): Promise<string | 
         },
     });
 
+    console.log("order status: ", order.status);
+
     // Only allow paying for own orders
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser || order.user_id !== loggedInUser.id) {

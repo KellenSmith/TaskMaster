@@ -139,11 +139,11 @@ export const routeTreeConfig: RouteConfigType[] = [
         role: UserRole.admin,
         membershipRequired: true,
     },
-    // {
-    //     name: GlobalConstants.YEAR_WHEEL,
-    //     status: UserStatus.validated,
-    //     role: UserRole.admin,
-    // },
+    {
+        name: GlobalConstants.YEAR_WHEEL,
+        status: UserStatus.validated,
+        role: UserRole.admin,
+    },
 ];
 
 export const userHasRolePrivileges = (
@@ -161,7 +161,7 @@ export const userHasRolePrivileges = (
     return indexOfLoggedInUserRole >= indexofAuthRole;
 };
 
-const userHasStatusPrivileges = (
+export const userHasStatusPrivileges = (
     user: Prisma.UserGetPayload<{ select: { status: true } }> | null | undefined,
     authStatus: UserStatus | null | undefined,
 ) => {
