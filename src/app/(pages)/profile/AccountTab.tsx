@@ -27,8 +27,12 @@ const AccountTab = () => {
     if (!user) return <LoadingFallback />;
 
     const updateUserProfile = async (formData: FormData) => {
-        await updateUser(user.id, formData);
-        return GlobalLanguageTranslations.successfulSave[language];
+        try {
+            await updateUser(user.id, formData);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const deleteMyAccount = async () =>

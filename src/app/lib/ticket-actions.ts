@@ -15,7 +15,7 @@ export const getEventTicketsCacheTag = async (eventId: string) =>
 export const createEventTicket = async (
     eventId: string,
     formData: FormData,
-): Promise<string | undefined> => {
+): Promise<undefined> => {
     // Validate event ID format
     const validatedEventId = UuidSchema.parse(eventId);
     // Revalidate input with zod schema - don't trust the client
@@ -23,9 +23,6 @@ export const createEventTicket = async (
 
     const ticketFieldValues = TicketWithoutRelationsSchema.parse(formDataObject);
     const productFieldValues = ProductCreateSchema.parse(formDataObject);
-
-    if (productFieldValues.price && productFieldValues.price > 0 && !isSwedbankPayConfigured())
-        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
 
     // Find the number of participants in the event
     const eventParticipantsCount = await prisma.eventParticipant.count({
@@ -69,9 +66,6 @@ export const updateEventTicket = async (ticketId: string, formData: FormData) =>
 
     const ticketFieldValues = TicketWithoutRelationsSchema.parse(formDataObject);
     const productFieldValues = ProductCreateSchema.parse(formDataObject);
-
-    if (productFieldValues.price && productFieldValues.price > 0 && !isSwedbankPayConfigured())
-        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
 
     const oldProduct = await prisma.product.findUniqueOrThrow({
         where: { id: validatedTicketId },

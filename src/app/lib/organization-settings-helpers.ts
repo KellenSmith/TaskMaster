@@ -13,7 +13,6 @@ export const getOrganizationSettings = async (): Promise<
         purge_members_after_days_unvalidated: 180,
         default_task_shift_length: 2,
         member_application_prompt: null,
-        ticket_instructions: null,
         event_manager_email: null,
         primary_color: "#607d8b",
         privacy_policy_swedish_url: null,
@@ -22,5 +21,6 @@ export const getOrganizationSettings = async (): Promise<
         terms_of_purchase_english_url: null,
         terms_of_membership_swedish_url: null,
         terms_of_membership_english_url: null,
+        payment_instructions: null,
     };
 };

@@ -94,18 +94,6 @@ describe("redirectToOrderPayment", () => {
             expect.objectContaining({ id: baseOrder.id }),
         );
     });
-
-    it("returns error if trying to pay a paid order when Swedbank Pay is not configured", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue({ id: baseOrder.user_id } as any);
-        vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
-        vi.mocked(isSwedbankPayConfigured).mockReturnValue(false);
-        vi.mocked(prisma.order.findUniqueOrThrow).mockResolvedValue({ ...baseOrder } as any);
-
-        const result = await redirectToOrderPayment(baseOrder.id);
-
-        expect(result).toContain("Swedbank Pay is not configured");
-        expect(redirectToSwedbankPayment).not.toHaveBeenCalled();
-    });
 });
 
 describe("checkPaymentStatus", () => {
@@ -194,18 +182,5 @@ describe("checkPaymentStatus", () => {
         await checkPaymentStatus(baseOrder.user_id, baseOrder.id);
 
         expect(progressOrder).not.toHaveBeenCalled();
-    });
-
-    it("returns error if checking paid order status when Swedbank Pay is not configured", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue({ id: baseOrder.user_id } as any);
-        vi.mocked(isUserAdmin).mockReturnValue(false);
-        vi.mocked(isSwedbankPayConfigured).mockReturnValue(false);
-        vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
-        vi.mocked(prisma.order.findUniqueOrThrow).mockResolvedValue({ ...baseOrder } as any);
-
-        const result = await checkPaymentStatus(baseOrder.user_id, baseOrder.id);
-
-        expect(result).toContain("Swedbank Pay is not configured");
-        expect(isOrderpaid).not.toHaveBeenCalled();
     });
 });

@@ -35,6 +35,7 @@ const OrdersDashboard = ({ ordersPromise }: OrdersDashboardProps) => {
         switch (order.status) {
             case OrderStatus.pending:
             case OrderStatus.paid:
+            case OrderStatus.payment_confirmed:
             case OrderStatus.shipped:
                 return {
                     icon: Warning,

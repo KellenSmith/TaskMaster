@@ -9,6 +9,7 @@ interface OrganizationSettingsContextValue {
     infopagesPromise: Promise<
         Prisma.InfoPageGetPayload<{ include: { titleText: { include: { translations: true } } } }>[]
     >;
+    handlePaymentsManually: boolean;
 }
 
 export const OrganizationSettingsContext = createContext<OrganizationSettingsContextValue | null>(
@@ -31,18 +32,22 @@ interface OrganizationSettingsProviderProps {
             include: { titleText: { include: { translations: true } } };
         }>[]
     >;
+    handlePaymentsManually: boolean;
     children: ReactNode;
 }
 
 const OrganizationSettingsProvider: FC<OrganizationSettingsProviderProps> = ({
     organizationSettingsPromise,
     infopagesPromise,
+    handlePaymentsManually,
     children,
 }) => {
     const organizationSettings = use(organizationSettingsPromise);
 
     return (
-        <OrganizationSettingsContext.Provider value={{ organizationSettings, infopagesPromise }}>
+        <OrganizationSettingsContext.Provider
+            value={{ organizationSettings, infopagesPromise, handlePaymentsManually }}
+        >
             {organizationSettings ? children : <CircularProgress />}
         </OrganizationSettingsContext.Provider>
     );
