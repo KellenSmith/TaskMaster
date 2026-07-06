@@ -42,6 +42,7 @@ import LanguageTranslations from "../LanguageTranslations";
 import { upload } from "@vercel/blob/client";
 import LocalizedDateTimePicker from "./LocalizedDateTimePicker";
 import { localTimeZone } from "../../context/LocalizationContext";
+import { useRouter } from "next/navigation";
 
 interface FormProps {
     name: string;
@@ -92,6 +93,7 @@ const Form: FC<FormProps> = ({
         ],
         [name, customRequiredFields],
     );
+    const router = useRouter();
 
     const uploadFileAndGetUrl = async (file: File): Promise<string> => {
         // ✅ SECURITY: Client-side file validation
@@ -208,6 +210,7 @@ const Form: FC<FormProps> = ({
                 const submitResult = await action(formDataWithFileUrls);
                 addNotification(submitResult, "success");
                 if (!(editable && !readOnly)) setEditMode(false);
+                router.refresh();
             } catch (error) {
                 allowRedirectException(error);
                 if (error && typeof error === "object" && "message" in error)

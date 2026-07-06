@@ -2,7 +2,7 @@
 import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import { getLoggedInUser } from "./user-helpers";
 import { InfoPageCreateSchema, UuidSchema } from "./zod-schemas";
-import { serverRedirect } from "./utils";
+import { getAbsoluteUrl, serverRedirect } from "./utils";
 import GlobalConstants from "../GlobalConstants";
 import { createTextContent } from "./text-content-actions";
 import { revalidateTag } from "next/cache";
@@ -86,7 +86,7 @@ export const updateInfoPage = async (
     revalidateTag(await getInfoPageCacheTag(validatedInfoPageId), "max");
 };
 
-export const deleteInfoPage = async (id: string): Promise<void> => {
+export const deleteInfoPage = async (id: string, url: string): Promise<void> => {
     const validatedId = UuidSchema.parse(id);
 
     const loggedInUser = await getLoggedInUser();
@@ -98,4 +98,10 @@ export const deleteInfoPage = async (id: string): Promise<void> => {
 
     revalidateTag(GlobalConstants.INFO_PAGE, "max");
     revalidateTag(await getInfoPageCacheTag(validatedId), "max");
+
+    if (
+        url ===
+        getAbsoluteUrl([GlobalConstants.INFO_PAGE], { [GlobalConstants.INFO_PAGE_ID]: validatedId })
+    )
+        serverRedirect([GlobalConstants.DASHBOARD]);
 };

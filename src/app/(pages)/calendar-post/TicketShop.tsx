@@ -16,6 +16,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { TicketType } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface TicketShopProps {
     eventPromise: Promise<Prisma.EventGetPayload<true>>;
@@ -49,6 +50,7 @@ const TicketShop = ({
     const tasks = use(eventTasksPromise);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
+    const router = useRouter();
 
     const createTicketOrder = async (productId: string) => {
         const ticketOrderItems: Prisma.OrderItemCreateManyOrderInput = {
@@ -105,6 +107,7 @@ const TicketShop = ({
         try {
             await deleteEventTicket(ticketId);
             addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+            router.refresh();
         } catch {
             addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }

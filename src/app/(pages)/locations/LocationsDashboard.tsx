@@ -13,6 +13,7 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface LocationsDashboardProps {
     locationsPromise: Promise<Prisma.LocationGetPayload<true>[]>;
@@ -27,6 +28,7 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
     const [editLocationId, setEditLocationId] = useState<string | null>(null);
     const [createNew, setCreateNew] = useState(false);
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
     const createLocationAction = async (formData: FormData) => {
         try {
@@ -54,6 +56,7 @@ const LocationsDashboard = ({ locationsPromise }: LocationsDashboardProps) => {
             try {
                 await deleteLocation(locationId);
                 addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                router.refresh();
             } catch {
                 addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }

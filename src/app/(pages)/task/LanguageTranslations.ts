@@ -25,7 +25,7 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Observera att din mailadress kommer att vara synlig för mottagaren av meddelandet.",
     },
-    massageSentSuccess: {
+    messageSentSuccess: {
         [Language.english]: "Message sent successfully",
         [Language.swedish]: "Meddelandet skickades",
     },
