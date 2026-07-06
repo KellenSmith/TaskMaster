@@ -221,13 +221,12 @@ const Form: FC<FormProps> = ({
     const getFieldCompKey = (fieldId: string): string => `${fieldId}-${defaultValues?.[fieldId]}`;
 
     const getDefaultValue = (fieldId: string) => {
-        if (defaultValues && fieldId in defaultValues) {
+        if (defaultValues?.[fieldId]) {
             if (priceFields.includes(fieldId)) return formatPrice(defaultValues[fieldId] as number);
             if (datePickerFields.includes(fieldId))
                 return dayjs.utc(
                     dayjs(defaultValues[fieldId] as Dayjs)
                         .tz(localTimeZone)
-                        .hour(18)
                         .minute(0)
                         .second(0)
                         .millisecond(0),
