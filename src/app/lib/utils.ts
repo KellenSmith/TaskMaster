@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import GlobalConstants from "../GlobalConstants";
 
 // Convention: "path"=`/${route}`
 
@@ -27,9 +28,15 @@ export const getAbsoluteUrl = (
     pathSegments: string[] = [],
     searchParams: { [key: string]: string } = {},
 ): string => {
-    const baseUrl = process.env.VERCEL_URL
-        ? "https://" + process.env.VERCEL_URL
-        : window?.location?.origin;
+    let baseUrl = "";
+
+    if (
+        process.env.NODE_ENV === GlobalConstants.PRODUCTION &&
+        process.env.VERCEL_PROJECT_PRODUCTION_URL
+    )
+        baseUrl = "https://" + process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    else if (process.env.VERCEL_URL) baseUrl = "https://" + process.env.VERCEL_URL;
+    if (!baseUrl) baseUrl = window?.location?.origin;
     if (!baseUrl) throw new Error("Base URL not found");
 
     return baseUrl + getRelativeUrl(pathSegments, searchParams);

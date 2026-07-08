@@ -26,6 +26,7 @@ const testdata = {
         SWEDBANK_PAY_PAYEE_ID: "00000000-0000-0000-0000-000000000000",
         VERCEL_OIDC_TOKEN: "test-oidc",
         VERCEL_URL: "localhost:3000",
+        VERCEL_PROJECT_PRODUCTION_URL: "test-production-url",
     },
     // Mock user data for testing
     user: {
