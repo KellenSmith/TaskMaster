@@ -9,8 +9,6 @@ import {
     DialogTitle,
     DialogContent,
     DialogContentText,
-    DialogActions,
-    Card,
 } from "@mui/material";
 import React, { use, useState } from "react";
 import { redirectToOrderPayment } from "../../lib/payment-actions";

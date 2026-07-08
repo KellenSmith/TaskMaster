@@ -5,9 +5,6 @@ import GlobalConstants from "../GlobalConstants";
 import { ProductCreateSchema, TicketWithoutRelationsSchema, UuidSchema } from "./zod-schemas";
 import { prisma } from "../../prisma/prisma-client";
 import { deleteOldBlob } from "./organization-settings-actions";
-import { isSwedbankPayConfigured } from "./payment-helpers";
-import LanguageTranslations from "./LanguageTranslations";
-import { getUserLanguage } from "./user-helpers";
 
 export const getEventTicketsCacheTag = async (eventId: string) =>
     `${GlobalConstants.TICKET}:event:${eventId}`;
