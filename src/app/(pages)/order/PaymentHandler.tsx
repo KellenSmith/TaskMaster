@@ -12,6 +12,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { OrderStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface PaymentHandlerProps {
     orderPromise: Promise<
@@ -30,6 +31,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         termsOfPurchase: false,
         privacyPolicy: false,
     });
+    const router = useRouter();
 
     const redirectToOrderPaymentAction = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -51,6 +53,7 @@ const PaymentHandler = ({ orderPromise }: PaymentHandlerProps) => {
         try {
             await cancelOrder(order.id);
             addNotification(LanguageTranslations.cancelledOrder[language], "success");
+            router.refresh();
         } catch {
             addNotification(LanguageTranslations.cancelledOrder[language], "error");
         }

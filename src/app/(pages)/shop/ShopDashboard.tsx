@@ -150,6 +150,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
         try {
             await deleteProduct(productId);
             addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+            router.refresh();
         } catch {
             addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
         }

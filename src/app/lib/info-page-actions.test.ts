@@ -6,7 +6,7 @@ import type { TransactionClient } from "../../test/types/test-types";
 import { buildFormData } from "../../test/test-helpers";
 import * as infoPageActions from "./info-page-actions";
 import { getLoggedInUser } from "./user-helpers";
-import { serverRedirect } from "./utils";
+import { getAbsoluteUrl, serverRedirect } from "./utils";
 import { createTextContent } from "./text-content-actions";
 import { Language, UserRole } from "../../prisma/generated/enums";
 
@@ -14,9 +14,13 @@ vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
 }));
 
-vi.mock("./utils", () => ({
-    serverRedirect: vi.fn(),
-}));
+vi.mock("./utils", async (importActual) => {
+    const actual = (await importActual()) as any;
+    return {
+        ...actual,
+        serverRedirect: vi.fn(),
+    };
+});
 
 vi.mock("./text-content-actions", () => ({
     createTextContent: vi.fn(),
@@ -235,12 +239,37 @@ describe("info-page-actions", () => {
             } as any);
             mockContext.prisma.infoPage.delete.mockResolvedValue({ id: infoPageId } as any);
 
-            await infoPageActions.deleteInfoPage(infoPageId);
+            await infoPageActions.deleteInfoPage(
+                infoPageId,
+                getAbsoluteUrl([GlobalConstants.INFO_PAGE], {
+                    [GlobalConstants.INFO_PAGE_ID]: infoPageId,
+                }),
+            );
 
             expect(mockContext.prisma.infoPage.delete).toHaveBeenCalledWith({
                 where: { id: infoPageId },
             });
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.INFO_PAGE, "max");
+            expect(serverRedirect).toHaveBeenCalledWith([GlobalConstants.DASHBOARD]);
+        });
+
+        it("does not redirect when not called from the info page url", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: "user-1",
+                role: UserRole.admin,
+            } as any);
+            mockContext.prisma.infoPage.delete.mockResolvedValue({ id: infoPageId } as any);
+
+            await infoPageActions.deleteInfoPage(
+                infoPageId,
+                getAbsoluteUrl([GlobalConstants.DASHBOARD]),
+            );
+
+            expect(mockContext.prisma.infoPage.delete).toHaveBeenCalledWith({
+                where: { id: infoPageId },
+            });
+            expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.INFO_PAGE, "max");
+            expect(serverRedirect).not.toHaveBeenCalled();
         });
 
         it("throws error when user is not admin", async () => {
@@ -249,22 +278,30 @@ describe("info-page-actions", () => {
                 role: UserRole.member,
             } as any);
 
-            await expect(infoPageActions.deleteInfoPage(infoPageId)).rejects.toThrow(
-                "Unauthorized",
-            );
+            await expect(
+                infoPageActions.deleteInfoPage(
+                    infoPageId,
+                    getAbsoluteUrl([GlobalConstants.DASHBOARD]),
+                ),
+            ).rejects.toThrow("Unauthorized");
             expect(mockContext.prisma.infoPage.delete).not.toHaveBeenCalled();
         });
 
         it("throws error when user is not logged in", async () => {
             vi.mocked(getLoggedInUser).mockResolvedValue(null);
 
-            await expect(infoPageActions.deleteInfoPage(infoPageId)).rejects.toThrow(
-                "Unauthorized",
-            );
+            await expect(
+                infoPageActions.deleteInfoPage(infoPageId, getAbsoluteUrl([GlobalConstants.HOME])),
+            ).rejects.toThrow("Unauthorized");
         });
 
         it("rejects invalid info page id", async () => {
-            await expect(infoPageActions.deleteInfoPage("not-a-uuid")).rejects.toThrow();
+            await expect(
+                infoPageActions.deleteInfoPage(
+                    "not-a-uuid",
+                    getAbsoluteUrl([GlobalConstants.HOME]),
+                ),
+            ).rejects.toThrow();
         });
     });
 });

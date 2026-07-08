@@ -90,7 +90,7 @@ const TaskCard: FC<TaskCardProps> = ({ taskPromise, skillBadgesPromise, activeMe
             if (!messageRecipientId) throw new Error("No message recipient specified");
             await contactTaskMember(messageRecipientId, formData, task.id);
             setMessageRecipientId(null);
-            return LanguageTranslations.massageSentSuccess[language];
+            return LanguageTranslations.messageSentSuccess[language];
         } catch {
             throw new Error(LanguageTranslations.messageSendError[language]);
         }

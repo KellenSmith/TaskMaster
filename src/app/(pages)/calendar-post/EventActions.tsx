@@ -42,6 +42,7 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { stringsToSelectOptions } from "../../ui/form/FieldCfg";
 import { EventStatus, Language, Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface IEventActions {
     eventPromise: Promise<
@@ -68,6 +69,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
     // TODO: It doesn't need to use locations if the user is not host or admin
     // Move host actions to separate component to optimize data fetching
     const locations = use(locationsPromise);
+    const router = useRouter();
 
     const sendoutToOptions = {
         All: {
@@ -108,6 +110,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 await publishEvent(event.id);
                 addNotification(LanguageTranslations.publishedEvent[language], "success");
                 closeActionMenu();
+                router.refresh();
             } catch {
                 addNotification(LanguageTranslations.failedPublishEvent[language], "error");
             }
@@ -120,6 +123,7 @@ const EventActions: FC<IEventActions> = ({ eventPromise, locationsPromise, event
                 await cancelEvent(event.id);
                 addNotification(LanguageTranslations.cancelledEvent[language], "success");
                 closeActionMenu();
+                router.refresh();
             } catch {
                 addNotification(LanguageTranslations.failedToCancelEvent[language], "error");
             }
