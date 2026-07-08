@@ -152,7 +152,11 @@ const createSwedbankPaymentRequest = async (
         throw new Error("Redirect URL not found in payment response");
     }
 
-    return { redirectUrl: redirectOperation.href, paymentOrderId: responseData.paymentOrder.id };
+    return {
+        payeeRef: requestBody.paymentorder.payeeInfo.payeeReference,
+        redirectUrl: redirectOperation.href,
+        paymentOrderId: responseData.paymentOrder.id,
+    };
 };
 
 export const redirectToSwedbankPayment = async (
@@ -162,13 +166,14 @@ export const redirectToSwedbankPayment = async (
         };
     }>,
 ) => {
-    const { paymentOrderId, redirectUrl } = await createSwedbankPaymentRequest(order);
+    const { payeeRef, paymentOrderId, redirectUrl } = await createSwedbankPaymentRequest(order);
 
     // Save payment order ID to the order to check status later
     await prisma.order.update({
         where: { id: order.id },
         data: {
             payment_request_id: paymentOrderId,
+            payee_ref: payeeRef,
         },
     });
 
