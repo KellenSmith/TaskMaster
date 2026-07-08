@@ -37,7 +37,7 @@ describe("organization-settings-actions", () => {
                 purge_members_after_days_unvalidated: 180,
                 default_task_shift_length: 2,
                 member_application_prompt: null,
-                ticket_instructions: null,
+                payment_instructions: null,
                 event_manager_email: null,
                 primary_color: "#607d8b",
                 privacy_policy_swedish_url: null,

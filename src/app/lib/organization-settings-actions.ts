@@ -11,10 +11,8 @@ import { sanitizeFormData } from "./html-sanitizer";
 export const updateOrganizationSettings = async (formData: FormData): Promise<void> => {
     // Sanitize rich text field data
     const sanitizedFormData = sanitizeFormData(Object.fromEntries(formData.entries()));
-    console.debug("sanitizedFormData: ", sanitizedFormData);
     // Revalidate input with zod schema - don't trust the client
     const validatedData = OrganizationSettingsUpdateSchema.parse(sanitizedFormData);
-    console.debug("validatedData: ", validatedData);
 
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,

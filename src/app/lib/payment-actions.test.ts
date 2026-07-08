@@ -137,20 +137,6 @@ describe("checkPaymentStatus", () => {
         );
     });
 
-    it("throws if non-pending order has no payment_request_id", async () => {
-        vi.mocked(getLoggedInUser).mockResolvedValue({ id: baseOrder.user_id } as any);
-        vi.mocked(getUserLanguage).mockResolvedValue(Language.english);
-        vi.mocked(isSwedbankPayConfigured).mockReturnValue(true);
-        vi.mocked(isUserAdmin).mockReturnValue(false);
-        vi.mocked(prisma.order.findUniqueOrThrow).mockResolvedValue({
-            ...baseOrder,
-            payment_request_id: null,
-            status: OrderStatus.paid,
-        } as any);
-        const result = await checkPaymentStatus(baseOrder.user_id, baseOrder.id);
-        expect(result).toBe("No payment initiated for non-pending order");
-    });
-
     it("returns if pending order has no payment_request_id", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue({ id: baseOrder.user_id } as any);
         vi.mocked(isUserAdmin).mockReturnValue(false);

@@ -14,8 +14,6 @@ const OrganizationSettingsDashboard = () => {
         return "Updated organization settings";
     };
 
-    console.debug(organizationSettings);
-
     return (
         <Form
             name={GlobalConstants.ORGANIZATION_SETTINGS}
