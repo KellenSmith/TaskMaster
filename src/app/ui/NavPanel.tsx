@@ -24,9 +24,15 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import { isUserAdmin, clientRedirect } from "../lib/utils";
+import {
+    isUserAdmin,
+    clientRedirect,
+    getRelativeUrl,
+    isMembershipExpired,
+    getAbsoluteUrl,
+} from "../lib/utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
 import { useNotificationContext } from "../context/NotificationContext";
 import LanguageMenu from "./LanguageMenu";
@@ -61,6 +67,7 @@ const NavPanel = () => {
     const { addNotification } = useNotificationContext();
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [addInfoPageDialogOpen, setAddInfoPageDialogOpen] = useState(false);
     const [updateInfoPageId, setUpdateInfoPageId] = useState<string | null>(null);
     const theme = useTheme();
@@ -133,8 +140,21 @@ const NavPanel = () => {
             throw new Error("No InfoPage ID provided for delete");
         }
         try {
-            await deleteInfoPage(infoPageId);
+            // Convert search params to key-value pairs
+            const objectSearchParams = {} as { [key: string]: string };
+            searchParams.forEach((value, key) => {
+                objectSearchParams[key] = value;
+            });
+            const requestUrl = getAbsoluteUrl([pathname], objectSearchParams);
+            await deleteInfoPage(infoPageId, requestUrl);
             addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+
+            // If currently viewing the deleted info page, redirect to dashboard
+            if (
+                pathname === getRelativeUrl([GlobalConstants.INFO_PAGE]) &&
+                searchParams.get(GlobalConstants.INFO_PAGE_ID) === infoPageId
+            )
+                clientRedirect(router, [GlobalConstants.DASHBOARD]);
         } catch (error) {
             allowRedirectException(error);
             addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
@@ -234,10 +254,14 @@ const NavPanel = () => {
                                 title={process.env.NEXT_PUBLIC_ORG_NAME || "TaskMaster"}
                                 height={40}
                                 width={200}
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: "pointer", height: "auto", width: "auto" }}
                                 onClick={() =>
                                     clientRedirect(router, [
-                                        user ? GlobalConstants.DASHBOARD : GlobalConstants.HOME,
+                                        user
+                                            ? isMembershipExpired(user)
+                                                ? GlobalConstants.PROFILE
+                                                : GlobalConstants.DASHBOARD
+                                            : GlobalConstants.HOME,
                                     ])
                                 }
                             />

@@ -11,7 +11,7 @@ import {
     useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import CalendarDay from "./CalendarDay";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import Form from "../../ui/form/Form";
@@ -35,7 +35,7 @@ interface CalendarDashboardProps {
 const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, locationsPromise }) => {
     const { user, language } = useUserContext();
     const [selectedTzDate, setSelectedTzDate] = useState(
-        utcDateToTzDate(dayjs.utc()).startOf("day").date(1),
+        (utcDateToTzDate(dayjs.utc()) as Dayjs).startOf("month"),
     );
     const [createOpen, setCreateOpen] = useState(false);
     const locations = use(locationsPromise);
@@ -202,7 +202,7 @@ const CalendarDashboard: FC<CalendarDashboardProps> = ({ eventsPromise, location
                                     alignSelf: "center",
                                 }}
                             >
-                                {utcDateToTzDate(selectedTzDate).format("YYYY/MM")}
+                                {selectedTzDate.format("YYYY/MM")}
                             </Typography>
                             <Button
                                 onClick={() => setSelectedTzDate((prev) => prev.add(1, "month"))}

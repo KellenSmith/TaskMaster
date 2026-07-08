@@ -7,6 +7,7 @@ import { ProductUpdateSchema } from "../../lib/zod-schemas";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import { Prisma } from "../../../prisma/generated/client";
+import { useRouter } from "next/navigation";
 
 interface ProductsDashboardProps {
     productsPromise: Promise<Prisma.ProductGetPayload<true>[]>;
@@ -14,10 +15,12 @@ interface ProductsDashboardProps {
 
 const ProductsDashboard = ({ productsPromise }: ProductsDashboardProps) => {
     const { language } = useUserContext();
+    const router = useRouter();
 
     const deleteAction = async (product: ImplementedDatagridEntities) => {
         try {
             await deleteProduct(product.id);
+            router.refresh();
             return GlobalLanguageTranslations.successfulDelete[language];
         } catch {
             throw new Error(GlobalLanguageTranslations.failedDelete[language]);

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { prisma } from "../../prisma/prisma-client";
 import { redirect } from "next/navigation";
 import { PaymentState, TransactionType } from "./payment-types";
-import { Language } from "../../prisma/generated/enums";
+import { Language, OrderStatus } from "../../prisma/generated/enums";
 
 vi.mock("next/navigation", () => ({
     redirect: vi.fn(),
@@ -105,7 +105,7 @@ describe("redirectToSwedbankPayment", () => {
             ok: true,
             json: async () => ({
                 operations: [{ rel: "redirect-checkout", href: "https://redirect" }],
-                paymentOrder: { id: "poid" },
+                paymentOrder: { id: "paid" },
             }),
         });
         (prisma.order.update as any).mockResolvedValue({});
@@ -114,7 +114,7 @@ describe("redirectToSwedbankPayment", () => {
         expect(prisma.order.update).toHaveBeenCalledWith(
             expect.objectContaining({
                 where: { id: baseOrder.id },
-                data: { payment_request_id: "poid" },
+                data: { payment_request_id: OrderStatus.paid, payee_ref: expect.any(String) },
             }),
         );
 
