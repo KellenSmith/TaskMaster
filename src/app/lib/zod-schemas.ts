@@ -70,6 +70,7 @@ export const OrganizationSettingsUpdateSchema = z
             .regex(/^#([0-9A-Fa-f]{3}){1,2}$/, { message: "Invalid hex color" })
             .nullable()
             .optional(),
+        payment_instructions: z.string().optional(),
         privacy_policy_swedish_url: z.url().nullable().optional(),
         privacy_policy_english_url: z.url().nullable().optional(),
         terms_of_purchase_swedish_url: z.url().nullable().optional(),

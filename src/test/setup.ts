@@ -81,8 +81,6 @@ vi.mock("../app/context/OrganizationSettingsContext", () => ({
                 purge_members_after_days_unvalidated: 180,
                 default_task_shift_length: 2,
                 member_application_prompt: "Please provide a brief introduction about yourself.",
-                ticket_instructions:
-                    "Please include any relevant information or questions you have about the event.",
             } as Prisma.OrganizationSettingsGetPayload<true>,
             infopagesPromise: Promise.resolve([]),
         },

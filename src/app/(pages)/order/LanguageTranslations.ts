@@ -19,6 +19,12 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Tack för din beställning! Din betalning har behandlats och håller på att uppfyllas",
     },
+    orderPaymentConfirmed: {
+        [Language.english]:
+            "Thank you for your order! Your payment has been confirmed and your order will be fulfilled after manual review by an admin",
+        [Language.swedish]:
+            "Tack för din beställning! Din betalning har bekräftats och din beställning kommer att uppfyllas efter manuell granskning av en admin",
+    },
     orderId: {
         [Language.english]: "Order ID",
         [Language.swedish]: "Order ID",
@@ -49,6 +55,10 @@ const LanguageTranslations = {
         [Language.english]: "Paid",
         [Language.swedish]: "Betald",
     },
+    [OrderStatus.payment_confirmed]: {
+        [Language.english]: "Payment Confirmed",
+        [Language.swedish]: "Betalning bekräftad",
+    },
     [OrderStatus.completed]: {
         [Language.english]: "Completed",
         [Language.swedish]: "Komplett",
@@ -77,9 +87,59 @@ const LanguageTranslations = {
         [Language.english]: "Cancelled order",
         [Language.swedish]: "Avbröt beställningen",
     },
+    failedCancelOrder: {
+        [Language.english]: "Failed to cancel order",
+        [Language.swedish]: "Kunde inte avbryta beställningen",
+    },
     pay: {
         [Language.english]: (orderTotal: number) => (orderTotal === 0 ? "confirm" : "pay"),
         [Language.swedish]: (orderTotal: number) => (orderTotal === 0 ? "bekräfta" : "betala"),
+    },
+    paymentInfo: {
+        [Language.english]: "Payment information",
+        [Language.swedish]: "Betalningsinformation",
+    },
+    followPaymentInstructions: {
+        [Language.english]:
+            "Please follow the payment instructions below to complete your order. Then click CONFIRM PAYMENT to notify us that you have paid.",
+        [Language.swedish]:
+            "Följ betalningsinstruktionerna nedan för att slutföra din beställning. Klicka sedan på BEKRÄFTA BETALNING för att meddela oss att du har betalat.",
+    },
+    yourOrderWillBeProcessed: {
+        [Language.english]:
+            "Your order will be processed after payment is validated manually by an admin.",
+        [Language.swedish]:
+            "Din beställning kommer att behandlas efter att betalningen har bekräftats manuellt av en admin.",
+    },
+    confirmPayment: {
+        [Language.english]: "Confirm payment",
+        [Language.swedish]: "Bekräfta betalning",
+    },
+    confirmedPayment: {
+        [Language.english]: "Confirmed order payment",
+        [Language.swedish]: "Bekräftade beställningsbetalning",
+    },
+    failedConfirmPayment: {
+        [Language.english]: "Failed to confirm order payment",
+        [Language.swedish]: "Kunde inte bekräfta betalning",
+    },
+    markAsPaid: {
+        [Language.english]: "Mark as paid",
+        [Language.swedish]: "Markera som betald",
+    },
+    areYouSureMarkAsPaid: {
+        [Language.english]:
+            "Are you sure you want to mark this order as paid? The order will be processed immediately.",
+        [Language.swedish]:
+            "Är du säker på att du vill markera denna beställning som betald? Beställningen kommer att behandlas omedelbart.",
+    },
+    markedAsPaid: {
+        [Language.english]: "Marked order as paid",
+        [Language.swedish]: "Markerade beställningen som betald",
+    },
+    failedMarkAsPaid: {
+        [Language.english]: "Failed to mark order as paid",
+        [Language.swedish]: "Kunde inte markera beställningen som betald",
     },
     termsRequired: {
         [Language.english]: "You must accept the terms of purchase to continue",

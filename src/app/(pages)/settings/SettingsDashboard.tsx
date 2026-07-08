@@ -7,7 +7,7 @@ import Form from "../../ui/form/Form";
 import { OrganizationSettingsUpdateSchema } from "../../lib/zod-schemas";
 
 const OrganizationSettingsDashboard = () => {
-    const { organizationSettings } = useOrganizationSettingsContext();
+    const { organizationSettings, handlePaymentsManually } = useOrganizationSettingsContext();
 
     const saveOrganizationSettings = async (formData: FormData) => {
         await updateOrganizationSettings(formData);
@@ -23,6 +23,9 @@ const OrganizationSettingsDashboard = () => {
             readOnly={false}
             editable={true}
             defaultValues={organizationSettings || {}}
+            {...(handlePaymentsManually && {
+                customIncludedFields: [GlobalConstants.PAYMENT_INSTRUCTIONS],
+            })}
         />
     );
 };

@@ -49,7 +49,6 @@ model OrganizationSettings {
   purge_members_after_days_unvalidated Int     @default(180)
   default_task_shift_length            Int     @default(2)
   member_application_prompt            String?
-  ticket_instructions                  String?
   event_manager_email                  String?
   primary_color                        String? @default("#607d8b")
 
@@ -59,6 +58,8 @@ model OrganizationSettings {
   terms_of_purchase_english_url   String?
   terms_of_membership_swedish_url String?
   terms_of_membership_english_url String?
+
+  payment_instructions String?
 
   @@map("organization_settings")
 }
@@ -395,6 +396,7 @@ enum TicketType {
 enum OrderStatus {
   pending
   paid
+  payment_confirmed
   shipped
   completed
   cancelled

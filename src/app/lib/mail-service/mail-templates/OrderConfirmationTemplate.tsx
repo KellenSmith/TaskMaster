@@ -1,15 +1,12 @@
-import { Text } from "@react-email/components";
+import { Button, Text } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import { FC } from "react";
 import { formatPrice } from "../../../ui/utils";
 import { Prisma } from "../../../../prisma/generated/client";
+import mailTheme from "../mail-theme";
+import { getAbsoluteUrl } from "../../utils";
+import GlobalConstants from "../../../GlobalConstants";
 
-/**
- * Props for the OrderConfirmationTemplate component.
- * @property orderId - The ID of the completed order.
- * @property orderItems - Array of order items with product details.
- * @property totalAmount - The total amount of the order.
- */
 interface IOrderConfirmationTemplateProps {
     order: Prisma.OrderGetPayload<{
         select: {
@@ -44,6 +41,13 @@ const OrderConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({ order 
             </Text>
             <Text style={{ marginTop: "20px" }}>Thank you for your purchase!</Text>
             <Text>{`If you have any questions or concerns, don't hesitate to contact us at ${process.env.EMAIL}.`}</Text>
+            <Text>Go to your order to check its status</Text>
+            <Button
+                style={mailTheme.components.button}
+                href={getAbsoluteUrl([GlobalConstants.ORDER], { order_id: order.id })}
+            >
+                go to order
+            </Button>
         </MailTemplate>
     );
 };

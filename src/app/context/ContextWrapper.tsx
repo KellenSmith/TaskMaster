@@ -20,6 +20,7 @@ interface ContextWrapperProps {
             include: { titleText: { include: { translations: true } } };
         }>[]
     >;
+    handlePaymentsManually: boolean;
 }
 
 const ContextWrapper: FC<ContextWrapperProps> = ({
@@ -27,6 +28,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
     organizationSettingsPromise,
     infoPagesPromise,
     userPromise,
+    handlePaymentsManually,
 }) => {
     return (
         <ErrorBoundarySuspense>
@@ -34,6 +36,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                 <OrganizationSettingsProvider
                     organizationSettingsPromise={organizationSettingsPromise}
                     infopagesPromise={infoPagesPromise}
+                    handlePaymentsManually={handlePaymentsManually}
                 >
                     <ThemeContextProvider>
                         <NotificationContextProvider>
