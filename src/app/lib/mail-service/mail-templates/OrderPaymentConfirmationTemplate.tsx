@@ -27,7 +27,7 @@ const OrderPaymentConfirmationTemplate: FC<IOrderConfirmationTemplateProps> = ({
                 SEK VAT)
             </Text>
             <Text style={{ marginTop: "20px" }}>
-                Manually confirm payment. Then mark the order as paid to complete it.
+                Manually validate payment. Then mark the order as paid to complete it.
             </Text>
             <Button
                 style={mailTheme.components.button}

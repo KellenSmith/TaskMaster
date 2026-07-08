@@ -107,7 +107,7 @@ const LanguageTranslations = {
     },
     yourOrderWillBeProcessed: {
         [Language.english]:
-            "Your order will be processed after payment is confirmed manually by an admin.",
+            "Your order will be processed after payment is validated manually by an admin.",
         [Language.swedish]:
             "Din beställning kommer att behandlas efter att betalningen har bekräftats manuellt av en admin.",
     },

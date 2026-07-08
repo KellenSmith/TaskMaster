@@ -157,7 +157,7 @@ export const markAsPaid = async (orderId: string): Promise<void> => {
         data: { status: OrderStatus.paid },
     });
 
-    checkPaymentStatus(loggedInUser!.id, parsedOrderId); // Progress order after marking as paid
+    await checkPaymentStatus(loggedInUser!.id, parsedOrderId); // Progress order after marking as paid
     revalidateTag(GlobalConstants.ORDER, "max");
     revalidateTag(await getOrderCacheTag(parsedOrderId), "max");
 };
