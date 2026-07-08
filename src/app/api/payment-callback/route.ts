@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPaymentStatus } from "../../lib/payment-actions";
 import { prisma } from "../../../prisma/prisma-client";
+import GlobalConstants from "../../GlobalConstants";
 
 const getClientIp = (request: NextRequest): string | null => {
     // Try multiple headers for better IP detection
@@ -14,7 +15,7 @@ const getClientIp = (request: NextRequest): string | null => {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
-        const orderId = request.nextUrl.searchParams.get("orderId");
+        const orderId = request.nextUrl.searchParams.get(GlobalConstants.ORDER_ID);
         if (!orderId) throw new Error("Missing orderId parameter");
 
         // ✅ SECURITY: Simple idempotency check to prevent duplicate processing
