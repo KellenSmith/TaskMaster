@@ -1,21 +1,16 @@
 import { DateTimePicker, DateTimePickerProps } from "@mui/x-date-pickers";
-import { dateDisplayFormat, localTimeZone } from "../../context/LocalizationContext";
+import {
+    dateDisplayFormat,
+    localTimeZone,
+    utcDateToTzDate,
+} from "../../context/LocalizationContext";
 import { useEffect, useMemo, useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 interface LocalizedDatePickerProps {
     fieldId: string;
     required?: boolean;
 }
-
-const toLocalDateTime = (value: unknown): Dayjs | null => {
-    if (!value) return null;
-
-    const utcDate = dayjs.utc(value as string | number | Date | Dayjs);
-    if (!utcDate.isValid()) return null;
-
-    return utcDate.tz(localTimeZone);
-};
 
 const LocalizedDateTimePicker = ({
     fieldId,
@@ -23,7 +18,7 @@ const LocalizedDateTimePicker = ({
     ...props
 }: LocalizedDatePickerProps & DateTimePickerProps) => {
     const { defaultValue, disabled, onChange, slotProps, ...dateTimePickerProps } = props;
-    const initialLocalValue = useMemo(() => toLocalDateTime(defaultValue), [defaultValue]);
+    const initialLocalValue = useMemo(() => utcDateToTzDate(defaultValue), [defaultValue]);
     const [localValue, setLocalValue] = useState<Dayjs | null>(initialLocalValue);
 
     useEffect(() => {

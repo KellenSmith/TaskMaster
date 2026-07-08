@@ -29,6 +29,7 @@ import { useUserContext } from "../../context/UserContext";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
 import { Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface ParticipantDashboardProps {
     eventPromise: Promise<
@@ -70,6 +71,7 @@ const ParticipantDashboard = ({
     const [addDialogOpen, setAddDialogOpen] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+    const router = useRouter();
 
     const addEventParticipantAction = async (formData: FormData) => {
         const participantIds = eventParticipants.map((p) => p.user.id);
@@ -108,6 +110,7 @@ const ParticipantDashboard = ({
             try {
                 await deleteEventParticipant(event.id, userId);
                 addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                router.refresh();
             } catch {
                 addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }
@@ -119,6 +122,7 @@ const ParticipantDashboard = ({
             try {
                 await deleteEventReserve(userId, event.id);
                 addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                router.refresh();
             } catch {
                 addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }

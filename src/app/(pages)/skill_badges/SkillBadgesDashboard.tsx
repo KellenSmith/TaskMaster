@@ -17,6 +17,7 @@ import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
 import LanguageTranslations from "./LanguageTranslations";
 import { Prisma } from "../../../prisma/generated/browser";
+import { useRouter } from "next/navigation";
 
 interface SkillBadgesDashboardProps {
     skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
@@ -31,6 +32,7 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
     const [editBadgeId, setEditBadgeId] = useState<string | null>(null);
     const [createNew, setCreateNew] = useState(false);
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
     const createBadgeAction = async (formData: FormData) => {
         try {
@@ -58,6 +60,7 @@ const SkillBadgesDashboard = ({ skillBadgesPromise }: SkillBadgesDashboardProps)
             try {
                 await deleteSkillBadge(badgeId);
                 addNotification(GlobalLanguageTranslations.successfulDelete[language], "success");
+                router.refresh();
             } catch {
                 addNotification(GlobalLanguageTranslations.failedDelete[language], "error");
             }

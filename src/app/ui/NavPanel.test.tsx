@@ -3,16 +3,18 @@ import userEvent from "@testing-library/user-event";
 import NavPanel from "./NavPanel";
 import { useUserContext } from "../context/UserContext";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { UserRole, UserStatus, Language } from "../../prisma/generated/enums";
 import { logOut } from "../lib/user-actions";
 import { createInfoPage, deleteInfoPage, updateInfoPage } from "../lib/info-page-actions";
 import GlobalConstants from "../GlobalConstants";
 import NotificationContextProvider from "../context/NotificationContext";
+import { getAbsoluteUrl } from "../lib/utils";
 
 vi.mock("next/navigation", () => ({
     useRouter: vi.fn(() => ({ push: vi.fn() })),
     usePathname: vi.fn(() => "/"),
+    useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 
 vi.mock("../lib/user-actions", () => ({
@@ -292,7 +294,10 @@ describe("NavPanel", () => {
         await userEvent.click(screen.getByRole("button", { name: "Proceed" }));
 
         await waitFor(() => {
-            expect(deleteInfoPage).toHaveBeenCalledWith("info-page-1");
+            expect(deleteInfoPage).toHaveBeenCalledWith(
+                "info-page-1",
+                getAbsoluteUrl([GlobalConstants.DASHBOARD]),
+            );
         });
         expect(await screen.findByText("Deleted")).toBeInTheDocument();
     });

@@ -2,7 +2,7 @@
 
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -26,7 +26,14 @@ dayjs.updateLocale(locale, {
     weekdaysShort: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 });
 
-export const utcDateToTzDate = (utcDate: dayjs.Dayjs) => dayjs.tz(utcDate, localTimeZone);
+export const utcDateToTzDate = (value: unknown) => {
+    if (!value) return null;
+
+    const utcDate = dayjs.utc(value as string | number | Date | Dayjs);
+    if (!utcDate.isValid()) return null;
+
+    return utcDate.tz(localTimeZone);
+};
 
 interface LocalizationContextProviderProps {
     children: ReactNode;
