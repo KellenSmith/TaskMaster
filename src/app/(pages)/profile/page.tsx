@@ -78,12 +78,21 @@ const getCachedSkillBadges = async () => {
     return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
 };
 
+const getUserMembershipProduct = async () => {
+    const loggedInUser = await getLoggedInUser();
+    return await prisma.product.findUnique({
+        where: { id: loggedInUser?.user_membership?.membership_id },
+        select: { name: true },
+    });
+};
+
 const ProfilePage = async () => {
     await connection();
 
     const tasksPromise = getCachedUserTasks();
     const eventsPromise = getCachedUserEvents();
     const skillBadgesPromise = getCachedSkillBadges();
+    const userMembershipProductPromise = getUserMembershipProduct();
 
     return (
         <ProtectedPage name={GlobalConstants.PROFILE}>
@@ -91,6 +100,7 @@ const ProfilePage = async () => {
                 tasksPromise={tasksPromise}
                 eventsPromise={eventsPromise}
                 skillBadgesPromise={skillBadgesPromise}
+                membershipProductPromise={userMembershipProductPromise}
             />
         </ProtectedPage>
     );

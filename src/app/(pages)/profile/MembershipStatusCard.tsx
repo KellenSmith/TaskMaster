@@ -1,16 +1,31 @@
 "use client";
 import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
 import { isMembershipExpired } from "../../lib/utils";
-import { AdminPanelSettings, CheckCircle, Person, Schedule, Warning } from "@mui/icons-material";
+import {
+    AdminPanelSettings,
+    CardMembership,
+    CheckCircle,
+    Person,
+    Schedule,
+    Warning,
+} from "@mui/icons-material";
 import { useUserContext } from "../../context/UserContext";
 import { formatUtcDateToTimezone } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
 import { UserStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
+import { use } from "react";
 
-const MembershipStatusCard = () => {
+interface MembershipStatusCardProps {
+    membershipProductPromise: Promise<Prisma.ProductGetPayload<{ select: { name: true } }> | null>;
+}
+
+const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCardProps) => {
     const theme = useTheme();
     const { user, language } = useUserContext();
+    const membershipProduct = use(membershipProductPromise);
+
     if (!user) throw new Error("User must be logged in to view membership status");
 
     return (
@@ -121,6 +136,32 @@ const MembershipStatusCard = () => {
                                     </Typography>
                                 </Stack>
                             </Stack>
+
+                            {/* Membership type */}
+                            {membershipProduct && (
+                                <Stack
+                                    direction="row"
+                                    spacing={2}
+                                    sx={{
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <CardMembership color="primary" />
+                                    <Stack>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: "text.secondary",
+                                            }}
+                                        >
+                                            {LanguageTranslations.membership[language]}
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {membershipProduct.name}
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+                            )}
 
                             {/* Expiration Date */}
                             {user.user_membership && (

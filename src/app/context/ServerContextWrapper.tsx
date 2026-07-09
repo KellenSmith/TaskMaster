@@ -6,6 +6,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { userHasRolePrivileges } from "../lib/auth/auth-utils";
 import { UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/browser";
+import { isSwedbankPayConfigured } from "../lib/payment-helpers";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
@@ -43,12 +44,14 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     const userPromise = getLoggedInUser();
     const organizationSettingsPromise = getOrganizationSettings();
     const infoPagesPromise = getAllowedInfoPages();
+    const handlePaymentsManually = !isSwedbankPayConfigured();
 
     return (
         <ContextWrapper
             organizationSettingsPromise={organizationSettingsPromise}
             userPromise={userPromise}
             infoPagesPromise={infoPagesPromise}
+            handlePaymentsManually={handlePaymentsManually}
         >
             {children}
         </ContextWrapper>

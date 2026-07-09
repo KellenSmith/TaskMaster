@@ -19,6 +19,7 @@ vi.mock("./user-helpers", () => ({
 }));
 import * as userActions from "./user-actions";
 import { getUserCacheTag, getUserLanguage } from "./user-helpers";
+import dayjs from "dayjs";
 
 vi.mock("./mail-service/mail-service", () => ({
     sendMail: vi.fn(),
@@ -45,6 +46,8 @@ beforeEach(() => {
 describe("user-actions", () => {
     describe("createUser", () => {
         it("creates the first user as validated admin and renews membership", async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
             const tx = mockContext.prisma as any as TransactionClient;
             vi.mocked(tx.user.create).mockResolvedValue({ id: "user-1" } as any);
             vi.mocked(tx.user.update).mockResolvedValue({ id: "user-1" } as any);
@@ -53,6 +56,7 @@ describe("user-actions", () => {
             vi.mocked(getMembershipProduct).mockResolvedValue({
                 id: "membership-1",
                 price: 0,
+                membership: { duration: 365 },
             } as any);
             vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
                 callback(tx),
@@ -82,13 +86,14 @@ describe("user-actions", () => {
                 data: {
                     status: UserStatus.validated,
                     role: UserRole.admin,
+                    user_membership: {
+                        create: {
+                            membership_id: "membership-1",
+                            expires_at: dayjs.utc().add(365, "days").toDate(),
+                        },
+                    },
                 },
             });
-            expect(vi.mocked(renewUserMembership)).toHaveBeenCalledWith(
-                tx,
-                "user-1",
-                "membership-1",
-            );
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.USER, "max");
         });
 

@@ -11,19 +11,13 @@ import { revalidateTag } from "next/cache";
 import GlobalConstants from "../GlobalConstants";
 import { deleteOldBlob } from "./organization-settings-actions";
 import { sanitizeFormData } from "./html-sanitizer";
-import { isSwedbankPayConfigured } from "./payment-helpers";
-import LanguageTranslations from "./LanguageTranslations";
-import { getUserLanguage } from "./user-helpers";
 
-export const createProduct = async (formData: FormData): Promise<string | undefined> => {
+export const createProduct = async (formData: FormData): Promise<undefined> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = ProductCreateSchema.parse(Object.fromEntries(formData.entries()));
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
-
-    if (sanitizedData.price && sanitizedData.price > 0 && !isSwedbankPayConfigured())
-        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
 
     await prisma.product.create({
         data: sanitizedData,
@@ -31,16 +25,13 @@ export const createProduct = async (formData: FormData): Promise<string | undefi
     revalidateTag(GlobalConstants.PRODUCT, "max");
 };
 
-export const createMembershipProduct = async (formData: FormData): Promise<string | undefined> => {
+export const createMembershipProduct = async (formData: FormData): Promise<undefined> => {
     // Revalidate input with zod schema - don't trust the client
     const formDataObject = Object.fromEntries(formData.entries());
     const membershipData = MembershipWithoutProductSchema.parse(formDataObject);
     const productValues = ProductUpdateSchema.parse(formDataObject);
     // Sanitize rich text fields (description)before saving to database
     const sanitizedProductData = sanitizeFormData(productValues);
-
-    if (sanitizedProductData.price && sanitizedProductData.price > 0 && !isSwedbankPayConfigured())
-        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
 
     await prisma.membership.create({
         data: {
@@ -57,7 +48,7 @@ export const createMembershipProduct = async (formData: FormData): Promise<strin
 export const updateMembershipProduct = async (
     productId: string,
     formData: FormData,
-): Promise<string | undefined> => {
+): Promise<undefined> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedProductId = UuidSchema.parse(productId);
     const formDataObject = Object.fromEntries(formData.entries());
@@ -65,9 +56,6 @@ export const updateMembershipProduct = async (
     const productValues = ProductUpdateSchema.parse(formDataObject);
     // Sanitize rich text fields (description)before saving to database
     const sanitizedProductData = sanitizeFormData(productValues);
-
-    if (sanitizedProductData.price && sanitizedProductData.price > 0 && !isSwedbankPayConfigured())
-        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
 
     const oldProduct = await prisma.product.findUniqueOrThrow({
         where: { id: validatedProductId },
@@ -93,10 +81,7 @@ export const updateMembershipProduct = async (
     revalidateTag(GlobalConstants.MEMBERSHIP, "max");
 };
 
-export const updateProduct = async (
-    productId: string,
-    formData: FormData,
-): Promise<string | undefined> => {
+export const updateProduct = async (productId: string, formData: FormData): Promise<undefined> => {
     // Validate product ID format
     const validatedProductId = UuidSchema.parse(productId);
     // Revalidate input with zod schema - don't trust the client
@@ -104,9 +89,6 @@ export const updateProduct = async (
 
     // Sanitize rich text fields before saving to database
     const sanitizedData = sanitizeFormData(validatedData);
-
-    if (sanitizedData.price && sanitizedData.price > 0 && !isSwedbankPayConfigured())
-        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
 
     const oldProduct = await prisma.product.findUniqueOrThrow({
         where: { id: validatedProductId },

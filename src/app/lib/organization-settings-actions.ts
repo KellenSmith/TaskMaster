@@ -6,12 +6,13 @@ import GlobalConstants from "../GlobalConstants";
 import { OrganizationSettingsUpdateSchema } from "./zod-schemas";
 import { del } from "@vercel/blob";
 import { getOrganizationSettings } from "./organization-settings-helpers";
+import { sanitizeFormData } from "./html-sanitizer";
 
 export const updateOrganizationSettings = async (formData: FormData): Promise<void> => {
+    // Sanitize rich text field data
+    const sanitizedFormData = sanitizeFormData(Object.fromEntries(formData.entries()));
     // Revalidate input with zod schema - don't trust the client
-    const validatedData = OrganizationSettingsUpdateSchema.parse(
-        Object.fromEntries(formData.entries()),
-    );
+    const validatedData = OrganizationSettingsUpdateSchema.parse(sanitizedFormData);
 
     const settings = await getOrganizationSettings();
     // If a new logo_url is provided and differs from the existing one,

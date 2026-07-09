@@ -35,6 +35,10 @@ export const organizationSettingsFieldLabels = {
         [Language.english]: "Motivation",
         [Language.swedish]: "Motivering",
     },
+    [GlobalConstants.PAYMENT_INSTRUCTIONS]: {
+        [Language.english]: "Payment Instructions",
+        [Language.swedish]: "Betalningsinstruktioner",
+    },
     [GlobalConstants.EVENT_MANAGER_EMAIL]: {
         [Language.english]: "Event Manager Email",
         [Language.swedish]: "Eventkoordinatorns e-post",
@@ -313,6 +317,10 @@ export const productFieldLabels = {
         [Language.english]: "Image",
         [Language.swedish]: "Bild",
     },
+    [GlobalConstants.MEMBERSHIP_ID]: {
+        [Language.english]: "Membership",
+        [Language.swedish]: "Medlemskap",
+    },
     [GlobalConstants.DURATION]: {
         [Language.english]: "Duration [days]",
         [Language.swedish]: "Giltighetsperiod [dagar]",
@@ -369,6 +377,10 @@ export const orderFieldLabels = {
     [OrderStatus.pending]: {
         [Language.english]: "Pending",
         [Language.swedish]: "Avvaktande",
+    },
+    [OrderStatus.payment_confirmed]: {
+        [Language.english]: "Payment Confirmed",
+        [Language.swedish]: "Betalning Bekräftad",
     },
     [OrderStatus.paid]: {
         [Language.english]: "Paid",

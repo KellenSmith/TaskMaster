@@ -22,8 +22,6 @@ export const redirectToOrderPayment = async (orderId: string): Promise<string | 
         },
     });
 
-    console.log("order status: ", order.status);
-
     // Only allow paying for own orders
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser || order.user_id !== loggedInUser.id) {
@@ -70,26 +68,22 @@ export const checkPaymentStatus = async (
     if (!isUserAdmin(loggedInUser) && order.user_id !== validatedUserId) {
         return LanguageTranslations.unauthorized[await getUserLanguage()];
     }
-    // Do nothing to cancelled or completed orders
+    // Do nothing to payment confirmed, cancelled or completed orders
     if (order.status === OrderStatus.cancelled || order.status === OrderStatus.completed) {
         return;
     }
-    // If the order is free, complete it immediately.
-    if (order.total_amount === 0) {
+
+    // If the order is free or manually marked as paid, complete it immediately.
+    if (order.total_amount === 0 || order.status === OrderStatus.paid) {
         await progressOrder(order, false);
         revalidateTag(GlobalConstants.ORDER, "max");
         return;
     }
 
-    // Orders with price > 0 should not be possible when Swedbank Pay is not configured,
-    // but check just in case to avoid processing payments without proper setup.
-    if (!isSwedbankPayConfigured())
-        return LanguageTranslations.swedbankPayNotConfigured[await getUserLanguage()];
-
     if (!order.payment_request_id) {
         // This should not happen - an order without payment request ID is either pending,
         // cancelled or free which are handled above. Log and throw error if it does.
-        if (order.status !== OrderStatus.pending)
+        if (order.status !== OrderStatus.pending && order.status !== OrderStatus.payment_confirmed)
             return LanguageTranslations.noPaymentInitiated[await getUserLanguage()];
         // No payment initiated, nothing to check
         return;
@@ -97,6 +91,8 @@ export const checkPaymentStatus = async (
 
     const { isPaid, needsCapture } = await isOrderpaid(order);
 
-    if (isPaid) await progressOrder(order, needsCapture);
-    revalidateTag(GlobalConstants.ORDER, "max");
+    if (isPaid) {
+        revalidateTag(GlobalConstants.ORDER, "max");
+        await progressOrder(order, needsCapture);
+    }
 };

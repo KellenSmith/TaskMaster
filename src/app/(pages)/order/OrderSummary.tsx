@@ -41,6 +41,8 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
                 return LanguageTranslations.orderCompleted[language];
             case OrderStatus.paid:
                 return LanguageTranslations.orderPaid[language];
+            case OrderStatus.payment_confirmed:
+                return LanguageTranslations.orderPaymentConfirmed[language];
             case OrderStatus.pending:
                 return LanguageTranslations.orderPending[language];
             case OrderStatus.cancelled:

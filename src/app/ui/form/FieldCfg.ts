@@ -68,9 +68,15 @@ export const explanatoryTexts = {
         [Language.swedish]:
             "Om den anges kommer denna text att visas som en uppmaning för medlemsansökningar och ansökningar kan inte skickas utan ett meddelande. Om detta fält lämnas tomt kan ansökningar skickas utan ett meddelande.",
     },
+    [GlobalConstants.PAYMENT_INSTRUCTIONS]: {
+        [Language.english]:
+            "This text will be displayed if Swedbank Pay is not configured to prompt the user to pay their order through other means determined by the organization. An admin can then manually confirm payment and mark the order as paid.",
+        [Language.swedish]:
+            "Denna text kommer att visas om Swedbank Pay inte är konfigurerat för att uppmana användaren att betala sin beställning på andra sätt som bestäms av organisationen. En admin kan sedan manuellt bekräfta betalningen och markera beställningen som betald.",
+    },
     [GlobalConstants.NICKNAME]: {
         [Language.english]:
-            "This nickname that will be displayed to other members. No other personal data will be revealed.",
+            "This nickname will be displayed to other members. No other personal data will be revealed.",
         [Language.swedish]:
             "Detta smeknamn som kommer att visas för andra medlemmar. Inga andra personuppgifter kommer att avslöjas.",
     },
@@ -106,7 +112,7 @@ export const RenderedFields = {
     ],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
-    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
+    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.MEMBERSHIP_ID, GlobalConstants.EXPIRES_AT],
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
         GlobalConstants.LOCATION_ID,
@@ -195,7 +201,7 @@ export const RequiredFields = {
         GlobalConstants.NICKNAME,
         GlobalConstants.EMAIL,
     ],
-    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
+    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.MEMBERSHIP_ID, GlobalConstants.EXPIRES_AT],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
     // Event
@@ -268,6 +274,8 @@ export const richTextFields = [
     GlobalConstants.DESCRIPTION,
     // Sendout
     GlobalConstants.CONTENT,
+    // Organization settings
+    GlobalConstants.PAYMENT_INSTRUCTIONS,
 ];
 
 export const checkboxFields = [
@@ -307,6 +315,7 @@ export const stringsToSelectOptions = (strings: string[]): CustomOptionProps[] =
 
 export const multiLineTextFields = [
     GlobalConstants.MEMBER_APPLICATION_PROMPT,
+    GlobalConstants.PAYMENT_INSTRUCTIONS,
     GlobalConstants.ACCESSIBILITY_INFO,
 ];
 

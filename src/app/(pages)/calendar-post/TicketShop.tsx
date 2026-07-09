@@ -81,19 +81,14 @@ const TicketShop = ({
 
     const updateTicketAction = async (formData: FormData) => {
         if (!editingTicketId) throw new Error(LanguageTranslations.noTicketSelected[language]);
-
-        let errorMsg: string | undefined;
         try {
-            errorMsg = await updateEventTicket(editingTicketId, formData);
-            if (!errorMsg) {
-                setDialogOpen(false);
-                setEditingTicketId(null);
-                return GlobalLanguageTranslations.successfulSave[language];
-            }
+            await updateEventTicket(editingTicketId, formData);
+            setDialogOpen(false);
+            setEditingTicketId(null);
+            return GlobalLanguageTranslations.successfulSave[language];
         } catch {
-            errorMsg = GlobalLanguageTranslations.failedSave[language];
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
         }
-        throw new Error(errorMsg);
     };
 
     const allowDeleteTicket = (ticket: Prisma.TicketGetPayload<true>) => {

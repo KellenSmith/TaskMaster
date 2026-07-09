@@ -90,6 +90,7 @@ export default function ProductCard({
                         <Image
                             src={product.image_url || defaultProductImage}
                             alt={product.name}
+                            loading="eager"
                             width={400}
                             height={400}
                             style={{

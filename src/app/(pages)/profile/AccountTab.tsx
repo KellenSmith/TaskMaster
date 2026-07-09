@@ -17,8 +17,13 @@ import LanguageTranslations from "./LanguageTranslations";
 import { clientRedirect, isMembershipExpired } from "../../lib/utils";
 import { useRouter } from "next/navigation";
 import { UserStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
-const AccountTab = () => {
+interface AccountTabProps {
+    membershipProductPromise: Promise<Prisma.ProductGetPayload<{ select: { name: true } }> | null>;
+}
+
+const AccountTab = ({ membershipProductPromise }: AccountTabProps) => {
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
@@ -27,8 +32,12 @@ const AccountTab = () => {
     if (!user) return <LoadingFallback />;
 
     const updateUserProfile = async (formData: FormData) => {
-        await updateUser(user.id, formData);
-        return GlobalLanguageTranslations.successfulSave[language];
+        try {
+            await updateUser(user.id, formData);
+            return GlobalLanguageTranslations.successfulSave[language];
+        } catch {
+            throw new Error(GlobalLanguageTranslations.failedSave[language]);
+        }
     };
 
     const deleteMyAccount = async () =>
@@ -59,7 +68,7 @@ const AccountTab = () => {
 
     return (
         <Stack>
-            <MembershipStatusCard />
+            <MembershipStatusCard membershipProductPromise={membershipProductPromise} />
             {getMembershipActionButton()}
             <Form
                 name={GlobalConstants.PROFILE}
