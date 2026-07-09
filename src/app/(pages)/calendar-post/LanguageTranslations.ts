@@ -80,9 +80,17 @@ const LanguageTranslations = {
         [Language.english]: "Failed to create ticket order",
         [Language.swedish]: "Misslyckades med att skapa biljettbeställning",
     },
+    ticket: {
+        [Language.english]: "Ticket",
+        [Language.swedish]: "Biljett",
+    },
     tickets: {
         [Language.english]: "Tickets",
         [Language.swedish]: "Biljetter",
+    },
+    ticketsSold: {
+        [Language.english]: "Tickets Sold",
+        [Language.swedish]: "Sålda Biljetter",
     },
     addTicket: {
         [Language.english]: "Add Ticket",

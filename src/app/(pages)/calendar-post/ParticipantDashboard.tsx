@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { use, useState, useTransition } from "react";
 import { isUserHost } from "../../lib/utils";
-import { Add, Delete, Person } from "@mui/icons-material";
+import { Add, ConfirmationNumber, Delete, Person } from "@mui/icons-material";
 import { FieldLabels, getUserSelectOptions } from "../../ui/form/FieldCfg";
 import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
@@ -129,6 +129,55 @@ const ParticipantDashboard = ({
         });
     };
 
+    const TicketSummary = () => {
+        return (
+            <List sx={{ minWidth: 200 }}>
+                <ListSubheader>
+                    <Stack
+                        direction="row"
+                        sx={{
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        {LanguageTranslations.ticketsSold[language]}
+                    </Stack>
+                </ListSubheader>
+                <Divider />
+                {tickets.map((ticket: (typeof tickets)[0]) => {
+                    return (
+                        <ListItem key={ticket.product_id} disableGutters alignItems="center">
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{
+                                    width: "100%",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <ListItemAvatar sx={{ display: "flex", justifyContent: "center" }}>
+                                    <ConfirmationNumber
+                                        sx={{ color: theme.palette.primary.main }}
+                                    />
+                                </ListItemAvatar>
+                                <ListItemText primary={ticket.product.name} />
+                                <ListItemText
+                                    primary={`(${
+                                        eventParticipants.filter(
+                                            (eventParticipant) =>
+                                                eventParticipant.ticket_id === ticket.product_id,
+                                        ).length
+                                    })`}
+                                />
+                            </Stack>
+                        </ListItem>
+                    );
+                })}
+            </List>
+        );
+    };
+
     const UserList = ({
         name,
         users,
@@ -177,6 +226,17 @@ const ParticipantDashboard = ({
                                         size="small"
                                     />
                                 )}
+                                {name === GlobalConstants.PARTICIPANT_USERS && (
+                                    <ListItemText
+                                        primary={`(${LanguageTranslations.ticket[language]}: ${
+                                            tickets.find(
+                                                (ticket) =>
+                                                    ticket.product_id ===
+                                                    (p as (typeof eventParticipants)[0]).ticket_id,
+                                            )?.product.name
+                                        })`}
+                                    />
+                                )}
 
                                 <IconButton
                                     onClick={async () =>
@@ -217,6 +277,7 @@ const ParticipantDashboard = ({
                     <LoadingFallback />
                 ) : (
                     <>
+                        <TicketSummary />
                         <UserList
                             name={GlobalConstants.PARTICIPANT_USERS}
                             users={eventParticipants}
