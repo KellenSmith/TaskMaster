@@ -1,5 +1,3 @@
-"use server";
-
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma, TransactionClient } from "../../prisma/prisma-client";

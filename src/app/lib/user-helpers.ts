@@ -1,5 +1,3 @@
-"use server";
-
 import { prisma } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
