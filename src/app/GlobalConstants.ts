@@ -120,6 +120,7 @@ const GlobalConstants = {
     MEMBERSHIP_PRODUCT_NAME: "Membership",
     // Membership
     MEMBERSHIP: "membership",
+    MEMBERSHIP_ID: "membership_id",
     DURATION: "duration",
     // Order
     ORDER: "order",

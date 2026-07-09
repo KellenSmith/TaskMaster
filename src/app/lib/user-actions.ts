@@ -14,7 +14,7 @@ import { sendMail } from "./mail-service/mail-service";
 import { signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-helpers";
 import { getRelativeUrl } from "./utils";
-import { getMembershipProduct, renewUserMembership } from "./user-membership-helpers";
+import { getMembershipProduct } from "./user-membership-helpers";
 import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
 import MailTemplate from "./mail-service/mail-templates/MailTemplate";
@@ -25,6 +25,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import { getUserCacheTag, getUserLanguage } from "./user-helpers";
 import { getUniqueConstraintFields, prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { connection } from "next/server";
+import dayjs from "dayjs";
 
 export const createUser = async (formData: FormData): Promise<void> => {
     // Revalidate input with zod schema - don't trust the client
@@ -51,15 +52,23 @@ export const createUser = async (formData: FormData): Promise<void> => {
             },
         });
         if (userCount === 0) {
+            const membershipProduct = await getMembershipProduct();
             await tx.user.update({
                 where: { id: newUser.id },
                 data: {
                     status: UserStatus.validated,
                     role: UserRole.admin,
+                    user_membership: {
+                        create: {
+                            membership_id: membershipProduct.id,
+                            expires_at: dayjs
+                                .utc()
+                                .add(membershipProduct.membership!.duration, "d")
+                                .toDate(),
+                        },
+                    },
                 },
             });
-            const membershipProduct = await getMembershipProduct();
-            await renewUserMembership(tx, newUser.id, membershipProduct.id);
         }
         revalidateTag(GlobalConstants.USER, "max");
         revalidateTag(await getUserCacheTag(newUser.id), "max");

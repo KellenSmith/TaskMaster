@@ -17,8 +17,13 @@ import LanguageTranslations from "./LanguageTranslations";
 import { clientRedirect, isMembershipExpired } from "../../lib/utils";
 import { useRouter } from "next/navigation";
 import { UserStatus } from "../../../prisma/generated/enums";
+import { Prisma } from "../../../prisma/generated/browser";
 
-const AccountTab = () => {
+interface AccountTabProps {
+    membershipProductPromise: Promise<Prisma.ProductGetPayload<{ select: { name: true } }> | null>;
+}
+
+const AccountTab = ({ membershipProductPromise }: AccountTabProps) => {
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
@@ -63,7 +68,7 @@ const AccountTab = () => {
 
     return (
         <Stack>
-            <MembershipStatusCard />
+            <MembershipStatusCard membershipProductPromise={membershipProductPromise} />
             {getMembershipActionButton()}
             <Form
                 name={GlobalConstants.PROFILE}

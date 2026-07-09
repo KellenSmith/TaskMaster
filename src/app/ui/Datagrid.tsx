@@ -48,21 +48,25 @@ export interface FilteredRowsActionProps {
     buttonLabel: string;
 }
 
+export type ImplementedUserType = Prisma.UserGetPayload<{
+    include: {
+        user_membership: true;
+        skill_badges: true;
+    };
+}>;
+export type ImplementedProductType = Prisma.ProductGetPayload<true>;
+export type ImplementedOrderType = Prisma.OrderGetPayload<{
+    include: {
+        user: { select: { nickname: true } };
+        order_items: { include: { product: true } };
+    };
+}>;
+export type ImplementedNewsletterJobType = Prisma.NewsletterJobGetPayload<true>;
 export type ImplementedDatagridEntities =
-    | Prisma.UserGetPayload<{
-          include: {
-              user_membership: true;
-              skill_badges: true;
-          };
-      }>
-    | Prisma.ProductGetPayload<true>
-    | Prisma.OrderGetPayload<{
-          include: {
-              user: { select: { nickname: true } };
-              order_items: { include: { product: true } };
-          };
-      }>
-    | Prisma.NewsletterJobGetPayload<true>;
+    | ImplementedUserType
+    | ImplementedProductType
+    | ImplementedOrderType
+    | ImplementedNewsletterJobType;
 
 interface DatagridProps {
     name?: string;
@@ -338,7 +342,7 @@ const Datagrid: React.FC<DatagridProps> = ({
                 if (!clickedRow) throw new Error(LanguageTranslations.noRowSelected[language]);
                 const result = await rowAction.serverAction(clickedRow);
                 setClickedRow(null);
-                addNotification(result, "success");
+                if (result) addNotification(result, "success");
             } catch (error) {
                 if (error && typeof error === "object" && "message" in error)
                     addNotification(error.message as string, "error");

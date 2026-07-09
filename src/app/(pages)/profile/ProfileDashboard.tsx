@@ -37,12 +37,14 @@ interface ProfileDashboardProps {
         }>[]
     >;
     skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
+    membershipProductPromise: Promise<Prisma.ProductGetPayload<{ select: { name: true } }> | null>;
 }
 
 const ProfileDashboard = ({
     tasksPromise,
     eventsPromise,
     skillBadgesPromise,
+    membershipProductPromise,
 }: ProfileDashboardProps) => {
     const { user, language } = useUserContext();
     const theme = useTheme();
@@ -85,7 +87,7 @@ const ProfileDashboard = ({
             case tabs.skill_badges:
                 return <SkillBadgesTab skillBadgesPromise={skillBadgesPromise} />;
             default:
-                return <AccountTab />;
+                return <AccountTab membershipProductPromise={membershipProductPromise} />;
         }
     };
 

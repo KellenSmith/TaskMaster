@@ -112,7 +112,7 @@ export const RenderedFields = {
     ],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
-    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
+    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.MEMBERSHIP_ID, GlobalConstants.EXPIRES_AT],
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
         GlobalConstants.LOCATION_ID,
@@ -201,7 +201,7 @@ export const RequiredFields = {
         GlobalConstants.NICKNAME,
         GlobalConstants.EMAIL,
     ],
-    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.EXPIRES_AT],
+    [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.MEMBERSHIP_ID, GlobalConstants.EXPIRES_AT],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
     // Event

@@ -5,18 +5,27 @@ import { prisma } from "../../../prisma/prisma-client";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
 import ProtectedPage from "../../ProtectedPage";
 import GlobalConstants from "../../GlobalConstants";
+import { ImplementedUserType } from "../../ui/Datagrid";
 
 const getMembers = async () => {
-    return await prisma.user.findMany({
+    const members = await prisma.user.findMany({
         include: {
             user_membership: true,
             skill_badges: true,
         },
+        orderBy: {
+            created_at: "desc",
+        },
     });
+    return members as ImplementedUserType[];
 };
 
 const getSkillBadges = async () => {
     return await prisma.skillBadge.findMany({ include: { user_skill_badges: true } });
+};
+
+const getMemberships = async () => {
+    return await prisma.membership.findMany({ include: { product: { select: { name: true } } } });
 };
 
 const MembersPage = async () => {
@@ -28,6 +37,7 @@ const MembersPage = async () => {
                 <MembersDashboard
                     membersPromise={getMembers()}
                     skillBadgesPromise={getSkillBadges()}
+                    membershipsPromise={getMemberships()}
                 />
             </ErrorBoundarySuspense>
         </ProtectedPage>

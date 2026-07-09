@@ -17,6 +17,10 @@ const LanguageTranslations = {
         [Language.english]: "Add membership",
         [Language.swedish]: "Lägg till medlemskap",
     },
+    changeMembership: {
+        [Language.english]: "Change membership",
+        [Language.swedish]: "Ändra medlemskap",
+    },
     addedMembership: {
         [Language.english]: "Added membership",
         [Language.swedish]: "Lagt till medlemskap",
