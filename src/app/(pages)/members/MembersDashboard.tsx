@@ -10,7 +10,11 @@ import {
     useTheme,
 } from "@mui/material";
 import { createUser, deleteUser, updateUser, validateUserMembership } from "../../lib/user-actions";
-import Datagrid, { ImplementedDatagridEntities, RowActionProps } from "../../ui/Datagrid";
+import Datagrid, {
+    ImplementedDatagridEntities,
+    ImplementedUserType,
+    RowActionProps,
+} from "../../ui/Datagrid";
 import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
 import { FieldLabels } from "../../ui/form/FieldCfg";
@@ -30,35 +34,38 @@ import LanguageTranslations from "./LanguageTranslations";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import Form from "../../ui/form/Form";
 import { addUserMembership } from "../../lib/user-membership-actions";
-import { openResourceInNewTab } from "../../ui/utils";
+import { formatUtcDateToTimezone, openResourceInNewTab } from "../../ui/utils";
 import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useRouter } from "next/navigation";
 
 interface MembersDashboardProps {
-    membersPromise: Promise<
-        Prisma.UserGetPayload<{
-            include: {
-                user_membership: true;
-                skill_badges: true;
-            };
-        }>[]
-    >;
+    membersPromise: Promise<ImplementedUserType[]>;
     skillBadgesPromise: Promise<Prisma.SkillBadgeGetPayload<true>[]>;
+    membershipsPromise: Promise<
+        Prisma.MembershipGetPayload<{ include: { product: { select: { name: true } } } }>[]
+    >;
 }
 
-const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadgesPromise }) => {
+const MembersDashboard: FC<MembersDashboardProps> = ({
+    membersPromise,
+    skillBadgesPromise,
+    membershipsPromise,
+}) => {
     const router = useRouter();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { user, language } = useUserContext();
     const members = use(membersPromise);
     const skillBadges = use(skillBadgesPromise);
+    const memberships = use(membershipsPromise);
     const [addMembershipDialogOpen, setAddMembershipDialogOpen] =
-        useState<ImplementedDatagridEntities | null>(null);
+        useState<ImplementedUserType | null>(null);
 
-    const isMembershipPending = (member: ImplementedDatagridEntities) =>
-        (member as Prisma.UserGetPayload<true>).status === UserStatus.pending;
+    const getUserMembership = (user: ImplementedUserType) =>
+        memberships.find(
+            (membership) => membership.product_id === user.user_membership?.membership_id,
+        );
 
     const validateMembershipAction = async (member: ImplementedDatagridEntities) => {
         try {
@@ -144,7 +151,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             name: GlobalConstants.VALIDATE_MEMBERSHIP,
             serverAction: validateMembershipAction,
             available: (member: ImplementedDatagridEntities) =>
-                member && isMembershipPending(member),
+                (member as ImplementedUserType)?.status === UserStatus.pending,
             buttonLabel: LanguageTranslations.validateMembership[language],
         },
         {
@@ -157,24 +164,28 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         {
             name: GlobalConstants.ADD_MEMBERSHIP,
             serverAction: async (member: ImplementedDatagridEntities) => {
-                setAddMembershipDialogOpen(member);
-                return "Opened add membership dialog";
+                setAddMembershipDialogOpen(member as ImplementedUserType);
+                return "";
             },
-            available: (row: ImplementedDatagridEntities) => {
-                const member = row as Prisma.UserGetPayload<{
-                    include: {
-                        user_membership: true;
-                        skill_badges: true;
-                    };
-                }>;
-                return member && isMembershipExpired(member) && !isMembershipPending(member);
-            },
+            available: (row: ImplementedDatagridEntities) =>
+                !(row as ImplementedUserType)?.user_membership &&
+                !((row as ImplementedUserType)?.status === UserStatus.pending),
             buttonLabel: LanguageTranslations.addMembership[language],
+        },
+        {
+            name: GlobalConstants.MEMBERSHIP_ID,
+            serverAction: async (member: ImplementedDatagridEntities) => {
+                setAddMembershipDialogOpen(member as ImplementedUserType);
+                return "";
+            },
+            available: (row: ImplementedDatagridEntities) =>
+                !!(row as ImplementedUserType)?.user_membership,
+            buttonLabel: LanguageTranslations.changeMembership[language],
         },
     ];
 
     const getStatusConfig = (member: ImplementedDatagridEntities) => {
-        if (isMembershipPending(member))
+        if ((member as ImplementedUserType)?.status === UserStatus.pending)
             return {
                 status: GlobalConstants.PENDING,
                 icon: WarningIcon,
@@ -251,19 +262,20 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
             },
         },
         {
-            field: GlobalConstants.USER_MEMBERSHIP,
+            field: GlobalConstants.EXPIRES_AT,
             headerName: "Membership expires",
             type: "dateTime",
+            valueGetter: (_, member: ImplementedDatagridEntities) =>
+                (member as ImplementedUserType)?.user_membership?.expires_at,
+            valueFormatter: (value) => formatUtcDateToTimezone(value),
+        },
+        {
+            field: GlobalConstants.MEMBERSHIP_ID,
+            headerName: "Membership",
+            type: "string",
             valueGetter: (_, member: ImplementedDatagridEntities) => {
-                const expiresAt = (
-                    member as Prisma.UserGetPayload<{
-                        include: {
-                            user_membership: true;
-                            skill_badges: true;
-                        };
-                    }>
-                ).user_membership?.expires_at;
-                return expiresAt ? new Date(expiresAt) : null;
+                const userMembership = getUserMembership(member as ImplementedUserType);
+                return userMembership?.product.name || null;
             },
         },
         {
@@ -321,7 +333,11 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
         },
     ];
 
-    const hiddenColumns = [GlobalConstants.ID, GlobalConstants.EMAIL_VERIFIED];
+    const hiddenColumns = [
+        GlobalConstants.ID,
+        GlobalConstants.EMAIL_VERIFIED,
+        GlobalConstants.USER_MEMBERSHIP,
+    ];
 
     return (
         <Stack sx={{ height: "100%" }}>
@@ -367,6 +383,20 @@ const MembersDashboard: FC<MembersDashboardProps> = ({ membersPromise, skillBadg
                     name={GlobalConstants.ADD_MEMBERSHIP}
                     validationSchema={AddMembershipSchema}
                     action={addMembershipAction}
+                    {...(addMembershipDialogOpen?.user_membership && {
+                        defaultValues: {
+                            [GlobalConstants.MEMBERSHIP_ID]:
+                                addMembershipDialogOpen.user_membership.membership_id,
+                            [GlobalConstants.EXPIRES_AT]:
+                                addMembershipDialogOpen.user_membership.expires_at,
+                        },
+                    })}
+                    customOptions={{
+                        [GlobalConstants.MEMBERSHIP_ID]: memberships.map((membership) => ({
+                            id: membership.product_id,
+                            label: membership.product.name,
+                        })),
+                    }}
                     editable={true}
                     readOnly={false}
                 />

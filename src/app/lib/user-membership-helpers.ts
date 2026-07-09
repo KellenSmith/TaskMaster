@@ -1,5 +1,3 @@
-"use server";
-
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma, TransactionClient } from "../../prisma/prisma-client";
@@ -15,9 +13,6 @@ export const renewUserMembership = async (
     const membership = await tx.membership.findUniqueOrThrow({
         where: { product_id: membershipId },
     });
-    const userMembership = await tx.userMembership.findUnique({
-        where: { user_id: userId },
-    });
     const user = await tx.user.findUniqueOrThrow({
         where: { id: userId },
         include: { user_membership: true },
@@ -25,9 +20,9 @@ export const renewUserMembership = async (
 
     let newExpiryDate = dayjs.utc().add(membership.duration, "d").toISOString();
     // If the membership is the same, extend the expiration date
-    if (!isMembershipExpired(user) && userMembership?.membership_id === membershipId)
+    if (!isMembershipExpired(user) && user.user_membership?.membership_id === membershipId)
         newExpiryDate = dayjs
-            .utc(userMembership.expires_at)
+            .utc(user.user_membership.expires_at)
             .add(membership.duration, "d")
             .toISOString();
 
@@ -48,7 +43,13 @@ export const renewUserMembership = async (
 };
 
 export const getMembershipProduct = async (): Promise<
-    Prisma.ProductGetPayload<{ select: { id: true; price: true } }>
+    Prisma.ProductGetPayload<{
+        select: {
+            id: true;
+            price: true;
+            membership: { select: { duration: true } };
+        };
+    }>
 > => {
     // Try to find existing membership product
     const membershipProduct = await prisma.product.findFirst({
@@ -56,6 +57,7 @@ export const getMembershipProduct = async (): Promise<
         select: {
             id: true,
             price: true,
+            membership: { select: { duration: true } },
         },
     });
     if (membershipProduct) {
@@ -74,7 +76,7 @@ export const getMembershipProduct = async (): Promise<
                 },
             },
         },
-        select: { id: true, price: true },
+        select: { id: true, price: true, membership: { select: { duration: true } } },
     });
     return newMembershipProduct;
 };

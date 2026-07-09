@@ -347,6 +347,7 @@ export const CloneEventSchema = z.object({
 
 export const AddMembershipSchema = z.object({
     expires_at: stringToISODate,
+    membership_id: uuidSchema,
 });
 
 export const ContactMemberSchema = z.object({

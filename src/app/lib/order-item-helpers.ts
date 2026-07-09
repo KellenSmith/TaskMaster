@@ -1,5 +1,3 @@
-"use server";
-
 import { Prisma } from "../../prisma/generated/client";
 import { TransactionClient } from "../../prisma/prisma-client";
 import { getAvailableProductStock, processOrderedProduct } from "./product-helpers";

@@ -317,6 +317,10 @@ export const productFieldLabels = {
         [Language.english]: "Image",
         [Language.swedish]: "Bild",
     },
+    [GlobalConstants.MEMBERSHIP_ID]: {
+        [Language.english]: "Membership",
+        [Language.swedish]: "Medlemskap",
+    },
     [GlobalConstants.DURATION]: {
         [Language.english]: "Duration [days]",
         [Language.swedish]: "Giltighetsperiod [dagar]",

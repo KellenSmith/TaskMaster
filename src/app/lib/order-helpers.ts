@@ -1,5 +1,3 @@
-"use server";
-
 import { revalidateTag } from "next/cache";
 import { OrderStatus, Prisma } from "../../prisma/generated/client";
 import { prisma, TransactionClient } from "../../prisma/prisma-client";
