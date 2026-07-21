@@ -3,19 +3,12 @@ import GlobalConstants from "../../GlobalConstants";
 import testdata from "../../../test/testdata";
 import { isUserAuthorized, userHasRolePrivileges } from "./auth-utils";
 import { UserRole, UserStatus } from "../../../prisma/generated/enums";
-import { Prisma } from "../../../prisma/generated/client";
 
-type AuthUser = Prisma.UserGetPayload<{
-    select: { role: true; status: true; user_membership: true };
-}>;
-
-const makeUser = (overrides: Partial<AuthUser> = {}): AuthUser =>
-    ({
-        role: UserRole.member,
-        status: UserStatus.pending,
-        user_membership: testdata.user.user_membership,
-        ...overrides,
-    }) as AuthUser;
+const makeUser = (overrides: Partial<typeof testdata.user> = {}): typeof testdata.user => ({
+    ...testdata.user,
+    status: UserStatus.pending,
+    ...overrides,
+});
 
 describe("userHasRolePrivileges", () => {
     it("returns true when no role is required", () => {

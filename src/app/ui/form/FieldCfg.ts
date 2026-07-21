@@ -113,6 +113,7 @@ export const RenderedFields = {
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
     [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.MEMBERSHIP_ID, GlobalConstants.EXPIRES_AT],
+    [GlobalConstants.BLACKLIST_ENTRY]: [GlobalConstants.EXPIRES_AT, GlobalConstants.REASON],
     [GlobalConstants.EVENT]: [
         GlobalConstants.TITLE,
         GlobalConstants.LOCATION_ID,
@@ -202,6 +203,7 @@ export const RequiredFields = {
         GlobalConstants.EMAIL,
     ],
     [GlobalConstants.ADD_MEMBERSHIP]: [GlobalConstants.MEMBERSHIP_ID, GlobalConstants.EXPIRES_AT],
+    [GlobalConstants.BLACKLIST_ENTRY]: [GlobalConstants.REASON],
     // Login
     [GlobalConstants.LOGIN]: [GlobalConstants.EMAIL],
     // Event
@@ -317,6 +319,7 @@ export const multiLineTextFields = [
     GlobalConstants.MEMBER_APPLICATION_PROMPT,
     GlobalConstants.PAYMENT_INSTRUCTIONS,
     GlobalConstants.ACCESSIBILITY_INFO,
+    GlobalConstants.REASON,
 ];
 
 export const fileUploadFields = [

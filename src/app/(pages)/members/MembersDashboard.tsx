@@ -1,6 +1,9 @@
 "use client";
 import {
     Button,
+    Card,
+    CardContent,
+    CardHeader,
     Chip,
     Dialog,
     Stack,
@@ -9,7 +12,13 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import { createUser, deleteUser, updateUser, validateUserMembership } from "../../lib/user-actions";
+import {
+    createUser,
+    deleteUser,
+    updateUser,
+    upsertUserBlacklistEntry,
+    validateUserMembership,
+} from "../../lib/user-actions";
 import Datagrid, {
     ImplementedDatagridEntities,
     ImplementedUserType,
@@ -18,11 +27,17 @@ import Datagrid, {
 import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
 import { FieldLabels } from "../../ui/form/FieldCfg";
-import { isMembershipExpired } from "../../lib/utils";
-import { AddMembershipSchema, UserUpdateSchema } from "../../lib/zod-schemas";
+import { isMemberBlacklisted, isMembershipExpired } from "../../lib/utils";
+import {
+    AddMembershipSchema,
+    BlacklistEntryCreateSchema,
+    UserUpdateSchema,
+} from "../../lib/zod-schemas";
 import { useUserContext } from "../../context/UserContext";
 import {
+    Block,
     Check as CheckIcon,
+    Clear,
     Error as ErrorIcon,
     Shield,
     Warning as WarningIcon,
@@ -38,6 +53,7 @@ import { formatUtcDateToTimezone, openResourceInNewTab } from "../../ui/utils";
 import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useRouter } from "next/navigation";
+import { userFieldLabels } from "../../ui/form/LanguageTranslations";
 
 interface MembersDashboardProps {
     membersPromise: Promise<ImplementedUserType[]>;
@@ -60,6 +76,8 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
     const skillBadges = use(skillBadgesPromise);
     const memberships = use(membershipsPromise);
     const [addMembershipDialogOpen, setAddMembershipDialogOpen] =
+        useState<ImplementedUserType | null>(null);
+    const [editBlacklistEntryUser, setEditBlacklistEntryUser] =
         useState<ImplementedUserType | null>(null);
 
     const getUserMembership = (user: ImplementedUserType) =>
@@ -85,6 +103,18 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
             return LanguageTranslations.addedMembership[language];
         } catch {
             throw new Error(LanguageTranslations.failedAddedMembership[language]);
+        }
+    };
+
+    const upsertUserBlacklistEntryAction = async (formData: FormData) => {
+        try {
+            if (!editBlacklistEntryUser) return "No chosen user";
+            await upsertUserBlacklistEntry(editBlacklistEntryUser.id, formData);
+            setEditBlacklistEntryUser(null);
+            router.refresh();
+            return LanguageTranslations.blacklistedMember[language];
+        } catch {
+            throw new Error(LanguageTranslations.failedBlacklistedMember[language]);
         }
     };
 
@@ -182,9 +212,24 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
                 !!(row as ImplementedUserType)?.user_membership,
             buttonLabel: LanguageTranslations.changeMembership[language],
         },
+        {
+            name: GlobalConstants.BLACKLIST_ENTRY,
+            serverAction: async (member: ImplementedDatagridEntities) => {
+                setEditBlacklistEntryUser(member as ImplementedUserType);
+                return "";
+            },
+            available: () => true,
+            buttonLabel: LanguageTranslations.blacklistMember[language],
+        },
     ];
 
     const getStatusConfig = (member: ImplementedDatagridEntities) => {
+        if (isMemberBlacklisted(member as ImplementedUserType))
+            return {
+                status: GlobalConstants.BLACKLISTED,
+                icon: Block,
+                color: "error.main",
+            };
         if ((member as ImplementedUserType)?.status === UserStatus.pending)
             return {
                 status: GlobalConstants.PENDING,
@@ -197,6 +242,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
                     include: {
                         user_membership: true;
                         skill_badges: true;
+                        blacklist_entry: true;
                     };
                 }>,
             )
@@ -223,24 +269,16 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
                 return status;
             },
             sortComparator: (value1, value2) => {
-                if (value1 === value2) return 0;
-                // pending - active/expired
-                if (
-                    value1 === GlobalConstants.PENDING &&
-                    [GlobalConstants.ACTIVE, GlobalConstants.EXPIRED].includes(value2)
-                )
-                    return -1;
-                // active - pending/expired
-                if (value1 === GlobalConstants.ACTIVE) {
-                    if (value2 === GlobalConstants.EXPIRED) return -1;
-                    if (value2 === GlobalConstants.PENDING) return 1;
-                }
-                // expired - pending/active
-                if (value1 === GlobalConstants.EXPIRED) return 1;
-                return 0;
+                const options = [
+                    GlobalConstants.PENDING,
+                    GlobalConstants.ACTIVE,
+                    GlobalConstants.EXPIRED,
+                    GlobalConstants.BLACKLISTED,
+                ];
+                return options.indexOf(value1) - options.indexOf(value2);
             },
             renderCell: (params) => {
-                const member: ImplementedDatagridEntities = params.row;
+                const member: ImplementedUserType = params.row;
                 const { status, icon: Icon, color } = getStatusConfig(member);
                 const statusText = (FieldLabels[status][language] as string) || status;
                 return (
@@ -263,7 +301,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
         },
         {
             field: GlobalConstants.EXPIRES_AT,
-            headerName: "Membership expires",
+            headerName: userFieldLabels[GlobalConstants.EXPIRES_AT][language],
             type: "dateTime",
             valueGetter: (_, member: ImplementedDatagridEntities) =>
                 (member as ImplementedUserType)?.user_membership?.expires_at,
@@ -327,6 +365,49 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
                         }
                     >
                         <Chip label={userSkillBadges.length} icon={<Shield />} />
+                    </Tooltip>
+                );
+            },
+        },
+        {
+            field: GlobalConstants.BLACKLIST_ENTRY,
+            headerName: "Blacklist entry",
+            type: "boolean",
+            valueGetter: (_, member: ImplementedDatagridEntities) =>
+                !!(member as ImplementedUserType).blacklist_entry,
+            renderCell: (params) => {
+                const member: ImplementedUserType = params.row;
+                return (
+                    <Tooltip
+                        disableHoverListener={!member.blacklist_entry}
+                        placement="right"
+                        title={
+                            member.blacklist_entry ? (
+                                <Card>
+                                    <CardHeader title={"Blacklist entry"} />
+                                    <CardContent>
+                                        <Stack spacing={1}>
+                                            <Typography sx={{ whiteSpace: "pre-line" }}>
+                                                {`${userFieldLabels[GlobalConstants.CREATED_AT][language]}: ${formatUtcDateToTimezone(member.blacklist_entry?.created_at)}`}
+                                            </Typography>
+                                            {member.blacklist_entry?.expires_at && (
+                                                <Typography sx={{ whiteSpace: "pre-line" }}>
+                                                    {`${userFieldLabels[GlobalConstants.EXPIRES_AT][language]}: ${formatUtcDateToTimezone(member.blacklist_entry.expires_at)}`}
+                                                </Typography>
+                                            )}
+                                            <Typography sx={{ whiteSpace: "pre-line" }}>
+                                                {`${userFieldLabels[GlobalConstants.CREATED_BY][language]}: ${member.blacklist_entry.created_by?.nickname || "Unknown"}`}
+                                            </Typography>
+                                            <Typography sx={{ whiteSpace: "pre-line" }}>
+                                                {`${userFieldLabels[GlobalConstants.REASON][language]}: ${member.blacklist_entry.reason}`}
+                                            </Typography>
+                                        </Stack>
+                                    </CardContent>
+                                </Card>
+                            ) : null
+                        }
+                    >
+                        {member.blacklist_entry ? <CheckIcon /> : <Clear />}
                     </Tooltip>
                 );
             },
@@ -401,6 +482,27 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
                     readOnly={false}
                 />
                 <Button onClick={() => setAddMembershipDialogOpen(null)}>
+                    {GlobalLanguageTranslations.cancel[language]}
+                </Button>
+            </Dialog>
+            <Dialog
+                open={!!editBlacklistEntryUser}
+                onClose={() => setEditBlacklistEntryUser(null)}
+                fullWidth
+                maxWidth="md"
+                fullScreen={isSmallScreen}
+            >
+                <Form
+                    name={GlobalConstants.BLACKLIST_ENTRY}
+                    validationSchema={BlacklistEntryCreateSchema}
+                    action={upsertUserBlacklistEntryAction}
+                    {...(editBlacklistEntryUser?.blacklist_entry && {
+                        defaultValues: editBlacklistEntryUser.blacklist_entry,
+                    })}
+                    editable={true}
+                    readOnly={false}
+                />
+                <Button onClick={() => setEditBlacklistEntryUser(null)}>
                     {GlobalLanguageTranslations.cancel[language]}
                 </Button>
             </Dialog>

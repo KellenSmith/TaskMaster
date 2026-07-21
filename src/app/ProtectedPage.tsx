@@ -26,10 +26,11 @@ const ProtectedPage: FC<ProtectedPageProps> = async ({ name, children }) => {
         return <>{children}</>;
 
     const loggedInUser = await getLoggedInUser();
+
     // If auth reqs and user is not logged in, go to login
     if (!loggedInUser) serverRedirect([GlobalConstants.LOGIN]);
 
-    if (pageConfig.status && !userHasStatusPrivileges(loggedInUser, pageConfig.status)) {
+    if (!userHasStatusPrivileges(loggedInUser, pageConfig.status)) {
         serverRedirect([GlobalConstants.PROFILE]);
         return null; // This line will never be reached, but is added to satisfy TypeScript's type checking
     }

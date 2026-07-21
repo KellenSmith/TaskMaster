@@ -1,7 +1,7 @@
 import GlobalConstants from "../GlobalConstants";
 import dayjs from "dayjs";
 import { prisma, TransactionClient } from "../../prisma/prisma-client";
-import { isMembershipExpired } from "./utils";
+import { isMemberBlacklisted, isMembershipExpired } from "./utils";
 import { revalidateTag } from "next/cache";
 import { Prisma } from "../../prisma/generated/client";
 
@@ -15,8 +15,14 @@ export const renewUserMembership = async (
     });
     const user = await tx.user.findUniqueOrThrow({
         where: { id: userId },
-        include: { user_membership: true },
+        include: { user_membership: true, blacklist_entry: true },
     });
+    if (isMemberBlacklisted(user)) {
+        console.log(
+            `The member ${user.nickname} - ${user.id} is blacklisted and their membership cannot be renewed.`,
+        );
+        throw new Error("Unauthorized");
+    }
 
     let newExpiryDate = dayjs.utc().add(membership.duration, "d").toISOString();
     // If the membership is the same, extend the expiration date

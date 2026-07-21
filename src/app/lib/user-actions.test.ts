@@ -6,7 +6,7 @@ import { revalidateTag } from "next/cache";
 import { signIn, signOut } from "./auth/auth";
 import { sendMail } from "./mail-service/mail-service";
 import { getOrganizationSettings } from "./organization-settings-helpers";
-import { getMembershipProduct, renewUserMembership } from "./user-membership-helpers";
+import { getMembershipProduct } from "./user-membership-helpers";
 import { buildFormData } from "../../test/test-helpers";
 import { prisma } from "../../prisma/prisma-client";
 import { Language, UserRole, UserStatus } from "../../prisma/generated/enums";
@@ -16,10 +16,13 @@ import { prismaErrorCodes } from "../../prisma/prisma-error-codes";
 vi.mock("./user-helpers", () => ({
     getUserLanguage: vi.fn(),
     getUserCacheTag: vi.fn(),
+    getLoggedInUser: vi.fn(),
 }));
+
 import * as userActions from "./user-actions";
-import { getUserCacheTag, getUserLanguage } from "./user-helpers";
+import { getLoggedInUser, getUserCacheTag, getUserLanguage } from "./user-helpers";
 import dayjs from "dayjs";
+import testdata from "../../test/testdata";
 
 vi.mock("./mail-service/mail-service", () => ({
     sendMail: vi.fn(),
@@ -120,13 +123,23 @@ describe("user-actions", () => {
                 }),
             });
             expect(tx.user.update).not.toHaveBeenCalled();
-            expect(vi.mocked(renewUserMembership)).not.toHaveBeenCalled();
         });
 
         it("rejects invalid input", async () => {
             const formData = buildFormData({ email: "not-an-email" });
 
             await expect(userActions.createUser(formData)).rejects.toThrow();
+        });
+
+        it("does not allow non-admin users to create new users", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: "user-1",
+                role: UserRole.member,
+            } as any);
+
+            await expect(
+                userActions.createUser(buildFormData({ email: "not-an-email" })),
+            ).rejects.toThrow("Unauthorized");
         });
     });
 
@@ -301,12 +314,32 @@ describe("user-actions", () => {
             expect(vi.mocked(signIn)).not.toHaveBeenCalled();
             expect(vi.mocked(sendMail)).not.toHaveBeenCalled();
         });
+        it("does not allow a blacklisted member to submit an application", async () => {
+            vi.mocked(prisma.user.findUnique).mockResolvedValue({
+                ...testdata.user,
+                blacklist_entry: { expires_at: null },
+            } as any);
+
+            const formData = buildFormData({
+                email: "apply@example.com",
+                nickname: "taken-name",
+                member_application_prompt: "I want to join",
+            });
+
+            await expect(userActions.submitMemberApplication(formData)).rejects.toThrow(
+                "Blacklisted user Test User with email test@example.com tried to submit an application.",
+            );
+        });
     });
 
     describe("updateUser", () => {
         const userId = "550e8400-e29b-41d4-a716-446655440000";
 
         it("updates user and replaces skill badges", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            } as any);
             const tx = mockContext.prisma as any as TransactionClient;
 
             vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
@@ -337,6 +370,10 @@ describe("user-actions", () => {
         });
 
         it("skips skill badge updates when none are provided", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            } as any);
             const tx = mockContext.prisma as any as TransactionClient;
 
             vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
@@ -356,12 +393,24 @@ describe("user-actions", () => {
 
             await expect(userActions.updateUser("not-a-uuid", formData)).rejects.toThrow();
         });
+
+        it("does not allow non-admin users to update other users", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue(testdata.user);
+
+            const formData = buildFormData({ email: "email@email.com" });
+
+            await expect(userActions.updateUser(userId, formData)).rejects.toThrow("Unauthorized");
+        });
     });
 
     describe("deleteUser", () => {
         const userId = "550e8400-e29b-41d4-a716-446655440000";
 
         it("prevents deleting the last admin", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            } as any);
             mockContext.prisma.user.findMany.mockResolvedValue([
                 { id: userId, role: UserRole.admin },
             ] as any);
@@ -372,6 +421,10 @@ describe("user-actions", () => {
         });
 
         it("allows deleting a non-admin when there is only one admin", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            } as any);
             const adminId = "admin-id-12345-67890";
             mockContext.prisma.user.findMany.mockResolvedValue([
                 { id: adminId, role: UserRole.admin },
@@ -388,12 +441,20 @@ describe("user-actions", () => {
         });
 
         it("deletes user and revalidates related tags", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            });
             mockContext.prisma.user.findMany.mockResolvedValue([
                 { id: userId, role: UserRole.admin },
                 { id: "other", role: UserRole.admin },
             ] as any);
             mockContext.prisma.user.delete.mockResolvedValue({ id: userId } as any);
             vi.mocked(mockContext.prisma.$transaction).mockResolvedValue(undefined);
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            } as any);
 
             await userActions.deleteUser(userId);
 
@@ -413,7 +474,20 @@ describe("user-actions", () => {
         });
 
         it("rejects invalid user id", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: "user-1",
+                role: UserRole.admin,
+            } as any);
             await expect(userActions.deleteUser("not-a-uuid")).rejects.toThrow();
+        });
+
+        it("does not allow non-admin users to delete members", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                id: "user-1",
+                role: UserRole.member,
+            } as any);
+
+            await expect(userActions.deleteUser(userId)).rejects.toThrow("Unauthorized");
         });
     });
 
@@ -436,7 +510,7 @@ describe("user-actions", () => {
 
             expect(prisma.user.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { email: "member@example.com" },
-                include: { user_membership: true },
+                include: { user_membership: true, blacklist_entry: true },
             });
             expect(vi.mocked(signIn)).toHaveBeenCalledWith("email", {
                 email: "member@example.com",
@@ -444,6 +518,17 @@ describe("user-actions", () => {
                 redirectTo: "/profile",
                 redirect: false,
             });
+        });
+
+        it("does not allow blacklisted users to log in", async () => {
+            vi.mocked(prisma.user.findUniqueOrThrow).mockResolvedValue({
+                ...testdata.user,
+                blacklist_entry: { expires_at: null },
+            });
+
+            await expect(
+                userActions.login(buildFormData({ email: "member@example.com" })),
+            ).rejects.toThrow("Blacklisted user Test User - test-user-id tried to log in.");
         });
 
         it("rejects invalid login input", async () => {
@@ -500,6 +585,10 @@ describe("user-actions", () => {
             vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
                 callback(tx),
             );
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            } as any);
 
             await userActions.validateUserMembership(userId);
 
@@ -516,7 +605,28 @@ describe("user-actions", () => {
         });
 
         it("rejects invalid user id", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue({
+                ...testdata.user,
+                role: UserRole.admin,
+            } as any);
+
             await expect(userActions.validateUserMembership("not-a-uuid")).rejects.toThrow();
+        });
+
+        it("does not allow non-admin users to validate membership", async () => {
+            vi.mocked(getLoggedInUser).mockResolvedValue(testdata.user);
+            const tx = mockContext.prisma as any as TransactionClient;
+            vi.mocked(tx.user.update).mockResolvedValue({
+                id: userId,
+                email: "member@example.com",
+            } as any);
+            vi.mocked(mockContext.prisma.$transaction).mockImplementation(async (callback) =>
+                callback(tx),
+            );
+
+            await expect(userActions.validateUserMembership(userId)).rejects.toThrow(
+                "Unauthorized",
+            );
         });
     });
 });

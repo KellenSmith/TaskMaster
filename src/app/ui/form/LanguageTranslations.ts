@@ -161,9 +161,21 @@ export const userFieldLabels = {
         [Language.english]: "Expired",
         [Language.swedish]: "Utgått",
     },
+    [GlobalConstants.BLACKLISTED]: {
+        [Language.english]: "Blacklisted",
+        [Language.swedish]: "Svartlistad",
+    },
     [GlobalConstants.EXPIRES_AT]: {
         [Language.english]: "Expires At",
         [Language.swedish]: "Utgår Datum",
+    },
+    [GlobalConstants.REASON]: {
+        [Language.english]: "Reason",
+        [Language.swedish]: "Orsak",
+    },
+    [GlobalConstants.CREATED_BY]: {
+        [Language.english]: "Created By",
+        [Language.swedish]: "Skapad Av",
     },
     [UserRole.admin]: LanguageTranslations.admin,
     [UserRole.member]: LanguageTranslations.member,

@@ -54,7 +54,7 @@ describe("user-helpers", () => {
 
             expect(mockContext.prisma.user.findUnique).toHaveBeenCalledWith({
                 where: { id: "user-1" },
-                include: { user_membership: true, skill_badges: true },
+                include: { user_membership: true, skill_badges: true, blacklist_entry: true },
             });
             expect(result).toEqual({ id: "user-1" });
         });

@@ -6,7 +6,9 @@ import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/browser";
 
 interface UserContextValue {
-    user: Prisma.UserGetPayload<{ include: { user_membership: true; skill_badges: true } }> | null;
+    user: Prisma.UserGetPayload<{
+        include: { user_membership: true; skill_badges: true; blacklist_entry: true };
+    }> | null;
     language: Language;
     setLanguage: (language: Language) => void; // eslint-disable-line no-unused-vars
     editMode: boolean;
@@ -37,7 +39,7 @@ const readLanguageFromCookie = (): Language => {
 interface UserContextProviderProps {
     children: ReactNode;
     userPromise: Promise<Prisma.UserGetPayload<{
-        include: { user_membership: true; skill_badges: true };
+        include: { user_membership: true; skill_badges: true; blacklist_entry: true };
     }> | null>;
 }
 
