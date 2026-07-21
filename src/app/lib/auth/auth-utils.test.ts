@@ -61,10 +61,16 @@ describe("isUserAuthorized", () => {
         const blacklistedMember = makeUser({
             status: UserStatus.validated,
             user_membership: {
+                membership_id: "membership-1",
+                user_id: "user-1",
                 expires_at: new Date("2099-01-01T00:00:00.000Z"),
             },
             blacklist_entry: {
+                user_id: "user-1",
+                created_at: new Date("2023-01-01T00:00:00.000Z"),
                 expires_at: null,
+                reason: "Violation of rules",
+                created_by_id: "admin-1",
             },
         });
 
@@ -91,7 +97,11 @@ describe("isUserAuthorized", () => {
         const blacklistedMember = makeUser({
             status: UserStatus.validated,
             blacklist_entry: {
+                user_id: "user-1",
+                created_at: new Date("2023-01-01T00:00:00.000Z"),
                 expires_at: null,
+                reason: "Violation of rules",
+                created_by_id: "admin-1",
             },
         });
 
