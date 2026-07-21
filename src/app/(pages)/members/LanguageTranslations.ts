@@ -33,6 +33,18 @@ const LanguageTranslations = {
         [Language.english]: "Failed to blacklist member",
         [Language.swedish]: "Kunde inte svartlista medlem",
     },
+    deleteBlacklistEntry: {
+        [Language.english]: "Delete blacklist entry",
+        [Language.swedish]: "Ta bort svartlistning",
+    },
+    deletedBlacklistEntry: {
+        [Language.english]: "Deleted blacklist entry",
+        [Language.swedish]: "Svartlistning borttagen",
+    },
+    failedDeletedBlacklistEntry: {
+        [Language.english]: "Failed to delete blacklist entry",
+        [Language.swedish]: "Kunde inte ta bort svartlistning",
+    },
     addedMembership: {
         [Language.english]: "Added membership",
         [Language.swedish]: "Lagt till medlemskap",

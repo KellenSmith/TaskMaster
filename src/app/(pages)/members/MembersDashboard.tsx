@@ -15,6 +15,7 @@ import {
 import {
     createUser,
     deleteUser,
+    deleteUserBlacklistEntry,
     updateUser,
     upsertUserBlacklistEntry,
     validateUserMembership,
@@ -54,6 +55,8 @@ import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useRouter } from "next/navigation";
 import { userFieldLabels } from "../../ui/form/LanguageTranslations";
+import ConfirmButton from "../../ui/ConfirmButton";
+import { useNotificationContext } from "../../context/NotificationContext";
 
 interface MembersDashboardProps {
     membersPromise: Promise<ImplementedUserType[]>;
@@ -72,6 +75,7 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const { user, language } = useUserContext();
+    const { addNotification } = useNotificationContext();
     const members = use(membersPromise);
     const skillBadges = use(skillBadgesPromise);
     const memberships = use(membershipsPromise);
@@ -115,6 +119,21 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
             return LanguageTranslations.blacklistedMember[language];
         } catch {
             throw new Error(LanguageTranslations.failedBlacklistedMember[language]);
+        }
+    };
+
+    const deleteBlacklistEntryAction = async () => {
+        try {
+            if (!editBlacklistEntryUser) {
+                addNotification("No chosen user", "error");
+                return;
+            }
+            await deleteUserBlacklistEntry(editBlacklistEntryUser.id);
+            setEditBlacklistEntryUser(null);
+            addNotification(LanguageTranslations.deletedBlacklistEntry[language], "success");
+            router.refresh();
+        } catch {
+            addNotification(LanguageTranslations.failedDeletedBlacklistEntry[language], "error");
         }
     };
 
@@ -502,6 +521,14 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
                     editable={true}
                     readOnly={false}
                 />
+                {editBlacklistEntryUser?.blacklist_entry && (
+                    <ConfirmButton
+                        onClick={deleteBlacklistEntryAction}
+                        buttonProps={{ color: "error" }}
+                    >
+                        {LanguageTranslations.deleteBlacklistEntry[language]}
+                    </ConfirmButton>
+                )}
                 <Button onClick={() => setEditBlacklistEntryUser(null)}>
                     {GlobalLanguageTranslations.cancel[language]}
                 </Button>
