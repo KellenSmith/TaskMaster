@@ -80,8 +80,9 @@ const getCachedSkillBadges = async () => {
 
 const getUserMembershipProduct = async () => {
     const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser?.user_membership?.membership_id) return null;
     return await prisma.product.findUnique({
-        where: { id: loggedInUser?.user_membership?.membership_id },
+        where: { id: loggedInUser.user_membership.membership_id },
         select: { name: true },
     });
 };
