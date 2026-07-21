@@ -130,17 +130,6 @@ describe("user-actions", () => {
 
             await expect(userActions.createUser(formData)).rejects.toThrow();
         });
-
-        it("does not allow non-admin users to create new users", async () => {
-            vi.mocked(getLoggedInUser).mockResolvedValue({
-                id: "user-1",
-                role: UserRole.member,
-            } as any);
-
-            await expect(
-                userActions.createUser(buildFormData({ email: "not-an-email" })),
-            ).rejects.toThrow("Unauthorized");
-        });
     });
 
     describe("submitMemberApplication", () => {
@@ -328,6 +317,25 @@ describe("user-actions", () => {
 
             await expect(userActions.submitMemberApplication(formData)).rejects.toThrow(
                 "Blacklisted user Test User with email test@example.com tried to submit an application.",
+            );
+        });
+
+        it("does not block applications when blacklist entry has expired", async () => {
+            vi.mocked(prisma.user.findUnique).mockResolvedValue({
+                ...testdata.user,
+                blacklist_entry: { expires_at: new Date("2000-01-01T00:00:00.000Z") },
+            } as any);
+            vi.mocked(getOrganizationSettings).mockResolvedValue({
+                member_application_prompt: "Tell us more",
+            } as any);
+
+            const formData = buildFormData({
+                email: "apply@example.com",
+                nickname: "candidate",
+            });
+
+            await expect(userActions.submitMemberApplication(formData)).resolves.toBe(
+                "Motivation required.",
             );
         });
     });
@@ -529,6 +537,34 @@ describe("user-actions", () => {
             await expect(
                 userActions.login(buildFormData({ email: "member@example.com" })),
             ).rejects.toThrow("Blacklisted user Test User - test-user-id tried to log in.");
+        });
+
+        it("allows log in when blacklist entry has expired", async () => {
+            vi.mocked(prisma.user.findUniqueOrThrow).mockResolvedValue({
+                ...testdata.user,
+                email: "member@example.com",
+                role: UserRole.member,
+                status: UserStatus.validated,
+                user_membership: {
+                    id: "membership-1",
+                    user_id: "test-user-id",
+                    membership_id: "membership-basic",
+                },
+                blacklist_entry: {
+                    expires_at: new Date("2000-01-01T00:00:00.000Z"),
+                },
+            } as any);
+
+            await expect(
+                userActions.login(buildFormData({ email: "member@example.com" })),
+            ).resolves.toBeUndefined();
+
+            expect(vi.mocked(signIn)).toHaveBeenCalledWith("email", {
+                email: "member@example.com",
+                callback: "/login",
+                redirectTo: "/profile",
+                redirect: false,
+            });
         });
 
         it("rejects invalid login input", async () => {

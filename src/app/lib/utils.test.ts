@@ -4,6 +4,7 @@ import {
     clientRedirect,
     getAbsoluteUrl,
     getRelativeUrl,
+    isMemberBlacklisted,
     isMembershipExpired,
     isUserAdmin,
     isUserHost,
@@ -88,6 +89,55 @@ describe("utils", () => {
                 user_membership: { expires_at: dayjs.utc().add(1, "day").toDate() },
             } as any;
             expect(isMembershipExpired(valid)).toBe(false);
+        });
+    });
+
+    describe("isMemberBlacklisted", () => {
+        it("returns false when user is null", () => {
+            expect(isMemberBlacklisted(null)).toBe(false);
+        });
+
+        it("returns false when blacklist entry is missing", () => {
+            const user = { blacklist_entry: null } as any;
+            expect(isMemberBlacklisted(user)).toBe(false);
+        });
+
+        it("returns true when blacklist has no expiration", () => {
+            const user = {
+                blacklist_entry: { expires_at: null },
+            } as any;
+
+            expect(isMemberBlacklisted(user)).toBe(true);
+        });
+
+        it("returns true when blacklist entry is still active", () => {
+            const user = {
+                blacklist_entry: { expires_at: dayjs.utc().add(1, "day").toDate() },
+            } as any;
+
+            expect(isMemberBlacklisted(user)).toBe(true);
+        });
+
+        it("returns false when blacklist entry has expired", () => {
+            const user = {
+                blacklist_entry: { expires_at: dayjs.utc().subtract(1, "day").toDate() },
+            } as any;
+
+            expect(isMemberBlacklisted(user)).toBe(false);
+        });
+
+        it("returns false when blacklist expires exactly now", () => {
+            vi.useFakeTimers();
+            const now = new Date("2026-02-12T00:00:00.000Z");
+            vi.setSystemTime(now);
+
+            const user = {
+                blacklist_entry: { expires_at: now },
+            } as any;
+
+            expect(isMemberBlacklisted(user)).toBe(false);
+
+            vi.useRealTimers();
         });
     });
 

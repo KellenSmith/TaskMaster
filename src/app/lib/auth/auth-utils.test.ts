@@ -57,6 +57,20 @@ describe("isUserAuthorized", () => {
         expect(isUserAuthorized(member, GlobalConstants.TASK)).toBe(true);
     });
 
+    it("denies blacklisted members for membership-required routes", () => {
+        const blacklistedMember = makeUser({
+            status: UserStatus.validated,
+            user_membership: {
+                expires_at: new Date("2099-01-01T00:00:00.000Z"),
+            },
+            blacklist_entry: {
+                expires_at: null,
+            },
+        });
+
+        expect(isUserAuthorized(blacklistedMember, GlobalConstants.TASK)).toBe(false);
+    });
+
     it("denies members without membership for membership-required routes", () => {
         const memberWithoutMembership = makeUser({
             status: UserStatus.validated,
@@ -71,6 +85,17 @@ describe("isUserAuthorized", () => {
             user_membership: null,
         });
         expect(isUserAuthorized(memberWithoutMembership, GlobalConstants.SHOP)).toBe(true);
+    });
+
+    it("allows blacklisted members on routes where membership is not required", () => {
+        const blacklistedMember = makeUser({
+            status: UserStatus.validated,
+            blacklist_entry: {
+                expires_at: null,
+            },
+        });
+
+        expect(isUserAuthorized(blacklistedMember, GlobalConstants.SHOP)).toBe(true);
     });
 
     it("denies member access to admin routes", () => {

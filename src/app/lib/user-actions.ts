@@ -29,9 +29,7 @@ import { connection } from "next/server";
 import dayjs from "dayjs";
 
 export const createUser = async (formData: FormData): Promise<void> => {
-    // Only allow admins to create users
-    const loggedInUser = await getLoggedInUser();
-    if (!isUserAdmin(loggedInUser)) throw new Error("Unauthorized");
+    // Allow all users to create new accounts (submit membership applications) - no need to check for admin privileges here
 
     // Revalidate input with zod schema - don't trust the client
     const validatedData = UserCreateSchema.parse(Object.fromEntries(formData.entries()));

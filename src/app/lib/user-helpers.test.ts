@@ -58,6 +58,33 @@ describe("user-helpers", () => {
             });
             expect(result).toEqual({ id: "user-1" });
         });
+
+        it("returns null when logged in user has an active blacklist entry", async () => {
+            vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+            mockContext.prisma.user.findUnique.mockResolvedValue({
+                id: "user-1",
+                blacklist_entry: { expires_at: null },
+            } as any);
+
+            const result = await userActions.getLoggedInUser();
+
+            expect(result).toBeNull();
+        });
+
+        it("returns user when blacklist entry has expired", async () => {
+            vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as any);
+            mockContext.prisma.user.findUnique.mockResolvedValue({
+                id: "user-1",
+                blacklist_entry: { expires_at: new Date("2000-01-01T00:00:00.000Z") },
+            } as any);
+
+            const result = await userActions.getLoggedInUser();
+
+            expect(result).toEqual({
+                id: "user-1",
+                blacklist_entry: { expires_at: new Date("2000-01-01T00:00:00.000Z") },
+            });
+        });
     });
 
     describe("getActiveMembers", () => {
