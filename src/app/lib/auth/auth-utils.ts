@@ -178,7 +178,7 @@ export const userHasStatusPrivileges = (
 
 export const isUserAuthorized = (
     loggedInUser: Prisma.UserGetPayload<{
-        select: { role: true; status: true; user_membership: true };
+        select: { role: true; status: true; user_membership: true; blacklist_entry: true };
     }> | null,
     pathname: string,
 ): boolean => {

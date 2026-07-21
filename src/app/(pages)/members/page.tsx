@@ -12,6 +12,7 @@ const getMembers = async () => {
         include: {
             user_membership: true,
             skill_badges: true,
+            blacklist_entry: { include: { created_by: { select: { nickname: true } } } },
         },
         orderBy: {
             created_at: "desc",

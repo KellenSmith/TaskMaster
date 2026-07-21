@@ -48,8 +48,9 @@ const testdata = {
             expires_at: dayjs.utc().add(1, "year").toDate(),
         },
         skill_badges: [],
+        blacklist_entry: null,
     } as unknown as Prisma.UserGetPayload<{
-        include: { user_membership: true; skill_badges: true };
+        include: { user_membership: true; skill_badges: true; blacklist_entry: true };
     }>,
 
     createUser: {

@@ -52,6 +52,7 @@ export type ImplementedUserType = Prisma.UserGetPayload<{
     include: {
         user_membership: true;
         skill_badges: true;
+        blacklist_entry: { include: { created_by: { select: { nickname: true } } } };
     };
 }>;
 export type ImplementedProductType = Prisma.ProductGetPayload<true>;

@@ -29,6 +29,7 @@ export type MockPrisma = {
     organizationSettings: prismaOperations;
     user: prismaOperations;
     userSkillBadge: prismaOperations;
+    blacklistEntry: prismaOperations;
     newsletterJob: prismaOperations;
     event: prismaOperations;
     eventParticipant: prismaOperations;

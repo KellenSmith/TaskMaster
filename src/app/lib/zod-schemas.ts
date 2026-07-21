@@ -113,6 +113,14 @@ export const UserCreateSchema = z.object({
 export const UserUpdateSchema = UserCreateSchema.partial();
 
 // =============================================================================
+// BLACKLIST ENTRY SCHEMAS
+// =============================================================================
+
+export const BlacklistEntryCreateSchema = z.object({
+    expires_at: stringToISODate,
+    reason: z.string(),
+});
+// =============================================================================
 // LOCATION SCHEMAS
 // =============================================================================
 
