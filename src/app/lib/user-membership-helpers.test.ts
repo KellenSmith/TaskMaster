@@ -5,25 +5,42 @@ import { mockContext } from "../../test/mocks/prismaMock";
 import type { TransactionClient } from "../../test/types/test-types";
 import { revalidateTag } from "next/cache";
 import * as membershipActions from "./user-membership-helpers";
-import { isMembershipExpired } from "./utils";
+import { isMemberBlacklisted, isMembershipExpired } from "./utils";
+import { getLoggedInUser } from "./user-helpers";
 
 vi.mock("./order-actions", () => ({
     createAndRedirectToOrder: vi.fn(),
 }));
 
-vi.mock("./user-actions", () => ({
+vi.mock("./user-helpers", () => ({
     getLoggedInUser: vi.fn(),
     getUserLanguage: vi.fn(),
 }));
 
 vi.mock("./utils", () => ({
     isMembershipExpired: vi.fn(),
+    isMemberBlacklisted: vi.fn(() => false),
 }));
 
 describe("user-membership-helpers", () => {
     const testUserId = "550e8400-e29b-41d4-a716-446655440000";
 
     describe("renewUserMembership", () => {
+        it("does not allow a blacklisted user to renew their membership", async () => {
+            vi.mocked(isMemberBlacklisted).mockReturnValue(true);
+
+            const tx = mockContext.prisma as any as TransactionClient;
+            vi.mocked(tx.user.findUniqueOrThrow).mockReturnValue({
+                id: "logged-in-user-id",
+                nickname: "LoggedInUser",
+            } as any);
+
+            await expect(
+                membershipActions.renewUserMembership(tx as any, testUserId, "membership-1"),
+            ).rejects.toThrow("Unauthorized");
+
+            expect(tx.userMembership.upsert).not.toHaveBeenCalled();
+        });
         it("creates a new expiry when expired or membership changes", async () => {
             vi.useFakeTimers();
             vi.setSystemTime(new Date("2026-02-12T00:00:00Z"));
@@ -59,8 +76,6 @@ describe("user-membership-helpers", () => {
                 },
             });
             expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith(GlobalConstants.USER, "max");
-
-            vi.useRealTimers();
         });
 
         it("extends expiry when membership is active and unchanged", async () => {

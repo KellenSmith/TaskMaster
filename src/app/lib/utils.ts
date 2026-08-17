@@ -60,18 +60,32 @@ export const clientRedirect = (
     router.push(getRelativeUrl(pathSegments, searchParams));
 };
 
+export const isMemberBlacklisted = (
+    user: Prisma.UserGetPayload<{
+        select: { blacklist_entry: true };
+    }> | null,
+): boolean => {
+    if (!user) return false;
+    if (!user.blacklist_entry) return false;
+    if (!user.blacklist_entry.expires_at) return true;
+    return dayjs.utc().isBefore(dayjs.utc(user.blacklist_entry.expires_at));
+};
+
 export const isMembershipExpired = (
     user: Prisma.UserGetPayload<{
-        select: { user_membership: true };
+        select: { user_membership: true; blacklist_entry: true };
     }> | null,
 ): boolean => {
     if (!user) return true;
+    if (isMemberBlacklisted(user)) return true;
     const membershipExpiresAt = user.user_membership?.expires_at;
     return !membershipExpiresAt || dayjs.utc().isAfter(dayjs.utc(membershipExpiresAt));
 };
 
 export const isUserAdmin = (
-    user: Prisma.UserGetPayload<{ select: { role: true; user_membership: true } }> | null,
+    user: Prisma.UserGetPayload<{
+        select: { role: true; user_membership: true; blacklist_entry: true };
+    }> | null,
 ): boolean => {
     if (!user || isMembershipExpired(user)) return false;
     if (user.role === UserRole.admin) return true;

@@ -61,6 +61,7 @@ const GlobalConstants = {
     EMAIL_VERIFIED: "emailVerified",
     PHONE: "phone",
     ROLE: "role",
+    BLACKLISTED: "blacklisted",
     PENDING: "pending",
     ACTIVE: "active",
     EXPIRED: "expired",
@@ -74,6 +75,9 @@ const GlobalConstants = {
     USER_MEMBERSHIP: "user_membership",
     ADD_MEMBERSHIP: "add_membership",
     EXPIRES_AT: "expires_at",
+    BLACKLIST_ENTRY: "blacklist_entry",
+    REASON: "reason",
+    CREATED_BY: "created_by",
     // Event
     TAB: "tab",
     EVENT: "event",

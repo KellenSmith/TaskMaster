@@ -4,6 +4,7 @@ import { prisma, TransactionClient } from "../../prisma/prisma-client";
 import GlobalConstants from "../GlobalConstants";
 import { revalidateTag } from "next/cache";
 import {
+    BlacklistEntryCreateSchema,
     LoginSchema,
     MembershipApplicationSchema,
     UserCreateSchema,
@@ -13,7 +14,7 @@ import {
 import { sendMail } from "./mail-service/mail-service";
 import { signIn, signOut } from "./auth/auth";
 import { getOrganizationSettings } from "./organization-settings-helpers";
-import { getRelativeUrl } from "./utils";
+import { getRelativeUrl, isMemberBlacklisted, isUserAdmin } from "./utils";
 import { getMembershipProduct } from "./user-membership-helpers";
 import { createElement } from "react";
 import MembershipApplicationTemplate from "./mail-service/mail-templates/MembershipApplicationTemplate";
@@ -22,12 +23,14 @@ import { isUserAuthorized } from "./auth/auth-utils";
 import { UserRole, UserStatus } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
 import LanguageTranslations from "./LanguageTranslations";
-import { getUserCacheTag, getUserLanguage } from "./user-helpers";
+import { getLoggedInUser, getUserCacheTag, getUserLanguage } from "./user-helpers";
 import { getUniqueConstraintFields, prismaErrorCodes } from "../../prisma/prisma-error-codes";
 import { connection } from "next/server";
 import dayjs from "dayjs";
 
 export const createUser = async (formData: FormData): Promise<void> => {
+    // Allow all users to create new accounts (submit membership applications) - no need to check for admin privileges here
+
     // Revalidate input with zod schema - don't trust the client
     const validatedData = UserCreateSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -78,6 +81,20 @@ export const createUser = async (formData: FormData): Promise<void> => {
 export const submitMemberApplication = async (formData: FormData): Promise<string | undefined> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = MembershipApplicationSchema.parse(Object.fromEntries(formData.entries()));
+
+    const blacklistedUser = await prisma.user.findUnique({
+        where: {
+            email: validatedData.email,
+        },
+        include: {
+            blacklist_entry: true,
+        },
+    });
+    if (blacklistedUser && isMemberBlacklisted(blacklistedUser))
+        throw new Error(
+            `Blacklisted user ${blacklistedUser.nickname} with email ${blacklistedUser.email} tried to submit an application.`,
+        );
+
     const organizationSettings = await getOrganizationSettings();
     const language = await getUserLanguage();
 
@@ -135,6 +152,11 @@ export const submitMemberApplication = async (formData: FormData): Promise<strin
 export const updateUser = async (userId: string, formData: FormData): Promise<undefined> => {
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
+    // Only allow users to update their own profile unless they are admins
+    const loggedInUser = await getLoggedInUser();
+    if (!isUserAdmin(loggedInUser) || loggedInUser?.id === validatedUserId)
+        throw new Error("Unauthorized");
+
     // Revalidate input with zod schema - don't trust the client
     const validatedData = UserUpdateSchema.parse(Object.fromEntries(formData.entries()));
 
@@ -168,8 +190,11 @@ export const updateUser = async (userId: string, formData: FormData): Promise<un
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-    // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
+    // Only allow users to delete their own profile unless they are admins
+    const loggedInUser = await getLoggedInUser();
+    if (!isUserAdmin(loggedInUser) && loggedInUser?.id !== validatedUserId)
+        throw new Error("Unauthorized");
 
     const admins = await prisma.user.findMany({
         where: {
@@ -197,6 +222,52 @@ export const deleteUser = async (userId: string): Promise<void> => {
     revalidateTag(GlobalConstants.EVENT, "max");
 };
 
+export const upsertUserBlacklistEntry = async (userId: string, formData: FormData) => {
+    const loggedInUser = await getLoggedInUser();
+    if (!isUserAdmin(loggedInUser)) throw new Error("Unauthorized");
+
+    const parsedUserId = UuidSchema.parse(userId);
+    const parsedBlacklistEntryData = BlacklistEntryCreateSchema.parse(
+        Object.fromEntries(formData.entries()),
+    );
+
+    await prisma.blacklistEntry.upsert({
+        where: {
+            user_id: parsedUserId,
+        },
+        create: {
+            user_id: parsedUserId,
+            created_by_id: loggedInUser!.id,
+            reason: parsedBlacklistEntryData.reason,
+            expires_at: parsedBlacklistEntryData.expires_at || null,
+        },
+        update: {
+            created_by_id: loggedInUser!.id,
+            reason: parsedBlacklistEntryData.reason,
+            expires_at: parsedBlacklistEntryData.expires_at || null,
+        },
+    });
+
+    revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(parsedUserId), "max");
+};
+
+export const deleteUserBlacklistEntry = async (userId: string) => {
+    const loggedInUser = await getLoggedInUser();
+    if (!isUserAdmin(loggedInUser)) throw new Error("Unauthorized");
+
+    const parsedUserId = UuidSchema.parse(userId);
+
+    await prisma.blacklistEntry.delete({
+        where: {
+            user_id: parsedUserId,
+        },
+    });
+
+    revalidateTag(GlobalConstants.USER, "max");
+    revalidateTag(await getUserCacheTag(parsedUserId), "max");
+};
+
 export const login = async (formData: FormData): Promise<string | undefined> => {
     // Revalidate input with zod schema - don't trust the client
     const validatedData = LoginSchema.parse(Object.fromEntries(formData.entries()));
@@ -205,8 +276,12 @@ export const login = async (formData: FormData): Promise<string | undefined> => 
     try {
         const existingUser = await prisma.user.findUniqueOrThrow({
             where: { email: validatedData.email },
-            include: { user_membership: true },
+            include: { user_membership: true, blacklist_entry: true },
         });
+        if (isMemberBlacklisted(existingUser))
+            throw new Error(
+                `Blacklisted user ${existingUser.nickname} - ${existingUser.id} tried to log in.`,
+            );
         let redirectTo: string;
         if (isUserAuthorized(existingUser, GlobalConstants.DASHBOARD))
             redirectTo = getRelativeUrl([GlobalConstants.DASHBOARD]);
@@ -237,6 +312,9 @@ export const logOut = async (): Promise<void> => {
 };
 
 export const validateUserMembership = async (userId: string): Promise<void> => {
+    const loggedInUser = await getLoggedInUser();
+    if (!isUserAdmin(loggedInUser)) throw new Error("Unauthorized");
+
     // Validate user ID format
     const validatedUserId = UuidSchema.parse(userId);
 

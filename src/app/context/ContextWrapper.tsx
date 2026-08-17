@@ -13,7 +13,7 @@ interface ContextWrapperProps {
     children: ReactNode;
     organizationSettingsPromise: Promise<Prisma.OrganizationSettingsGetPayload<true>>;
     userPromise: Promise<Prisma.UserGetPayload<{
-        include: { user_membership: true; skill_badges: true };
+        include: { user_membership: true; skill_badges: true; blacklist_entry: true };
     }> | null>;
     infoPagesPromise: Promise<
         Prisma.InfoPageGetPayload<{

@@ -29,12 +29,12 @@ const LanguageTranslations = {
     activateMembership: {
         [Language.english]: (
             user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
+                include: { user_membership: true; blacklist_entry: true };
             }>,
         ) => `${isMembershipExpired(user) ? "Activate" : "Extend"} membership`,
         [Language.swedish]: (
             user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
+                include: { user_membership: true; blacklist_entry: true };
             }>,
         ) => `${isMembershipExpired(user) ? "Aktivera" : "Förläng"} medlemskap`,
     },

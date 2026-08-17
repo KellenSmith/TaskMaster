@@ -126,7 +126,24 @@ model User {
 
   orders Order[]
 
+  blacklist_entry           BlacklistEntry?  @relation("blacklist_entry")
+  created_blacklist_entries BlacklistEntry[] @relation("created_blacklist_entries")
+
   @@map("users")
+}
+
+model BlacklistEntry {
+  user_id String @id
+  user    User   @relation("blacklist_entry", fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_by_id String?
+  created_by    User?   @relation("created_blacklist_entries", fields: [created_by_id], references: [id], onDelete: SetNull)
+
+  created_at DateTime  @default(now())
+  expires_at DateTime?
+  reason     String
+
+  @@map("blacklist_entries")
 }
 
 model Location {

@@ -165,6 +165,30 @@ describe("NavPanel", () => {
         expect(screen.queryByRole("button", { name: "Calendar" })).not.toBeInTheDocument();
     });
 
+    it("shows profile and shop for validated user with active blacklist entry", async () => {
+        vi.mocked(useUserContext).mockReturnValue({
+            user: createUser({
+                status: UserStatus.validated,
+                user_membership: {
+                    expires_at: new Date("2099-01-01T00:00:00.000Z"),
+                },
+                blacklist_entry: {
+                    expires_at: null,
+                },
+            }),
+            editMode: false,
+            setEditMode: setEditModeMock,
+            language: Language.english,
+        } as any);
+
+        await renderNavPanel();
+        await openNavigationDrawer();
+
+        expect(screen.getByRole("button", { name: "Profile" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Shop" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Calendar" })).not.toBeInTheDocument();
+    });
+
     it("navigates to info page when info page button is clicked", async () => {
         await renderNavPanel();
         await openNavigationDrawer();

@@ -5,13 +5,14 @@ import { cookies } from "next/headers";
 import { auth } from "./auth/auth";
 import { Language } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/client";
+import { isMemberBlacklisted } from "./utils";
 
 export const getUserCacheTag = async (userId: string) => `${GlobalConstants.USER}:${userId}`;
 
 const getCachedUserById = async (userId: string) => {
     return prisma.user.findUnique({
         where: { id: userId },
-        include: { user_membership: true, skill_badges: true },
+        include: { user_membership: true, skill_badges: true, blacklist_entry: true },
     });
 };
 
@@ -25,12 +26,13 @@ export const getUserLanguage = async () => {
 };
 
 export const getLoggedInUser = async (): Promise<Prisma.UserGetPayload<{
-    include: { user_membership: true; skill_badges: true };
+    include: { user_membership: true; skill_badges: true; blacklist_entry: true };
 }> | null> => {
     try {
         const authResult = await auth();
         if (!authResult?.user?.id) return null;
         const loggedInUser = await getCachedUserById(authResult.user.id);
+        if (isMemberBlacklisted(loggedInUser)) return null;
         return loggedInUser;
     } catch {
         return null;
