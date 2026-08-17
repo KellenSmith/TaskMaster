@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "ms-vscode.vscode-typescript-next",
+    "vitest.explorer",
+    "ms-vscode.vscode-json",
+    "yzane.markdown-pdf",
+    "ms-ossdata.vscode-pgsql"
+  ]
+}
