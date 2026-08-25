@@ -26,7 +26,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
-        "@auth/core": "0.41.2",
+        "@auth/core": "0.41.3",
         "@auth/prisma-adapter": "^2.11.2",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -73,15 +73,15 @@
         "dayjs": "^1.11.21",
         "dotenv": "^17.4.2",
         "mui-tiptap": "^1.30.0",
-        "next": "^16.2.6",
-        "next-auth": "5.0.0-beta.30",
+        "next": "^16.3.2",
+        "next-auth": "5.0.0-beta.32",
         "nodemailer": "^9.0.1",
         "pg": "^8.21.0",
         "qrcode": "^1.5.4",
         "react": "19.2.6",
         "react-dom": "19.2.6",
         "react-error-boundary": "^6.1.2",
-        "sanitize-html": "^2.17.4",
+        "sanitize-html": "^2.17.7",
         "zod": "^4.4.3"
     },
     "devDependencies": {
