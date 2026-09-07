@@ -40,6 +40,10 @@ const LanguageTranslations = {
         [Language.english]: "No payment initiated for non-pending order",
         [Language.swedish]: "Ingen betalning initierad för icke avvaktande beställning",
     },
+    devicePairingExpiredOrInvalid: {
+        [Language.english]: "This code has expired or is invalid. Please generate a new one.",
+        [Language.swedish]: "Koden har gått ut eller är ogiltig. Vänligen skapa en ny.",
+    },
 };
 
 export default LanguageTranslations;
