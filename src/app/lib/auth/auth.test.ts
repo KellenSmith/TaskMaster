@@ -9,6 +9,14 @@ type NextAuthOptions = {
     session: { strategy: string };
     providers: Array<{
         sendVerificationRequest: (args: { identifier: string; url: string }) => Promise<void>;
+        // The Credentials() factory stashes the user-supplied config under `options` -
+        // Auth.js only merges it into the top-level provider at request time, which never
+        // runs here since `next-auth` itself is mocked below.
+        options?: {
+            authorize: (
+                credentials: Partial<Record<"code", unknown>>,
+            ) => Promise<{ id: string } | null>;
+        };
     }>;
     callbacks: {
         jwt: (params: { token: JWT; user?: User | null }) => Promise<JWT>;
@@ -218,5 +226,76 @@ describe("auth.ts", () => {
         const result = await options.callbacks.session({ session, token });
 
         expect(result.user).toEqual({});
+    });
+
+    describe("device-pairing credentials provider", () => {
+        it("returns null when no code is provided", async () => {
+            process.env.EMAIL = "test@example.com";
+            const options = await loadAuthModule();
+
+            const result = await options.providers[1].options!.authorize({});
+
+            expect(result).toBeNull();
+            expect(prisma.devicePairingRequest.updateMany).not.toHaveBeenCalled();
+        });
+
+        it("signs in the linked user when the code was confirmed and unexpired", async () => {
+            process.env.EMAIL = "test@example.com";
+            vi.mocked(prisma.devicePairingRequest.updateMany).mockResolvedValue({ count: 1 });
+            vi.mocked(prisma.devicePairingRequest.findUnique).mockResolvedValue({
+                user_id: "user-1",
+            } as any);
+            vi.mocked(prisma.user.findUnique).mockResolvedValue({
+                id: "user-1",
+                status: UserStatus.validated,
+                role: UserRole.member,
+                user_membership: null,
+            } as any);
+            const options = await loadAuthModule();
+
+            const result = await options.providers[1].options!.authorize({ code: "device-code" });
+
+            expect(prisma.devicePairingRequest.updateMany).toHaveBeenCalledWith({
+                where: {
+                    device_code: "device-code",
+                    status: "confirmed",
+                    expires_at: { gt: expect.any(Date) },
+                    consumed_at: null,
+                },
+                data: { consumed_at: expect.any(Date) },
+            });
+            expect(result).toEqual({
+                id: "user-1",
+                status: UserStatus.validated,
+                role: UserRole.member,
+                user_membership: null,
+            });
+        });
+
+        it("returns null when the code is expired, not confirmed, or already consumed (replay)", async () => {
+            process.env.EMAIL = "test@example.com";
+            vi.mocked(prisma.devicePairingRequest.updateMany).mockResolvedValue({ count: 0 });
+            const options = await loadAuthModule();
+
+            const result = await options.providers[1].options!.authorize({ code: "device-code" });
+
+            expect(result).toBeNull();
+            expect(prisma.devicePairingRequest.findUnique).not.toHaveBeenCalled();
+            expect(prisma.user.findUnique).not.toHaveBeenCalled();
+        });
+
+        it("returns null when the claimed request has no linked user", async () => {
+            process.env.EMAIL = "test@example.com";
+            vi.mocked(prisma.devicePairingRequest.updateMany).mockResolvedValue({ count: 1 });
+            vi.mocked(prisma.devicePairingRequest.findUnique).mockResolvedValue({
+                user_id: null,
+            } as any);
+            const options = await loadAuthModule();
+
+            const result = await options.providers[1].options!.authorize({ code: "device-code" });
+
+            expect(result).toBeNull();
+            expect(prisma.user.findUnique).not.toHaveBeenCalled();
+        });
     });
 });

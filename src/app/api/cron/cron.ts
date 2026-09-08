@@ -32,6 +32,22 @@ export const purgeStaleMembershipApplications = async (): Promise<void> => {
     }
 };
 
+export const purgeExpiredDevicePairingRequests = async (): Promise<void> => {
+    /**
+     * Purge device pairing requests that have expired, whether or not they were ever confirmed
+     */
+    try {
+        const deleteExpiredResult = await prisma.devicePairingRequest.deleteMany({
+            where: { expires_at: { lt: dayjs.utc().toDate() } },
+        });
+        console.log(`Purged ${deleteExpiredResult.count} expired device pairing request(s)`);
+    } catch (error) {
+        if (error instanceof Error)
+            console.error(`Error when purging expired device pairing requests: ${error.message}`);
+        throw error;
+    }
+};
+
 export const expiringMembershipMaintenance = async (): Promise<void> => {
     /**
      * Send reminders to members whose membership expires in "reminderDays" days from now
