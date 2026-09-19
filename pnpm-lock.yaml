@@ -24,8 +24,8 @@ importers:
         specifier: 0.41.3
         version: 0.41.3(nodemailer@9.0.1)
       '@auth/prisma-adapter':
-        specifier: ^2.11.2
-        version: 2.11.2(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(typescript@6.0.3))(nodemailer@9.0.1)
+        specifier: ^2.11.3
+        version: 2.11.3(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(typescript@6.0.3))(nodemailer@9.0.1)
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.15)(react@19.2.6)
@@ -317,8 +317,8 @@ packages:
       nodemailer:
         optional: true
 
-  '@auth/prisma-adapter@2.11.2':
-    resolution: {integrity: sha512-GyNEUNtrPgDPs0M4xX6F5i7jTsCKwU6BXV9zutctcoo6K1Ud+juckrmQS11uyNgeWsw6sliextHbU/e+8lsizQ==}
+  '@auth/prisma-adapter@2.11.3':
+    resolution: {integrity: sha512-jZbpVAO6PTc9zNtdTWc0RLWG8qap4iMc54/3oWaWbuKdj92wHxzPrs3HivWB2mB9975GPW0l3YM/wFUWiUlTlg==}
     peerDependencies:
       '@prisma/client': '>=2.26.0 || >=3 || >=4 || >=5 || >=6'
 
@@ -5046,7 +5046,7 @@ snapshots:
     optionalDependencies:
       nodemailer: 9.0.1
 
-  '@auth/prisma-adapter@2.11.2(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(typescript@6.0.3))(nodemailer@9.0.1)':
+  '@auth/prisma-adapter@2.11.3(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(typescript@6.0.3))(nodemailer@9.0.1)':
     dependencies:
       '@auth/core': 0.41.3(nodemailer@9.0.1)
       '@prisma/client': 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(typescript@6.0.3)

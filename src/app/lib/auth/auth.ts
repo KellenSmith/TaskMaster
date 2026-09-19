@@ -1,13 +1,14 @@
 import NextAuth from "next-auth";
 import type { Session, User } from "next-auth";
 import type { JWT } from "@auth/core/jwt";
+import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "../../../prisma/prisma-client";
 import { sendMail } from "../mail-service/mail-service";
 import "./auth-types";
 import { createElement } from "react";
 import SignInEmailTemplate from "../mail-service/mail-templates/SignInEmailTemplate";
-import { UserRole, UserStatus } from "../../../prisma/generated/enums";
+import { DevicePairingStatus, UserRole, UserStatus } from "../../../prisma/generated/enums";
 
 const EMAIL_FROM = process.env.EMAIL;
 if (!EMAIL_FROM) {
@@ -46,6 +47,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 }
             },
         },
+        Credentials({
+            id: "device-pairing",
+            name: "Device pairing",
+            credentials: { code: { label: "Code", type: "text" } },
+            authorize: async (credentials) => {
+                const code = credentials?.code;
+                if (typeof code !== "string" || !code) return null;
+
+                // Atomically claim the request: only succeeds once, for a request
+                // that was already approved on another device and hasn't expired.
+                const claimed = await prisma.devicePairingRequest.updateMany({
+                    where: {
+                        device_code: code,
+                        status: DevicePairingStatus.confirmed,
+                        expires_at: { gt: new Date() },
+                        consumed_at: null,
+                    },
+                    data: { consumed_at: new Date() },
+                });
+                if (claimed.count !== 1) return null;
+
+                const pairingRequest = await prisma.devicePairingRequest.findUnique({
+                    where: { device_code: code },
+                    select: { user_id: true },
+                });
+                if (!pairingRequest?.user_id) return null;
+
+                return prisma.user.findUnique({
+                    where: { id: pairingRequest.user_id },
+                    select: { id: true, status: true, role: true, user_membership: true },
+                });
+            },
+        }),
     ],
     session: { strategy: "jwt" },
     callbacks: {

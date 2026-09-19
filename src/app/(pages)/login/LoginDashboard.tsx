@@ -38,6 +38,13 @@ const LoginDashboard: FC = () => {
             <Button onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}>
                 {LanguageTranslations.applyForMembership[language]}
             </Button>
+            <Button
+                onClick={() =>
+                    clientRedirect(router, [GlobalConstants.LOGIN, GlobalConstants.LINK_DEVICE])
+                }
+            >
+                {LanguageTranslations.logInWithAnotherDevice[language]}
+            </Button>
         </Stack>
     );
 };

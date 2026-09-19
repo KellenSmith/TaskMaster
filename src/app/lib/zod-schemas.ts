@@ -321,6 +321,13 @@ export const LoginSchema = z.object({
     email: z.email().toLowerCase(),
 });
 
+export const DevicePairingUserCodeSchema = z.object({
+    user_code: z
+        .string()
+        .toUpperCase()
+        .regex(/^[A-Z2-9]{4}-[A-Z2-9]{4}$/, "Invalid code"),
+});
+
 export const UpdateTextContentSchema = z.object({ text: z.string() });
 
 export const EmailSendoutSchema = z.object({

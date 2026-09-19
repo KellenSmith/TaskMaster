@@ -9,6 +9,7 @@ import {
     expiringMembershipMaintenance,
     processNewsletterBacklog,
     purgeStaleMembershipApplications,
+    purgeExpiredDevicePairingRequests,
 } from "./cron";
 
 vi.mock("react", async () => ({
@@ -216,6 +217,31 @@ describe("cron jobs", () => {
                 expect.stringContaining("Newsletter cron stopping due to time limit"),
             );
             global.Date.now = origDateNow;
+        });
+    });
+
+    describe("purgeExpiredDevicePairingRequests", () => {
+        it("deletes expired device pairing requests", async () => {
+            vi.mocked(prisma.devicePairingRequest.deleteMany).mockResolvedValue({ count: 2 });
+
+            await purgeExpiredDevicePairingRequests();
+
+            expect(prisma.devicePairingRequest.deleteMany).toHaveBeenCalledWith({
+                where: { expires_at: { lt: mockedNow.toDate() } },
+            });
+            expect(logSpy).toHaveBeenCalledWith(
+                expect.stringContaining("Purged 2 expired device pairing request(s)"),
+            );
+        });
+
+        it("logs and throws on error", async () => {
+            vi.mocked(prisma.devicePairingRequest.deleteMany).mockRejectedValue(new Error("fail"));
+
+            await expect(purgeExpiredDevicePairingRequests()).rejects.toThrow("fail");
+
+            expect(errorSpy).toHaveBeenCalledWith(
+                expect.stringContaining("Error when purging expired device pairing requests: fail"),
+            );
         });
     });
 });
