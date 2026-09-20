@@ -75,6 +75,14 @@ const LanguageTranslations = {
         [Language.english]: "Active membership",
         [Language.swedish]: "Aktivt medlemskap",
     },
+    expiresInDays: {
+        [Language.english]: (days: number) => `Expires in ${days} ${days === 1 ? "day" : "days"}`,
+        [Language.swedish]: (days: number) => `Går ut om ${days} ${days === 1 ? "dag" : "dagar"}`,
+    },
+    awaitingPayment: {
+        [Language.english]: "Awaiting payment",
+        [Language.swedish]: "Väntar på betalning",
+    },
     membershipPendingPrompt: {
         [Language.english]: "Your membership is awaiting validation by an admin",
         [Language.swedish]: "Ditt medlemskap väntar på godkännande av en administratör",

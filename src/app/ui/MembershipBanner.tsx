@@ -12,6 +12,7 @@ import { MembershipState } from "../lib/membership-utils";
 import LanguageTranslations from "../lib/membership-language-translations";
 import RenewMembershipButton from "./RenewMembershipButton";
 import { formatUtcDateToTimezone } from "./utils";
+import { dateOnlyDisplayFormat } from "../context/LocalizationContext";
 
 // Pages where the banner would get in the way of what the user is already doing
 const HIDDEN_PATHS = [GlobalConstants.ORDER, GlobalConstants.APPLY, GlobalConstants.LOGIN].map(
@@ -56,8 +57,9 @@ const MembershipBanner = () => {
     let action: ReactNode;
     let dismissible: boolean;
 
+    // Memberships expire on a day, so the time of day is noise here
     const expiresAt = user?.user_membership
-        ? formatUtcDateToTimezone(user.user_membership.expires_at)
+        ? formatUtcDateToTimezone(user.user_membership.expires_at, dateOnlyDisplayFormat)
         : "";
 
     switch (state) {

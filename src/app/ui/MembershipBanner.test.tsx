@@ -80,6 +80,8 @@ describe("MembershipBanner", () => {
         givenUser(membershipExpiringIn(3));
         renderBanner();
         expect(screen.getByRole("alert")).toHaveTextContent(/expires in 3 days/);
+        // Date only, no time of day
+        expect(screen.getByRole("alert")).toHaveTextContent(/\(\d{4}\/\d{2}\/\d{2}\)\./);
         expect(screen.getByRole("button", { name: "renew:expiringSoon" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: dismissLabel })).toBeInTheDocument();
     });
