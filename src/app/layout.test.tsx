@@ -7,6 +7,10 @@ vi.mock("./ui/NavPanel", () => ({
     default: () => <div data-testid="nav-panel">NavPanel</div>,
 }));
 
+vi.mock("./ui/MembershipBanner", () => ({
+    default: () => <div data-testid="membership-banner">MembershipBanner</div>,
+}));
+
 vi.mock("./context/ServerContextWrapper", () => ({
     default: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="server-context-wrapper">{children}</div>
@@ -65,6 +69,16 @@ describe("RootLayout", () => {
 
             expect(wrapper.contains(navPanel)).toBe(true);
             expect(wrapper).toHaveTextContent("Wrapped Content");
+        });
+
+        it("mounts the membership banner inside the context wrapper, directly after NavPanel", () => {
+            render(<RootLayoutInner>Wrapped Content</RootLayoutInner>);
+            const wrapper = screen.getByTestId("server-context-wrapper");
+            const navPanel = screen.getByTestId("nav-panel");
+            const banner = screen.getByTestId("membership-banner");
+
+            expect(wrapper.contains(banner)).toBe(true);
+            expect(navPanel.nextElementSibling).toBe(banner);
         });
     });
 });

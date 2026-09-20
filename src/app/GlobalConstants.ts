@@ -127,6 +127,8 @@ const GlobalConstants = {
     MEMBERSHIP: "membership",
     MEMBERSHIP_ID: "membership_id",
     DURATION: "duration",
+    // Search param set by ProtectedPage when a members-only route bounces to /profile
+    MEMBERSHIP_REQUIRED: "membership_required",
     // Order
     ORDER: "order",
     ORDER_ID: "order_id",

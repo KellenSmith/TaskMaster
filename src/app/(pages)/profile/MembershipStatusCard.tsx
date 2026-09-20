@@ -1,9 +1,20 @@
 "use client";
-import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
+import {
+    Card,
+    CardContent,
+    Chip,
+    ChipProps,
+    Divider,
+    Stack,
+    Typography,
+    useTheme,
+} from "@mui/material";
 import {
     AdminPanelSettings,
     CardMembership,
     CheckCircle,
+    HourglassTop,
+    Payments,
     Person,
     Schedule,
     Warning,
@@ -24,13 +35,58 @@ interface MembershipStatusCardProps {
 const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCardProps) => {
     const theme = useTheme();
     const { user, language } = useUserContext();
-    const { state: membershipState } = useMembershipState();
+    const { state: membershipState, daysLeft } = useMembershipState();
     const hasActiveMembership =
         membershipState === MembershipState.active ||
         membershipState === MembershipState.expiringSoon;
     const membershipProduct = use(membershipProductPromise);
 
     if (!user) throw new Error("User must be logged in to view membership status");
+
+    const getChipProps = (): Pick<ChipProps, "icon" | "label" | "color"> => {
+        switch (membershipState) {
+            case MembershipState.active:
+                return {
+                    icon: <CheckCircle />,
+                    label: LanguageTranslations.active[language],
+                    color: "success",
+                };
+            case MembershipState.expiringSoon:
+                return {
+                    icon: <Schedule />,
+                    label: LanguageTranslations.expiresInDaysChip[language](daysLeft ?? 0),
+                    color: "warning",
+                };
+            case MembershipState.awaitingValidation:
+                return {
+                    icon: <HourglassTop />,
+                    label: LanguageTranslations.pending[language],
+                    color: "info",
+                };
+            case MembershipState.awaitingPayment:
+                return {
+                    icon: <Payments />,
+                    label: LanguageTranslations.awaitingPayment[language],
+                    color: "info",
+                };
+            default:
+                return {
+                    icon: <Warning />,
+                    label: LanguageTranslations.expired[language],
+                    color: "error",
+                };
+        }
+    };
+
+    // Pending states are neutral news, not a rejection: never paint them red.
+    const isPendingState =
+        membershipState === MembershipState.awaitingValidation ||
+        membershipState === MembershipState.awaitingPayment;
+    const promptPalette = isPendingState ? theme.palette.info : theme.palette.error;
+    const promptText =
+        membershipState === MembershipState.awaitingValidation
+            ? LanguageTranslations.membershipPendingPrompt[language]
+            : LanguageTranslations.membershipExpiredPrompt[language](membershipState);
 
     return (
         <Card elevation={3}>
@@ -48,73 +104,30 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {LanguageTranslations.membership[language]}
                         </Typography>
-                        {membershipState === MembershipState.awaitingValidation ? (
-                            <Chip
-                                icon={<Warning />}
-                                label={LanguageTranslations.pending[language]}
-                                color="error"
-                                size="small"
-                            />
-                        ) : !hasActiveMembership ? (
-                            <Chip
-                                icon={<Warning />}
-                                label={LanguageTranslations.expired[language]}
-                                color="error"
-                                size="small"
-                            />
-                        ) : (
-                            <Chip
-                                icon={<CheckCircle />}
-                                label={LanguageTranslations.active[language]}
-                                color="success"
-                                size="small"
-                            />
-                        )}
+                        <Chip {...getChipProps()} size="small" />
                     </Stack>
 
                     <Divider />
 
                     {/* Membership Info */}
-                    {membershipState === MembershipState.awaitingValidation ? (
+                    {!hasActiveMembership ? (
                         <Stack
                             sx={{
                                 p: 2,
                                 borderRadius: 2,
-                                backgroundColor: theme.palette.error.light + "20",
-                                border: `1px solid ${theme.palette.error.light}`,
+                                backgroundColor: promptPalette.light + "20",
+                                border: `1px solid ${promptPalette.light}`,
                             }}
                         >
                             <Typography
                                 variant="body1"
                                 sx={{
-                                    color: theme.palette.error.main,
+                                    color: promptPalette.main,
                                     fontWeight: 500,
                                     textAlign: "center",
                                 }}
                             >
-                                {LanguageTranslations.membershipPendingPrompt[language]}
-                            </Typography>
-                        </Stack>
-                    ) : !hasActiveMembership ? (
-                        <Stack
-                            sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.error.light + "20",
-                                border: `1px solid ${theme.palette.error.light}`,
-                            }}
-                        >
-                            <Typography
-                                variant="body1"
-                                sx={{
-                                    color: theme.palette.error.main,
-                                    fontWeight: 500,
-                                    textAlign: "center",
-                                }}
-                            >
-                                {LanguageTranslations.membershipExpiredPrompt[language](
-                                    membershipState,
-                                )}
+                                {promptText}
                             </Typography>
                         </Stack>
                     ) : (

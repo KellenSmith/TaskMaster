@@ -52,6 +52,32 @@ const MembershipLanguageTranslations = {
         [Language.swedish]:
             "Att förnya i förtid kostar dig ingenting: den nya perioden läggs till efter ditt nuvarande slutdatum.",
     },
+    renewToBookEvents: {
+        [Language.english]: "Renew to book events and use your tickets.",
+        [Language.swedish]: "Förnya för att boka evenemang och använda dina biljetter.",
+    },
+    approvedActivatePrompt: {
+        [Language.english]: "You're approved. Activate your membership to get started.",
+        [Language.swedish]: "Du är godkänd. Aktivera ditt medlemskap för att komma igång.",
+    },
+    applicationUnderReview: {
+        [Language.english]:
+            "Your application is being reviewed. We'll email you when it's approved.",
+        [Language.swedish]:
+            "Din ansökan granskas. Vi skickar ett e-postmeddelande när den är godkänd.",
+    },
+    pageRequiresMembership: {
+        [Language.english]: "That page requires an active membership.",
+        [Language.swedish]: "Den sidan kräver ett aktivt medlemskap.",
+    },
+    viewStatus: {
+        [Language.english]: "View status",
+        [Language.swedish]: "Visa status",
+    },
+    browseOtherMemberships: {
+        [Language.english]: "Browse other memberships",
+        [Language.swedish]: "Se andra medlemskap",
+    },
     steps: {
         apply: {
             label: {
