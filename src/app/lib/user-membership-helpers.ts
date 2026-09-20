@@ -48,6 +48,21 @@ export const renewUserMembership = async (
     revalidateTag(GlobalConstants.USER, "max");
 };
 
+export const membershipProductInclude = {
+    product: { select: { id: true, name: true, description: true, price: true } },
+} satisfies Prisma.MembershipInclude;
+
+/** Every membership product the organization offers, for renewal and tier selection. */
+export const getMembershipProducts = async (): Promise<
+    Prisma.MembershipGetPayload<{ include: typeof membershipProductInclude }>[]
+> =>
+    prisma.membership.findMany({
+        include: membershipProductInclude,
+        // `as const` keeps "asc" from widening to `string`, which would make Prisma
+        // silently infer the result without the included relation.
+        orderBy: { product: { name: "asc" } } as const,
+    });
+
 export const getMembershipProduct = async (): Promise<
     Prisma.ProductGetPayload<{
         select: {
