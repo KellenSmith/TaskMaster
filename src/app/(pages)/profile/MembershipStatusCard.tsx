@@ -15,7 +15,7 @@ import LanguageTranslations from "./LanguageTranslations";
 import { Prisma } from "../../../prisma/generated/browser";
 import { use } from "react";
 import { useMembershipState } from "../../lib/use-membership-state";
-import { MembershipState } from "../../lib/membership-utils";
+import { isMembershipActive, MembershipState } from "../../lib/membership-utils";
 
 interface MembershipStatusCardProps {
     membershipProductPromise: Promise<Prisma.ProductGetPayload<{ select: { name: true } }> | null>;
@@ -30,7 +30,7 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
     if (!user) throw new Error("User must be logged in to view membership status");
 
     const isPending = state === MembershipState.awaitingValidation;
-    const isActive = state === MembershipState.active || state === MembershipState.expiringSoon;
+    const isActive = isMembershipActive(state);
     // Everything else (expired, awaitingPayment, blacklisted) renders the "not active" view.
     const inactivePrompt =
         state === MembershipState.awaitingPayment

@@ -6,7 +6,7 @@ import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
 import { clientRedirect } from "../../lib/utils";
 import { useMembershipState } from "../../lib/use-membership-state";
-import { MembershipState } from "../../lib/membership-utils";
+import { isMembershipActive } from "../../lib/membership-utils";
 import { useUserContext } from "../../context/UserContext";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
@@ -60,10 +60,7 @@ const ProfileDashboard = ({
             skill_badges: null,
         };
         // Member-only tabs are available to anyone holding an unexpired membership
-        if (
-            membershipState === MembershipState.active ||
-            membershipState === MembershipState.expiringSoon
-        ) {
+        if (isMembershipActive(membershipState)) {
             availableTabs.events = implementedTabs.events;
             availableTabs.tasks = implementedTabs.tasks;
             availableTabs.skill_badges = implementedTabs.skill_badges;

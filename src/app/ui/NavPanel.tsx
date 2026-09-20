@@ -26,7 +26,7 @@ import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
 import { isUserAdmin, clientRedirect, getRelativeUrl, getAbsoluteUrl } from "../lib/utils";
 import { useMembershipState } from "../lib/use-membership-state";
-import { MembershipState } from "../lib/membership-utils";
+import { isMembershipActive } from "../lib/membership-utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
@@ -227,8 +227,7 @@ const NavPanel = () => {
     // everyone else to their membership status on the profile page.
     const logoTarget = !user
         ? GlobalConstants.HOME
-        : membershipState === MembershipState.active ||
-            membershipState === MembershipState.expiringSoon
+        : isMembershipActive(membershipState)
           ? GlobalConstants.DASHBOARD
           : GlobalConstants.PROFILE;
 

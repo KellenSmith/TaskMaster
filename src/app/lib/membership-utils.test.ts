@@ -5,6 +5,7 @@ import {
     DEFAULT_REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
     getDaysUntilExpiry,
     getMembershipState,
+    isMembershipActive,
     MembershipState,
     MembershipUser,
 } from "./membership-utils";
@@ -120,6 +121,15 @@ describe("getMembershipState", () => {
         });
         expect(getMembershipState(inside, null)).toBe(MembershipState.expiringSoon);
         expect(getMembershipState(outside, undefined)).toBe(MembershipState.active);
+    });
+});
+
+describe("isMembershipActive", () => {
+    it("is true only for active and expiringSoon", () => {
+        const activeStates = Object.values(MembershipState).filter(isMembershipActive);
+        expect(activeStates.sort()).toEqual(
+            [MembershipState.active, MembershipState.expiringSoon].sort(),
+        );
     });
 });
 

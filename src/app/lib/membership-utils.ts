@@ -26,6 +26,10 @@ export type MembershipUser = Prisma.UserGetPayload<{
     select: { status: true; user_membership: true; blacklist_entry: true };
 }> | null;
 
+/** True while the user holds an unexpired membership, including the reminder window. */
+export const isMembershipActive = (state: MembershipStateType): boolean =>
+    state === MembershipState.active || state === MembershipState.expiringSoon;
+
 export const getDaysUntilExpiry = (user: MembershipUser): number | null =>
     user?.user_membership
         ? dayjs.utc(user.user_membership.expires_at).diff(dayjs.utc(), "day")
