@@ -24,18 +24,6 @@ const LanguageTranslations = {
         [Language.swedish]: "Att göra",
     },
     [implementedTabs.skill_badges]: UILanguageTranslations.routeLabel[GlobalConstants.SKILL_BADGES],
-    activateMembership: {
-        [Language.english]: "Activate membership",
-        [Language.swedish]: "Aktivera medlemskap",
-    },
-    renewMembership: {
-        [Language.english]: "Renew membership",
-        [Language.swedish]: "Förnya medlemskap",
-    },
-    extendMembership: {
-        [Language.english]: "Extend membership",
-        [Language.swedish]: "Förläng medlemskap",
-    },
     startMembershipSubscription: {
         [Language.english]: "Start membership subscription",
         [Language.swedish]: "Starta prenumeration för medlemskap",
