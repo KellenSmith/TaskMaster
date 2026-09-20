@@ -24,13 +24,9 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import {
-    isUserAdmin,
-    clientRedirect,
-    getRelativeUrl,
-    isMembershipExpired,
-    getAbsoluteUrl,
-} from "../lib/utils";
+import { isUserAdmin, clientRedirect, getRelativeUrl, getAbsoluteUrl } from "../lib/utils";
+import { useMembershipState } from "../lib/use-membership-state";
+import { MembershipState } from "../lib/membership-utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
@@ -63,6 +59,7 @@ const NavPanel = () => {
         [],
     );
     const { user, editMode, setEditMode, language } = useUserContext();
+    const { state: membershipState } = useMembershipState();
     const { organizationSettings, infopagesPromise } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
@@ -226,6 +223,15 @@ const NavPanel = () => {
         };
     };
 
+    // Logo click: anonymous users go home, active members to the dashboard,
+    // everyone else to their membership status on the profile page.
+    const logoTarget = !user
+        ? GlobalConstants.HOME
+        : membershipState === MembershipState.active ||
+            membershipState === MembershipState.expiringSoon
+          ? GlobalConstants.DASHBOARD
+          : GlobalConstants.PROFILE;
+
     return (
         <>
             <AppBar position="static">
@@ -255,15 +261,7 @@ const NavPanel = () => {
                                 height={40}
                                 width={200}
                                 style={{ cursor: "pointer", height: "auto", width: "auto" }}
-                                onClick={() =>
-                                    clientRedirect(router, [
-                                        user
-                                            ? isMembershipExpired(user)
-                                                ? GlobalConstants.PROFILE
-                                                : GlobalConstants.DASHBOARD
-                                            : GlobalConstants.HOME,
-                                    ])
-                                }
+                                onClick={() => clientRedirect(router, [logoTarget])}
                             />
                         ) : (
                             <Typography variant="h5">
