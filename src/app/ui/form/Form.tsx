@@ -14,7 +14,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import { useState, FC, useTransition, FormEvent, useMemo } from "react";
+import { useState, FC, useTransition, FormEvent, useMemo, ReactNode } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -65,6 +65,8 @@ interface FormProps {
     onSuccess?: (result: string) => void; // eslint-disable-line no-unused-vars
     // Called with the error message instead of showing an error toast.
     onError?: (message: string) => void; // eslint-disable-line no-unused-vars
+    // Rendered after the fields, directly above the submit button (e.g. consent checkboxes)
+    children?: ReactNode;
 }
 
 const Form: FC<FormProps> = ({
@@ -82,6 +84,7 @@ const Form: FC<FormProps> = ({
     editable = true,
     onSuccess,
     onError,
+    children,
 }) => {
     const theme = useTheme();
     const { language } = useUserContext();
@@ -378,6 +381,7 @@ const Form: FC<FormProps> = ({
                     ))}
                     {validationError && <Typography color="error">{validationError}</Typography>}
                 </Stack>
+                {children}
                 {editMode && (
                     <Button type="submit" variant="contained" disabled={isPending}>
                         {buttonLabel || GlobalLanguageTranslations.save[language]}

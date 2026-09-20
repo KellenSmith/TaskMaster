@@ -27,11 +27,9 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Kunde inte skicka in ansökan. Av säkerhetsskäl avslöjar vi inte om du redan är medlem eller inte. Om du redan är medlem kan du logga in via inloggningssidan.",
     },
-    makeSureYouRead: {
-        [Language.english]:
-            "Please make sure you have read and understood the terms before submitting your application",
-        [Language.swedish]:
-            "Se till att du har läst och förstått villkoren innan du skickar in din ansökan",
+    termsRequired: {
+        [Language.english]: "Please confirm that you have read the terms before submitting",
+        [Language.swedish]: "Bekräfta att du har läst villkoren innan du skickar in",
     },
     termsOfMembership: {
         [Language.english]: "terms of Membership",
