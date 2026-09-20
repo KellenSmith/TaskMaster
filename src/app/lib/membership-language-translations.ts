@@ -82,6 +82,53 @@ const LanguageTranslations = {
         [Language.english]: "That page requires an active membership.",
         [Language.swedish]: "Den sidan kräver ett aktivt medlemskap.",
     },
+    // Membership process stepper
+    steps: {
+        apply: {
+            label: { [Language.english]: "Apply", [Language.swedish]: "Ansök" },
+            hint: {
+                [Language.english]: "Fill in the form",
+                [Language.swedish]: "Fyll i formuläret",
+            },
+        },
+        review: {
+            label: { [Language.english]: "We review", [Language.swedish]: "Vi granskar" },
+            hint: {
+                [Language.english]: "A person checks your application",
+                [Language.swedish]: "En person granskar din ansökan",
+            },
+        },
+        pay: {
+            payLabel: { [Language.english]: "Pay", [Language.swedish]: "Betala" },
+            activateLabel: { [Language.english]: "Activate", [Language.swedish]: "Aktivera" },
+            hintFree: {
+                [Language.english]: "Activating your membership is free",
+                [Language.swedish]: "Det är gratis att aktivera ditt medlemskap",
+            },
+            hintSingle: {
+                [Language.english]: (price: number, days: number) =>
+                    `${price} SEK for ${days} days`,
+                [Language.swedish]: (price: number, days: number) =>
+                    `${price} SEK för ${days} dagar`,
+            },
+            hintChoice: {
+                [Language.english]: (options: string[]) => `Choose between ${options.join(", ")}`,
+                [Language.swedish]: (options: string[]) => `Välj mellan ${options.join(", ")}`,
+            },
+            hintUnknown: {
+                [Language.english]: "We invite you to activate your membership",
+                [Language.swedish]: "Vi bjuder in dig att aktivera ditt medlemskap",
+            },
+            free: { [Language.english]: "free", [Language.swedish]: "gratis" },
+        },
+        active: {
+            label: { [Language.english]: "You're in", [Language.swedish]: "Du är med" },
+            hint: {
+                [Language.english]: "Book events and volunteer",
+                [Language.swedish]: "Boka evenemang och engagera dig",
+            },
+        },
+    },
     viewStatus: {
         [Language.english]: "View status",
         [Language.swedish]: "Visa status",

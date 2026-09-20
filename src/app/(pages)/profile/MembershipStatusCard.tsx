@@ -27,6 +27,7 @@ import { Prisma } from "../../../prisma/generated/browser";
 import { Language } from "../../../prisma/generated/enums";
 import { use } from "react";
 import { useMembershipState } from "../../lib/use-membership-state";
+import MembershipStepper from "../../ui/MembershipStepper";
 import {
     isMembershipActive,
     MembershipState,
@@ -106,6 +107,13 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
         state === MembershipState.awaitingValidation || state === MembershipState.awaitingPayment
             ? theme.palette.info
             : theme.palette.error;
+    // Applicants mid-process see where they are. Active and lapsed members do not need onboarding.
+    const processStep =
+        state === MembershipState.awaitingValidation
+            ? 1
+            : state === MembershipState.awaitingPayment
+              ? 2
+              : null;
 
     return (
         <Card elevation={3}>
@@ -148,6 +156,7 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                             >
                                 {prompt}
                             </Typography>
+                            {processStep !== null && <MembershipStepper activeStep={processStep} />}
                         </Stack>
                     ) : (
                         <Stack spacing={2}>
