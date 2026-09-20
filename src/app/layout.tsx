@@ -1,5 +1,6 @@
 import React from "react";
 import NavPanel from "./ui/NavPanel";
+import MembershipBanner from "./ui/MembershipBanner";
 import { Stack } from "@mui/material";
 import ServerContextWrapper from "./context/ServerContextWrapper";
 import { generateSEOMetadata } from "./lib/seo-utils";
@@ -23,6 +24,7 @@ export const RootLayoutInner: React.FC<RootLayoutProps> = ({ children }) => {
     return (
         <ServerContextWrapper>
             <NavPanel />
+            <MembershipBanner />
             <Stack
                 sx={{
                     padding: 4,

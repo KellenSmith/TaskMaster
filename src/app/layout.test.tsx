@@ -7,6 +7,10 @@ vi.mock("./ui/NavPanel", () => ({
     default: () => <div data-testid="nav-panel">NavPanel</div>,
 }));
 
+vi.mock("./ui/MembershipBanner", () => ({
+    default: () => <div data-testid="membership-banner">MembershipBanner</div>,
+}));
+
 vi.mock("./context/ServerContextWrapper", () => ({
     default: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="server-context-wrapper">{children}</div>
