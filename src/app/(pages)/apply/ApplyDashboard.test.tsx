@@ -23,9 +23,8 @@ vi.mock("../../context/OrganizationSettingsContext", () => ({
     })),
 }));
 vi.mock("../../lib/user-actions", () => ({
-    submitMemberApplication: vi.fn(
-        async () => "Application submitted. A login link will arrive in your email shortly.",
-    ),
+    // A successful action resolves to undefined per the server-action conventions
+    submitMemberApplication: vi.fn(async () => undefined),
 }));
 
 const formData: Partial<z.infer<typeof MembershipApplicationSchema>> = {
@@ -81,10 +80,15 @@ describe("ApplyPage", () => {
         // Fill out form fields
         await fillOutForm(formData);
 
-        // Click submit and wait for success notification
+        // Submit: the form is replaced by an inline confirmation echoing the email
         const submitButton = await screen.findByRole("button", { name: /submit application/i });
         await userEvent.click(submitButton);
         expect(await screen.findByText(/application submitted/i)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(formData.email as string))).toBeInTheDocument();
+        expect(screen.getByText(/check your spam folder/i)).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /submit application/i }),
+        ).not.toBeInTheDocument();
     });
     it("renders terms of membership section if there is an URL configured in organization settings", async () => {
         vi.mocked(useOrganizationSettingsContext).mockReturnValue({
@@ -127,7 +131,7 @@ describe("ApplyPage", () => {
         await userEvent.click(submitButton);
         expect(await screen.findByText(/application submitted/i)).toBeInTheDocument();
     });
-    it("shows error notification when application submission fails", async () => {
+    it("shows the error inline and keeps the form when submission fails", async () => {
         vi.mocked(submitMemberApplication).mockRejectedValueOnce(new Error("Submission failed"));
 
         renderApplyPage();
@@ -137,7 +141,21 @@ describe("ApplyPage", () => {
         await fillOutForm(formData);
         const submitButton = screen.getByRole("button", { name: /submit application/i });
         await userEvent.click(submitButton);
-        expect(await screen.findByText(/failed to submit application/i)).toBeInTheDocument();
+        // Exactly one message: inline, not duplicated as a toast
+        expect(await screen.findAllByText(/failed to submit application/i)).toHaveLength(1);
+        expect(screen.getByRole("button", { name: /submit application/i })).toBeInTheDocument();
+    });
+
+    it("shows a localized error returned by the action inline", async () => {
+        vi.mocked(submitMemberApplication).mockResolvedValueOnce("Nickname already exists");
+
+        renderApplyPage();
+
+        await userEvent.click(screen.getAllByRole("checkbox")[0]);
+        await fillOutForm(formData);
+        await userEvent.click(screen.getByRole("button", { name: /submit application/i }));
+        expect(await screen.findByText(/nickname already exists/i)).toBeInTheDocument();
+        expect(screen.queryByText(/application submitted/i)).not.toBeInTheDocument();
     });
     it("takes an application prompt from organization settings and displays it", async () => {
         vi.mocked(useOrganizationSettingsContext).mockReturnValue({

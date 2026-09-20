@@ -1,16 +1,25 @@
 import { Language } from "../../../prisma/generated/enums";
-import GlobalConstants from "../../GlobalConstants";
 
 const LanguageTranslations = {
-    [GlobalConstants.APPLY]: {
+    apply: {
         [Language.english]: "Submit application",
         [Language.swedish]: "Skicka in ansökan",
     },
     applicationSubmitted: {
+        [Language.english]: "Application submitted",
+        [Language.swedish]: "Ansökan skickad",
+    },
+    applicationSubmittedBody: {
+        [Language.english]: (email: string) =>
+            `We have sent a login link to ${email}. Use it to sign in and follow your application on your profile.`,
+        [Language.swedish]: (email: string) =>
+            `Vi har skickat en inloggningslänk till ${email}. Använd den för att logga in och följa din ansökan på din profil.`,
+    },
+    applicationReviewNote: {
         [Language.english]:
-            "Application submitted. A login link will arrive in your email shortly.",
+            "An admin will review your application. You will get an email when it has been approved. If no email arrives within a few minutes, check your spam folder.",
         [Language.swedish]:
-            "Ansökan skickad. En inloggningslänk skickas till din e-postadress inom kort.",
+            "En administratör granskar din ansökan. Du får ett mejl när den har godkänts. Kommer inget mejl inom några minuter, kontrollera din skräppost.",
     },
     failedApplicationSubmit: {
         [Language.english]:

@@ -5,7 +5,7 @@ import Form from "../../ui/form/Form";
 import { MembershipApplicationSchema } from "../../lib/zod-schemas";
 import { useOrganizationSettingsContext } from "../../context/OrganizationSettingsContext";
 import { useState } from "react";
-import { Checkbox, Link, Stack, Typography } from "@mui/material";
+import { Alert, AlertTitle, Checkbox, Link, Stack, Typography } from "@mui/material";
 import LanguageTranslations from "./LanguageTranslations";
 import OrderLanguageTranslations from "../order/LanguageTranslations";
 import { useUserContext } from "../../context/UserContext";
@@ -22,17 +22,35 @@ const ApplyDashboard = () => {
         privacyPolicy: !privacyPolicyUrl,
     });
     const shouldIncludeApplicationPrompt = !!organizationSettings.member_application_prompt;
+    // Outcome is rendered inline: toasts auto-dismiss and applicants miss them, then resubmit
+    const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
+    // Resolves to the submitted email so the confirmation can echo it back
     const submitApplication = async (formData: FormData) => {
+        setSubmitError(null);
         let errorMsg: string | undefined;
         try {
             errorMsg = await submitMemberApplication(formData);
-            if (!errorMsg) return LanguageTranslations.applicationSubmitted[language];
+            if (!errorMsg) return String(formData.get(GlobalConstants.EMAIL) ?? "");
         } catch {
             errorMsg = LanguageTranslations.failedApplicationSubmit[language];
         }
         throw new Error(errorMsg);
     };
+
+    if (submittedEmail !== null)
+        return (
+            <Alert severity="success">
+                <AlertTitle>{LanguageTranslations.applicationSubmitted[language]}</AlertTitle>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                    {LanguageTranslations.applicationSubmittedBody[language](submittedEmail)}
+                </Typography>
+                <Typography variant="body2">
+                    {LanguageTranslations.applicationReviewNote[language]}
+                </Typography>
+            </Alert>
+        );
 
     return (
         <Stack spacing={1}>
@@ -114,7 +132,7 @@ const ApplyDashboard = () => {
             <Form
                 key={JSON.stringify(termsAccepted)}
                 name={GlobalConstants.APPLY}
-                buttonLabel={LanguageTranslations[GlobalConstants.APPLY][language]}
+                buttonLabel={LanguageTranslations.apply[language]}
                 action={submitApplication}
                 validationSchema={MembershipApplicationSchema}
                 customIncludedFields={
@@ -137,7 +155,10 @@ const ApplyDashboard = () => {
                 }
                 readOnly={!(termsAccepted.termsOfMembership && termsAccepted.privacyPolicy)}
                 editable={false}
+                onSuccess={setSubmittedEmail}
+                onError={setSubmitError}
             />
+            {submitError && <Alert severity="error">{submitError}</Alert>}
         </Stack>
     );
 };
