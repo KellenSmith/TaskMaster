@@ -45,6 +45,7 @@ Visit https://localhost:3000
 - Tests (watch): `pnpm test:watch`
 - Tests (coverage): `pnpm test:coverage`
 - Reset DB (dev only): `pnpm prisma-migrate-reset`
+- Seed local mock data (dev only, **wipes the database** configured via `DIRECT_DATABASE_URL` and inserts a fresh small dataset — see `src/prisma/seed.ts` and the "Seeding" section of `.env.example`): `SEED_CONFIRM_WIPE=true pnpm prisma-seed`
 
 ## Troubleshooting
 
