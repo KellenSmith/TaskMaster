@@ -74,6 +74,12 @@ export const explanatoryTexts = {
         [Language.swedish]:
             "Denna text kommer att visas om Swedbank Pay inte är konfigurerat för att uppmana användaren att betala sin beställning på andra sätt som bestäms av organisationen. En admin kan sedan manuellt bekräfta betalningen och markera beställningen som betald.",
     },
+    [GlobalConstants.MEMBERSHIP_INELIGIBLE_MESSAGE]: {
+        [Language.english]:
+            "Shown instead of a renewal button to members who are not allowed to renew, for example blacklisted members. Use it to tell them how to get in touch. If left empty, a generic message is shown.",
+        [Language.swedish]:
+            "Visas i stället för en förnyelseknapp för medlemmar som inte får förnya, till exempel svartlistade medlemmar. Använd den för att berätta hur de kan kontakta er. Om fältet lämnas tomt visas ett generellt meddelande.",
+    },
     [GlobalConstants.NICKNAME]: {
         [Language.english]:
             "This nickname will be displayed to other members. No other personal data will be revealed.",
@@ -91,6 +97,7 @@ export const RenderedFields = {
         GlobalConstants.REMIND_MEMBERSHIP_EXPIRES_IN_DAYS,
         GlobalConstants.PURGE_MEMBERS_AFTER_DAYS_UNVALIDATED,
         GlobalConstants.MEMBER_APPLICATION_PROMPT,
+        GlobalConstants.MEMBERSHIP_INELIGIBLE_MESSAGE,
         GlobalConstants.LOGO_URL,
         GlobalConstants.PRIVACY_POLICY_SWEDISH_URL,
         GlobalConstants.PRIVACY_POLICY_ENGLISH_URL,
@@ -317,6 +324,7 @@ export const stringsToSelectOptions = (strings: string[]): CustomOptionProps[] =
 
 export const multiLineTextFields = [
     GlobalConstants.MEMBER_APPLICATION_PROMPT,
+    GlobalConstants.MEMBERSHIP_INELIGIBLE_MESSAGE,
     GlobalConstants.PAYMENT_INSTRUCTIONS,
     GlobalConstants.ACCESSIBILITY_INFO,
     GlobalConstants.REASON,

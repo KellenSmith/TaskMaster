@@ -7,6 +7,7 @@ import { userHasRolePrivileges } from "../lib/auth/auth-utils";
 import { UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/browser";
 import { isSwedbankPayConfigured } from "../lib/payment-helpers";
+import { getUpcomingEventParticipants } from "../lib/event-participant-helpers";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
@@ -44,6 +45,10 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     const userPromise = getLoggedInUser();
     const organizationSettingsPromise = getOrganizationSettings();
     const infoPagesPromise = getAllowedInfoPages();
+    const upcomingTicketsPromise = getUpcomingEventParticipants();
+    // Consumers use() this inside their own Suspense boundary, so attach a no-op
+    // handler here to keep a failed query from surfacing as an unhandled rejection.
+    upcomingTicketsPromise.catch(() => {});
     const handlePaymentsManually = !isSwedbankPayConfigured();
 
     return (
@@ -51,6 +56,7 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
             organizationSettingsPromise={organizationSettingsPromise}
             userPromise={userPromise}
             infoPagesPromise={infoPagesPromise}
+            upcomingTicketsPromise={upcomingTicketsPromise}
             handlePaymentsManually={handlePaymentsManually}
         >
             {children}

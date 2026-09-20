@@ -31,6 +31,7 @@ describe("organization-settings-helpers", () => {
                 default_task_shift_length: 2,
                 member_application_prompt: null,
                 payment_instructions: null,
+                membership_ineligible_message: null,
                 event_manager_email: null,
                 primary_color: "#607d8b",
                 privacy_policy_swedish_url: null,

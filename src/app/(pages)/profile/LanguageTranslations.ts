@@ -1,8 +1,7 @@
-import { isMembershipExpired } from "../../lib/utils";
 import UILanguageTranslations from "../../ui/LanguageTranslations";
 import GlobalConstants from "../../GlobalConstants";
 import { EventStatus, Language, UserRole } from "../../../prisma/generated/enums";
-import { Prisma } from "../../../prisma/generated/browser";
+import { MembershipState, MembershipStateType } from "../../lib/membership-utils";
 
 export const implementedTabs = {
     account: "Account",
@@ -26,18 +25,6 @@ const LanguageTranslations = {
         [Language.swedish]: "Att göra",
     },
     [implementedTabs.skill_badges]: UILanguageTranslations.routeLabel[GlobalConstants.SKILL_BADGES],
-    activateMembership: {
-        [Language.english]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true; blacklist_entry: true };
-            }>,
-        ) => `${isMembershipExpired(user) ? "Activate" : "Extend"} membership`,
-        [Language.swedish]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true; blacklist_entry: true };
-            }>,
-        ) => `${isMembershipExpired(user) ? "Aktivera" : "Förläng"} medlemskap`,
-    },
     startMembershipSubscription: {
         [Language.english]: "Start membership subscription",
         [Language.swedish]: "Starta prenumeration för medlemskap",
@@ -94,20 +81,12 @@ const LanguageTranslations = {
         [Language.swedish]: "Ditt medlemskap väntar på godkännande av en administratör",
     },
     membershipExpiredPrompt: {
-        [Language.english]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
-            }>,
-        ) =>
-            user.user_membership
+        [Language.english]: (state: MembershipStateType) =>
+            state === MembershipState.expired
                 ? "Your membership has expired and needs renewal"
                 : "Welcome! Activate your membership to get started",
-        [Language.swedish]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
-            }>,
-        ) =>
-            user.user_membership
+        [Language.swedish]: (state: MembershipStateType) =>
+            state === MembershipState.expired
                 ? "Ditt medlemskap har gått ut och behöver förnyas"
                 : "Välkommen! Aktivera ditt medlemskap för att komma igång",
     },

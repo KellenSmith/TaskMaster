@@ -39,6 +39,10 @@ export const organizationSettingsFieldLabels = {
         [Language.english]: "Payment Instructions",
         [Language.swedish]: "Betalningsinstruktioner",
     },
+    [GlobalConstants.MEMBERSHIP_INELIGIBLE_MESSAGE]: {
+        [Language.english]: "Message to members who cannot renew",
+        [Language.swedish]: "Meddelande till medlemmar som inte kan förnya",
+    },
     [GlobalConstants.EVENT_MANAGER_EMAIL]: {
         [Language.english]: "Event Manager Email",
         [Language.swedish]: "Eventkoordinatorns e-post",

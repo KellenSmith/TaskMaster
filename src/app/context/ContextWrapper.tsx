@@ -5,9 +5,28 @@ import UserContextProvider from "./UserContext";
 import OrganizationSettingsProvider from "./OrganizationSettingsContext";
 import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
+import UpcomingTicketsProvider from "./UpcomingTicketsContext";
 import ErrorBoundarySuspense from "../ui/ErrorBoundarySuspense";
 import { SessionProvider } from "next-auth/react";
 import { Prisma } from "../../prisma/generated/browser";
+
+type UpcomingTicket = Prisma.EventParticipantGetPayload<{
+    include: {
+        ticket: {
+            include: {
+                event: {
+                    select: {
+                        id: true;
+                        title: true;
+                        start_time: true;
+                        end_time: true;
+                        location: { select: { name: true } };
+                    };
+                };
+            };
+        };
+    };
+}>;
 
 interface ContextWrapperProps {
     children: ReactNode;
@@ -20,6 +39,7 @@ interface ContextWrapperProps {
             include: { titleText: { include: { translations: true } } };
         }>[]
     >;
+    upcomingTicketsPromise: Promise<UpcomingTicket[]>;
     handlePaymentsManually: boolean;
 }
 
@@ -27,6 +47,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
     children,
     organizationSettingsPromise,
     infoPagesPromise,
+    upcomingTicketsPromise,
     userPromise,
     handlePaymentsManually,
 }) => {
@@ -42,7 +63,11 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                         <NotificationContextProvider>
                             <SessionProvider>
                                 <UserContextProvider userPromise={userPromise}>
-                                    {children}
+                                    <UpcomingTicketsProvider
+                                        upcomingTicketsPromise={upcomingTicketsPromise}
+                                    >
+                                        {children}
+                                    </UpcomingTicketsProvider>
                                 </UserContextProvider>
                             </SessionProvider>
                         </NotificationContextProvider>

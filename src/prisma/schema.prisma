@@ -59,7 +59,8 @@ model OrganizationSettings {
   terms_of_membership_swedish_url String?
   terms_of_membership_english_url String?
 
-  payment_instructions String?
+  payment_instructions          String?
+  membership_ineligible_message String?
 
   @@map("organization_settings")
 }

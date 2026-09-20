@@ -24,16 +24,12 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
-import {
-    isUserAdmin,
-    clientRedirect,
-    getRelativeUrl,
-    isMembershipExpired,
-    getAbsoluteUrl,
-} from "../lib/utils";
+import { isUserAdmin, clientRedirect, getRelativeUrl, getAbsoluteUrl } from "../lib/utils";
 import { Cancel, ChevronLeft, Delete, Edit } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
+import { useMembershipState } from "../lib/use-membership-state";
+import { MembershipState } from "../lib/membership-utils";
 import { useNotificationContext } from "../context/NotificationContext";
 import LanguageMenu from "./LanguageMenu";
 import LanguageTranslations from "./LanguageTranslations";
@@ -63,6 +59,7 @@ const NavPanel = () => {
         [],
     );
     const { user, editMode, setEditMode, language } = useUserContext();
+    const { state: membershipState } = useMembershipState();
     const { organizationSettings, infopagesPromise } = useOrganizationSettingsContext();
     const { addNotification } = useNotificationContext();
     const router = useRouter();
@@ -216,6 +213,17 @@ const NavPanel = () => {
         return infoPage.titleText.translations.find((t) => t.language === language)?.text || "";
     };
 
+    // Members with something to resolve land on their profile, where the CTA lives.
+    const getLogoLandingPath = (): string => {
+        if (membershipState === MembershipState.anonymous) return GlobalConstants.HOME;
+        if (
+            membershipState === MembershipState.active ||
+            membershipState === MembershipState.expiringSoon
+        )
+            return GlobalConstants.DASHBOARD;
+        return GlobalConstants.PROFILE;
+    };
+
     const getInfoPageDefaultValues = (infoPageId: string | null) => {
         if (!infoPageId) return {};
         const infoPage = infoPages.find((ip) => ip.id === infoPageId);
@@ -255,15 +263,7 @@ const NavPanel = () => {
                                 height={40}
                                 width={200}
                                 style={{ cursor: "pointer", height: "auto", width: "auto" }}
-                                onClick={() =>
-                                    clientRedirect(router, [
-                                        user
-                                            ? isMembershipExpired(user)
-                                                ? GlobalConstants.PROFILE
-                                                : GlobalConstants.DASHBOARD
-                                            : GlobalConstants.HOME,
-                                    ])
-                                }
+                                onClick={() => clientRedirect(router, [getLogoLandingPath()])}
                             />
                         ) : (
                             <Typography variant="h5">

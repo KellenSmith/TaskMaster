@@ -71,6 +71,7 @@ export const OrganizationSettingsUpdateSchema = z
             .nullable()
             .optional(),
         payment_instructions: z.string().optional(),
+        membership_ineligible_message: z.string().nullable().optional(),
         privacy_policy_swedish_url: z.url().nullable().optional(),
         privacy_policy_english_url: z.url().nullable().optional(),
         terms_of_purchase_swedish_url: z.url().nullable().optional(),

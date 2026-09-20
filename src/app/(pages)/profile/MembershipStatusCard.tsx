@@ -1,6 +1,5 @@
 "use client";
 import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
-import { isMembershipExpired } from "../../lib/utils";
 import {
     AdminPanelSettings,
     CardMembership,
@@ -13,7 +12,8 @@ import { useUserContext } from "../../context/UserContext";
 import { formatUtcDateToTimezone } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
-import { UserStatus } from "../../../prisma/generated/enums";
+import { useMembershipState } from "../../lib/use-membership-state";
+import { MembershipState } from "../../lib/membership-utils";
 import { Prisma } from "../../../prisma/generated/browser";
 import { use } from "react";
 
@@ -24,6 +24,10 @@ interface MembershipStatusCardProps {
 const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCardProps) => {
     const theme = useTheme();
     const { user, language } = useUserContext();
+    const { state: membershipState } = useMembershipState();
+    const hasActiveMembership =
+        membershipState === MembershipState.active ||
+        membershipState === MembershipState.expiringSoon;
     const membershipProduct = use(membershipProductPromise);
 
     if (!user) throw new Error("User must be logged in to view membership status");
@@ -44,14 +48,14 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {LanguageTranslations.membership[language]}
                         </Typography>
-                        {user.status === UserStatus.pending ? (
+                        {membershipState === MembershipState.awaitingValidation ? (
                             <Chip
                                 icon={<Warning />}
                                 label={LanguageTranslations.pending[language]}
                                 color="error"
                                 size="small"
                             />
-                        ) : isMembershipExpired(user) ? (
+                        ) : !hasActiveMembership ? (
                             <Chip
                                 icon={<Warning />}
                                 label={LanguageTranslations.expired[language]}
@@ -71,7 +75,7 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                     <Divider />
 
                     {/* Membership Info */}
-                    {user.status === UserStatus.pending ? (
+                    {membershipState === MembershipState.awaitingValidation ? (
                         <Stack
                             sx={{
                                 p: 2,
@@ -91,7 +95,7 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                                 {LanguageTranslations.membershipPendingPrompt[language]}
                             </Typography>
                         </Stack>
-                    ) : isMembershipExpired(user) ? (
+                    ) : !hasActiveMembership ? (
                         <Stack
                             sx={{
                                 p: 2,
@@ -108,7 +112,9 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                                     textAlign: "center",
                                 }}
                             >
-                                {LanguageTranslations.membershipExpiredPrompt[language](user)}
+                                {LanguageTranslations.membershipExpiredPrompt[language](
+                                    membershipState,
+                                )}
                             </Typography>
                         </Stack>
                     ) : (

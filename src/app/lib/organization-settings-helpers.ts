@@ -1,5 +1,6 @@
 import { Prisma } from "../../prisma/generated/client";
 import { prisma } from "../../prisma/prisma-client";
+import { defaultRemindMembershipExpiresInDays } from "./membership-utils";
 
 export const getOrganizationSettings = async (): Promise<
     Prisma.OrganizationSettingsGetPayload<true>
@@ -9,7 +10,7 @@ export const getOrganizationSettings = async (): Promise<
     return {
         id: "default",
         logo_url: null,
-        remind_membership_expires_in_days: 7,
+        remind_membership_expires_in_days: defaultRemindMembershipExpiresInDays,
         purge_members_after_days_unvalidated: 180,
         default_task_shift_length: 2,
         member_application_prompt: null,
@@ -22,5 +23,6 @@ export const getOrganizationSettings = async (): Promise<
         terms_of_membership_swedish_url: null,
         terms_of_membership_english_url: null,
         payment_instructions: null,
+        membership_ineligible_message: null,
     };
 };

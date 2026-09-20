@@ -4,7 +4,7 @@ import GlobalConstants from "../../GlobalConstants";
 import Form from "../../ui/form/Form";
 import { useUserContext } from "../../context/UserContext";
 import { deleteUser, logOut, updateUser } from "../../lib/user-actions";
-import { Button, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import ConfirmButton from "../../ui/ConfirmButton";
 import { allowRedirectException } from "../../ui/utils";
 import { useNotificationContext } from "../../context/NotificationContext";
@@ -12,11 +12,11 @@ import { UserUpdateSchema } from "../../lib/zod-schemas";
 import { useTransition } from "react";
 import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import MembershipStatusCard from "./MembershipStatusCard";
+import RenewMembershipButton from "../../ui/RenewMembershipButton";
+import { useMembershipState } from "../../lib/use-membership-state";
+import { MembershipState } from "../../lib/membership-utils";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
-import { clientRedirect, isMembershipExpired } from "../../lib/utils";
-import { useRouter } from "next/navigation";
-import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
 
 interface AccountTabProps {
@@ -27,7 +27,7 @@ const AccountTab = ({ membershipProductPromise }: AccountTabProps) => {
     const { user, language } = useUserContext();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
-    const router = useRouter();
+    const { state: membershipState } = useMembershipState();
 
     if (!user) return <LoadingFallback />;
 
@@ -51,25 +51,18 @@ const AccountTab = ({ membershipProductPromise }: AccountTabProps) => {
             }
         });
 
-    const getMembershipActionButton = () => {
-        if (user.status !== UserStatus.validated) return null;
-
-        const ActivateMembershipButton = (
-            <Button
-                onClick={() => clientRedirect(router, [GlobalConstants.SHOP])}
-                disabled={isPending}
-            >
-                {LanguageTranslations.activateMembership[language](user)}
-            </Button>
-        );
-        if (isMembershipExpired(user)) return ActivateMembershipButton;
-        return ActivateMembershipButton;
-    };
+    // Blacklisted and not-yet-approved members have nothing to click here.
+    const canStartRenewal =
+        membershipState !== MembershipState.anonymous &&
+        membershipState !== MembershipState.blacklisted &&
+        membershipState !== MembershipState.awaitingValidation;
 
     return (
         <Stack>
             <MembershipStatusCard membershipProductPromise={membershipProductPromise} />
-            {getMembershipActionButton()}
+            {canStartRenewal && (
+                <RenewMembershipButton state={membershipState} disabled={isPending} />
+            )}
             <Form
                 name={GlobalConstants.PROFILE}
                 buttonLabel={GlobalLanguageTranslations.save[language]}

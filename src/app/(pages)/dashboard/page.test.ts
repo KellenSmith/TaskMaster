@@ -22,14 +22,14 @@ beforeEach(() => {
 });
 
 describe("DashboardPage", () => {
-    it("returns dashboard wrapped in ProtectedPage and rejects the ticket promise if user is not logged in", async () => {
+    it("returns dashboard wrapped in ProtectedPage and no tickets if user is not logged in", async () => {
         vi.mocked(getLoggedInUser).mockResolvedValue(null);
 
         const page = await DashboardPage();
 
         expect(vi.mocked(getLoggedInUser)).toHaveBeenCalledTimes(1);
         expect(page.props.name).toBe(GlobalConstants.DASHBOARD);
-        await expect(page.props.children.props.ticketInfoPromise).rejects.toThrow(TypeError);
+        await expect(page.props.children.props.ticketInfoPromise).resolves.toEqual([]);
         expect(vi.mocked(serverRedirect)).not.toHaveBeenCalled();
         expect(vi.mocked(prisma.eventParticipant.findMany)).not.toHaveBeenCalled();
     });

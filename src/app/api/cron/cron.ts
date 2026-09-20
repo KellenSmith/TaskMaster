@@ -5,6 +5,7 @@ import { getOrganizationSettings } from "../../lib/organization-settings-helpers
 import MembershipExpiresReminderTemplate from "../../lib/mail-service/mail-templates/MembershipExpiresReminderTemplate";
 import { createElement } from "react";
 import { processNextNewsletterBatch } from "../../lib/mail-service/newsletter-actions";
+import { defaultRemindMembershipExpiresInDays } from "../../lib/membership-utils";
 
 export const purgeStaleMembershipApplications = async (): Promise<void> => {
     /**
@@ -37,7 +38,8 @@ export const expiringMembershipMaintenance = async (): Promise<void> => {
      * Send reminders to members whose membership expires in "reminderDays" days from now
      */
     const orgSettings = await getOrganizationSettings();
-    const reminderDays = orgSettings?.remind_membership_expires_in_days || 7;
+    const reminderDays =
+        orgSettings?.remind_membership_expires_in_days || defaultRemindMembershipExpiresInDays;
 
     const earliestExpirationDate = dayjs.utc().add(reminderDays, "d").hour(0).minute(0).second(0);
     const latestExpirationDate = earliestExpirationDate.add(1, "d");
