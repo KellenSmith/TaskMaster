@@ -1,8 +1,6 @@
-import { isMembershipExpired } from "../../lib/utils";
 import UILanguageTranslations from "../../ui/LanguageTranslations";
 import GlobalConstants from "../../GlobalConstants";
 import { EventStatus, Language, UserRole } from "../../../prisma/generated/enums";
-import { Prisma } from "../../../prisma/generated/browser";
 
 export const implementedTabs = {
     account: "Account",
@@ -27,16 +25,16 @@ const LanguageTranslations = {
     },
     [implementedTabs.skill_badges]: UILanguageTranslations.routeLabel[GlobalConstants.SKILL_BADGES],
     activateMembership: {
-        [Language.english]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true; blacklist_entry: true };
-            }>,
-        ) => `${isMembershipExpired(user) ? "Activate" : "Extend"} membership`,
-        [Language.swedish]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true; blacklist_entry: true };
-            }>,
-        ) => `${isMembershipExpired(user) ? "Aktivera" : "Förläng"} medlemskap`,
+        [Language.english]: "Activate membership",
+        [Language.swedish]: "Aktivera medlemskap",
+    },
+    renewMembership: {
+        [Language.english]: "Renew membership",
+        [Language.swedish]: "Förnya medlemskap",
+    },
+    extendMembership: {
+        [Language.english]: "Extend membership",
+        [Language.swedish]: "Förläng medlemskap",
     },
     startMembershipSubscription: {
         [Language.english]: "Start membership subscription",

@@ -14,9 +14,10 @@ import { LoadingFallback } from "../../ui/ErrorBoundarySuspense";
 import MembershipStatusCard from "./MembershipStatusCard";
 import GlobalLanguageTranslations from "../../GlobalLanguageTranslations";
 import LanguageTranslations from "./LanguageTranslations";
-import { clientRedirect, isMembershipExpired } from "../../lib/utils";
+import { clientRedirect } from "../../lib/utils";
+import { useMembershipState } from "../../lib/use-membership-state";
+import { MembershipState, MembershipStateType } from "../../lib/membership-utils";
 import { useRouter } from "next/navigation";
-import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
 
 interface AccountTabProps {
@@ -24,7 +25,8 @@ interface AccountTabProps {
 }
 
 const AccountTab = ({ membershipProductPromise }: AccountTabProps) => {
-    const { user, language } = useUserContext();
+    const { language } = useUserContext();
+    const { state, user } = useMembershipState();
     const { addNotification } = useNotificationContext();
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
@@ -51,19 +53,25 @@ const AccountTab = ({ membershipProductPromise }: AccountTabProps) => {
             }
         });
 
-    const getMembershipActionButton = () => {
-        if (user.status !== UserStatus.validated) return null;
+    const membershipCtaLabel: Partial<Record<MembershipStateType, string>> = {
+        [MembershipState.awaitingPayment]: LanguageTranslations.activateMembership[language],
+        [MembershipState.expired]: LanguageTranslations.renewMembership[language],
+        [MembershipState.expiringSoon]: LanguageTranslations.extendMembership[language],
+        [MembershipState.active]: LanguageTranslations.extendMembership[language],
+    };
 
-        const ActivateMembershipButton = (
+    const getMembershipActionButton = () => {
+        // No CTA for anonymous, blacklisted or not-yet-validated users
+        const label = membershipCtaLabel[state];
+        if (!label) return null;
+        return (
             <Button
                 onClick={() => clientRedirect(router, [GlobalConstants.SHOP])}
                 disabled={isPending}
             >
-                {LanguageTranslations.activateMembership[language](user)}
+                {label}
             </Button>
         );
-        if (isMembershipExpired(user)) return ActivateMembershipButton;
-        return ActivateMembershipButton;
     };
 
     return (
