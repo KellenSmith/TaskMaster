@@ -5,12 +5,13 @@ import dayjs from "dayjs";
 import MembershipBanner, { getDismissalKey } from "./MembershipBanner";
 import { useUserContext } from "../context/UserContext";
 import { useOrganizationSettingsContext } from "../context/OrganizationSettingsContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Language, UserStatus } from "../../prisma/generated/enums";
 import LanguageTranslations from "../lib/membership-language-translations";
 
 vi.mock("next/navigation", () => ({
     usePathname: vi.fn(() => "/"),
+    useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 vi.mock("../context/UserContext", () => ({
     useUserContext: vi.fn(),
@@ -51,6 +52,7 @@ describe("MembershipBanner", () => {
     beforeEach(() => {
         sessionStorage.clear();
         vi.mocked(usePathname).mockReturnValue("/dashboard");
+        vi.mocked(useSearchParams).mockReturnValue(new URLSearchParams() as any);
         vi.mocked(useOrganizationSettingsContext).mockReturnValue({
             organizationSettings: { remind_membership_expires_in_days: REMIND_DAYS },
         } as any);
@@ -145,6 +147,54 @@ describe("MembershipBanner", () => {
         givenUser(membershipExpiringIn(5));
         renderBanner();
         expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+
+    describe("after a ProtectedPage redirect (membership_required=true)", () => {
+        const givenRedirected = () => {
+            vi.mocked(usePathname).mockReturnValue("/profile");
+            vi.mocked(useSearchParams).mockReturnValue(
+                new URLSearchParams({ membership_required: "true" }) as any,
+            );
+        };
+
+        it("prefixes the expired message with why the user was redirected", () => {
+            givenRedirected();
+            givenUser(membershipExpiringIn(-2));
+            renderBanner();
+            expect(screen.getByRole("alert")).toHaveTextContent(
+                new RegExp(
+                    `^${LanguageTranslations.bannerMembershipRequired[Language.english]} Your membership expired on`,
+                ),
+            );
+        });
+
+        it("prefixes the activate message for approved members who never paid", () => {
+            givenRedirected();
+            givenUser({ ...membershipExpiringIn(0), user_membership: null });
+            renderBanner();
+            expect(screen.getByRole("alert")).toHaveTextContent(
+                `${LanguageTranslations.bannerMembershipRequired[Language.english]} ${LanguageTranslations.bannerAwaitingPayment[Language.english]}`,
+            );
+        });
+
+        it("shows the banner to pending applicants even if they dismissed it earlier", () => {
+            givenRedirected();
+            const user = pendingApplicant();
+            sessionStorage.setItem(getDismissalKey(null), "true");
+            givenUser(user);
+            renderBanner();
+            expect(screen.getByRole("alert")).toHaveTextContent(
+                LanguageTranslations.bannerMembershipRequired[Language.english],
+            );
+        });
+
+        it("adds no prefix without the flag", () => {
+            givenUser(membershipExpiringIn(-2));
+            renderBanner();
+            expect(screen.getByRole("alert")).not.toHaveTextContent(
+                LanguageTranslations.bannerMembershipRequired[Language.english],
+            );
+        });
     });
 
     it.each(["/order?order_id=1", "/apply", "/login"])("is hidden on %s", (path) => {

@@ -78,6 +78,10 @@ const LanguageTranslations = {
             "Your application is being reviewed. We'll email you when it's approved.",
         [Language.swedish]: "Din ansökan granskas. Vi mejlar dig när den är godkänd.",
     },
+    bannerMembershipRequired: {
+        [Language.english]: "That page requires an active membership.",
+        [Language.swedish]: "Den sidan kräver ett aktivt medlemskap.",
+    },
     viewStatus: {
         [Language.english]: "View status",
         [Language.swedish]: "Visa status",

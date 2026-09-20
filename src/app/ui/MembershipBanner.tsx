@@ -3,7 +3,7 @@
 import { Alert, AlertColor, Button, IconButton, Stack } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import GlobalConstants from "../GlobalConstants";
 import { useUserContext } from "../context/UserContext";
@@ -32,6 +32,9 @@ const MembershipBanner = () => {
     const { language } = useUserContext();
     const { state, daysLeft, user } = useMembershipState();
     const pathname = usePathname();
+    // Set by ProtectedPage when it bounces a lapsed member here
+    const membershipRequired =
+        useSearchParams()?.get(GlobalConstants.MEMBERSHIP_REQUIRED) === "true";
     // Start dismissed so nothing flashes before sessionStorage has been read
     const [dismissed, setDismissed] = useState(true);
 
@@ -91,7 +94,11 @@ const MembershipBanner = () => {
             return null;
     }
 
-    if (dismissible && dismissed) return null;
+    // A redirected user always gets the explanation, even if they dismissed the banner earlier
+    if (dismissible && dismissed && !membershipRequired) return null;
+
+    if (membershipRequired)
+        message = `${LanguageTranslations.bannerMembershipRequired[language]} ${message}`;
 
     return (
         <Alert
