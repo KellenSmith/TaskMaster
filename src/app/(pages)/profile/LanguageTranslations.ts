@@ -94,22 +94,12 @@ const LanguageTranslations = {
         [Language.swedish]: "Ditt medlemskap väntar på godkännande av en administratör",
     },
     membershipExpiredPrompt: {
-        [Language.english]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
-            }>,
-        ) =>
-            user.user_membership
-                ? "Your membership has expired and needs renewal"
-                : "Welcome! Activate your membership to get started",
-        [Language.swedish]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
-            }>,
-        ) =>
-            user.user_membership
-                ? "Ditt medlemskap har gått ut och behöver förnyas"
-                : "Välkommen! Aktivera ditt medlemskap för att komma igång",
+        [Language.english]: "Your membership has expired and needs renewal",
+        [Language.swedish]: "Ditt medlemskap har gått ut och behöver förnyas",
+    },
+    membershipActivatePrompt: {
+        [Language.english]: "Welcome! Activate your membership to get started",
+        [Language.swedish]: "Välkommen! Aktivera ditt medlemskap för att komma igång",
     },
     memberSince: {
         [Language.english]: "Member since",

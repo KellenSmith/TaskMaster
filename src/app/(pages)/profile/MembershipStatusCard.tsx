@@ -1,6 +1,5 @@
 "use client";
 import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
-import { isMembershipExpired } from "../../lib/utils";
 import {
     AdminPanelSettings,
     CardMembership,
@@ -13,9 +12,10 @@ import { useUserContext } from "../../context/UserContext";
 import { formatUtcDateToTimezone } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
-import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
 import { use } from "react";
+import { useMembershipState } from "../../lib/use-membership-state";
+import { MembershipState } from "../../lib/membership-utils";
 
 interface MembershipStatusCardProps {
     membershipProductPromise: Promise<Prisma.ProductGetPayload<{ select: { name: true } }> | null>;
@@ -23,10 +23,19 @@ interface MembershipStatusCardProps {
 
 const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCardProps) => {
     const theme = useTheme();
-    const { user, language } = useUserContext();
+    const { language } = useUserContext();
+    const { state, user } = useMembershipState();
     const membershipProduct = use(membershipProductPromise);
 
     if (!user) throw new Error("User must be logged in to view membership status");
+
+    const isPending = state === MembershipState.awaitingValidation;
+    const isActive = state === MembershipState.active || state === MembershipState.expiringSoon;
+    // Everything else (expired, awaitingPayment, blacklisted) renders the "not active" view.
+    const inactivePrompt =
+        state === MembershipState.awaitingPayment
+            ? LanguageTranslations.membershipActivatePrompt[language]
+            : LanguageTranslations.membershipExpiredPrompt[language];
 
     return (
         <Card elevation={3}>
@@ -44,14 +53,14 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {LanguageTranslations.membership[language]}
                         </Typography>
-                        {user.status === UserStatus.pending ? (
+                        {isPending ? (
                             <Chip
                                 icon={<Warning />}
                                 label={LanguageTranslations.pending[language]}
                                 color="error"
                                 size="small"
                             />
-                        ) : isMembershipExpired(user) ? (
+                        ) : !isActive ? (
                             <Chip
                                 icon={<Warning />}
                                 label={LanguageTranslations.expired[language]}
@@ -71,7 +80,7 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                     <Divider />
 
                     {/* Membership Info */}
-                    {user.status === UserStatus.pending ? (
+                    {isPending ? (
                         <Stack
                             sx={{
                                 p: 2,
@@ -91,7 +100,7 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                                 {LanguageTranslations.membershipPendingPrompt[language]}
                             </Typography>
                         </Stack>
-                    ) : isMembershipExpired(user) ? (
+                    ) : !isActive ? (
                         <Stack
                             sx={{
                                 p: 2,
@@ -108,7 +117,7 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                                     textAlign: "center",
                                 }}
                             >
-                                {LanguageTranslations.membershipExpiredPrompt[language](user)}
+                                {inactivePrompt}
                             </Typography>
                         </Stack>
                     ) : (
