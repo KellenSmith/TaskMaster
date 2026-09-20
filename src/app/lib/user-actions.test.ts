@@ -532,7 +532,7 @@ describe("user-actions", () => {
             vi.mocked(prisma.user.findUniqueOrThrow).mockResolvedValue({
                 ...testdata.user,
                 blacklist_entry: { expires_at: null },
-            });
+            } as any);
 
             await expect(
                 userActions.login(buildFormData({ email: "member@example.com" })),
