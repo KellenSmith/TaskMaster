@@ -16,6 +16,32 @@ const LanguageTranslations = {
         [Language.english]: "Failed to start membership renewal",
         [Language.swedish]: "Kunde inte starta förnyelse av medlemskap",
     },
+    chooseMembership: {
+        [Language.english]: "Choose membership",
+        [Language.swedish]: "Välj medlemskap",
+    },
+    chooseMembershipHint: {
+        [Language.english]:
+            "Your membership type can only change at renewal. Pick the one you want to continue with",
+        [Language.swedish]:
+            "Din typ av medlemskap kan bara ändras vid förnyelse. Välj den du vill fortsätta med",
+    },
+    currentMembership: {
+        [Language.english]: "Current",
+        [Language.swedish]: "Nuvarande",
+    },
+    durationDays: {
+        [Language.english]: (days: number) => `${days} days`,
+        [Language.swedish]: (days: number) => `${days} dagar`,
+    },
+    details: {
+        [Language.english]: "Details",
+        [Language.swedish]: "Detaljer",
+    },
+    confirm: {
+        [Language.english]: "Confirm",
+        [Language.swedish]: "Bekräfta",
+    },
     notEligible: {
         [Language.english]: "You are not eligible to renew a membership",
         [Language.swedish]: "Du kan inte förnya ett medlemskap",
