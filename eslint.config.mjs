@@ -33,6 +33,7 @@ export default [
                 window: "readonly",
                 document: "readonly",
                 navigator: "readonly",
+                sessionStorage: "readonly",
                 FormData: "readonly",
                 URL: "readonly",
                 URLSearchParams: "readonly",

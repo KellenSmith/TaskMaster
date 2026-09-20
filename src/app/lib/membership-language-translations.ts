@@ -56,6 +56,36 @@ const LanguageTranslations = {
         [Language.english]: "Several membership types are available. Please choose one",
         [Language.swedish]: "Flera typer av medlemskap finns tillgängliga. Välj en",
     },
+    // Banner copy
+    bannerExpiringSoon: {
+        [Language.english]: (days: number, date: string) =>
+            `Your membership expires in ${days} ${days === 1 ? "day" : "days"} (${date}). Renewing now adds a full period on top - you lose nothing by renewing early.`,
+        [Language.swedish]: (days: number, date: string) =>
+            `Ditt medlemskap går ut om ${days} ${days === 1 ? "dag" : "dagar"} (${date}). Förnyar du nu läggs en hel period på - du förlorar ingenting på att förnya tidigt.`,
+    },
+    bannerExpired: {
+        [Language.english]: (date: string) =>
+            `Your membership expired on ${date}. Renew to book events and use your tickets.`,
+        [Language.swedish]: (date: string) =>
+            `Ditt medlemskap gick ut ${date}. Förnya för att boka evenemang och använda dina biljetter.`,
+    },
+    bannerAwaitingPayment: {
+        [Language.english]: "You're approved. Activate your membership to get started.",
+        [Language.swedish]: "Du är godkänd. Aktivera ditt medlemskap för att komma igång.",
+    },
+    bannerAwaitingValidation: {
+        [Language.english]:
+            "Your application is being reviewed. We'll email you when it's approved.",
+        [Language.swedish]: "Din ansökan granskas. Vi mejlar dig när den är godkänd.",
+    },
+    viewStatus: {
+        [Language.english]: "View status",
+        [Language.swedish]: "Visa status",
+    },
+    dismiss: {
+        [Language.english]: "Dismiss",
+        [Language.swedish]: "Stäng",
+    },
 };
 
 export default LanguageTranslations;
