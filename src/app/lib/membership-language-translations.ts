@@ -4,6 +4,18 @@ import { Language } from "../../prisma/generated/enums";
  * Strings shared by every surface that starts a membership renewal.
  */
 const LanguageTranslations = {
+    renewMembership: {
+        [Language.english]: "Renew membership",
+        [Language.swedish]: "Förnya medlemskap",
+    },
+    activateMembership: {
+        [Language.english]: "Activate membership",
+        [Language.swedish]: "Aktivera medlemskap",
+    },
+    failedStartRenewal: {
+        [Language.english]: "Failed to start membership renewal",
+        [Language.swedish]: "Kunde inte starta förnyelse av medlemskap",
+    },
     notEligible: {
         [Language.english]: "You are not eligible to renew a membership",
         [Language.swedish]: "Du kan inte förnya ett medlemskap",
