@@ -19,6 +19,14 @@ const LanguageTranslations = {
         [Language.english]: "Valid",
         [Language.swedish]: "Giltig",
     },
+    error: {
+        [Language.english]: "Error",
+        [Language.swedish]: "Fel",
+    },
+    checkedIn: {
+        [Language.english]: "Checked in",
+        [Language.swedish]: "Incheckad",
+    },
     eventNotOngoing: {
         [Language.english]:
             "This event is not ongoing. If the ticket is scanned within one hour of the event duration it will be valid for check-in.",
