@@ -173,16 +173,6 @@ const LanguageTranslations = {
         [Language.swedish]:
             "Om du inte vill prenumerera kommer vi att påminna dig när ditt medlemskap är på väg att gå ut.",
     },
-    yesSubscribe: {
-        [Language.english]: "Yes, subscribe!",
-        [Language.swedish]: "Ja, prenumerera!",
-    },
-    greatChoice: {
-        [Language.english]:
-            "Great! Your membership will be renewed automatically before it expires. You can manage your subscription anytime from your profile settings.",
-        [Language.swedish]:
-            "Toppen! Ditt medlemskap kommer att förnyas automatiskt innan det går ut. Du kan hantera din prenumeration när som helst från dina profilsinställningar.",
-    },
 };
 
 export default LanguageTranslations;

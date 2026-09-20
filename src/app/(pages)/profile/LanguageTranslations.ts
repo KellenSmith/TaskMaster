@@ -24,37 +24,6 @@ const LanguageTranslations = {
         [Language.swedish]: "Att göra",
     },
     [implementedTabs.skill_badges]: UILanguageTranslations.routeLabel[GlobalConstants.SKILL_BADGES],
-    startMembershipSubscription: {
-        [Language.english]: "Start membership subscription",
-        [Language.swedish]: "Starta prenumeration för medlemskap",
-    },
-    failedStartMembershipSubscription: {
-        [Language.english]: "Failed to start membership subscription",
-        [Language.swedish]: "Kunde inte starta prenumeration för medlemskap",
-    },
-    cancelSubscription: {
-        [Language.english]: "Cancel subscription",
-        [Language.swedish]: "Avbryt prenumeration",
-    },
-    areYouSureCancelSubscription: {
-        [Language.english]:
-            "Are you sure you want to cancel your subscription? Your membership is valid until the expiry date and will not be renewed thereafter.",
-        [Language.swedish]:
-            "Är du säker på att du vill avbryta din prenumeration? Ditt medlemskap är giltigt till utgångsdatumet och kommer inte fönyas därefter.",
-    },
-    cancelledSubscription: {
-        [Language.english]: "Subscription cancelled. We will not charge you any further payments.",
-        [Language.swedish]:
-            "Prenumeration avbruten. Vi kommer inte att dra några fler betalningar.",
-    },
-    failedCancelSubscription: {
-        [Language.english]: "Failed to cancel subscription",
-        [Language.swedish]: "Kunde inte avbryta prenumeration",
-    },
-    failedActivateMembership: {
-        [Language.english]: "Failed to activate membership",
-        [Language.swedish]: "Misslyckades med att aktivera medlemskap",
-    },
     deleteAccount: {
         [Language.english]: "Delete Account",
         [Language.swedish]: "Ta bort konto",
@@ -102,14 +71,6 @@ const LanguageTranslations = {
     membershipExpires: {
         [Language.english]: "Membership expires",
         [Language.swedish]: "Medlemskapet går ut",
-    },
-    subscription: {
-        [Language.english]: "Subscription",
-        [Language.swedish]: "Prenumeration",
-    },
-    automaticallyExtendedOn: {
-        [Language.english]: "Your membership will be automatically extended on the date: ",
-        [Language.swedish]: "Ditt medlemskap kommer att förlängas automatiskt på datumet: ",
     },
     role: {
         [Language.english]: "Role",
