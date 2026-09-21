@@ -14,7 +14,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import { useState, FC, useTransition, FormEvent, useMemo } from "react";
+import { useState, FC, useTransition, FormEvent, useMemo, ReactNode } from "react";
 import {
     FieldLabels,
     RenderedFields,
@@ -60,6 +60,13 @@ interface FormProps {
     customInfoTexts?: { [key: string]: string }; // Include extra information texts for specific fields
     readOnly?: boolean;
     editable?: boolean;
+    // Called with the action's result instead of showing a success toast.
+    // Use when the page renders its own confirmation (toasts auto-dismiss and are easy to miss).
+    onSuccess?: (result: string) => void; // eslint-disable-line no-unused-vars
+    // Called with the error message instead of showing an error toast.
+    onError?: (message: string) => void; // eslint-disable-line no-unused-vars
+    // Rendered after the fields, directly above the submit button (e.g. consent checkboxes)
+    children?: ReactNode;
 }
 
 const Form: FC<FormProps> = ({
@@ -75,6 +82,9 @@ const Form: FC<FormProps> = ({
     customInfoTexts = {},
     readOnly = true,
     editable = true,
+    onSuccess,
+    onError,
+    children,
 }) => {
     const theme = useTheme();
     const { language } = useUserContext();
@@ -208,14 +218,16 @@ const Form: FC<FormProps> = ({
             if (!parsedFieldValues) return;
             try {
                 const submitResult = await action(formDataWithFileUrls);
-                addNotification(submitResult, "success");
+                if (onSuccess) onSuccess(submitResult);
+                else addNotification(submitResult, "success");
                 if (!(editable && !readOnly)) setEditMode(false);
                 router.refresh();
             } catch (error) {
                 allowRedirectException(error);
-                if (error && typeof error === "object" && "message" in error)
-                    addNotification(error.message as string, "error");
-                else throw error;
+                if (error && typeof error === "object" && "message" in error) {
+                    if (onError) onError(error.message as string);
+                    else addNotification(error.message as string, "error");
+                } else throw error;
             }
         });
     };
@@ -369,6 +381,7 @@ const Form: FC<FormProps> = ({
                     ))}
                     {validationError && <Typography color="error">{validationError}</Typography>}
                 </Stack>
+                {children}
                 {editMode && (
                     <Button type="submit" variant="contained" disabled={isPending}>
                         {buttonLabel || GlobalLanguageTranslations.save[language]}

@@ -1,10 +1,20 @@
 "use client";
-import { Card, CardContent, Chip, Divider, Stack, Typography, useTheme } from "@mui/material";
-import { isMembershipExpired } from "../../lib/utils";
+import {
+    Card,
+    CardContent,
+    Chip,
+    ChipProps,
+    Divider,
+    Stack,
+    Typography,
+    useTheme,
+} from "@mui/material";
 import {
     AdminPanelSettings,
     CardMembership,
     CheckCircle,
+    HourglassTop,
+    Payments,
     Person,
     Schedule,
     Warning,
@@ -13,9 +23,69 @@ import { useUserContext } from "../../context/UserContext";
 import { formatUtcDateToTimezone } from "../../ui/utils";
 import dayjs from "dayjs";
 import LanguageTranslations from "./LanguageTranslations";
-import { UserStatus } from "../../../prisma/generated/enums";
 import { Prisma } from "../../../prisma/generated/browser";
+import { Language } from "../../../prisma/generated/enums";
 import { use } from "react";
+import { useMembershipState } from "../../lib/use-membership-state";
+import MembershipStepper from "../../ui/MembershipStepper";
+import {
+    isMembershipActive,
+    MembershipState,
+    MembershipStateType,
+} from "../../lib/membership-utils";
+
+type StatusChip = { icon: ChipProps["icon"]; label: string; color: ChipProps["color"] };
+
+const getStatusChip = (
+    state: MembershipStateType,
+    daysLeft: number,
+    language: Language,
+): StatusChip => {
+    switch (state) {
+        case MembershipState.expiringSoon:
+            return {
+                icon: <Schedule />,
+                label: LanguageTranslations.expiresInDays[language](daysLeft),
+                color: "warning",
+            };
+        case MembershipState.active:
+            return {
+                icon: <CheckCircle />,
+                label: LanguageTranslations.active[language],
+                color: "success",
+            };
+        case MembershipState.awaitingValidation:
+            return {
+                icon: <HourglassTop />,
+                label: LanguageTranslations.pending[language],
+                color: "info",
+            };
+        case MembershipState.awaitingPayment:
+            return {
+                icon: <Payments />,
+                label: LanguageTranslations.awaitingPayment[language],
+                color: "info",
+            };
+        default:
+            // expired, blacklisted
+            return {
+                icon: <Warning />,
+                label: LanguageTranslations.expired[language],
+                color: "error",
+            };
+    }
+};
+
+const getInactivePrompt = (state: MembershipStateType, language: Language): string => {
+    switch (state) {
+        case MembershipState.awaitingValidation:
+            return LanguageTranslations.membershipPendingPrompt[language];
+        case MembershipState.awaitingPayment:
+            return LanguageTranslations.membershipActivatePrompt[language];
+        default:
+            return LanguageTranslations.membershipExpiredPrompt[language];
+    }
+};
 
 interface MembershipStatusCardProps {
     membershipProductPromise: Promise<Prisma.ProductGetPayload<{ select: { name: true } }> | null>;
@@ -23,10 +93,27 @@ interface MembershipStatusCardProps {
 
 const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCardProps) => {
     const theme = useTheme();
-    const { user, language } = useUserContext();
+    const { language } = useUserContext();
+    const { state, daysLeft, user } = useMembershipState();
     const membershipProduct = use(membershipProductPromise);
 
     if (!user) throw new Error("User must be logged in to view membership status");
+
+    const isActive = isMembershipActive(state);
+    const chip = getStatusChip(state, daysLeft ?? 0, language);
+    // Pending and awaiting payment are informational, not failures. Only a lapse is an error.
+    const prompt = getInactivePrompt(state, language);
+    const promptPalette =
+        state === MembershipState.awaitingValidation || state === MembershipState.awaitingPayment
+            ? theme.palette.info
+            : theme.palette.error;
+    // Applicants mid-process see where they are. Active and lapsed members do not need onboarding.
+    const processStep =
+        state === MembershipState.awaitingValidation
+            ? 1
+            : state === MembershipState.awaitingPayment
+              ? 2
+              : null;
 
     return (
         <Card elevation={3}>
@@ -44,72 +131,32 @@ const MembershipStatusCard = ({ membershipProductPromise }: MembershipStatusCard
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {LanguageTranslations.membership[language]}
                         </Typography>
-                        {user.status === UserStatus.pending ? (
-                            <Chip
-                                icon={<Warning />}
-                                label={LanguageTranslations.pending[language]}
-                                color="error"
-                                size="small"
-                            />
-                        ) : isMembershipExpired(user) ? (
-                            <Chip
-                                icon={<Warning />}
-                                label={LanguageTranslations.expired[language]}
-                                color="error"
-                                size="small"
-                            />
-                        ) : (
-                            <Chip
-                                icon={<CheckCircle />}
-                                label={LanguageTranslations.active[language]}
-                                color="success"
-                                size="small"
-                            />
-                        )}
+                        <Chip icon={chip.icon} label={chip.label} color={chip.color} size="small" />
                     </Stack>
 
                     <Divider />
 
                     {/* Membership Info */}
-                    {user.status === UserStatus.pending ? (
+                    {!isActive ? (
                         <Stack
                             sx={{
                                 p: 2,
                                 borderRadius: 2,
-                                backgroundColor: theme.palette.error.light + "20",
-                                border: `1px solid ${theme.palette.error.light}`,
+                                backgroundColor: promptPalette.light + "20",
+                                border: `1px solid ${promptPalette.light}`,
                             }}
                         >
                             <Typography
                                 variant="body1"
                                 sx={{
-                                    color: theme.palette.error.main,
+                                    color: promptPalette.main,
                                     fontWeight: 500,
                                     textAlign: "center",
                                 }}
                             >
-                                {LanguageTranslations.membershipPendingPrompt[language]}
+                                {prompt}
                             </Typography>
-                        </Stack>
-                    ) : isMembershipExpired(user) ? (
-                        <Stack
-                            sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.error.light + "20",
-                                border: `1px solid ${theme.palette.error.light}`,
-                            }}
-                        >
-                            <Typography
-                                variant="body1"
-                                sx={{
-                                    color: theme.palette.error.main,
-                                    fontWeight: 500,
-                                    textAlign: "center",
-                                }}
-                            >
-                                {LanguageTranslations.membershipExpiredPrompt[language](user)}
-                            </Typography>
+                            {processStep !== null && <MembershipStepper activeStep={processStep} />}
                         </Stack>
                     ) : (
                         <Stack spacing={2}>

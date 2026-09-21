@@ -39,6 +39,7 @@ import {
     ProductUpdateSchema,
 } from "../../lib/zod-schemas";
 import { Prisma } from "../../../prisma/generated/browser";
+import LanguageTranslations from "./LanguageTranslations";
 
 interface ShopDashboardProps {
     productsPromise: Promise<Prisma.ProductGetPayload<{ include: { membership: true } }>[]>;
@@ -49,16 +50,15 @@ const implementedTabs = {
     merch: "merch",
 };
 
-const tabLabels = {
-    [implementedTabs.memberships]: "Memberships",
-    [implementedTabs.merch]: "Merch",
-};
-
 const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
     const { user, language } = useUserContext();
     if (!user) throw new Error("You must be logged in to view the shop");
 
     const { addNotification } = useNotificationContext();
+    const tabLabels: Record<string, string> = {
+        [implementedTabs.memberships]: LanguageTranslations.memberships[language],
+        [implementedTabs.merch]: LanguageTranslations.merch[language],
+    };
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
     const products = use(productsPromise);
@@ -106,7 +106,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
             await createAndRedirectToOrder([productOrderItems]);
         } catch (error) {
             allowRedirectException(error);
-            addNotification("Failed to create order", "error");
+            addNotification(LanguageTranslations.failedCreateOrder[language], "error");
         }
     };
 
@@ -170,7 +170,9 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
 
     const renderProducts = (productsToRender: typeof products) => {
         if (productsToRender.length === 0) {
-            return <Typography color="primary">No products available</Typography>;
+            return (
+                <Typography color="primary">{LanguageTranslations.noProducts[language]}</Typography>
+            );
         }
 
         return (
@@ -219,9 +221,9 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
         return (
             <Stack spacing={2} sx={{ padding: 2 }}>
                 <Typography variant="h6" color={theme.palette.primary.main}>
-                    Shop
+                    {LanguageTranslations.shop[language]}
                 </Typography>
-                <Typography color="primary">No products available</Typography>
+                <Typography color="primary">{LanguageTranslations.noProducts[language]}</Typography>
             </Stack>
         );
     }
@@ -243,7 +245,7 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
                 variant="scrollable"
                 scrollButtons="auto"
                 allowScrollButtonsMobile
-                aria-label="shop tabs"
+                aria-label={LanguageTranslations.shopTabs[language]}
             >
                 {Object.keys(tabs).map((tabKey) => {
                     const tabVal = tabs[tabKey];
@@ -289,8 +291,9 @@ const ShopDashboard = ({ productsPromise }: ShopDashboardProps) => {
                                 onClick={() => setDialogOpen(true)}
                                 size="small"
                             >
-                                Add{" "}
-                                {openTab === implementedTabs.memberships ? "Membership" : "Product"}
+                                {openTab === implementedTabs.memberships
+                                    ? LanguageTranslations.addMembership[language]
+                                    : LanguageTranslations.addProduct[language]}
                             </Button>
                         </Stack>
                     )}

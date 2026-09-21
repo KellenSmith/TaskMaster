@@ -32,9 +32,11 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ textContentPromise }) => 
                 }}
             >
                 {!user && (
+                    // The primary call to action for a visitor. Full-width outlined read as a divider.
                     <Button
-                        fullWidth
-                        variant="outlined"
+                        variant="contained"
+                        size="large"
+                        sx={{ alignSelf: "center", width: "100%", maxWidth: 360 }}
                         onClick={() => clientRedirect(router, [GlobalConstants.APPLY])}
                     >
                         {LanguageTranslations.routeLabel[GlobalConstants.APPLY][language]}

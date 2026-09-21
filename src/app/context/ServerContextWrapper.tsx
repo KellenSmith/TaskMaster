@@ -7,6 +7,7 @@ import { userHasRolePrivileges } from "../lib/auth/auth-utils";
 import { UserRole } from "../../prisma/generated/enums";
 import { Prisma } from "../../prisma/generated/browser";
 import { isSwedbankPayConfigured } from "../lib/payment-helpers";
+import { getMembershipProducts } from "../lib/user-membership-helpers";
 
 interface ServerContextWrapperProps {
     children: ReactNode;
@@ -44,6 +45,7 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
     const userPromise = getLoggedInUser();
     const organizationSettingsPromise = getOrganizationSettings();
     const infoPagesPromise = getAllowedInfoPages();
+    const membershipProductsPromise = getMembershipProducts();
     const handlePaymentsManually = !isSwedbankPayConfigured();
 
     return (
@@ -51,6 +53,7 @@ const ServerContextWrapper: FC<ServerContextWrapperProps> = async ({ children })
             organizationSettingsPromise={organizationSettingsPromise}
             userPromise={userPromise}
             infoPagesPromise={infoPagesPromise}
+            membershipProductsPromise={membershipProductsPromise}
             handlePaymentsManually={handlePaymentsManually}
         >
             {children}

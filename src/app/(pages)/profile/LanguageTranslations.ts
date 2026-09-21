@@ -1,8 +1,6 @@
-import { isMembershipExpired } from "../../lib/utils";
 import UILanguageTranslations from "../../ui/LanguageTranslations";
 import GlobalConstants from "../../GlobalConstants";
 import { EventStatus, Language, UserRole } from "../../../prisma/generated/enums";
-import { Prisma } from "../../../prisma/generated/browser";
 
 export const implementedTabs = {
     account: "Account",
@@ -26,49 +24,6 @@ const LanguageTranslations = {
         [Language.swedish]: "Att göra",
     },
     [implementedTabs.skill_badges]: UILanguageTranslations.routeLabel[GlobalConstants.SKILL_BADGES],
-    activateMembership: {
-        [Language.english]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true; blacklist_entry: true };
-            }>,
-        ) => `${isMembershipExpired(user) ? "Activate" : "Extend"} membership`,
-        [Language.swedish]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true; blacklist_entry: true };
-            }>,
-        ) => `${isMembershipExpired(user) ? "Aktivera" : "Förläng"} medlemskap`,
-    },
-    startMembershipSubscription: {
-        [Language.english]: "Start membership subscription",
-        [Language.swedish]: "Starta prenumeration för medlemskap",
-    },
-    failedStartMembershipSubscription: {
-        [Language.english]: "Failed to start membership subscription",
-        [Language.swedish]: "Kunde inte starta prenumeration för medlemskap",
-    },
-    cancelSubscription: {
-        [Language.english]: "Cancel subscription",
-        [Language.swedish]: "Avbryt prenumeration",
-    },
-    areYouSureCancelSubscription: {
-        [Language.english]:
-            "Are you sure you want to cancel your subscription? Your membership is valid until the expiry date and will not be renewed thereafter.",
-        [Language.swedish]:
-            "Är du säker på att du vill avbryta din prenumeration? Ditt medlemskap är giltigt till utgångsdatumet och kommer inte fönyas därefter.",
-    },
-    cancelledSubscription: {
-        [Language.english]: "Subscription cancelled. We will not charge you any further payments.",
-        [Language.swedish]:
-            "Prenumeration avbruten. Vi kommer inte att dra några fler betalningar.",
-    },
-    failedCancelSubscription: {
-        [Language.english]: "Failed to cancel subscription",
-        [Language.swedish]: "Kunde inte avbryta prenumeration",
-    },
-    failedActivateMembership: {
-        [Language.english]: "Failed to activate membership",
-        [Language.swedish]: "Misslyckades med att aktivera medlemskap",
-    },
     deleteAccount: {
         [Language.english]: "Delete Account",
         [Language.swedish]: "Ta bort konto",
@@ -89,27 +44,25 @@ const LanguageTranslations = {
         [Language.english]: "Active membership",
         [Language.swedish]: "Aktivt medlemskap",
     },
+    expiresInDays: {
+        [Language.english]: (days: number) => `Expires in ${days} ${days === 1 ? "day" : "days"}`,
+        [Language.swedish]: (days: number) => `Går ut om ${days} ${days === 1 ? "dag" : "dagar"}`,
+    },
+    awaitingPayment: {
+        [Language.english]: "Awaiting payment",
+        [Language.swedish]: "Väntar på betalning",
+    },
     membershipPendingPrompt: {
         [Language.english]: "Your membership is awaiting validation by an admin",
         [Language.swedish]: "Ditt medlemskap väntar på godkännande av en administratör",
     },
     membershipExpiredPrompt: {
-        [Language.english]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
-            }>,
-        ) =>
-            user.user_membership
-                ? "Your membership has expired and needs renewal"
-                : "Welcome! Activate your membership to get started",
-        [Language.swedish]: (
-            user: Prisma.UserGetPayload<{
-                include: { user_membership: true };
-            }>,
-        ) =>
-            user.user_membership
-                ? "Ditt medlemskap har gått ut och behöver förnyas"
-                : "Välkommen! Aktivera ditt medlemskap för att komma igång",
+        [Language.english]: "Your membership has expired and needs renewal",
+        [Language.swedish]: "Ditt medlemskap har gått ut och behöver förnyas",
+    },
+    membershipActivatePrompt: {
+        [Language.english]: "Welcome! Activate your membership to get started",
+        [Language.swedish]: "Välkommen! Aktivera ditt medlemskap för att komma igång",
     },
     memberSince: {
         [Language.english]: "Member since",
@@ -118,14 +71,6 @@ const LanguageTranslations = {
     membershipExpires: {
         [Language.english]: "Membership expires",
         [Language.swedish]: "Medlemskapet går ut",
-    },
-    subscription: {
-        [Language.english]: "Subscription",
-        [Language.swedish]: "Prenumeration",
-    },
-    automaticallyExtendedOn: {
-        [Language.english]: "Your membership will be automatically extended on the date: ",
-        [Language.swedish]: "Ditt medlemskap kommer att förlängas automatiskt på datumet: ",
     },
     role: {
         [Language.english]: "Role",
