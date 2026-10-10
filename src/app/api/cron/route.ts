@@ -11,6 +11,7 @@ import {
     purgeStaleMembershipApplications,
     expiringMembershipMaintenance,
     processNewsletterBacklog,
+    purgeExpiredDevicePairingRequests,
 } from "./cron";
 
 const isRequestAuthorized = (request: NextRequest): boolean => {
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
         purgeStaleMembershipApplications(),
         expiringMembershipMaintenance(),
         processNewsletterBacklog(),
+        purgeExpiredDevicePairingRequests(),
     ]);
 
     return new NextResponse("OK", {

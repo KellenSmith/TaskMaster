@@ -108,6 +108,7 @@ model User {
   user_membership        UserMembership?
   accounts               Account[]
   sessions               Session[]
+  device_pairing_requests DevicePairingRequest[]
   // Profile
   nickname               String             @unique @default(uuid())
   first_name             String?
@@ -365,6 +366,28 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+enum DevicePairingStatus {
+  pending
+  confirmed
+}
+
+model DevicePairingRequest {
+  id                    String              @id @default(uuid())
+  device_code           String              @unique
+  user_code             String              @unique
+  status                DevicePairingStatus @default(pending)
+  user_id               String?
+  user                  User?               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  requesting_user_agent String?
+  requesting_ip         String?
+  expires_at            DateTime
+  created_at            DateTime            @default(now())
+  consumed_at           DateTime?
+
+  @@index([requesting_ip, created_at])
+  @@map("device_pairing_requests")
 }
 
 enum Language {
