@@ -1,11 +1,19 @@
 import "dotenv/config";
 import { PrismaClient } from "./generated/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 const getPrismaClient = () => {
-    return new PrismaClient({
-        accelerateUrl: process.env.ACCELERATE_DATABASE_URL as string,
-    }).$extends(withAccelerate());
+    if (process.env.ACCELERATE_DATABASE_URL) {
+        return new PrismaClient({
+            accelerateUrl: process.env.ACCELERATE_DATABASE_URL as string,
+        }).$extends(withAccelerate());
+    }
+    if (process.env.DIRECT_DATABASE_URL) {
+        const adapter = new PrismaPg({ connectionString: process.env.DIRECT_DATABASE_URL });
+        return new PrismaClient({ adapter });
+    }
+    throw new Error("No database URL provided in environment variables.");
 };
 
 const globalForPrisma = global as typeof global & { prisma?: ReturnType<typeof getPrismaClient> };
