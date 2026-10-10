@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "ms-ossdata.vscode-pgsql",
+    "vitest.explorer",
+    "ms-vscode.vscode-json",
+    "yzane.markdown-pdf",
+    "ms-ossdata.vscode-pgsql",
+    "eamodio.gitlens"
+  ]
+}

@@ -1,7 +1,8 @@
 import { FC } from "react";
-import { Text, Section, Button, Hr } from "@react-email/components";
+import { Text, Section, Button, Hr, Img } from "@react-email/components";
 import MailTemplate from "./MailTemplate";
 import mailTheme from "../mail-theme";
+import QRCode from "qrcode";
 
 /**
  * Props for the SignInEmailTemplate component.
@@ -13,7 +14,7 @@ interface ISignInEmailTemplateProps {
     url: string;
 }
 
-const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
+const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = async ({ email, url }) => {
     return (
         <MailTemplate>
             <Section style={{ textAlign: "center", marginBottom: "32px" }}>
@@ -46,6 +47,16 @@ const SignInEmailTemplate: FC<ISignInEmailTemplateProps> = ({ email, url }) => {
                 >
                     Sign in to your account
                 </Button>
+            </Section>
+
+            <Section style={{ textAlign: "center" }}>
+                <Text>Or scan this QR code to sign in on another device:</Text>
+                <Img
+                    alt={process.env.NEXT_PUBLIC_ORG_NAME}
+                    height={250}
+                    style={{ margin: "0 auto", display: "block" }}
+                    src={await QRCode.toDataURL(url)}
+                />
             </Section>
 
             <Hr
