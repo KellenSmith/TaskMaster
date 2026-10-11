@@ -3,7 +3,7 @@
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { Prisma } from "../../../prisma/generated/browser";
 import { useUserContext } from "../../context/UserContext";
-import LanguageTranslations from "./LangaugeTranslations";
+import LanguageTranslations from "./LanguageTranslations";
 import { use, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { formatUtcDateToTimezone } from "../../ui/utils";
@@ -99,7 +99,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
         if (!hasAllProperties) {
             setStatusColor("error");
             setStatusText(LanguageTranslations.missingData[language]);
-            setTitle("Error");
+            setTitle(LanguageTranslations.error[language]);
             return;
         }
 
@@ -107,7 +107,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
         if (!isWithinWindow) {
             setStatusColor("warning");
             setStatusText(LanguageTranslations.eventNotOngoing[language]);
-            setTitle("Valid");
+            setTitle(LanguageTranslations.valid[language]);
             return;
         }
 
@@ -117,7 +117,7 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
             setStatusText(
                 `${LanguageTranslations.alreadyCheckedIn[language]} ${formatUtcDateToTimezone(dayjs.utc(eventParticipant.checked_in_at))}`,
             );
-            setTitle("Checked in");
+            setTitle(LanguageTranslations.checkedIn[language]);
             return;
         }
 
@@ -129,17 +129,17 @@ const TicketDashboard = ({ eventParticipantPromise }: TicketDashboardProps) => {
                     // Check-in failed or already checked in
                     setStatusColor("error");
                     setStatusText(result);
-                    setTitle("Valid");
+                    setTitle(LanguageTranslations.valid[language]);
                 } else {
                     // Check-in succeeded
                     setStatusColor("success");
                     setStatusText(LanguageTranslations.checkInSucceeded[language]);
-                    setTitle("Valid");
+                    setTitle(LanguageTranslations.valid[language]);
                 }
             } catch {
                 setStatusColor("warning");
                 setStatusText(LanguageTranslations.checkInFailed[language]);
-                setTitle("Valid");
+                setTitle(LanguageTranslations.valid[language]);
             }
         };
         if (isUserAdmin(user) || isEventHost || isVolunteer) doCheckIn();

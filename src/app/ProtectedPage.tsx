@@ -36,7 +36,10 @@ const ProtectedPage: FC<ProtectedPageProps> = async ({ name, children }) => {
     }
 
     if (pageConfig.membershipRequired && isMembershipExpired(loggedInUser)) {
-        serverRedirect([GlobalConstants.PROFILE]);
+        // The flag lets the membership banner explain why the user landed on their profile
+        serverRedirect([GlobalConstants.PROFILE], {
+            [GlobalConstants.MEMBERSHIP_REQUIRED]: "true",
+        });
         return null; // This line will never be reached, but is added to satisfy TypeScript's type checking
     }
 

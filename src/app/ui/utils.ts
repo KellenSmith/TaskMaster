@@ -9,8 +9,10 @@ import { dateDisplayFormat, localTimeZone } from "../context/LocalizationContext
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-export const formatUtcDateToTimezone = (date: string | Date | Dayjs): string =>
-    dayjs.tz(dayjs.utc(date), localTimeZone).format(dateDisplayFormat);
+export const formatUtcDateToTimezone = (
+    date: string | Date | Dayjs,
+    format: string = dateDisplayFormat,
+): string => dayjs.tz(dayjs.utc(date), localTimeZone).format(format);
 export const formatPrice = (price: number): number => price / 100;
 
 export const openResourceInNewTab = (resourceUrl: string) => {

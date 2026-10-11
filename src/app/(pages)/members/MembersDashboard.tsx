@@ -28,7 +28,11 @@ import Datagrid, {
 import GlobalConstants from "../../GlobalConstants";
 import { GridColDef } from "@mui/x-data-grid";
 import { FieldLabels } from "../../ui/form/FieldCfg";
-import { isMemberBlacklisted, isMembershipExpired } from "../../lib/utils";
+import {
+    getMembershipState,
+    MembershipState,
+    MembershipStateType,
+} from "../../lib/membership-utils";
 import {
     AddMembershipSchema,
     BlacklistEntryCreateSchema,
@@ -242,41 +246,26 @@ const MembersDashboard: FC<MembersDashboardProps> = ({
         },
     ];
 
-    const getStatusConfig = (member: ImplementedDatagridEntities) => {
-        if (isMemberBlacklisted(member as ImplementedUserType))
-            return {
-                status: GlobalConstants.BLACKLISTED,
-                icon: Block,
-                color: "error.main",
-            };
-        if ((member as ImplementedUserType)?.status === UserStatus.pending)
-            return {
-                status: GlobalConstants.PENDING,
-                icon: WarningIcon,
-                color: "warning.main",
-            };
-        if (
-            isMembershipExpired(
-                member as Prisma.UserGetPayload<{
-                    include: {
-                        user_membership: true;
-                        skill_badges: true;
-                        blacklist_entry: true;
-                    };
-                }>,
-            )
-        )
-            return {
-                status: GlobalConstants.EXPIRED,
-                icon: ErrorIcon,
-                color: "error.main",
-            };
-        return {
-            status: GlobalConstants.ACTIVE,
-            icon: CheckIcon,
-            color: "success.main",
-        };
+    const statusConfigs = {
+        blacklisted: { status: GlobalConstants.BLACKLISTED, icon: Block, color: "error.main" },
+        pending: { status: GlobalConstants.PENDING, icon: WarningIcon, color: "warning.main" },
+        expired: { status: GlobalConstants.EXPIRED, icon: ErrorIcon, color: "error.main" },
+        active: { status: GlobalConstants.ACTIVE, icon: CheckIcon, color: "success.main" },
     };
+    const statusConfigByMembershipState: Record<MembershipStateType, typeof statusConfigs.active> =
+        {
+            [MembershipState.anonymous]: statusConfigs.expired,
+            [MembershipState.blacklisted]: statusConfigs.blacklisted,
+            [MembershipState.awaitingValidation]: statusConfigs.pending,
+            [MembershipState.awaitingPayment]: statusConfigs.expired,
+            [MembershipState.expired]: statusConfigs.expired,
+            [MembershipState.expiringSoon]: statusConfigs.active,
+            [MembershipState.active]: statusConfigs.active,
+        };
+
+    const getStatusConfig = (member: ImplementedDatagridEntities) =>
+        // The reminder window only separates expiringSoon from active, which share a chip
+        statusConfigByMembershipState[getMembershipState(member as ImplementedUserType, null)];
 
     const customColumns: GridColDef[] = [
         {

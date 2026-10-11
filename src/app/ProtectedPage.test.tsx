@@ -107,7 +107,9 @@ describe("ProtectedPage", () => {
             }),
         ).rejects.toThrow("Redirect called");
 
-        expect(serverRedirect).toHaveBeenCalledWith([GlobalConstants.PROFILE]);
+        expect(serverRedirect).toHaveBeenCalledWith([GlobalConstants.PROFILE], {
+            [GlobalConstants.MEMBERSHIP_REQUIRED]: "true",
+        });
     });
 
     it("redirects users without the required role to profile", async () => {

@@ -181,6 +181,23 @@ describe("user-membership-helpers", () => {
         });
     });
 
+    describe("getMembershipProducts", () => {
+        it("lists every membership product with its product details", async () => {
+            const memberships = [{ product_id: "m-1", duration: 365, product: { name: "A" } }];
+            mockContext.prisma.membership.findMany.mockResolvedValue(memberships as any);
+
+            const result = await membershipActions.getMembershipProducts();
+
+            expect(mockContext.prisma.membership.findMany).toHaveBeenCalledWith({
+                include: {
+                    product: { select: { id: true, name: true, description: true, price: true } },
+                },
+                orderBy: { product: { name: "asc" } },
+            });
+            expect(result).toBe(memberships);
+        });
+    });
+
     describe("getMembershipProduct", () => {
         it("returns an existing membership product", async () => {
             const existing = { id: "membership-1", price: 0 } as any;

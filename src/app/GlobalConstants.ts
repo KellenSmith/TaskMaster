@@ -125,6 +125,7 @@ const GlobalConstants = {
     // Membership
     MEMBERSHIP: "membership",
     MEMBERSHIP_ID: "membership_id",
+    MEMBERSHIP_REQUIRED: "membership_required",
     DURATION: "duration",
     // Order
     ORDER: "order",

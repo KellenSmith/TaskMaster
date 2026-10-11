@@ -9,7 +9,8 @@ import { logOut } from "../lib/user-actions";
 import { createInfoPage, deleteInfoPage, updateInfoPage } from "../lib/info-page-actions";
 import GlobalConstants from "../GlobalConstants";
 import NotificationContextProvider from "../context/NotificationContext";
-import { getAbsoluteUrl } from "../lib/utils";
+import { getAbsoluteUrl, getRelativeUrl } from "../lib/utils";
+import dayjs from "dayjs";
 
 vi.mock("next/navigation", () => ({
     useRouter: vi.fn(() => ({ push: vi.fn() })),
@@ -103,6 +104,81 @@ describe("NavPanel", () => {
 
         expect(screen.getByRole("button", { name: "open navigation" })).toBeInTheDocument();
         expect(screen.getByAltText("TaskMaster")).toBeInTheDocument();
+    });
+
+    describe("logo click", () => {
+        const clickLogo = async () => {
+            await renderNavPanel();
+            await userEvent.click(screen.getByAltText("TaskMaster"));
+        };
+
+        it("sends active members to the dashboard", async () => {
+            await clickLogo();
+            expect(routerPushMock).toHaveBeenCalledWith(
+                getRelativeUrl([GlobalConstants.DASHBOARD]),
+            );
+        });
+
+        it("sends members whose membership expires soon to the dashboard", async () => {
+            vi.mocked(useUserContext).mockReturnValue({
+                user: createUser({
+                    user_membership: { expires_at: dayjs.utc().add(2, "day").toDate() },
+                }),
+                editMode: false,
+                setEditMode: setEditModeMock,
+                language: Language.english,
+            } as any);
+            await clickLogo();
+            expect(routerPushMock).toHaveBeenCalledWith(
+                getRelativeUrl([GlobalConstants.DASHBOARD]),
+            );
+        });
+
+        it("sends expired members to the profile page", async () => {
+            vi.mocked(useUserContext).mockReturnValue({
+                user: createUser({
+                    user_membership: { expires_at: new Date("2000-01-01T00:00:00.000Z") },
+                }),
+                editMode: false,
+                setEditMode: setEditModeMock,
+                language: Language.english,
+            } as any);
+            await clickLogo();
+            expect(routerPushMock).toHaveBeenCalledWith(getRelativeUrl([GlobalConstants.PROFILE]));
+        });
+
+        it("sends users awaiting validation to the profile page", async () => {
+            vi.mocked(useUserContext).mockReturnValue({
+                user: createUser({ status: UserStatus.pending }),
+                editMode: false,
+                setEditMode: setEditModeMock,
+                language: Language.english,
+            } as any);
+            await clickLogo();
+            expect(routerPushMock).toHaveBeenCalledWith(getRelativeUrl([GlobalConstants.PROFILE]));
+        });
+
+        it("sends validated users without a membership to the profile page", async () => {
+            vi.mocked(useUserContext).mockReturnValue({
+                user: createUser({ user_membership: null }),
+                editMode: false,
+                setEditMode: setEditModeMock,
+                language: Language.english,
+            } as any);
+            await clickLogo();
+            expect(routerPushMock).toHaveBeenCalledWith(getRelativeUrl([GlobalConstants.PROFILE]));
+        });
+
+        it("sends anonymous visitors to the home page", async () => {
+            vi.mocked(useUserContext).mockReturnValue({
+                user: null,
+                editMode: false,
+                setEditMode: setEditModeMock,
+                language: Language.english,
+            } as any);
+            await clickLogo();
+            expect(routerPushMock).toHaveBeenCalledWith(getRelativeUrl([GlobalConstants.HOME]));
+        });
     });
 
     it("opens drawer and shows logout for logged-in user", async () => {

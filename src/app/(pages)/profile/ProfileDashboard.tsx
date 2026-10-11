@@ -4,7 +4,9 @@ import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AccountTab from "./AccountTab";
 import EventsTab from "./EventsTab";
-import { isMembershipExpired, clientRedirect } from "../../lib/utils";
+import { clientRedirect } from "../../lib/utils";
+import { useMembershipState } from "../../lib/use-membership-state";
+import { isMembershipActive } from "../../lib/membership-utils";
 import { useUserContext } from "../../context/UserContext";
 import KanBanBoard from "../../ui/kanban-board/KanBanBoard";
 import ErrorBoundarySuspense from "../../ui/ErrorBoundarySuspense";
@@ -46,7 +48,8 @@ const ProfileDashboard = ({
     skillBadgesPromise,
     membershipProductPromise,
 }: ProfileDashboardProps) => {
-    const { user, language } = useUserContext();
+    const { language } = useUserContext();
+    const { state: membershipState } = useMembershipState();
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
     const tabs = useMemo<Record<keyof typeof implementedTabs, string | null>>(() => {
@@ -56,13 +59,14 @@ const ProfileDashboard = ({
             tasks: null,
             skill_badges: null,
         };
-        if (!isMembershipExpired(user)) {
+        // Member-only tabs are available to anyone holding an unexpired membership
+        if (isMembershipActive(membershipState)) {
             availableTabs.events = implementedTabs.events;
             availableTabs.tasks = implementedTabs.tasks;
             availableTabs.skill_badges = implementedTabs.skill_badges;
         }
         return availableTabs;
-    }, [user]);
+    }, [membershipState]);
 
     const searchParams = useSearchParams();
     const openTab = useMemo(

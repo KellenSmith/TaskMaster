@@ -5,6 +5,7 @@ import UserContextProvider from "./UserContext";
 import OrganizationSettingsProvider from "./OrganizationSettingsContext";
 import NotificationContextProvider from "./NotificationContext";
 import LocalizationContextProvider from "./LocalizationContext";
+import MembershipProductsProvider, { MembershipProduct } from "./MembershipProductsContext";
 import ErrorBoundarySuspense from "../ui/ErrorBoundarySuspense";
 import { SessionProvider } from "next-auth/react";
 import { Prisma } from "../../prisma/generated/browser";
@@ -20,6 +21,7 @@ interface ContextWrapperProps {
             include: { titleText: { include: { translations: true } } };
         }>[]
     >;
+    membershipProductsPromise: Promise<MembershipProduct[]>;
     handlePaymentsManually: boolean;
 }
 
@@ -28,6 +30,7 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
     organizationSettingsPromise,
     infoPagesPromise,
     userPromise,
+    membershipProductsPromise,
     handlePaymentsManually,
 }) => {
     return (
@@ -42,7 +45,11 @@ const ContextWrapper: FC<ContextWrapperProps> = ({
                         <NotificationContextProvider>
                             <SessionProvider>
                                 <UserContextProvider userPromise={userPromise}>
-                                    {children}
+                                    <MembershipProductsProvider
+                                        membershipProductsPromise={membershipProductsPromise}
+                                    >
+                                        {children}
+                                    </MembershipProductsProvider>
                                 </UserContextProvider>
                             </SessionProvider>
                         </NotificationContextProvider>

@@ -12,6 +12,7 @@ import { ReactNode, FC } from "react";
 
 const locale = "en-gb";
 export const dateDisplayFormat = "YYYY/MM/DD HH:mm";
+export const dateOnlyDisplayFormat = "YYYY/MM/DD";
 export const localTimeZone = process.env.NEXT_PUBLIC_TIMEZONE || "Europe/Stockholm";
 
 dayjs.extend(isoWeek);
