@@ -31,7 +31,17 @@ See `.env.example` for a template you can copy.
 - NEXT_PUBLIC_ORG_DESCRIPTION: Meta description override
 - VERCEL_URL: Used to compute absolute URLs in some server redirects when deployed (e.g. my-app.vercel.app)
 
-Notes
+## Development config (optional)
+
+These are used by `pnpm prisma-seed` to create an initial admin user and seed the development database with realistic data for development and QA purposes.
+
+- SEED_CONFIRM_WIPE: Set to `true` to allow `pnpm prisma-seed` to wipe the database in development. Defaults to `false`.
+- SEED_ADMIN_EMAIL: Email address to create as the first admin user when seeding the database. Defaults to `admin@example.com`
+- SEED_ADMIN_FIRST_NAME: First name for the first admin user. Defaults to `Admin`.
+- SEED_ADMIN_LAST_NAME: Last name for the first admin user. Defaults to `User`.
+- SEED_ADMIN_NICKNAME: Nickname for the first admin user. Defaults to `admin`.
+
+## Notes
 
 - Changing BLOB_HOSTNAME updates image allowlist in `next.config.mjs`.
 - When VERCEL_URL is unset locally, absolute links fall back to `window.location` during client navigation.

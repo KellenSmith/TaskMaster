@@ -15,8 +15,7 @@
         "prisma-migrate": "pnpm prisma migrate dev",
         "prisma-migrate-reset": "pnpm prisma migrate reset",
         "prisma-push": "pnpm prisma db push",
-        "prisma-seed": "tsx prisma/seed.ts",
-        "prisma-seed-users": "tsx prisma/seed-users.ts",
+        "prisma-seed": "tsx src/prisma/seed.ts",
         "email": "email dev --dir=./src/app/lib/mail-service/mail-templates --port=3001",
         "test": "vitest",
         "test:ui": "vitest --ui",
@@ -87,6 +86,7 @@
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.5",
         "@eslint/js": "^10.0.1",
+        "@faker-js/faker": "^10.6.0",
         "@next/bundle-analyzer": "16.2.6",
         "@next/eslint-plugin-next": "16.2.6",
         "@testing-library/jest-dom": "^6.9.1",
